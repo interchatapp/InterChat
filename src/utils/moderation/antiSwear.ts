@@ -99,7 +99,7 @@ export const buildAntiSwearRuleEmbed = (
           actions.length > 0
             ? `**${actions}**`
             : t('hub.blockwords.embedFields.noActions', locale, {
-              emoji: getEmoji('alert_icon', client),
+              emoji: getEmoji('x_icon', client),
             }),
       }),
     })

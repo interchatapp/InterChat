@@ -110,8 +110,8 @@ export default abstract class BaseCommand {
         .setDefaultMemberPermissions(this.defaultPermissions?.toJSON())
         .setIntegrationTypes(
           this.contexts?.userInstall
-            ? ApplicationIntegrationType.UserInstall
-            : ApplicationIntegrationType.GuildInstall,
+            ? [ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall]
+            : [ApplicationIntegrationType.GuildInstall],
         )
         .toJSON();
 

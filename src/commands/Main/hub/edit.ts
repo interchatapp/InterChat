@@ -54,14 +54,14 @@ const HUB_EDIT_MODAL_IDENTIFIER = 'hubEditModal';
 const ACTIONS_ARG = 'actions';
 const LOGS_CHANNEL_SELECT_ARG = 'logsChSel';
 
-enum HubEditAction {
+const enum HubEditAction {
   Description = 'description',
   Icon = 'icon',
   ToggleLock = 'toggleLock',
   Banner = 'banner',
 }
 
-enum HubEditModalSuffix {
+const enum HubEditModalSuffix {
   Description = 'description',
   Icon = 'icon',
   Banner = 'banner',

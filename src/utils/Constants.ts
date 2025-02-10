@@ -10,7 +10,7 @@ export const { slurs, profanity } = badwords as {
   profanity: string[];
 };
 
-export enum RedisKeys {
+export const enum RedisKeys {
   msgTimestamp = 'msgTimestamp',
   lastActive = 'lastActive',
   connectionHubId = 'connectionHubId',
@@ -28,7 +28,7 @@ export enum RedisKeys {
   Hub = 'hub',
 }
 
-export enum ConnectionMode {
+export const enum ConnectionMode {
   Compact = 0,
   Embed = 1,
 }
