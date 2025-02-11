@@ -196,7 +196,7 @@ function buildButtons(ctx: Context | Interaction, messageId: Snowflake, opts: Bu
     new ButtonBuilder()
       .setCustomId(new CustomID('modPanel:deleteMsg', [author.id, messageId]).toString())
       .setStyle(ButtonStyle.Secondary)
-      .setEmoji(getEmoji('deleteDanger_icon', ctx.client))
+      .setEmoji(getEmoji('delete_icon', ctx.client))
       .setDisabled(opts.isDeleteInProgress),
   );
 
@@ -205,7 +205,7 @@ function buildButtons(ctx: Context | Interaction, messageId: Snowflake, opts: Bu
       new ButtonBuilder()
         .setCustomId(new CustomID('modPanel:banUser', [author.id, messageId]).toString())
         .setStyle(ButtonStyle.Secondary)
-        .setEmoji(getEmoji('blobFastBan', ctx.client))
+        .setEmoji(getEmoji('hammer_icon', ctx.client))
         .setDisabled(opts.isBanned),
     );
   }
@@ -244,11 +244,11 @@ function buildInfoEmbed(username: string, servername: string, client: Client, op
       text: 'Target will be notified of the blacklist. Use /blacklist list to view all blacklists.',
     })
     .setDescription(stripIndents`
-        ### ${getEmoji('timeout_icon', client)} Moderation Actions
+        ### ${getEmoji('clock_icon', client)} Moderation Actions
         **${getEmoji('person_icon', client)} Blacklist User**: ${userEmbedDesc}
         **${getEmoji('globe_icon', client)} Blacklist Server**: ${serverEmbedDesc}
         **${getEmoji('plus_icon', client)} Remove Reactions**: Remove all reactions from this message.
-        **${getEmoji('deleteDanger_icon', client)} Delete Message**: ${deleteDesc}
-        **${getEmoji('blobFastBan', client)} Ban User**: ${banUserDesc}
+        **${getEmoji('delete_icon', client)} Delete Message**: ${deleteDesc}
+        **${getEmoji('hammer_icon', client)} Ban User**: ${banUserDesc}
     `);
 }
