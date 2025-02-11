@@ -85,7 +85,7 @@ export default class InterChatClient extends Client {
       }),
       sweepers: {
         messages: {
-          interval: 3600,
+          interval: 1800, // 30 minutes
           filter: Sweepers.filterByLifetime({
             lifetime: 7200, // 2 hours
             getComparisonTimestamp: (message) => message.createdTimestamp,
