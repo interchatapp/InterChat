@@ -51,7 +51,7 @@ A powerful Discord bot for easy and real-time chatting hubs across multiple Disc
 3. Connect a channel to a hub containing many other discord servers using the `/hub join` command.
 4. Start chatting across servers!
 
-For detailed instructions, check out our [Donate](https://ko-fi.com/dev737).
+For detailed instructions, check out our [Donate](https://ko-fi.com/interchat).
 
 ## 💻 Self-Hosting
 

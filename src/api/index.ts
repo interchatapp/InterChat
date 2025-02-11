@@ -15,9 +15,9 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Hono } from 'hono';
 import { VoteManager } from '#src/managers/VoteManager.js';
 import Constants from '#src/utils/Constants.js';
+import { handleError } from '#src/utils/Utils.js';
 import Logger from '#utils/Logger.js';
 import { serve } from '@hono/node-server';
 import {
@@ -25,7 +25,7 @@ import {
   WebhookClient,
   type WebhookMessageCreateOptions,
 } from 'discord.js';
-import { handleError } from '#src/utils/Utils.js';
+import { Hono } from 'hono';
 
 export const webhookMap = new Collection<string, WebhookClient>();
 
@@ -46,7 +46,6 @@ export const startApi = () => {
       data: WebhookMessageCreateOptions;
     }>();
 
-    const start = performance.now();
     let client = webhookMap.get(body.webhookUrl);
     if (!client) {
       client = new WebhookClient({ url: body.webhookUrl });
@@ -55,7 +54,6 @@ export const startApi = () => {
 
     try {
       const res = await client.send(body.data);
-      Logger.info(`Webhook message sent in ${performance.now() - start}ms`);
       return c.json({ data: res });
     }
     catch (err) {
@@ -64,7 +62,7 @@ export const startApi = () => {
     }
   });
 
-  app.all('*', (c) => c.text('404!', 404));
+  app.all('*', (c) => c.redirect(Constants.Links.Website));
 
   serve({ fetch: app.fetch, port: Number(process.env.PORT || 3000) });
   Logger.info(`API server started on port ${process.env.PORT || 3000}`);

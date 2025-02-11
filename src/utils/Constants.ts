@@ -2,13 +2,7 @@ import { createRequire } from 'node:module';
 import type { Colors, HexColorString, Snowflake } from 'discord.js';
 
 const require = createRequire(import.meta.url);
-const badwords = require('./JSON/profanity.json');
 const packageJson = require('../../package.json');
-
-export const { slurs, profanity } = badwords as {
-  slurs: string[];
-  profanity: string[];
-};
 
 export const enum RedisKeys {
   msgTimestamp = 'msgTimestamp',
@@ -26,6 +20,7 @@ export const enum RedisKeys {
   broadcasts = 'broadcasts',
   messageReverse = 'messageReverse',
   Hub = 'hub',
+  Spam = 'spam',
 }
 
 export const enum ConnectionMode {
@@ -54,10 +49,6 @@ export default {
     StaticImageUrl: /\bhttps?:\/\/\S+?\.(?:png|jpe?g|webp)(?:\?\S+)?\b/,
     /** ignores giphy and tenor */
     Links: /https?:\/\/(?!tenor\.com|giphy\.com)\S+/g,
-    /** matches profanity words */
-    Profanity: new RegExp(profanity.map((word) => `\\b${word}\\b`).join('|'), 'gi'),
-    /** matches slurs */
-    Slurs: new RegExp(slurs.map((word) => `\\b${word}\\b`).join('|'), 'gi'),
     TenorLinks: /https:\/\/tenor\.com\/view\/.*-(\d+)/,
     Emoji: /<(a)?:([a-zA-Z0-9_]+):(\d+)>/,
     BannedWebhookWords: /discord|clyde|```/gi,
@@ -80,7 +71,7 @@ export default {
     Website: 'https://interchat.tech',
     TopggApi: 'https://top.gg/api/bots/769921109209907241',
     Vote: 'https://top.gg/bot/769921109209907241/vote',
-    Donate: 'https://ko-fi.com/dev737',
+    Donate: 'https://ko-fi.com/interchat',
     SupportInvite: 'https://discord.gg/8DhUA4HNpD',
     AppDirectory: 'https://discord.com/application-directory/769921109209907241',
     RulesBanner: 'https://i.imgur.com/MBG0Rks.png',
@@ -88,12 +79,7 @@ export default {
   },
 
   Channels: {
-    devChat: '770488420521738250',
-    networklogs: '1156144879869632553',
-    modlogs: '1042265633896796231',
-    reports: '1158773603551162398',
     goal: '906460473065615403',
-    suggestions: '1021256657528954900',
     inviteLogs: '1246117516099457146',
   },
 

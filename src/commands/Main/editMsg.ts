@@ -47,7 +47,6 @@ import { CustomID } from '#utils/CustomID.js';
 import db from '#utils/Db.js';
 import { getAttachmentURL } from '#utils/ImageUtils.js';
 import { t } from '#utils/Locale.js';
-import { censor } from '#utils/ProfanityUtils.js';
 import { containsInviteLinks, fetchUserLocale, handleError, replaceLinks } from '#utils/Utils.js';
 
 interface ImageUrls {
@@ -190,8 +189,8 @@ export default class EditMessage extends BaseCommand {
 
     // Prepare the new message contents and embeds
     const imageURLs = await this.getImageURLs(target, mode, messageToEdit);
-    const newContents = this.getCompactContents(messageToEdit, imageURLs);
-    const newEmbeds = await this.buildEmbeds(target, mode, messageToEdit, {
+    const newContent = this.getCompactContents(messageToEdit, imageURLs);
+    const newEmbed = await this.buildEmbeds(target, mode, messageToEdit, {
       guildId: originalMsgData.guildId,
       user: interaction.user,
       imageURLs,
@@ -217,10 +216,10 @@ export default class EditMessage extends BaseCommand {
       let content: string | null = null;
       let embeds: EmbedBuilder[] = [];
       if (msg.mode === ConnectionMode.Embed) {
-        embeds = connection.profFilter ? [newEmbeds.censored] : [newEmbeds.normal];
+        embeds = [newEmbed];
       }
       else {
-        content = connection.profFilter ? newContents.censored : newContents.normal;
+        content = newContent;
       }
 
       // Edit the message
@@ -317,13 +316,7 @@ export default class EditMessage extends BaseCommand {
         )
         .setFooter({ text: `Server: ${guild?.name}` });
     }
-
-    const censored = EmbedBuilder.from({
-      ...embed.data,
-      description: censor(embedContent),
-    });
-
-    return { normal: embed, censored };
+    return embed;
   }
 
   private sanitizeMessage(content: string, settings: SerializedHubSettings) {
@@ -339,6 +332,6 @@ export default class EditMessage extends BaseCommand {
       compactMsg = compactMsg.replace(imageUrls.oldURL, imageUrls.newURL);
     }
 
-    return { normal: compactMsg, censored: censor(compactMsg) };
+    return compactMsg;
   }
 }

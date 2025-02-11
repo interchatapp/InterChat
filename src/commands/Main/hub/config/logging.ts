@@ -290,12 +290,6 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
         emoji: '👮',
       },
       {
-        label: t('hub.manage.logs.profanity.label', locale),
-        value: 'profanity',
-        description: t('hub.manage.logs.profanity.description', locale),
-        emoji: '🤬',
-      },
-      {
         label: t('hub.manage.logs.networkAlerts.label', locale),
         value: 'networkAlerts',
         description: t('hub.manage.logs.networkAlerts.description', locale),

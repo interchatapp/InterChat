@@ -16,19 +16,11 @@
  */
 
 import { isDate } from 'node:util/types';
-import type {
-  Infraction,
-  InfractionStatus,
-  InfractionType,
-  Prisma,
-} from '@prisma/client';
+import type { Infraction, InfractionStatus, InfractionType, Prisma } from '@prisma/client';
 import type { Client, Snowflake, User } from 'discord.js';
 import { HubService } from '#src/services/HubService.js';
 import db from '#src/utils/Db.js';
-import {
-  logServerUnblacklist,
-  logUserUnblacklist,
-} from '#src/utils/hub/logger/ModLogs.js';
+import { logServerUnblacklist, logUserUnblacklist } from '#src/utils/hub/logger/ModLogs.js';
 import type { ConvertDatesToString } from '#types/Utils.d.ts';
 import { CacheManager } from '#src/managers/CacheManager.js';
 import getRedis from '#src/utils/Redis.js';
@@ -92,11 +84,7 @@ export default class InfractionManager {
     filter: { type: InfractionType; hubId: string; status?: InfractionStatus },
     data: Prisma.InfractionUpdateInput,
   ) {
-    const infraction = await this.fetchInfraction(
-      filter.type,
-      filter.hubId,
-      filter.status,
-    );
+    const infraction = await this.fetchInfraction(filter.type, filter.hubId, filter.status);
     if (!infraction) return null;
 
     const updated = await db.infraction.update({
@@ -121,15 +109,12 @@ export default class InfractionManager {
     });
   }
 
-  public async getHubInfractions(
-    hubId: string,
-    opts?: { type?: InfractionType; count?: number },
-  ) {
+  public async getHubInfractions(hubId: string, opts?: { type?: InfractionType; count?: number }) {
     let infractionsArr =
-			(await this.cacheManager.get(
-			  `${this.targetId}:${hubId}`,
-			  async () => await this.queryEntityInfractions(hubId),
-			)) ?? [];
+      (await this.cacheManager.get(
+        `${this.targetId}:${hubId}`,
+        async () => await this.queryEntityInfractions(hubId),
+      )) ?? [];
 
     if (opts?.type) infractionsArr = infractionsArr.filter((i) => i.type === opts.type);
     if (opts?.count) infractionsArr = infractionsArr.slice(0, opts.count);
@@ -137,11 +122,7 @@ export default class InfractionManager {
     return this.updateInfractionDates(infractionsArr);
   }
 
-  public async fetchInfraction(
-    type: InfractionType,
-    hubId: string,
-    status?: InfractionStatus,
-  ) {
+  public async fetchInfraction(type: InfractionType, hubId: string, status?: InfractionStatus) {
     const infractions = await this.getHubInfractions(hubId, { type });
     const infraction = infractions.find(
       (i) => (status ? i.status === status : true) && i.type === type,
@@ -155,10 +136,7 @@ export default class InfractionManager {
     hubId: string,
     status: Exclude<InfractionStatus, 'ACTIVE'> = 'REVOKED',
   ) {
-    const revoked = await this.updateInfraction(
-      { type, hubId, status: 'ACTIVE' },
-      { status },
-    );
+    const revoked = await this.updateInfraction({ type, hubId, status: 'ACTIVE' }, { status });
     return revoked;
   }
 
@@ -196,9 +174,9 @@ export default class InfractionManager {
   protected async cacheEntity(entity: Infraction) {
     const entitySnowflake = entity.userId ?? entity.serverId;
     const key = this.getKey(entitySnowflake as string, entity.hubId);
-    const existing = (
-      await this.getHubInfractions(entity.hubId, { type: entity.type })
-    ).filter((i) => i.id !== entity.id);
+    const existing = (await this.getHubInfractions(entity.hubId, { type: entity.type })).filter(
+      (i) => i.id !== entity.id,
+    );
 
     return this.cacheManager.set(key, [...existing, entity]);
   }
@@ -214,9 +192,7 @@ export default class InfractionManager {
     );
   }
 
-  protected updateInfractionDates(
-    infractions: ConvertDatesToString<Infraction>[],
-  ) {
+  protected updateInfractionDates(infractions: ConvertDatesToString<Infraction>[]) {
     if (infractions.length === 0) {
       return [];
     }
@@ -236,11 +212,7 @@ export default class InfractionManager {
   }
 
   public filterValidInfractions(infractions: Infraction[]): Infraction[] {
-    return (
-      infractions.filter(
-        ({ expiresAt }) => !expiresAt || expiresAt > new Date(),
-      ) ?? []
-    );
+    return infractions.filter(({ expiresAt }) => !expiresAt || expiresAt > new Date()) ?? [];
   }
 
   public isExpiredInfraction(infraction: Infraction | null) {

@@ -37,7 +37,6 @@ export interface MessageFormatterStrategy {
 
 export type DefaultFormaterOpts = BroadcastOpts & {
   username: string;
-  censoredContent: string;
   referredContent: string | undefined;
   servername: string;
   author: {

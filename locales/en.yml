@@ -109,7 +109,6 @@ connection:
       connected: Connected
       emColor: Embed Color
       compact: Compact Mode
-      profanity: Profanity Filter
     footer: Use the button & dropdown below to manage your connection.
   selects:
     placeholder: '🛠️ Select an option to edit this connection'
@@ -119,7 +118,7 @@ connection:
 
       Unpaused connection for {channel}! Messages from the hub will start coming into the channel and you can send messages to the hub again.
     tips: |
-      **💡 Tip:** Use {pause_cmd} to pause the connection or {edit_cmd} to set embed colors, toggle profanity filter, and more.
+      **💡 Tip:** Use {pause_cmd} to pause the connection or {edit_cmd} to set embed colors, invite to your server and more.
   paused:
     desc: |
       ### {clock_emoji} Paused Connection
@@ -353,9 +352,6 @@ hub:
       modLogs:
         label: Mod Logs
         description: Log Moderation actions. (eg. blacklist, message deletes, etc.)
-      profanity:
-        label: Profanity Filter
-        description: Log messages that are caught by the profanity filter.
       joinLeaves:
         label: Join/Leave
         description: Log when a server joins or leaves this hub.

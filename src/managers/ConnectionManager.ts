@@ -94,10 +94,6 @@ export default class ConnectionManager {
     });
   }
 
-  async setProfanityFilter(profFilter: boolean): Promise<void> {
-    await this.updateConnectionIfExists({ profFilter });
-  }
-
   // Private helper methods
   private buildCacheKey(hubId: string): string {
     return `${RedisKeys.Hub}:${hubId}:connections`;

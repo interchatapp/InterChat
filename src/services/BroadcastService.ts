@@ -15,14 +15,6 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Connection } from '@prisma/client';
-import type {
-  APIMessage,
-  Client,
-  HexColorString,
-  Message,
-  WebhookMessageCreateOptions,
-} from 'discord.js';
 import type ConnectionManager from '#src/managers/ConnectionManager.js';
 import type HubManager from '#src/managers/HubManager.js';
 import type HubSettingsManager from '#src/managers/HubSettingsManager.js';
@@ -35,7 +27,6 @@ import type {
 import { generateJumpButton as getJumpButton } from '#utils/ComponentUtils.js';
 import { ConnectionMode } from '#utils/Constants.js';
 import { getAttachmentURL } from '#utils/ImageUtils.js';
-import { censor } from '#utils/ProfanityUtils.js';
 import { trimAndCensorBannedWebhookWords } from '#utils/Utils.js';
 import storeMessageData, {
   type NetworkWebhookSendResult,
@@ -44,6 +35,14 @@ import {
   getReferredContent,
   getReferredMsgData,
 } from '#utils/network/utils.js';
+import type { Connection } from '@prisma/client';
+import type {
+  APIMessage,
+  Client,
+  HexColorString,
+  Message,
+  WebhookMessageCreateOptions,
+} from 'discord.js';
 
 export class BroadcastService {
   async broadcastMessage(
@@ -54,7 +53,6 @@ export class BroadcastService {
     attachmentURL: string | undefined,
   ) {
     const username = this.getUsername(hub.settings, message);
-    const censoredContent = censor(message.content);
     const referredMessage = await this.fetchReferredMessage(message);
     const referredMsgData = await getReferredMsgData(referredMessage);
 
@@ -74,7 +72,6 @@ export class BroadcastService {
           referredMsgData,
           embedColor: connection.data.embedColor as HexColorString,
           username,
-          censoredContent,
         }),
       ),
     );
@@ -122,7 +119,6 @@ export class BroadcastService {
     connection: ConnectionManager,
     opts: BroadcastOpts & {
       username: string;
-      censoredContent: string;
       referredMsgData: ReferredMsgData;
     },
   ): Promise<NetworkWebhookSendResult> {
@@ -161,7 +157,6 @@ export class BroadcastService {
     hub: HubManager,
     opts: BroadcastOpts & {
       username: string;
-      censoredContent: string;
       referredMsgData: ReferredMsgData;
     },
   ): WebhookMessageCreateOptions {

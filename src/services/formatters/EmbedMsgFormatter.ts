@@ -26,7 +26,7 @@ export class EmbedMessageFormatter implements MessageFormatterStrategy {
     connection: Connection,
     opts: DefaultFormaterOpts,
   ): WebhookMessageCreateOptions {
-    const embeds = buildNetworkEmbed(message, opts.username, opts.censoredContent, {
+    const embed = buildNetworkEmbed(message, opts.username, {
       attachmentURL: opts.attachmentURL,
       referredContent: opts.referredContent,
       embedCol: opts.embedColor,
@@ -34,7 +34,7 @@ export class EmbedMessageFormatter implements MessageFormatterStrategy {
 
     return {
       components: opts.jumpButton,
-      embeds: [connection.profFilter ? embeds.censored : embeds.normal],
+      embeds: [embed],
       username: `${opts.hub.name}`,
       avatarURL: opts.hub.iconUrl,
       threadId: connection.parentId ? connection.channelId : undefined,

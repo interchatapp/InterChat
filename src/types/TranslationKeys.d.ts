@@ -56,7 +56,6 @@ export type TranslationKeys = {
   'connection.embed.fields.connected': never;
   'connection.embed.fields.emColor': never;
   'connection.embed.fields.compact': never;
-  'connection.embed.fields.profanity': never;
   'connection.embed.footer': never;
   'connection.selects.placeholder': never;
   'connection.unpaused.desc': 'tick_emoji' | 'channel';
@@ -83,8 +82,6 @@ export type TranslationKeys = {
     | 'joinedAt'
     | 'invite'
     | 'connected';
-  'hub.blockwords.created': 'emoji';
-  'hub.blockwords.updated': 'emoji';
   'hub.blockwords.deleted': 'emoji';
   'hub.blockwords.notFound': 'emoji';
   'hub.blockwords.maxRules': 'emoji';
@@ -203,8 +200,6 @@ export type TranslationKeys = {
   'hub.manage.logs.reports.description': never;
   'hub.manage.logs.modLogs.label': never;
   'hub.manage.logs.modLogs.description': never;
-  'hub.manage.logs.profanity.label': never;
-  'hub.manage.logs.profanity.description': never;
   'hub.manage.logs.joinLeaves.label': never;
   'hub.manage.logs.joinLeaves.description': never;
   'hub.manage.logs.appeals.label': never;

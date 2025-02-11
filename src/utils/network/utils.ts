@@ -23,7 +23,6 @@ import {
 } from '#src/utils/network/messageUtils.js';
 import Constants from '#utils/Constants.js';
 import { stripTenorLinks } from '#utils/ImageUtils.js';
-import { censor } from '#utils/ProfanityUtils.js';
 import type { ReferredMsgData } from './Types.js';
 import { fetchUserData } from '#src/utils/Utils.js';
 
@@ -77,21 +76,8 @@ export const getReferredMsgData = async (
   return { dbReferrence, referredAuthor, dbReferredAuthor, referredMessage };
 };
 
-const processContent = (
-  content: string,
-  censoredContent: string,
-  attachmentURL?: string | null,
-) => {
-  let msgContent = content;
-  let censoredMsg = censoredContent;
-
-  if (attachmentURL) {
-    msgContent = stripTenorLinks(msgContent, attachmentURL);
-    censoredMsg = stripTenorLinks(censoredContent, attachmentURL);
-  }
-
-  return { msgContent, censoredMsg };
-};
+const processContent = (content: string, attachmentURL?: string | null) =>
+  attachmentURL ? stripTenorLinks(content, attachmentURL) : content;
 
 const createEmbed = (
   message: Message,
@@ -115,16 +101,9 @@ const createEmbed = (
       iconURL: message.guild?.iconURL() ?? undefined,
     });
 
-const createCensoredEmbed = (embed: EmbedBuilder, censoredContent: string) =>
-  EmbedBuilder.from(embed).setDescription(censoredContent || null);
-
-const addReplyField = (normal: EmbedBuilder, censored: EmbedBuilder, referredContent: string) => {
+const addReplyField = (embed: EmbedBuilder, referredContent: string) => {
   const formattedReply = referredContent.replaceAll('\n', '\n> ');
-  normal.setFields({ name: 'Replying To:', value: `> ${formattedReply}` });
-  censored.setFields({
-    name: 'Replying To:',
-    value: `> ${censor(formattedReply)}`,
-  });
+  embed.setFields({ name: 'Replying To:', value: `> ${formattedReply}` });
 };
 
 /**
@@ -135,30 +114,19 @@ const addReplyField = (normal: EmbedBuilder, censored: EmbedBuilder, referredCon
  * @param opts.embedCol The color of the embed.
  * @param opts.referredContent The content of the message being replied to.
  * @param opts.useNicknames Whether to use nicknames instead of usernames in the embed.
- * @returns An object containing the built EmbedBuilder and its censored version.
+ * @returns An object containing the built EmbedBuilder
  */
 export const buildNetworkEmbed = (
   message: Message,
   username: string,
-  censoredContent: string,
-  opts?: {
-    attachmentURL?: string | null;
-    embedCol?: HexColorString;
-    referredContent?: string;
-  },
+  opts?: { attachmentURL?: string | null; embedCol?: HexColorString; referredContent?: string },
 ) => {
-  const { msgContent, censoredMsg } = processContent(
-    message.content,
-    censoredContent,
-    opts?.attachmentURL,
-  );
-
-  const normal = createEmbed(message, username, msgContent, opts);
-  const censored = createCensoredEmbed(normal, censoredMsg);
+  const msgContent = processContent(message.content, opts?.attachmentURL);
+  const embed = createEmbed(message, username, msgContent, opts);
 
   if (opts?.referredContent) {
-    addReplyField(normal, censored, opts.referredContent);
+    addReplyField(embed, opts.referredContent);
   }
 
-  return { normal, censored };
+  return embed;
 };

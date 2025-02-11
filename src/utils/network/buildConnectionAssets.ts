@@ -63,7 +63,6 @@ export const buildEditEmbed = async (
       ${bold}${t('connection.embed.fields.connected', locale)}${reset}: ${yesOrNoEmoji(networkData?.connected, '✅', '❌')}
       ${bold}${t('connection.embed.fields.compact', locale)}${reset}: ${yesOrNoEmoji(networkData?.compact, '✅', '❌')}
       ${bold}${t('connection.embed.fields.emColor', locale)}${reset}: ${networkData?.embedColor ? networkData?.embedColor : '❌'}
-      ${bold}${t('connection.embed.fields.profanity', locale)}${reset}: ${yesOrNoEmoji(networkData?.profFilter, '✅', '❌')}
     `,
       ),
     )
@@ -110,11 +109,6 @@ export const buildEditSelect = (
           .setEmoji(getEmoji('clipart', client))
           .setDescription('Disable embeds in the network to fit more messages.')
           .setValue('compact'),
-        new StringSelectMenuOptionBuilder()
-          .setLabel('Profanity Filter')
-          .setEmoji('🤬')
-          .setDescription('Toggle swear word censoring for this server.')
-          .setValue('profanity'),
         new StringSelectMenuOptionBuilder()
           .setLabel('Invite Link')
           .setEmoji(getEmoji('members', client))

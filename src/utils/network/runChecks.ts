@@ -28,7 +28,7 @@ import { sendBlacklistNotif } from '#src/utils/moderation/blacklistUtils.js';
 import Constants from '#utils/Constants.js';
 import { t } from '#utils/Locale.js';
 import { containsInviteLinks, fetchUserLocale, replaceLinks } from '#utils/Utils.js';
-import { checkBlockedWords } from '#src/utils/network/blockwordsRunner.js';
+import { checkBlockedWords } from '#src/utils/network/antiSwearChecks.js';
 
 export interface CheckResult {
   passed: boolean;

@@ -18,7 +18,6 @@
 import type { Connection } from '@prisma/client';
 import { EmbedBuilder, type Message, type WebhookMessageCreateOptions } from 'discord.js';
 import Constants from '#src/utils/Constants.js';
-import { censor } from '#src/utils/ProfanityUtils.js';
 import type { DefaultFormaterOpts, MessageFormatterStrategy } from '../MessageFormattingService.js';
 
 export class CompactMessageFormatter implements MessageFormatterStrategy {
@@ -30,27 +29,24 @@ export class CompactMessageFormatter implements MessageFormatterStrategy {
     const contents = {
       normal: message.content,
       referred: opts.referredContent,
-      censored: opts.censoredContent,
     };
     const { referredAuthor } = opts.referredMsgData;
 
-    // check if the person being replied to explicitly allowed mentionOnReply setting for themself
-    const replyContent = this.getReplyContent(contents.referred, connection.profFilter);
 
     // discord displays either an embed or an attachment url in a compact message (embeds take priority, so image will not display)
     // which is why if there is an image, we don't send the reply embed. Reply button remains though
     const replyEmbed =
-      replyContent && !opts.attachmentURL
-        ? [
-          new EmbedBuilder()
-            .setDescription(replyContent)
-            .setAuthor({
-              name: referredAuthor?.username.slice(0, 30) ?? 'Unknown User',
-              iconURL: referredAuthor?.displayAvatarURL(),
-            })
-            .setColor(Constants.Colors.invisible),
-        ]
-        : undefined;
+    contents.referred && !opts.attachmentURL
+      ? [
+        new EmbedBuilder()
+          .setDescription(contents.referred)
+          .setAuthor({
+            name: referredAuthor?.username.slice(0, 30) ?? 'Unknown User',
+            iconURL: referredAuthor?.displayAvatarURL(),
+          })
+          .setColor(Constants.Colors.invisible),
+      ]
+      : undefined;
 
     const { author, servername, jumpButton } = opts;
 
@@ -62,21 +58,14 @@ export class CompactMessageFormatter implements MessageFormatterStrategy {
         ? `\n[⁥](${opts.attachmentURL})`
         : '';
 
-    const messageContent = `${connection.profFilter ? contents.censored : contents.normal} ${attachmentURL}`;
-
     return {
       username: `@${author.username} • ${servername}`,
       avatarURL: author.avatarURL,
       embeds: replyEmbed,
       components: jumpButton,
-      content: messageContent,
+      content: `${contents.normal} ${attachmentURL}`,
       threadId: connection.parentId ? connection.channelId : undefined,
       allowedMentions: { parse: [] },
     };
-  }
-
-  private getReplyContent(content: string | undefined, profFilter: boolean) {
-    if (!content) return null;
-    return profFilter ? censor(content) : content;
   }
 }

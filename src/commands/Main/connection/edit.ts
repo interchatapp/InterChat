@@ -51,7 +51,7 @@ export default class ConnectionEditSubcommand extends BaseCommand {
     super({
       name: 'edit',
       description:
-        '📝 Set embed colors, profanity filter, compact mode and more!',
+        '📝 Set embed colors, compact mode and more!',
       types: { slash: true, prefix: true },
       options: [
         {
@@ -236,13 +236,6 @@ export default class ConnectionEditSubcommand extends BaseCommand {
     switch (interaction.values[0]) {
       case 'compact':
         await updateConnection({ channelId }, { compact: !connection.compact });
-        break;
-
-      case 'profanity':
-        await updateConnection(
-          { channelId },
-          { profFilter: !connection.profFilter },
-        );
         break;
 
       case 'invite': {
