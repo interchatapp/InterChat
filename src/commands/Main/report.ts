@@ -18,11 +18,7 @@
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import { sendHubReport } from '#src/utils/hub/logger/Report.js';
-import {
-  findOriginalMessage,
-  getBroadcasts,
-  getOriginalMessage,
-} from '#src/utils/network/messageUtils.js';
+import { findOriginalMessage, getBroadcasts } from '#src/utils/network/messageUtils.js';
 import { ApplicationCommandOptionType } from 'discord.js';
 
 export default class ReportPrefixCommand extends BaseCommand {
@@ -50,9 +46,7 @@ export default class ReportPrefixCommand extends BaseCommand {
 
   async execute(ctx: Context) {
     const targetMsg = await ctx.getTargetMessage('message');
-    const originalMsg = targetMsg
-      ? await this.getOriginalMessage(targetMsg.id)
-      : null;
+    const originalMsg = targetMsg ? await findOriginalMessage(targetMsg.id) : null;
     const broadcastMsgs = originalMsg
       ? await getBroadcasts(originalMsg.messageId, originalMsg.hubId)
       : null;
@@ -63,8 +57,8 @@ export default class ReportPrefixCommand extends BaseCommand {
     }
 
     const reportedMsgId =
-			Object.values(broadcastMsgs).find((m) => m.messageId === targetMsg.id)
-			  ?.messageId ?? originalMsg.messageId;
+      Object.values(broadcastMsgs).find((m) => m.messageId === targetMsg.id)?.messageId ??
+      originalMsg.messageId;
 
     if (!reportedMsgId) {
       await ctx.reply('Please provide a valid message ID or link.');
@@ -84,13 +78,6 @@ export default class ReportPrefixCommand extends BaseCommand {
 
     await ctx.reply(
       `${ctx.getEmoji('tick')} Sent the report to hub moderators. They will review it soon.`,
-    );
-  }
-  private async getOriginalMessage(messageId: string) {
-    return (
-      (await getOriginalMessage(messageId)) ??
-			(await findOriginalMessage(messageId)) ??
-			null
     );
   }
 }

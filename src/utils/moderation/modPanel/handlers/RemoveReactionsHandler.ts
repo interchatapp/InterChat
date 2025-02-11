@@ -22,6 +22,7 @@ import { getOriginalMessage } from '#src/utils/network/messageUtils.js';
 import type { ReactionArray } from '#types/Utils.d.ts';
 import { updateReactions } from '#utils/reaction/actions.js';
 import sortReactions from '#utils/reaction/sortReactions.js';
+import { fetchUserLocale } from '#src/utils/Utils.js';
 
 export default class RemoveReactionsHandler implements ModAction {
   async handle(interaction: ButtonInteraction, originalMsgId: Snowflake): Promise<void> {
@@ -29,7 +30,9 @@ export default class RemoveReactionsHandler implements ModAction {
 
     const originalMsg = await getOriginalMessage(originalMsgId);
     if (!originalMsg) {
-      await replyWithUnknownMessage(interaction, 'en');
+      await replyWithUnknownMessage(interaction, {
+        locale: await fetchUserLocale(interaction.user.id),
+      });
       return;
     }
 

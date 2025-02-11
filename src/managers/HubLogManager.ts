@@ -185,6 +185,6 @@ export default class HubLogManager {
     return new InfoEmbed()
       .removeTitle()
       .setDescription(`## ${t('hub.manage.logs.title', locale)}\n\n${logDesc}`)
-      .setThumbnail('https://i.imgur.com/tHVt3Gw.png');
+      .setThumbnail('https://i.imgur.com/vtn1hjI.png');
   }
 }

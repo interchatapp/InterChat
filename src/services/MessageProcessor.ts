@@ -15,36 +15,40 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Message } from 'discord.js';
 import { showRulesScreening } from '#src/interactions/RulesScreening.js';
 import { HubService } from '#src/services/HubService.js';
 import { getConnectionHubId } from '#src/utils/ConnectedListUtils.js';
-import { checkBlockedWords } from '#src/utils/network/blockwordsRunner.js';
 import { runChecks } from '#src/utils/network/runChecks.js';
-import { BroadcastService } from './BroadcastService.js';
 import { fetchUserData } from '#src/utils/Utils.js';
+import type { Message } from 'discord.js';
+import { BroadcastService } from './BroadcastService.js';
 
 export class MessageProcessor {
-  private readonly broadcastService: BroadcastService;
+  private readonly broadcastService = new BroadcastService();
   private readonly hubService = new HubService();
 
-  constructor() {
-    this.broadcastService = new BroadcastService();
-  }
-
-  async processHubMessage(message: Message<true>) {
-    const connectionHubId = await getConnectionHubId(message.channelId);
+  static async getHubAndConnections(channelId: string, hubService: HubService) {
+    const connectionHubId = await getConnectionHubId(channelId);
     if (!connectionHubId) return null;
 
-    const hub = await this.hubService.fetchHub(connectionHubId);
+    const hub = await hubService.fetchHub(connectionHubId);
     if (!hub) return null;
 
     const allConnections = await hub.connections.fetch();
     const hubConnections = allConnections.filter(
-      (c) => c.data.connected && c.data.channelId !== message.channelId,
+      (c) => c.data.connected && c.data.channelId !== channelId,
     );
-    const connection = allConnections.find((c) => c.data.channelId === message.channelId);
+    const connection = allConnections.find((c) => c.data.channelId === channelId);
     if (!connection?.data.connected) return null;
+
+    return { hub, hubConnections, connection };
+  }
+
+  async processHubMessage(message: Message<true>) {
+    const hubData = await MessageProcessor.getHubAndConnections(message.channelId, this.hubService);
+    if (!hubData) return;
+
+    const { hub, hubConnections, connection } = hubData;
 
     const userData = await fetchUserData(message.author.id);
     if (!userData?.acceptedRules) return await showRulesScreening(message, userData);
@@ -56,16 +60,13 @@ export class MessageProcessor {
         userData,
         settings: hub.settings,
         attachmentURL,
-        totalHubConnections: allConnections.length,
+        totalHubConnections: hubConnections.length + 1,
       }))
     ) {
       return;
     }
 
     message.channel.sendTyping().catch(() => null);
-
-    const { passed } = await checkBlockedWords(message, await hub.fetchAntiSwearRules());
-    if (!passed) return;
 
     await this.broadcastService.broadcastMessage(
       message,

@@ -18,7 +18,7 @@
 import Context from '#src/core/CommandContext/Context.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import Logger from '#src/utils/Logger.js';
-import { getReplyMethod } from '#utils/Utils.js';
+import { getReplyMethod, handleError } from '#utils/Utils.js';
 import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
@@ -37,28 +37,15 @@ import {
   TextInputStyle,
 } from 'discord.js';
 
-type PaginationInteraction = Exclude<
-  RepliableInteraction,
-  ModalSubmitInteraction
->;
+type PaginationInteraction = Exclude<RepliableInteraction, ModalSubmitInteraction>;
 
-type ButtonEmojis = {
-  back: string;
-  next: string;
-  search: string;
-  select: string;
-};
+type ButtonEmojis = { back: string; next: string; search: string; select: string };
 
-type RunOptions = {
-  idle?: number;
-  ephemeral?: boolean;
-  deleteOnEnd?: boolean;
-};
+type RunOptions = { idle?: number; ephemeral?: boolean; deleteOnEnd?: boolean };
 
 export class Pagination {
   private readonly pages: BaseMessageOptions[] = [];
-  private readonly hiddenButtons: Partial<Record<keyof ButtonEmojis, boolean>> =
-    {};
+  private readonly hiddenButtons: Partial<Record<keyof ButtonEmojis, boolean>> = {};
   private readonly client: Client<true>;
   private customEmojis: ButtonEmojis;
 
@@ -108,9 +95,7 @@ export class Pagination {
       searchableContent.push(page.content);
     }
 
-    const embedArray = Array.isArray(page.embeds)
-      ? page.embeds
-      : [page.embeds].filter(Boolean);
+    const embedArray = Array.isArray(page.embeds) ? page.embeds : [page.embeds].filter(Boolean);
 
     for (const embed of embedArray) {
       if (!embed) continue;
@@ -136,9 +121,7 @@ export class Pagination {
     interaction: PaginationInteraction,
     totalPages: number,
   ): Promise<number | null> {
-    const modal = new ModalBuilder()
-      .setCustomId('page_select_modal')
-      .setTitle('Go to Page');
+    const modal = new ModalBuilder().setCustomId('page_select_modal').setTitle('Go to Page');
 
     const pageInput = new TextInputBuilder()
       .setCustomId('page_number_input')
@@ -148,28 +131,24 @@ export class Pagination {
       .setMinLength(1)
       .setMaxLength(4);
 
-    const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(
-      pageInput,
-    );
+    const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(pageInput);
     modal.addComponents(actionRow);
 
     await interaction.showModal(modal);
 
     try {
-      const modalSubmit = await interaction.awaitModalSubmit({
-        time: 30000,
-        filter: (i) => i.customId === 'page_select_modal',
-      });
+      const modalSubmit = await interaction
+        .awaitModalSubmit({ time: 30000, filter: (i) => i.customId === 'page_select_modal' })
+        .catch((e) => {
+          if (!e.message.includes('reason: time')) handleError(e);
+          return null;
+        });
 
-      const pageNumber = Number.parseInt(
-        modalSubmit.fields.getTextInputValue('page_number_input'),
-      );
+      if (!modalSubmit) return null;
 
-      if (
-        Number.isNaN(pageNumber) ||
-				pageNumber < 1 ||
-				pageNumber > totalPages
-      ) {
+      const pageNumber = Number.parseInt(modalSubmit.fields.getTextInputValue('page_number_input'));
+
+      if (Number.isNaN(pageNumber) || pageNumber < 1 || pageNumber > totalPages) {
         await modalSubmit.reply({
           content: `Please enter a valid page number between 1 and ${totalPages}`,
           flags: ['Ephemeral'],
@@ -177,10 +156,7 @@ export class Pagination {
         return null;
       }
 
-      await modalSubmit.reply({
-        content: `Going to page ${pageNumber}`,
-        flags: ['Ephemeral'],
-      });
+      await modalSubmit.reply({ content: `Going to page ${pageNumber}`, flags: ['Ephemeral'] });
       return pageNumber - 1; // Convert to 0-based index
     }
     catch (error) {
@@ -195,12 +171,8 @@ export class Pagination {
     }
   }
 
-  private async handleSearch(
-    interaction: PaginationInteraction,
-  ): Promise<number | null> {
-    const modal = new ModalBuilder()
-      .setCustomId('search_modal')
-      .setTitle('Search Pages');
+  private async handleSearch(interaction: PaginationInteraction): Promise<number | null> {
+    const modal = new ModalBuilder().setCustomId('search_modal').setTitle('Search Pages');
 
     const searchInput = new TextInputBuilder()
       .setCustomId('search_input')
@@ -210,28 +182,27 @@ export class Pagination {
       .setMinLength(1)
       .setMaxLength(100);
 
-    const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(
-      searchInput,
-    );
+    const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(searchInput);
     modal.addComponents(actionRow);
 
     await interaction.showModal(modal);
 
     try {
-      const modalSubmit = await interaction.awaitModalSubmit({
-        time: 30000,
-        filter: (i) => i.customId === 'search_modal',
-      });
+      const modalSubmit = await interaction
+        .awaitModalSubmit({ time: 30000, filter: (i) => i.customId === 'search_modal' })
+        .catch((e) => {
+          if (!e.message.includes('reason: time')) handleError(e);
+          return null;
+        });
 
-      const searchTerm = modalSubmit.fields
-        .getTextInputValue('search_input')
-        .toLowerCase();
+      if (!modalSubmit) return null;
+
+      const searchTerm = modalSubmit.fields.getTextInputValue('search_input').toLowerCase();
       const results: { page: number; matches: number }[] = [];
 
       for (let i = 0; i < this.pages.length; i++) {
         const content = this.getPageContent(this.pages[i]);
-        const matchCount = (content.match(new RegExp(searchTerm, 'g')) || [])
-          .length;
+        const matchCount = (content.match(new RegExp(searchTerm, 'g')) || []).length;
 
         if (matchCount > 0) {
           results.push({ page: i, matches: matchCount });
@@ -242,14 +213,11 @@ export class Pagination {
         results.sort((a, b) => b.matches - a.matches);
 
         const topResult = results[0];
-        const totalMatches = results.reduce(
-          (sum, result) => sum + result.matches,
-          0,
-        );
+        const totalMatches = results.reduce((sum, result) => sum + result.matches, 0);
         const otherResultsStr =
-					results.length > 1
-					  ? `-# ${getEmoji('info', this.client)} Also found in the following pages: ${results.map((r) => r.page + 1).join(', ')}`
-					  : '';
+          results.length > 1
+            ? `-# ${getEmoji('info', this.client)} Also found in the following pages: ${results.map((r) => r.page + 1).join(', ')}`
+            : '';
 
         await modalSubmit.reply({
           content: stripIndents`
@@ -263,10 +231,7 @@ export class Pagination {
         return topResult.page;
       }
 
-      await modalSubmit.reply({
-        content: 'No matches found',
-        flags: ['Ephemeral'],
-      });
+      await modalSubmit.reply({ content: 'No matches found', flags: ['Ephemeral'] });
       return null;
     }
     catch (error) {
@@ -275,10 +240,7 @@ export class Pagination {
     }
   }
 
-  public async run(
-    ctx: PaginationInteraction | Message | Context,
-    options?: RunOptions,
-  ) {
+  public async run(ctx: PaginationInteraction | Message | Context, options?: RunOptions) {
     if (this.pages.length < 1) {
       await this.sendReply(
         ctx,
@@ -370,10 +332,7 @@ export class Pagination {
     if (ctx instanceof Message || ctx instanceof Context) return await ctx.reply(opts);
 
     const replyMethod = getReplyMethod(ctx);
-    return await ctx[replyMethod]({
-      ...opts,
-      flags: interactionOpts?.flags,
-    });
+    return await ctx[replyMethod]({ ...opts, flags: interactionOpts?.flags });
   }
 
   private adjustIndex(customId: string, index: number) {
@@ -386,10 +345,7 @@ export class Pagination {
     actionButtons: ActionRowBuilder<ButtonBuilder>,
     replyOpts: BaseMessageOptions,
   ) {
-    return {
-      ...replyOpts,
-      components: [actionButtons, ...(replyOpts.components || [])],
-    };
+    return { ...replyOpts, components: [actionButtons, ...(replyOpts.components || [])] };
   }
 
   private createButtons(index: number, totalPages: number) {

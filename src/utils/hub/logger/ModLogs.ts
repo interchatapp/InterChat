@@ -137,7 +137,7 @@ export const logMsgDelete = async (
   const embed = new EmbedBuilder()
     .setDescription(
       stripIndents`
-      ### ${getEmoji('deleteDanger_icon', client)} Message Deleted
+      ### ${getEmoji('delete_icon', client)} Message Deleted
       **Content:**
       ${codeBlock(content)}
     `,

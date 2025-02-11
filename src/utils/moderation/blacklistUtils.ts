@@ -65,7 +65,7 @@ export const buildBlacklistNotifEmbed = (
   const targetStr = type === 'user' ? 'You have' : 'This server has';
 
   return new EmbedBuilder()
-    .setTitle(`${getEmoji('blobFastBan', client)} Blacklist Notification`)
+    .setTitle(`${getEmoji('hammer_icon', client)} Blacklist Notification`)
     .setDescription(
       `${targetStr} been blacklisted from talking in hub **${opts.hubName}**.`,
     )

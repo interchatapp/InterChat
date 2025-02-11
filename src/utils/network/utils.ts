@@ -20,7 +20,6 @@ import {
   type OriginalMessage,
   findOriginalMessage,
   getBroadcasts,
-  getOriginalMessage,
 } from '#src/utils/network/messageUtils.js';
 import Constants from '#utils/Constants.js';
 import { stripTenorLinks } from '#utils/ImageUtils.js';
@@ -55,9 +54,7 @@ export const getReferredMsgData = async (
   const { client } = referredMessage;
 
   // check if it was sent in the network
-  const dbReferrenceRaw =
-    (await getOriginalMessage(referredMessage.id)) ??
-    (await findOriginalMessage(referredMessage.id));
+  const dbReferrenceRaw = await findOriginalMessage(referredMessage.id);
 
   if (!dbReferrenceRaw) {
     return {

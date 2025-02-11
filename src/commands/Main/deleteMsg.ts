@@ -17,27 +17,16 @@
 
 import BaseCommand from '#src/core/BaseCommand.js';
 import type HubManager from '#src/managers/HubManager.js';
-import { HubService } from '#src/services/HubService.js';
-import {
-  type OriginalMessage,
-  findOriginalMessage,
-  getBroadcasts,
-  getOriginalMessage,
-} from '#src/utils/network/messageUtils.js';
+import { findOriginalMessage, type OriginalMessage } from '#src/utils/network/messageUtils.js';
 
 import type Context from '#src/core/CommandContext/Context.js';
 import { fetchUserLocale } from '#src/utils/Utils.js';
 import { t } from '#utils/Locale.js';
 import { logMsgDelete } from '#utils/hub/logger/ModLogs.js';
-import { isStaffOrHubMod } from '#utils/hub/utils.js';
-import {
-  deleteMessageFromHub,
-  isDeleteInProgress,
-} from '#utils/moderation/deleteMessage.js';
-import {
-  ApplicationCommandOptionType,
-  ApplicationCommandType,
-} from 'discord.js';
+import { fetchHub, isStaffOrHubMod } from '#utils/hub/utils.js';
+import { deleteMessageFromHub, isDeleteInProgress } from '#utils/moderation/deleteMessage.js';
+import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js';
+import { replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
 
 export default class DeleteMessage extends BaseCommand {
   readonly cooldown = 10_000;
@@ -72,22 +61,13 @@ export default class DeleteMessage extends BaseCommand {
     await ctx.deferReply({ flags: ['Ephemeral'] });
 
     const targetId = ctx.getTargetMessageId('message');
-    const originalMsg = targetId
-      ? await this.getOriginalMessage(targetId)
-      : null;
-    const hub = await this.fetchHub(originalMsg?.hubId);
+    const originalMsg = targetId ? await findOriginalMessage(targetId) : null;
+    const hub = await fetchHub({ id: originalMsg?.hubId });
 
     const validation = await this.validateMessage(ctx, originalMsg, hub);
     if (!validation || !originalMsg) return;
 
     await this.processMessageDeletion(ctx, originalMsg, validation.hub);
-  }
-
-  private async getOriginalMessage(messageId: string) {
-    const originalMsg =
-			(await getOriginalMessage(messageId)) ??
-			(await findOriginalMessage(messageId));
-    return originalMsg;
   }
 
   private async processMessageDeletion(
@@ -101,14 +81,7 @@ export default class DeleteMessage extends BaseCommand {
       `${ctx.getEmoji('tick_icon')} Your request has been queued. Messages will be deleted shortly...`,
     );
 
-    const broadcasts = Object.values(
-      await getBroadcasts(originalMsg.messageId, originalMsg.hubId),
-    );
-    const { deletedCount } = await deleteMessageFromHub(
-      hub.id,
-      originalMsg.messageId,
-      broadcasts,
-    );
+    const { deletedCount, totalCount } = await deleteMessageFromHub(hub.id, originalMsg.messageId);
 
     await ctx
       .editReply(
@@ -116,17 +89,12 @@ export default class DeleteMessage extends BaseCommand {
           emoji: ctx.getEmoji('tick_icon'),
           user: `<@${originalMsg.authorId}>`,
           deleted: `${deletedCount}`,
-          total: `${broadcasts.length}`,
+          total: `${totalCount}`,
         }),
       )
       .catch(() => null);
 
     await this.logDeletion(ctx, hub, originalMsg);
-  }
-
-  private async fetchHub(hubId?: string): Promise<HubManager | null> {
-    if (!hubId) return null;
-    return await new HubService().fetchHub(hubId);
   }
 
   private async validateMessage(
@@ -137,11 +105,7 @@ export default class DeleteMessage extends BaseCommand {
     const locale = await fetchUserLocale(ctx.user.id);
 
     if (!originalMsg || !hub) {
-      await ctx.editOrReply(
-        t('errors.unknownNetworkMessage', locale, {
-          emoji: ctx.getEmoji('x_icon'),
-        }),
-      );
+      await replyWithUnknownMessage(ctx);
       return false;
     }
 
@@ -153,10 +117,7 @@ export default class DeleteMessage extends BaseCommand {
       return false;
     }
 
-    if (
-      ctx.user.id !== originalMsg.authorId &&
-			!(await isStaffOrHubMod(ctx.user.id, hub))
-    ) {
+    if (ctx.user.id !== originalMsg.authorId && !(await isStaffOrHubMod(ctx.user.id, hub))) {
       await ctx.editReply(
         t('errors.notMessageAuthor', locale, {
           emoji: ctx.getEmoji('x_icon'),

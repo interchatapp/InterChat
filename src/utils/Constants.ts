@@ -131,7 +131,7 @@ export default {
       'NotQuiteBlack',
       'Random',
     ] as (keyof typeof Colors)[],
-    interchatBlue: '#4B81E9' as HexColorString,
+    interchatBlue: '#9172D8' as HexColorString,
     invisible: '#2b2d31' as HexColorString,
     christmas: ['#00B32C', '#D6001C', '#FFFFFF'] as HexColorString[],
   },

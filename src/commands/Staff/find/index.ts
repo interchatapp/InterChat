@@ -24,6 +24,7 @@ export default class Find extends BaseCommand {
     super({
       name: 'find',
       description: 'Find a user/server (Staff Only).',
+      staffOnly: true,
       types: { slash: true, prefix: true },
       subcommands: {
         server: new FindServerSubcommand(),

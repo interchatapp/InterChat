@@ -54,12 +54,13 @@ export default class HubConnectionsManager {
 
       return this.fetchAndCacheConnection(channelId);
     }
+
     const cachedConnections = await this.getCachedConnections();
     if (cachedConnections.length > 0) {
       return this.createManagersFromConnections(cachedConnections);
     }
 
-    return this.fetchAndCacheConnections();
+    return await this.fetchAndCacheConnections();
   }
 
   async createConnection(data: Prisma.ConnectionCreateInput): Promise<ConnectionManager | null> {

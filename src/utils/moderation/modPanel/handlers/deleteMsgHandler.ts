@@ -36,7 +36,7 @@ export default class DeleteMessageHandler implements ModAction {
   ) {
     const originalMsg = await getOriginalMessage(originalMsgId);
     if (!originalMsg) {
-      await replyWithUnknownMessage(interaction, locale);
+      await replyWithUnknownMessage(interaction, { locale });
       return;
     }
 

@@ -16,7 +16,11 @@
  */
 
 import { type Snowflake, WebhookClient } from 'discord.js';
-import { type Broadcast, deleteMessageCache } from '#src/utils/network/messageUtils.js';
+import {
+  type Broadcast,
+  deleteMessageCache,
+  getBroadcasts,
+} from '#src/utils/network/messageUtils.js';
 import { getHubConnections } from '#utils/ConnectedListUtils.js';
 import { RedisKeys } from '#utils/Constants.js';
 import getRedis from '#utils/Redis.js';
@@ -31,15 +35,22 @@ export const setDeleteLock = async (messageId: string) => {
 export const deleteMessageFromHub = async (
   hubId: string,
   originalMsgId: string,
-  dbMessagesToDelete: Broadcast[],
+  dbMessagesToDelete?: Broadcast[],
 ) => {
+  let msgsToDelete = dbMessagesToDelete;
+  if (!dbMessagesToDelete) {
+    msgsToDelete = Object.values(await getBroadcasts(originalMsgId, hubId));
+  }
+
+  if (!msgsToDelete?.length) return { deletedCount: 0, totalCount: 0 };
+
   await setDeleteLock(originalMsgId);
 
   let deletedCount = 0;
   const hubConnections = await getHubConnections(hubId);
   const hubConnectionsMap = new Map(hubConnections?.map((c) => [c.channelId, c]));
 
-  for await (const dbMsg of Object.values(dbMessagesToDelete)) {
+  for await (const dbMsg of msgsToDelete) {
     const connection = hubConnectionsMap.get(dbMsg.channelId);
     if (!connection) continue;
 
@@ -51,7 +62,7 @@ export const deleteMessageFromHub = async (
 
   await getRedis().del(`${RedisKeys.msgDeleteInProgress}:${originalMsgId}`);
   deleteMessageCache(originalMsgId);
-  return { deletedCount };
+  return { deletedCount, totalCount: msgsToDelete.length };
 };
 
 export const isDeleteInProgress = async (originalMsgId: Snowflake) => {

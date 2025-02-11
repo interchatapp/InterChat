@@ -15,17 +15,16 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { MessageReaction, PartialMessageReaction, PartialUser, User } from 'discord.js';
 import BaseEventListener from '#src/core/BaseEventListener.js';
 import { HubService } from '#src/services/HubService.js';
 import db from '#src/utils/Db.js';
 import {
   findOriginalMessage,
-  getOriginalMessage,
   storeMessage,
 } from '#src/utils/network/messageUtils.js';
 import { addReaction, updateReactions } from '#utils/reaction/actions.js';
 import { checkBlacklists } from '#utils/reaction/helpers.js';
+import type { MessageReaction, PartialMessageReaction, PartialUser, User } from 'discord.js';
 
 export default class ReadctionAdd extends BaseEventListener<'messageReactionAdd'> {
   readonly name = 'messageReactionAdd';
@@ -41,9 +40,7 @@ export default class ReadctionAdd extends BaseEventListener<'messageReactionAdd'
     // add user to cooldown list
     user.client.reactionCooldowns.set(user.id, Date.now() + 3000);
 
-    const originalMsg =
-      (await getOriginalMessage(reaction.message.id)) ??
-      (await findOriginalMessage(reaction.message.id));
+    const originalMsg = await findOriginalMessage(reaction.message.id);
 
     const hubService = new HubService(db);
     const hub = originalMsg ? await hubService.fetchHub(originalMsg?.hubId) : null;

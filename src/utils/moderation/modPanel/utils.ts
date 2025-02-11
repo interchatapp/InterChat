@@ -26,6 +26,7 @@ import { getReplyMethod } from '#src/utils/Utils.js';
 import type { OriginalMessage } from '#src/utils/network/messageUtils.js';
 import { InfoEmbed } from '#utils/EmbedUtils.js';
 import { type supportedLocaleCodes, t } from '#utils/Locale.js';
+import Context from '#src/core/CommandContext/Context.js';
 
 export interface ModAction {
   handle(
@@ -40,23 +41,45 @@ export interface ModAction {
   ): Promise<void>;
 }
 
-export async function replyWithUnknownMessage(
-  interaction: RepliableInteraction,
-  locale: supportedLocaleCodes,
-  edit = false,
+interface ReplyWithUnknownMessageOpts {
+  locale?: supportedLocaleCodes;
+  edit?: boolean;
+}
+
+export async function replyWithUnknownMessage<T extends Context>(
+  interaction: T,
+  opts?: ReplyWithUnknownMessageOpts,
+): Promise<void>;
+export async function replyWithUnknownMessage<T extends RepliableInteraction>(
+  interaction: T,
+  opts: ReplyWithUnknownMessageOpts & { locale: supportedLocaleCodes },
+): Promise<void>;
+export async function replyWithUnknownMessage<T extends Context | RepliableInteraction>(
+  interaction: T,
+  opts: ReplyWithUnknownMessageOpts = {},
 ) {
-  const embed = new InfoEmbed().setDescription(
-    t('errors.unknownNetworkMessage', locale, {
-      emoji: getEmoji('x_icon', interaction.client),
-    }),
-  );
+  const { locale, edit = false } = opts;
 
-  const replyMethod = getReplyMethod(interaction);
-
-  if (edit) {
-    await interaction.editReply({ embeds: [embed] });
+  const emoji = getEmoji('x_icon', interaction.client);
+  if (interaction instanceof Context) {
+    await interaction.replyEmbed('errors.unknownNetworkMessage', {
+      t: { emoji },
+      flags: ['Ephemeral'],
+      edit,
+    });
   }
   else {
+    if (!locale) {
+      throw new Error('locale is required when interaction is not a Context');
+    }
+
+    const embed = new InfoEmbed().setDescription(
+      t('errors.unknownNetworkMessage', locale, { emoji }),
+    );
+
+    if (edit) await interaction.editReply({ embeds: [embed], components: [] });
+
+    const replyMethod = getReplyMethod(interaction);
     await interaction[replyMethod]({ embeds: [embed], flags: ['Ephemeral'] });
   }
 }

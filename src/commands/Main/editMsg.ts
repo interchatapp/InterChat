@@ -35,13 +35,12 @@ import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionH
 import type { SerializedHubSettings } from '#src/modules/BitFields.js';
 import VoteBasedLimiter from '#src/modules/VoteBasedLimiter.js';
 import { HubService } from '#src/services/HubService.js';
-import { InfoEmbed } from '#src/utils/EmbedUtils.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
+import { replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
 import {
   findOriginalMessage,
   getBroadcast,
   getBroadcasts,
-  getOriginalMessage,
 } from '#src/utils/network/messageUtils.js';
 import Constants, { ConnectionMode } from '#utils/Constants.js';
 import { CustomID } from '#utils/CustomID.js';
@@ -49,12 +48,7 @@ import db from '#utils/Db.js';
 import { getAttachmentURL } from '#utils/ImageUtils.js';
 import { t } from '#utils/Locale.js';
 import { censor } from '#utils/ProfanityUtils.js';
-import {
-  containsInviteLinks,
-  fetchUserLocale,
-  handleError,
-  replaceLinks,
-} from '#utils/Utils.js';
+import { containsInviteLinks, fetchUserLocale, handleError, replaceLinks } from '#utils/Utils.js';
 
 interface ImageUrls {
   oldURL?: string | null;
@@ -101,17 +95,9 @@ export default class EditMessage extends BaseCommand {
       return;
     }
 
-    const messageInDb = target
-      ? ((await getOriginalMessage(target.id)) ??
-				(await findOriginalMessage(target.id)))
-      : undefined;
-
+    const messageInDb = target ? await findOriginalMessage(target.id) : undefined;
     if (!target || !messageInDb) {
-      await ctx.reply({
-        content: t('errors.unknownNetworkMessage', locale, {
-          emoji: ctx.getEmoji('x_icon'),
-        }),
-      });
+      await replyWithUnknownMessage(ctx);
       return;
     }
     if (ctx.user.id !== messageInDb.authorId) {
@@ -124,9 +110,7 @@ export default class EditMessage extends BaseCommand {
     }
 
     const modal = new ModalBuilder()
-      .setCustomId(
-        new CustomID().setIdentifier('editMsg').setArgs(target.id).toString(),
-      )
+      .setCustomId(new CustomID().setIdentifier('editMsg').setArgs(target.id).toString())
       .setTitle('Edit Message')
       .addComponents(
         new ActionRowBuilder<TextInputBuilder>().addComponents(
@@ -153,40 +137,21 @@ export default class EditMessage extends BaseCommand {
     const [messageId] = customId.args;
 
     // Fetch the original message
-    const target = await interaction.channel?.messages
-      .fetch(messageId)
-      .catch(() => null);
+    const target = await interaction.channel?.messages.fetch(messageId).catch(() => null);
     if (!target) {
-      const embed = new InfoEmbed({
-        description: t(
-          'errors.unknownNetworkMessage',
-          await fetchUserLocale(interaction.user.id),
-          {
-            emoji: getEmoji('x_icon', interaction.client),
-          },
-        ),
+      await replyWithUnknownMessage(interaction, {
+        locale: await fetchUserLocale(interaction.user.id),
       });
-
-      await interaction.followUp({ embeds: [embed], flags: ['Ephemeral'] });
       return;
     }
 
     // Get the original message data
-    const originalMsgData =
-			(await getOriginalMessage(target.id)) ??
-			(await findOriginalMessage(target.id));
+    const originalMsgData = await findOriginalMessage(target.id);
 
     if (!originalMsgData?.hubId) {
-      const embed = new InfoEmbed({
-        description: t(
-          'errors.unknownNetworkMessage',
-          await fetchUserLocale(interaction.user.id),
-          {
-            emoji: getEmoji('x_icon', interaction.client),
-          },
-        ),
+      await replyWithUnknownMessage(interaction, {
+        locale: await fetchUserLocale(interaction.user.id),
       });
-      await interaction.followUp({ embeds: [embed], flags: ['Ephemeral'] });
       return;
     }
 
@@ -194,30 +159,18 @@ export default class EditMessage extends BaseCommand {
     const hubService = new HubService(db);
     const hub = await hubService.fetchHub(originalMsgData.hubId);
     if (!hub) {
-      await interaction.editReply(
-        t(
-          'errors.unknownNetworkMessage',
-          await fetchUserLocale(interaction.user.id),
-          {
-            emoji: getEmoji('x_icon', interaction.client),
-          },
-        ),
-      );
+      await replyWithUnknownMessage(interaction, {
+        locale: await fetchUserLocale(interaction.user.id),
+      });
       return;
     }
 
     // Get the new message input from the user
     const userInput = interaction.fields.getTextInputValue('newMessage');
-    const messageToEdit = this.sanitizeMessage(
-      userInput,
-      hub.settings.getAll(),
-    );
+    const messageToEdit = this.sanitizeMessage(userInput, hub.settings.getAll());
 
     // Check if the message contains invite links
-    if (
-      hub.settings.has('BlockInvites') &&
-			containsInviteLinks(messageToEdit)
-    ) {
+    if (hub.settings.has('BlockInvites') && containsInviteLinks(messageToEdit)) {
       await interaction.editReply(
         t('errors.inviteLinks', await fetchUserLocale(interaction.user.id), {
           emoji: getEmoji('x_icon', interaction.client),
@@ -227,17 +180,13 @@ export default class EditMessage extends BaseCommand {
     }
 
     const mode =
-			target.id === originalMsgData.messageId
-			  ? ConnectionMode.Compact
-			  : ((
-			    await getBroadcast(
-			      originalMsgData?.messageId,
-			      originalMsgData?.hubId,
-			      {
-			        channelId: target.channelId,
-			      },
-			    )
-			  )?.mode ?? ConnectionMode.Compact);
+      target.id === originalMsgData.messageId
+        ? ConnectionMode.Compact
+        : ((
+          await getBroadcast(originalMsgData?.messageId, originalMsgData?.hubId, {
+            channelId: target.channelId,
+          })
+        )?.mode ?? ConnectionMode.Compact);
 
     // Prepare the new message contents and embeds
     const imageURLs = await this.getImageURLs(target, mode, messageToEdit);
@@ -249,26 +198,18 @@ export default class EditMessage extends BaseCommand {
     });
 
     // Find all the messages that need to be edited
-    const broadcastedMsgs = Object.values(
-      await getBroadcasts(target.id, originalMsgData.hubId),
-    );
+    const broadcastedMsgs = Object.values(await getBroadcasts(target.id, originalMsgData.hubId));
     const channelSettingsArr = await db.connection.findMany({
       where: { channelId: { in: broadcastedMsgs.map((c) => c.channelId) } },
     });
 
     let counter = 0;
     for (const msg of broadcastedMsgs) {
-      const connection = channelSettingsArr.find(
-        (c) => c.channelId === msg.channelId,
-      );
+      const connection = channelSettingsArr.find((c) => c.channelId === msg.channelId);
       if (!connection) continue;
 
       const webhook = await interaction.client
-        .fetchWebhook(
-          connection.webhookURL.split('/')[
-            connection.webhookURL.split('/').length - 2
-          ],
-        )
+        .fetchWebhook(connection.webhookURL.split('/')[connection.webhookURL.split('/').length - 2])
         .catch(() => null);
 
       if (webhook?.owner?.id !== interaction.client.user.id) continue;
@@ -276,14 +217,10 @@ export default class EditMessage extends BaseCommand {
       let content: string | null = null;
       let embeds: EmbedBuilder[] = [];
       if (msg.mode === ConnectionMode.Embed) {
-        embeds = connection.profFilter
-          ? [newEmbeds.censored]
-          : [newEmbeds.normal];
+        embeds = connection.profFilter ? [newEmbeds.censored] : [newEmbeds.normal];
       }
       else {
-        content = connection.profFilter
-          ? newContents.censored
-          : newContents.normal;
+        content = connection.profFilter ? newContents.censored : newContents.normal;
       }
 
       // Edit the message
@@ -321,9 +258,9 @@ export default class EditMessage extends BaseCommand {
     newMessage: string,
   ): Promise<ImageUrls> {
     const oldURL =
-			mode === ConnectionMode.Compact
-			  ? await getAttachmentURL(target.content)
-			  : target.embeds[0]?.image?.url;
+      mode === ConnectionMode.Compact
+        ? await getAttachmentURL(target.content)
+        : target.embeds[0]?.image?.url;
 
     const newURL = await getAttachmentURL(newMessage);
 
@@ -354,9 +291,7 @@ export default class EditMessage extends BaseCommand {
 
     if (mode === ConnectionMode.Embed) {
       // utilize the embed directly from the message
-      embed = EmbedBuilder.from(target.embeds[0])
-        .setDescription(embedContent)
-        .setImage(embedImage);
+      embed = EmbedBuilder.from(target.embeds[0]).setDescription(embedContent).setImage(embedImage);
     }
     else {
       const guild = await target.client.fetchGuild(opts.guildId);

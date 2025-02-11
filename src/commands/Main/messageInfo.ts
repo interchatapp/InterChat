@@ -25,10 +25,8 @@ import type HubManager from '#src/managers/HubManager.js';
 import { HubService } from '#src/services/HubService.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { fetchUserLocale } from '#src/utils/Utils.js';
-import {
-  findOriginalMessage,
-  getOriginalMessage,
-} from '#src/utils/network/messageUtils.js';
+import { replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
+import { findOriginalMessage } from '#src/utils/network/messageUtils.js';
 import type { RemoveMethods } from '#types/CustomClientProps.d.ts';
 import { greyOutButton, greyOutButtons } from '#utils/ComponentUtils.js';
 import Constants from '#utils/Constants.js';
@@ -50,7 +48,6 @@ import {
   type CacheType,
   type Client,
   ComponentType,
-  EmbedBuilder,
   type Guild,
   ModalBuilder,
   type ModalSubmitInteraction,
@@ -70,8 +67,7 @@ type MsgInfo = { messageId: string };
 type UserInfoOpts = LocaleInfo & AuthorInfo;
 type MsgInfoOpts = AuthorInfo & ServerInfo & LocaleInfo & HubInfo & MsgInfo;
 type ReportOpts = LocaleInfo & HubInfo & MsgInfo;
-type ServerInfoOpts = LocaleInfo &
-	ServerInfo & { connection: ConnectionManager | undefined };
+type ServerInfoOpts = LocaleInfo & ServerInfo & { connection: ConnectionManager | undefined };
 
 export default class MessageInfo extends BaseCommand {
   constructor() {
@@ -81,10 +77,7 @@ export default class MessageInfo extends BaseCommand {
       types: {
         prefix: true,
         slash: true,
-        contextMenu: {
-          name: 'Message Info/Report',
-          type: ApplicationCommandType.Message,
-        },
+        contextMenu: { name: 'Message Info/Report', type: ApplicationCommandType.Message },
       },
       options: [
         {
@@ -103,41 +96,24 @@ export default class MessageInfo extends BaseCommand {
     const { locale, originalMsg, hub, target } = await this.getMessageInfo(ctx);
 
     if (!hub || !originalMsg || !target) {
-      await ctx.editOrReply({
-        content: t('errors.unknownNetworkMessage', locale, {
-          emoji: ctx.getEmoji('x_icon'),
-        }),
-        flags: ['Ephemeral'],
-      });
+      await replyWithUnknownMessage(ctx);
       return;
     }
 
     const author = await ctx.client.users.fetch(originalMsg.authorId);
     const server = await ctx.client.fetchGuild(originalMsg.guildId);
 
-    const embed = new EmbedBuilder()
-      .setDescription(`### ${ctx.getEmoji('info')} Message Info`)
+    const embed = new InfoEmbed()
+      .setDescription(`### ${ctx.getEmoji('info_icon')} Message Info`)
       .addFields([
         { name: 'Sender', value: codeBlock(author.username), inline: true },
-        {
-          name: 'From Server',
-          value: codeBlock(`${server?.name}`),
-          inline: true,
-        },
+        { name: 'From Server', value: codeBlock(`${server?.name}`), inline: true },
         { name: 'Which Hub?', value: codeBlock(hub.data.name), inline: true },
-        {
-          name: 'Message ID',
-          value: codeBlock(originalMsg.messageId),
-          inline: true,
-        },
-        {
-          name: 'Sent At',
-          value: time(new Date(originalMsg.timestamp), 't'),
-          inline: true,
-        },
+        { name: 'Message ID', value: codeBlock(originalMsg.messageId), inline: true },
+        { name: 'Sent At', value: time(new Date(originalMsg.timestamp), 't'), inline: true },
       ])
       .setThumbnail(author.displayAvatarURL())
-      .setColor(Constants.Colors.invisible);
+      .setColor(Constants.Colors.interchatBlue);
 
     const connection = (await hub.connections.fetch())?.find(
       (c) => c.data.connected && c.data.serverId === originalMsg.guildId,
@@ -147,11 +123,7 @@ export default class MessageInfo extends BaseCommand {
       inviteButtonUrl: connection?.data.invite,
     });
 
-    const reply = await ctx.editOrReply({
-      embeds: [embed],
-      components,
-      flags: ['Ephemeral'],
-    });
+    const reply = await ctx.editOrReply({ embeds: [embed], components }, ['Ephemeral']);
 
     const collector = reply?.createMessageComponentCollector({
       idle: 60_000,
@@ -162,9 +134,7 @@ export default class MessageInfo extends BaseCommand {
       const customId = CustomID.parseCustomId(i.customId);
       // component builders taken from the original message
       const newComponents = [
-        ActionRowBuilder.from<ButtonBuilder>(
-          i.message.components[0] as ActionRow<ButtonComponent>,
-        ),
+        ActionRowBuilder.from<ButtonBuilder>(i.message.components[0] as ActionRow<ButtonComponent>),
       ];
 
       if (i.message.components[1]) {
@@ -178,11 +148,7 @@ export default class MessageInfo extends BaseCommand {
       // button responses
       switch (customId.suffix) {
         case 'serverInfo':
-          this.handleServerInfoButton(i, newComponents, {
-            server,
-            locale,
-            connection,
-          });
+          this.handleServerInfoButton(i, newComponents, { server, locale, connection });
           break;
 
         case 'userInfo':
@@ -216,54 +182,38 @@ export default class MessageInfo extends BaseCommand {
 
   @RegisterInteractionHandler('msgInfoModal')
   async handleModals(interaction: ModalSubmitInteraction<CacheType>) {
-    const { originalMsg, messageId, locale } =
-			await this.getModalMessageInfo(interaction);
+    const { originalMsg, messageId, locale } = await this.getModalMessageInfo(interaction);
 
     if (
       !originalMsg?.hubId ||
-			!(await HubLogManager.create(originalMsg?.hubId)).config.reports
-			  ?.channelId
+      !(await HubLogManager.create(originalMsg?.hubId)).config.reports?.channelId
     ) {
       const notEnabledEmbed = new InfoEmbed().setDescription(
-        t('msgInfo.report.notEnabled', locale, {
-          emoji: getEmoji('x_icon', interaction.client),
-        }),
+        t('msgInfo.report.notEnabled', locale, { emoji: getEmoji('x_icon', interaction.client) }),
       );
 
-      await interaction.reply({
-        embeds: [notEnabledEmbed],
-        flags: ['Ephemeral'],
-      });
+      await interaction.reply({ embeds: [notEnabledEmbed], flags: ['Ephemeral'] });
       return;
     }
 
     const { authorId, guildId } = originalMsg;
 
     const reason = interaction.fields.getTextInputValue('reason');
-    const message = await interaction.channel?.messages
-      .fetch(messageId)
-      .catch(() => null);
+    const message = await interaction.channel?.messages.fetch(messageId).catch(() => null);
     const content = originalMsg.content;
     const attachmentUrl =
-			content?.match(Constants.Regex.StaticImageUrl)?.at(0) ??
-			message?.embeds[0]?.image?.url;
+      content?.match(Constants.Regex.StaticImageUrl)?.at(0) ?? message?.embeds[0]?.image?.url;
 
     await sendHubReport(originalMsg.hubId, interaction.client, {
       userId: authorId,
       serverId: guildId,
       reason,
       reportedBy: interaction.user,
-      evidence: {
-        content,
-        attachmentUrl,
-        messageId,
-      },
+      evidence: { content, attachmentUrl, messageId },
     });
 
     const successEmbed = new InfoEmbed().setDescription(
-      t('msgInfo.report.success', locale, {
-        emoji: getEmoji('tick_icon', interaction.client),
-      }),
+      t('msgInfo.report.success', locale, { emoji: getEmoji('tick_icon', interaction.client) }),
     );
 
     await interaction.reply({ embeds: [successEmbed], flags: ['Ephemeral'] });
@@ -298,24 +248,18 @@ export default class MessageInfo extends BaseCommand {
       ? `https://cdn.discordapp.com/icons/${server.id}/${server.banner}.png`
       : null;
 
-    const serverEmbed = new EmbedBuilder()
-      .setDescription(
-        `### ${getEmoji('info', interaction.client)} ${server.name}`,
-      )
+    const serverEmbed = new InfoEmbed()
+      .setDescription(`### ${getEmoji('info_icon', interaction.client)} ${server.name}`)
       .addFields([
         { name: 'Owner', value: codeBlock(ownerName), inline: true },
-        {
-          name: 'Member Count',
-          value: codeBlock(String(server.memberCount)),
-          inline: true,
-        },
+        { name: 'Member Count', value: codeBlock(String(server.memberCount)), inline: true },
         { name: 'Server ID', value: codeBlock(server.id), inline: true },
         { name: 'Invite', value: inviteString, inline: true },
         { name: 'Created At', value: time(createdAt, 'R'), inline: true },
       ])
       .setThumbnail(iconUrl)
       .setImage(bannerUrL)
-      .setColor(Constants.Colors.invisible);
+      .setColor(Constants.Colors.interchatBlue);
 
     // disable the server info button
     greyOutButton(components[0], 1);
@@ -333,10 +277,8 @@ export default class MessageInfo extends BaseCommand {
     const hubsOwned = await db.hub.count({ where: { ownerId: author.id } });
     const displayName = author.globalName ?? 'Not Set.';
 
-    const userEmbed = new EmbedBuilder()
-      .setDescription(
-        `### ${getEmoji('info', interaction.client)} ${author.username}`,
-      )
+    const userEmbed = new InfoEmbed()
+      .setDescription(`### ${getEmoji('info_icon', interaction.client)} ${author.username}`)
       .addFields([
         { name: 'Display Name', value: codeBlock(displayName), inline: true },
         { name: 'User ID', value: codeBlock(author.id), inline: true },
@@ -348,8 +290,7 @@ export default class MessageInfo extends BaseCommand {
         },
       ])
       .setThumbnail(author.displayAvatarURL())
-      .setImage(author.bannerURL() ?? null)
-      .setColor(Constants.Colors.invisible);
+      .setImage(author.bannerURL() ?? null);
 
     // disable the user info button
     greyOutButton(components[0], 2);
@@ -362,9 +303,7 @@ export default class MessageInfo extends BaseCommand {
     components: ActionRowBuilder<ButtonBuilder>[],
     { author, server, locale, hub, messageId }: MsgInfoOpts,
   ) {
-    const message = await interaction.channel?.messages
-      .fetch(messageId)
-      .catch(() => null);
+    const message = await interaction.channel?.messages.fetch(messageId).catch(() => null);
 
     if (!message || !hub) {
       await interaction.update({
@@ -377,17 +316,11 @@ export default class MessageInfo extends BaseCommand {
       return;
     }
 
-    const embed = new EmbedBuilder()
-      .setDescription(
-        `### ${getEmoji('info', interaction.client)} Message Info`,
-      )
+    const embed = new InfoEmbed()
+      .setDescription(`### ${getEmoji('info', interaction.client)} Message Info`)
       .addFields([
         { name: 'Sender', value: codeBlock(author.username), inline: true },
-        {
-          name: 'From Server',
-          value: codeBlock(`${server?.name}`),
-          inline: true,
-        },
+        { name: 'From Server', value: codeBlock(`${server?.name}`), inline: true },
         { name: 'Which Hub?', value: codeBlock(hub.data.name), inline: true },
         { name: 'Message ID', value: codeBlock(messageId), inline: true },
         { name: 'Sent At', value: time(message.createdAt, 't'), inline: true },
@@ -404,20 +337,12 @@ export default class MessageInfo extends BaseCommand {
     interaction: ButtonInteraction,
     { hub, locale, messageId }: ReportOpts,
   ) {
-    if (
-      !hub ||
-			!(await HubLogManager.create(hub.id)).config.reports?.channelId
-    ) {
+    if (!hub || !(await HubLogManager.create(hub.id)).config.reports?.channelId) {
       const notEnabledEmbed = new InfoEmbed().setDescription(
-        t('msgInfo.report.notEnabled', locale, {
-          emoji: getEmoji('x_icon', interaction.client),
-        }),
+        t('msgInfo.report.notEnabled', locale, { emoji: getEmoji('x_icon', interaction.client) }),
       );
 
-      await interaction.reply({
-        embeds: [notEnabledEmbed],
-        flags: ['Ephemeral'],
-      });
+      await interaction.reply({ embeds: [notEnabledEmbed], flags: ['Ephemeral'] });
       return;
     }
 
@@ -449,22 +374,16 @@ export default class MessageInfo extends BaseCommand {
     const target = await ctx.getTargetMessage('message');
     if (!target) return { target: null, locale, originalMsg: null, hub: null };
 
-    const originalMsg =
-			(await getOriginalMessage(target.id)) ??
-			(await findOriginalMessage(target.id));
+    const originalMsg = await findOriginalMessage(target.id);
     const hub = await this.fetchHub(originalMsg?.hubId);
 
     return { target, locale, originalMsg, hub };
   }
 
-  private async getModalMessageInfo(
-    interaction: ModalSubmitInteraction<CacheType>,
-  ) {
+  private async getModalMessageInfo(interaction: ModalSubmitInteraction<CacheType>) {
     const customId = CustomID.parseCustomId(interaction.customId);
     const [messageId] = customId.args;
-    const originalMsg =
-			(await getOriginalMessage(messageId)) ??
-			(await findOriginalMessage(messageId));
+    const originalMsg = await findOriginalMessage(messageId);
 
     const locale = (await fetchUserLocale(interaction.user.id)) ?? 'en';
 
@@ -481,14 +400,12 @@ export default class MessageInfo extends BaseCommand {
       new ButtonBuilder()
         .setLabel(t('msgInfo.buttons.report', locale))
         .setStyle(ButtonStyle.Danger)
-        .setCustomId(
-          new CustomID().setIdentifier('msgInfo', 'report').toString(),
-        ),
+        .setCustomId(new CustomID().setIdentifier('msgInfo', 'report').toString()),
     ];
 
     if (opts?.buildModActions) {
       extras.push(
-        modPanelButton(targetMsgId, getEmoji('blobFastBan', client)).setStyle(
+        modPanelButton(targetMsgId, getEmoji('hammer_icon', client)).setStyle(
           ButtonStyle.Secondary,
         ),
       );
@@ -509,21 +426,15 @@ export default class MessageInfo extends BaseCommand {
           .setLabel(t('msgInfo.buttons.message', locale))
           .setStyle(ButtonStyle.Secondary)
           .setDisabled(true)
-          .setCustomId(
-            new CustomID().setIdentifier('msgInfo', 'msgInfo').toString(),
-          ),
+          .setCustomId(new CustomID().setIdentifier('msgInfo', 'msgInfo').toString()),
         new ButtonBuilder()
           .setLabel(t('msgInfo.buttons.server', locale))
           .setStyle(ButtonStyle.Secondary)
-          .setCustomId(
-            new CustomID().setIdentifier('msgInfo', 'serverInfo').toString(),
-          ),
+          .setCustomId(new CustomID().setIdentifier('msgInfo', 'serverInfo').toString()),
         new ButtonBuilder()
           .setLabel(t('msgInfo.buttons.user', locale))
           .setStyle(ButtonStyle.Secondary)
-          .setCustomId(
-            new CustomID().setIdentifier('msgInfo', 'userInfo').toString(),
-          ),
+          .setCustomId(new CustomID().setIdentifier('msgInfo', 'userInfo').toString()),
       ),
       new ActionRowBuilder<ButtonBuilder>({ components: extras }),
     ];

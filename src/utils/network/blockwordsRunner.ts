@@ -107,6 +107,7 @@ export async function checkBlockedWords(
 
   for (const rule of msgBlockList) {
     const { shouldBlock, reason } = await checkRule(message, rule);
+
     if (shouldBlock) {
       return {
         passed: false,

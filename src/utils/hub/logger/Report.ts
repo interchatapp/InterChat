@@ -19,9 +19,13 @@ import { modPanelButton } from '#src/interactions/ShowModPanel.js';
 import {
   findOriginalMessage,
   getBroadcast,
-  getOriginalMessage,
 } from '#src/utils/network/messageUtils.js';
 
+import { markResolvedButton } from '#src/interactions/MarkResolvedButton.js';
+import { HubService } from '#src/services/HubService.js';
+import { getEmoji } from '#src/utils/EmojiUtils.js';
+import db from '#utils/Db.js';
+import { resolveEval } from '#utils/Utils.js';
 import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
@@ -32,11 +36,6 @@ import {
   type User,
   messageLink,
 } from 'discord.js';
-import { markResolvedButton } from '#src/interactions/MarkResolvedButton.js';
-import { HubService } from '#src/services/HubService.js';
-import { getEmoji } from '#src/utils/EmojiUtils.js';
-import db from '#utils/Db.js';
-import { resolveEval } from '#utils/Utils.js';
 import { sendLog } from './Default.js';
 
 export type ReportEvidenceOpts = {
@@ -69,8 +68,7 @@ const genJumpLink = async (
 ) => {
   if (!messageId) return null;
 
-  const originalMsg =
-    (await getOriginalMessage(messageId)) ?? (await findOriginalMessage(messageId));
+  const originalMsg = await findOriginalMessage(messageId);
   if (!originalMsg) return null;
 
   // fetch the reports server ID from the log channel's ID

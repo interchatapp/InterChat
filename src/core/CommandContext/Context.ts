@@ -52,15 +52,12 @@ import { type EmojiKeys, getEmoji } from '#src/utils/EmojiUtils.js';
 import { type supportedLocaleCodes, t } from '#src/utils/Locale.js';
 import { fetchUserLocale } from '#src/utils/Utils.js';
 
-type SupportedInteractions =
-	| Message
-	| ChatInputCommandInteraction
-	| ContextMenuCommandInteraction;
+type SupportedInteractions = Message | ChatInputCommandInteraction | ContextMenuCommandInteraction;
 
 type SupportedInteractionsCached =
-	| Message<true>
-	| ChatInputCommandInteraction<'cached'>
-	| ContextMenuCommandInteraction<'cached'>;
+  | Message<true>
+  | ChatInputCommandInteraction<'cached'>
+  | ContextMenuCommandInteraction<'cached'>;
 
 interface classT {
   interaction: SupportedInteractions;
@@ -101,19 +98,13 @@ export default abstract class Context<T extends classT = classT> {
     return this.interaction.channelId;
   }
   public get guild(): T extends CachedContextType ? Guild : Guild | null {
-    return this.interaction.guild as T extends CachedContextType
-      ? Guild
-      : Guild | null;
+    return this.interaction.guild as T extends CachedContextType ? Guild : Guild | null;
   }
   public get guildId(): T extends CachedContextType ? string : string | null {
-    return this.interaction.guildId as T extends CachedContextType
-      ? string
-      : string | null;
+    return this.interaction.guildId as T extends CachedContextType ? string : string | null;
   }
   public get user() {
-    return this.interaction instanceof Message
-      ? this.interaction.author
-      : this.interaction.user;
+    return this.interaction instanceof Message ? this.interaction.author : this.interaction.user;
   }
   public get member(): T extends CachedContextType
     ? GuildMember | (APIInteractionGuildMember & GuildMember)
@@ -139,9 +130,7 @@ export default abstract class Context<T extends classT = classT> {
     return await fetchUserLocale(this.user.id);
   }
 
-  abstract deferReply(opts?: { flags?: ['Ephemeral'] }): Promise<
-    T['responseType']
-  >;
+  abstract deferReply(opts?: { flags?: ['Ephemeral'] }): Promise<T['responseType']>;
 
   public getTargetMessageId(name: string | null): string | null {
     if (this.interaction instanceof MessageContextMenuCommandInteraction) {
@@ -153,8 +142,7 @@ export default abstract class Context<T extends classT = classT> {
     if (!value) return null;
 
     // TODO: move this to constants
-    const regex =
-			/\b\d{17,20}\b|discord\.com\/channels\/\d{17,20}\/\d{17,20}\/(\d{17,20})/g;
+    const regex = /\b\d{17,20}\b|discord\.com\/channels\/\d{17,20}\/\d{17,20}\/(\d{17,20})/g;
     const matches = regex.exec(value);
 
     let messageId = matches?.[1] ?? matches?.[0];
@@ -182,9 +170,8 @@ export default abstract class Context<T extends classT = classT> {
 
     const targetMessageId = this.getTargetMessageId(name);
     return targetMessageId
-      ? ((await this.interaction.channel?.messages
-        .fetch(targetMessageId)
-        .catch(() => null)) ?? null)
+      ? ((await this.interaction.channel?.messages.fetch(targetMessageId).catch(() => null)) ??
+          null)
       : null;
   }
 
@@ -195,20 +182,13 @@ export default abstract class Context<T extends classT = classT> {
       content?: string;
       title?: string;
       components?: readonly (
-				| JSONEncodable<APIActionRowComponent<APIMessageActionRowComponent>>
-				| ActionRowData<
-						MessageActionRowComponentData | MessageActionRowComponentBuilder
-				>
-				| APIActionRowComponent<APIMessageActionRowComponent>
+        | JSONEncodable<APIActionRowComponent<APIMessageActionRowComponent>>
+        | ActionRowData<MessageActionRowComponentData | MessageActionRowComponentBuilder>
+        | APIActionRowComponent<APIMessageActionRowComponent>
       )[];
       flags?: BitFieldResolvable<
-        Extract<
-          MessageFlagsString,
-					'Ephemeral' | 'SuppressEmbeds' | 'SuppressNotifications'
-        >,
-				| MessageFlags.Ephemeral
-				| MessageFlags.SuppressEmbeds
-				| MessageFlags.SuppressNotifications
+        Extract<MessageFlagsString, 'Ephemeral' | 'SuppressEmbeds' | 'SuppressNotifications'>,
+        MessageFlags.Ephemeral | MessageFlags.SuppressEmbeds | MessageFlags.SuppressNotifications
       >;
       edit?: boolean;
     },
@@ -220,20 +200,11 @@ export default abstract class Context<T extends classT = classT> {
       description = t(desc as K, locale, opts?.t);
     }
 
-    const embed = new InfoEmbed()
-      .setDescription(description)
-      .setTitle(opts?.title);
-    const message = {
-      content: opts?.content,
-      embeds: [embed],
-      components: opts?.components,
-    };
+    const embed = new InfoEmbed().setDescription(description).setTitle(opts?.title);
+    const message = { content: opts?.content, embeds: [embed], components: opts?.components };
 
     if (opts?.edit) {
-      return await this.editOrReply({
-        ...message,
-        content: message.content ?? null,
-      });
+      return await this.editOrReply({ ...message, content: message.content });
     }
     return await this.reply({ ...message, flags: opts?.flags });
   }
@@ -243,29 +214,34 @@ export default abstract class Context<T extends classT = classT> {
   ): Promise<T['responseType'] | null>;
 
   async editOrReply(
-    data: string | MessageEditOptions | InteractionReplyOptions,
+    data: string | MessageEditOptions | InteractionEditReplyOptions,
+    flags: Extract<
+      MessageFlagsString,
+      'Ephemeral' | 'SuppressEmbeds' | 'SuppressNotifications'
+    >[] = [],
   ): Promise<T['responseType'] | null> {
+    const data_ = typeof data === 'string' ? { content: data } : { ...data };
     if (this.deferred || this.replied) {
-      return await this.editReply(data);
+      return await this.editReply({ ...data_, flags: flags.includes('SuppressEmbeds') ? 'SuppressEmbeds' : [] });
     }
-    return await this.reply(data);
+    return await this.reply(data_);
   }
 
   abstract reply(
     data:
-			| string
-			| MessagePayload
-			| MessageReplyOptions
-			| InteractionReplyOptions
-			| MessageEditOptions,
+      | string
+      | MessagePayload
+      | MessageReplyOptions
+      | InteractionReplyOptions
+      | MessageEditOptions,
   ): Promise<T['responseType']>;
 
   abstract deleteReply(): Promise<void>;
 
   abstract showModal(
     data:
-			| JSONEncodable<APIModalInteractionResponseCallbackData>
-			| ModalComponentData
-			| APIModalInteractionResponseCallbackData,
+      | JSONEncodable<APIModalInteractionResponseCallbackData>
+      | ModalComponentData
+      | APIModalInteractionResponseCallbackData,
   ): Promise<void>;
 }

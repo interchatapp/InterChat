@@ -18,17 +18,12 @@
 import { CustomID } from '#src/utils/CustomID.js';
 import Logger from '#src/utils/Logger.js';
 import { sendErrorEmbed } from '#src/utils/Utils.js';
-import type { EventHint } from '@sentry/node';
 import {
   type ContextMenuCommandInteraction,
   type Interaction,
   InteractionType,
   Message,
 } from 'discord.js';
-import type {
-  CaptureContext,
-  ScopeContext,
-} from 'node_modules/@sentry/core/build/types/types-hoist/scope.js';
 
 type Repliable = Message | Interaction | ContextMenuCommandInteraction;
 
@@ -42,28 +37,12 @@ interface UserInfo {
   username: string;
 }
 
-export type ErrorHint =
-	| (CaptureContext &
-			Partial<{
-			  [key in keyof EventHint]: never;
-			}>)
-	| (EventHint &
-			Partial<{
-			  [key in keyof ScopeContext]: never;
-			}>);
-
 function extractUserInfo(repliable: Repliable): UserInfo {
   if (repliable instanceof Message) {
-    return {
-      id: repliable.author.id,
-      username: repliable.author.username,
-    };
+    return { id: repliable.author.id, username: repliable.author.username };
   }
 
-  return {
-    id: repliable.user.id,
-    username: repliable.user.username,
-  };
+  return { id: repliable.user.id, username: repliable.user.username };
 }
 
 function extractCommandInfo(
@@ -82,10 +61,7 @@ function extractCommandInfo(
   return interaction.commandName;
 }
 
-export function createErrorHint(
-  repliable?: Repliable,
-  comment?: string,
-): ErrorHint | undefined {
+export function createErrorHint(repliable?: Repliable, comment?: string) {
   if (!repliable) {
     return undefined;
   }

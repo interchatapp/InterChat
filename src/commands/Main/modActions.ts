@@ -23,13 +23,9 @@ import db from '#src/utils/Db.js';
 import {
   type OriginalMessage,
   findOriginalMessage,
-  getOriginalMessage,
 } from '#src/utils/network/messageUtils.js';
 import { isStaffOrHubMod } from '#utils/hub/utils.js';
-import {
-  ApplicationCommandOptionType,
-  ApplicationCommandType,
-} from 'discord.js';
+import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js';
 
 export default class ModPanelCommand extends BaseCommand {
   constructor() {
@@ -37,6 +33,7 @@ export default class ModPanelCommand extends BaseCommand {
       name: 'modpanel',
       description: 'Open the moderation actions panel for a message',
       types: {
+        slash: true,
         prefix: true,
         contextMenu: {
           name: 'Moderation Actions',
@@ -71,10 +68,7 @@ export default class ModPanelCommand extends BaseCommand {
       return;
     }
 
-    const originalMsg =
-			(await getOriginalMessage(targetMessage.id)) ??
-			(await findOriginalMessage(targetMessage.id));
-
+    const originalMsg = await findOriginalMessage(targetMessage.id);
     if (!originalMsg || !(await this.validateMessage(ctx, originalMsg))) {
       await ctx.replyEmbed('errors.messageNotSentOrExpired', {
         t: { emoji: ctx.getEmoji('x_icon') },

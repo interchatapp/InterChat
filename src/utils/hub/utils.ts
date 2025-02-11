@@ -166,6 +166,6 @@ export const fetchHub = async ({
 }: { id?: string; name?: string }) => {
   const hubService = new HubService();
   if (id) return await hubService.fetchHub(id);
-  if (name) return (await hubService.findHubsByName(name)).at(0);
+  if (name) return (await hubService.findHubsByName(name)).at(0) ?? null;
   return null;
 };

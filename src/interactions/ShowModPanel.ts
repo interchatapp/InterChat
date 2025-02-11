@@ -15,7 +15,6 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ButtonBuilder, type ButtonInteraction, ButtonStyle } from 'discord.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import { buildModPanel } from '#src/interactions/ModPanel.js';
 import { HubService } from '#src/services/HubService.js';
@@ -24,7 +23,8 @@ import db from '#src/utils/Db.js';
 import { InfoEmbed } from '#src/utils/EmbedUtils.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { isStaffOrHubMod } from '#src/utils/hub/utils.js';
-import { findOriginalMessage, getOriginalMessage } from '#src/utils/network/messageUtils.js';
+import { findOriginalMessage } from '#src/utils/network/messageUtils.js';
+import { ButtonBuilder, type ButtonInteraction, ButtonStyle } from 'discord.js';
 
 export const modPanelButton = (targetMsgId: string, emoji: string, opts?: { label?: string }) =>
   new ButtonBuilder()
@@ -41,8 +41,7 @@ export default class ModActionsButton {
     const customId = CustomID.parseCustomId(interaction.customId);
     const [messageId] = customId.args;
 
-    const originalMessage =
-      (await getOriginalMessage(messageId)) ?? (await findOriginalMessage(messageId));
+    const originalMessage = await findOriginalMessage(messageId);
 
     const hubService = new HubService(db);
     const hub = originalMessage ? await hubService.fetchHub(originalMessage?.hubId) : null;

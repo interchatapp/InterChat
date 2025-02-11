@@ -231,7 +231,7 @@ export default class BrowseCommand extends BaseCommand {
   ): InfoEmbed {
     return new InfoEmbed()
       .addFields(fields)
-      .setThumbnail('https://i.imgur.com/tWuSzBd.png')
+      .setThumbnail('https://i.imgur.com/D0RfqQK.png')
       .setDescription(
         stripIndents`### Discoverable Hubs
           There are **${totalHubs}** hubs currently available for you to join.`,

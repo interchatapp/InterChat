@@ -34,13 +34,13 @@ export default class ViewInfractionsHandler implements ModAction {
     const originalMsg = await getOriginalMessage(originalMsgId);
 
     if (!originalMsg) {
-      await replyWithUnknownMessage(interaction, locale);
+      await replyWithUnknownMessage(interaction, { locale });
       return;
     }
 
     const user = await interaction.client.users.fetch(originalMsg.authorId).catch(() => null);
     if (!user) {
-      await replyWithUnknownMessage(interaction, locale);
+      await replyWithUnknownMessage(interaction, { locale });
       return;
     }
 
