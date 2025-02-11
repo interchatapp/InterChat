@@ -24,16 +24,17 @@
   "type": "module",
   "dependencies": {
     "@hono/node-server": "^1.13.8",
-    "@prisma/client": "^6.3.0",
-    "@sentry/node": "^8.52.1",
+    "@prisma/client": "^6.3.1",
+    "@sentry/node": "^9.0.0",
+    "@sentry/profiling-node": "^9.0.0",
     "canvas": "^3.1.0",
     "common-tags": "^1.8.2",
     "discord-hybrid-sharding": "^2.2.4",
-    "discord.js": "^14.17.3",
+    "discord.js": "^14.18.0",
     "dotenv": "^16.4.7",
-    "hono": "^4.6.20",
+    "hono": "^4.7.0",
     "husky": "^9.1.7",
-    "ioredis": "^5.4.2",
+    "ioredis": "^5.5.0",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
     "lz-string": "^1.5.0",
@@ -43,20 +44,20 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
-    "@stylistic/eslint-plugin": "^3.0.1",
+    "@stylistic/eslint-plugin": "^3.1.0",
     "@types/common-tags": "^1.8.4",
     "@types/js-yaml": "^4.0.9",
     "@types/lodash": "^4.17.15",
     "@types/ms": "^2.1.0",
     "cz-conventional-changelog": "^3.3.0",
-    "eslint": "^9.19.0",
+    "eslint": "^9.20.0",
     "lint-staged": "^15.4.3",
     "nodemon": "^3.1.9",
-    "prettier": "^3.4.2",
-    "prisma": "^6.3.0",
+    "prettier": "^3.5.0",
+    "prisma": "^6.3.1",
     "release-it": "^18.1.2",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.22.0"
+    "typescript-eslint": "^8.24.0"
   },
   "config": {
     "commitizen": {
@@ -71,5 +72,8 @@
   "imports": {
     "#src/*.js": "./build/*.js",
     "#utils/*.js": "./build/utils/*.js"
-  }
+  },
+  "trustedDependencies": [
+    "@sentry-internal/node-cpu-profiler"
+  ]
 }
