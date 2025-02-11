@@ -19,38 +19,37 @@ import BlacklistManager from '#src/managers/BlacklistManager.js';
 import HubManager from '#src/managers/HubManager.js';
 import { HubService } from '#src/services/HubService.js';
 import { type EmojiKeys, getEmoji } from '#src/utils/EmojiUtils.js';
-
+import Context from '#src/core/CommandContext/Context.js';
+import type { TranslationKeys } from '#types/TranslationKeys.d.ts';
+import { createConnection } from '#utils/ConnectedListUtils.js';
+import db from '#utils/Db.js';
+import { type supportedLocaleCodes, t } from '#utils/Locale.js';
+import { getOrCreateWebhook, getReplyMethod } from '#utils/Utils.js';
+import { logJoinToHub } from '#utils/hub/logger/JoinLeave.js';
+import { sendToHub } from '#utils/hub/utils.js';
 import { stripIndents } from 'common-tags';
 import type {
   ChatInputCommandInteraction,
   GuildTextBasedChannel,
   MessageComponentInteraction,
 } from 'discord.js';
-import type { TranslationKeys } from '#types/TranslationKeys.d.ts';
-import { createConnection } from '#utils/ConnectedListUtils.js';
-import db from '#utils/Db.js';
-import { type supportedLocaleCodes, t } from '#utils/Locale.js';
-import { check } from '#utils/ProfanityUtils.js';
-import { getOrCreateWebhook, getReplyMethod } from '#utils/Utils.js';
-import { logJoinToHub } from '#utils/hub/logger/JoinLeave.js';
-import { sendToHub } from '#utils/hub/utils.js';
-import Context from '#src/core/CommandContext/Context.js';
 // eslint-disable-next-line no-duplicate-imports
 import type { CachedContextType } from '#src/core/CommandContext/Context.js';
+import { checkRule } from '#src/utils/network/antiSwearChecks.js';
 
 export class HubJoinService {
   private readonly interaction:
-		| ChatInputCommandInteraction<'cached'>
-		| MessageComponentInteraction<'cached'>
-		| Context<CachedContextType>;
+    | ChatInputCommandInteraction<'cached'>
+    | MessageComponentInteraction<'cached'>
+    | Context<CachedContextType>;
   private readonly locale: supportedLocaleCodes;
   private readonly hubService: HubService;
 
   constructor(
     interaction:
-			| ChatInputCommandInteraction<'cached'>
-			| MessageComponentInteraction<'cached'>
-			| Context<CachedContextType>,
+      | ChatInputCommandInteraction<'cached'>
+      | MessageComponentInteraction<'cached'>
+      | Context<CachedContextType>,
     locale: supportedLocaleCodes,
     hubService: HubService = new HubService(),
   ) {
@@ -74,18 +73,12 @@ export class HubJoinService {
     return await this.joinHub(channel, randomHub.name);
   }
 
-  async joinHub(
-    channel: GuildTextBasedChannel,
-    hubInviteOrName: string | undefined,
-  ) {
+  async joinHub(channel: GuildTextBasedChannel, hubInviteOrName: string | undefined) {
     if (!this.interaction.deferred) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
       await this.interaction.deferReply({ flags: ['Ephemeral'] });
     }
-
-    const checksPassed = await this.runChecks(channel);
-    if (!checksPassed) return false;
 
     const hub = await this.fetchHub(hubInviteOrName);
     if (!hub) {
@@ -97,10 +90,10 @@ export class HubJoinService {
       return false;
     }
 
-    if (
-      (await this.isAlreadyInHub(channel, hub.id)) ||
-			(await this.isBlacklisted(hub))
-    ) {
+    const checksPassed = await this.runChecks(channel, hub);
+    if (!checksPassed) return false;
+
+    if ((await this.isAlreadyInHub(channel, hub.id)) || (await this.isBlacklisted(hub))) {
       return false;
     }
 
@@ -116,19 +109,14 @@ export class HubJoinService {
       hub: { connect: { id: hub.id } },
       connected: true,
       compact: true,
-      profFilter: true,
     });
 
     await this.sendSuccessMessages(hub, channel);
     return true;
   }
 
-  private async runChecks(channel: GuildTextBasedChannel) {
-    if (
-      !channel
-        .permissionsFor(this.interaction.member)
-        .has('ManageMessages', true)
-    ) {
+  private async runChecks(channel: GuildTextBasedChannel, hub: HubManager) {
+    if (!channel.permissionsFor(this.interaction.member).has('ManageMessages', true)) {
       await this.replyError('errors.missingPermissions', {
         permissions: 'Manage Messages',
         emoji: this.getEmoji('x_icon'),
@@ -136,12 +124,12 @@ export class HubJoinService {
       return false;
     }
 
-    const { hasSlurs, hasProfanity } = check(this.interaction.guild.name);
-    if (hasSlurs || hasProfanity) {
-      await this.replyError('errors.serverNameInappropriate', {
-        emoji: this.getEmoji('x_icon'),
-      });
-      return false;
+    for (const rule of await hub.fetchAntiSwearRules()) {
+      const match = checkRule(channel.guild.name, rule);
+      if (match) {
+        await this.replyError('errors.serverNameInappropriate', { emoji: this.getEmoji('x_icon') });
+        return false;
+      }
     }
 
     return true;
@@ -184,14 +172,8 @@ export class HubJoinService {
   }
 
   private async isBlacklisted(hub: HubManager) {
-    const userBlManager = new BlacklistManager(
-      'user',
-      this.interaction.user.id,
-    );
-    const serverBlManager = new BlacklistManager(
-      'server',
-      this.interaction.guildId,
-    );
+    const userBlManager = new BlacklistManager('user', this.interaction.user.id);
+    const serverBlManager = new BlacklistManager('server', this.interaction.guildId);
 
     const userBlacklist = await userBlManager.fetchBlacklist(hub.id);
     const serverBlacklist = await serverBlManager.fetchBlacklist(hub.id);
@@ -219,10 +201,7 @@ export class HubJoinService {
     return webhook;
   }
 
-  private async sendSuccessMessages(
-    hub: HubManager,
-    channel: GuildTextBasedChannel,
-  ) {
+  private async sendSuccessMessages(hub: HubManager, channel: GuildTextBasedChannel) {
     const replyData = {
       content: t('hub.join.success', this.locale, {
         channel: `${channel}`,
@@ -240,15 +219,15 @@ export class HubJoinService {
     await this.interaction[replyMethod](replyData);
 
     const totalConnections =
-			(await hub.connections.fetch())?.reduce(
-			  (total, c) => total + (c.data.connected ? 1 : 0),
-			  0,
-			) ?? 0;
+      (await hub.connections.fetch())?.reduce(
+        (total, c) => total + (c.data.connected ? 1 : 0),
+        0,
+      ) ?? 0;
 
     const serverCountMessage =
-			totalConnections === 0
-			  ? 'There are no other servers connected to this hub yet. *cricket noises* 🦗'
-			  : `We now have ${totalConnections} servers in this hub! 🎉`;
+      totalConnections === 0
+        ? 'There are no other servers connected to this hub yet. *cricket noises* 🦗'
+        : `We now have ${totalConnections} servers in this hub! 🎉`;
 
     // Announce to hub
     await sendToHub(hub.id, {
