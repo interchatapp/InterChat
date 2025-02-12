@@ -51,7 +51,10 @@ export class MessageProcessor {
     const { hub, hubConnections, connection } = hubData;
 
     const userData = await fetchUserData(message.author.id);
-    if (!userData?.acceptedRules) return await showRulesScreening(message, userData);
+    if (!userData?.acceptedRules) {
+      await showRulesScreening(message, userData);
+      return;
+    }
 
     const attachmentURL = await this.broadcastService.resolveAttachmentURL(message);
 

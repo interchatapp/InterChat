@@ -18,11 +18,7 @@
 import type BaseCommand from '#src/core/BaseCommand.js';
 import Context from '#src/core/CommandContext/Context.js';
 import Logger from '#src/utils/Logger.js';
-import {
-  extractUserId,
-  extractChannelId,
-  extractRoleId,
-} from '#src/utils/Utils.js';
+import { extractUserId, extractChannelId, extractRoleId } from '#src/utils/Utils.js';
 import {
   type APIApplicationCommandBasicOption,
   type APIModalInteractionResponseCallbackData,
@@ -71,10 +67,7 @@ export default class PrefixContext extends Context<{
     // Split arguments with quote handling
     const commandOptions = new Map(
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      Object.entries(command.options).map(([_i, option]) => [
-        option.name,
-        option,
-      ]),
+      Object.entries(command.options).map(([_i, option]) => [option.name, option]),
     );
 
     // Store parsed arguments with resolved values
@@ -88,15 +81,13 @@ export default class PrefixContext extends Context<{
   private parseArguments(
     rawArgs: string[],
     definedOpts: Map<string, APIApplicationCommandBasicOption>,
-  ):
-		| Collection<
-		  string,
-		  {
-		    value: string | number | boolean | null;
-		    type: ApplicationCommandOptionType;
-		  }
-		>
-		| undefined {
+  ): Collection<
+    string,
+    {
+      value: string | number | boolean | null;
+      type: ApplicationCommandOptionType;
+    }
+  > | null {
     const args = new Collection<
       string,
       {
@@ -114,13 +105,13 @@ export default class PrefixContext extends Context<{
         if (!option) {
           this.argumentValidationPassed = false;
           Logger.error(`Unknown option: ${name}`);
-          return;
+          return null;
         }
 
         if (!value && option.required) {
           this.argumentValidationPassed = false;
           Logger.error(`Missing required option: ${option.name}`);
-          return;
+          return null;
         }
 
         if (value) {
@@ -128,7 +119,7 @@ export default class PrefixContext extends Context<{
           if (parsed === null) {
             this.argumentValidationPassed = false;
             Logger.error(`Invalid value for ${name}`);
-            return;
+            return null;
           }
           args.set(option.name, { value: parsed, type: option.type });
           definedOpts.delete(option.name);
@@ -146,13 +137,13 @@ export default class PrefixContext extends Context<{
       if (!option) {
         this.argumentValidationPassed = false;
         Logger.error(`Unknown option: ${value}`);
-        return;
+        return null;
       }
 
       if (!value && option.required) {
         this.argumentValidationPassed = false;
         Logger.error(`Missing required option: ${option.name}`);
-        return;
+        return null;
       }
 
       if (value) {
@@ -160,7 +151,7 @@ export default class PrefixContext extends Context<{
         if (parsed === null) {
           this.argumentValidationPassed = false;
           Logger.error(`Invalid value for ${value}`);
-          return;
+          return null;
         }
         args.set(option.name, { value: parsed, type: option.type });
       }
@@ -205,9 +196,7 @@ export default class PrefixContext extends Context<{
 
   public async reply(data: string | MessageReplyOptions) {
     this.lastReply = await this.interaction.reply(
-      typeof data === 'string'
-        ? { content: data }
-        : { ...data, content: data.content ?? '' },
+      typeof data === 'string' ? { content: data } : { ...data, content: data.content ?? '' },
     );
     return this.lastReply;
   }
@@ -227,18 +216,16 @@ export default class PrefixContext extends Context<{
   public async editReply(data: string | MessageEditOptions) {
     return (
       (await this.lastReply?.edit(
-        typeof data === 'string'
-          ? { content: data }
-          : { ...data, content: data.content ?? '' },
+        typeof data === 'string' ? { content: data } : { ...data, content: data.content ?? '' },
       )) ?? null
     );
   }
 
   public async showModal(
     modal:
-			| JSONEncodable<APIModalInteractionResponseCallbackData>
-			| ModalComponentData
-			| APIModalInteractionResponseCallbackData,
+      | JSONEncodable<APIModalInteractionResponseCallbackData>
+      | ModalComponentData
+      | APIModalInteractionResponseCallbackData,
   ) {
     const reply = await this.reply({
       content: 'Click button to enter data.',
@@ -254,8 +241,7 @@ export default class PrefixContext extends Context<{
 
     const collector = reply?.createMessageComponentCollector({
       componentType: ComponentType.Button,
-      filter: (i) =>
-        i.customId === 'openForm' && i.user.id === this.interaction.author.id,
+      filter: (i) => i.customId === 'openForm' && i.user.id === this.interaction.author.id,
       idle: 60000,
     });
 

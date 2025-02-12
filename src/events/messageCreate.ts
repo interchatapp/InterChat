@@ -62,7 +62,10 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
 
   private async handlePrefixCommand(message: Message): Promise<void> {
     const userData = await fetchUserData(message.author.id);
-    if (!userData?.acceptedRules) return await showRulesScreening(message, userData);
+    if (!userData?.acceptedRules) {
+      await showRulesScreening(message, userData);
+      return;
+    }
 
     const { command, prefixArgs } = resolveCommand(message);
     if (!command) return;

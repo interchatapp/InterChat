@@ -43,7 +43,7 @@ export default class AntiSpamManager {
     });
   }
 
-  public async handleMessage(message: Message): Promise<UserMessageInfo | undefined> {
+  public async handleMessage(message: Message): Promise<UserMessageInfo | null> {
     const userId = message.author.id;
     const currentTime = Date.now();
     const userInfo = await this.getUserInfo(userId);
@@ -60,6 +60,7 @@ export default class AntiSpamManager {
     }
 
     this.setUserInfo(userId, { ...userInfo, lastMessage: currentTime });
+    return null;
   }
 
   private async getUserInfo(userId: string): Promise<UserMessageInfo> {

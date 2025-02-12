@@ -135,7 +135,10 @@ export default class HubLogManager {
   }
 
   async removeRoleId(type: RoleIdLogConfigs) {
-    if (!this.config[type]) return await this.resetLog(type);
+    if (!this.config[type]) {
+      await this.resetLog(type);
+      return;
+    }
 
     await this.updateLogConfig({
       [type]: { set: { channelId: this.config[type].channelId } },
