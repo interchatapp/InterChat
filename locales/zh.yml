@@ -99,7 +99,7 @@ connection:
   inviteInvalid: '{emoji}邀请无效。请确保您输入了有效的邀请链接。'
   inviteAdded: '{emoji}邀请已添加。其他人现在可通过使用“应用程序＞信息／报告”指令来加入此服务器。'
   emColorInvalid: '{emoji}颜色无效。请确保您输入了有效的十六进制颜色代码。'
-  emColorChange: '{emoji}颜色输入成功{action}'
+  emColorChange: '{emoji}嵌入颜色成功{action}'
   embed:
     title: 连接详情
     fields:
@@ -133,66 +133,65 @@ hub:
   notPrivate: '{emoji}此中心非私有。'
   notOwner: '{emoji}只有此中心的所有者可以执行此操作。'
   alreadyJoined: '{emoji}您已从{channel}加入{hub}！'
-  invalidChannel: '{emoji} Invalid channel. Only text and thread channels are supported!'
-  invalidImgurUrl: '{emoji} Invalid image URL for icon or banner. Please make sure you have entered a valid Imgur image URL that is not a gallery or album.'
+  invalidChannel: '{emoji}频道无效。仅支持文本频道和对话线程频道！'
+  invalidImgurUrl: '{emoji}图标或标语的图片网址无效。请确保您输入了有效的Imgur图片网址且该网址不是图库或相册。'
   join:
     success: |
-      Successfully joined hub **{hub}** from {channel}! You can now chat with members from other servers from this channel.
-      - Use `/connection` to explore various customizations for this connection.
-      - Use `/hub leave` to stop receiving messages from this hub.
-      - Use **`/connection edit`** to change channels.
+      成功从{channel}加入了{hub}！您现在可以和此频道其他服务器上的成员聊天了。
+      使用“／连接”来探索此连接的各种自定义设置。
+      使用“／离开中心”来停收此中心的信息。
+      使用“／编辑连接”来切换频道。
   servers:
-    total: 'Current connected servers: {from}-{to} / **{total}**'
-    noConnections: '{emoji} No server has joined this hub yet. Use `/hub join` to join this hub.'
-    notConnected: "{emoji} That server isn't a part of **{hub}**."
+    total: '目前已连接的服务器：{from}-­­­­­­­­­­{to}­／{total}'
+    noConnections: '{emoji}尚未有服务器加入此中心。使用“／加入中心”加入此中心。'
+    notConnected: "{emoji}那个服务器不是{hub}的一部分。"
     connectionInfo: |
-      ServerID: {serverId}
-      Channel: #{channelName} `({channelId})`
-      Joined At: {joinedAt}
-      Invite: {invite}
-      Connected: {connected}
+      服务器名称：{serverId}
+      频道：#{channelName}“({channelId})”
+      加入于：{joinedAt}
+      邀请：{invite}
+      已连接：{connected}
   blockwords:
-    deleted: '{emoji} Anti-Swear rule successfully deleted!'
-    notFound: '{emoji} Anti-Swear rule not found.'
-    maxRules: '{emoji} You have reached the maximum number of anti-swear rules (2) for this hub. Please delete a rule before adding another one.'
-    configure: 'Configure actions for rule: {rule}'
-    actionsUpdated: '{emoji} Updated the actions to be taken by the rule. **New Actions:** {actions}'
-    selectRuleToEdit: Select a rule to edit it's words/actions
+    deleted: '{emoji}反脏话规则已成功删除！'
+    notFound: '{emoji}未找到反脏话规则。'
+    maxRules: '{emoji}您已达到此中心的反脏话规则最大数量（2条）。请先删除一条规则，然后再添加新的规则。'
+    configure: '规则：{rule}的设置操作'
+    actionsUpdated: '{emoji}已更新此规则将进行的操作。新操作：{actions}'
+    selectRuleToEdit: 选择一条规则来编辑其词语／操作
     listDescription: |
-      ### {emoji} Anti-Swear Rules
-      This hub has {totalRules}/2 anti-swear rules setup.
-    listFooter: Select a rule using the menu to view it's full details.
+      {emoji}反脏话规则
+      此中心已设置{totalRules}／2条反脏话规则。
+    listFooter: 选择一条规则并用菜单查看其全部详情。
     ruleDescription: |
-      ### {emoji} Editing Rule: {ruleName}
-      {words}
-    ruleFooter: 'Click the button below to edit the words or rule name!'
-    actionSelectPlaceholder: 'Select the actions this rule should perform.'
+      {emoji}编辑规则：{ruleName}{words}
+    ruleFooter: '点击下面的按钮来编辑词语或规则名称！'
+    actionSelectPlaceholder: '选择此规则应该执行的操作。'
     embedFields:
-      noActions: '{emoji} **None!** Configure using the menu below.'
-      actionsName: 'Configured Actions:'
+      noActions: '{emoji}无！使用下方的菜单进行设置。'
+      actionsName: '设置操作：'
       actionsValue: '{actions}'
     modal:
-      addRule: Add Anti-Swear Rule
-      editingRule: Editing Anti-Swear Rule
-      ruleNameLabel: Rule Name
-      wordsLabel: 'Words seperated by comma (use * for wildcard)'
-      wordsPlaceholder: 'Eg. word1, *word2*, *word3, word4*'
-    validating: '{emoji} Validating anti-swear rule...'
+      addRule: 添加反脏话规则
+      editingRule: 编辑反脏话规则
+      ruleNameLabel: 规则名称
+      wordsLabel: '用逗号分隔词语(使用 * 作为通配符)'
+      wordsPlaceholder: '例如：词语一，*词语二*，词语三，词语四*'
+    validating: '{emoji}正在验证反脏话规则……'
     noRules: |
-      ### {emoji} Let's set up some rules!
-      Use the `Add Rule` button to create one.
+      {emoji}让我们制定一些规则吧！
+      使用“添加规则”按钮创建一条规则。
   create:
     modal:
-      title: Create Hub
+      title: 创建中心
       name:
-        label: Hub Name
-        placeholder: Enter a name for your hub.
+        label: 中心名称
+        placeholder: 为您的中心输入一个名称。
       description:
-        label: Description
-        placeholder: Enter a description for your hub.
+        label: 描述
+        placeholder: 为您的中心输入描述。
       icon:
-        label: Icon URL
-        placeholder: Enter an Imgur image URL.
+        label: 图标网址
+        placeholder: 输入一个Imgur图片网址。
       banner:
         label: 标语网址
         placeholder: 输入一个Imgur图片网址。
@@ -201,16 +200,16 @@ hub:
     nameTaken: '{emoji}此中心名称已被占用。请另选名称。'
     success: |
       中心已创建！默认情况下属__private__私有。
-      使用“／中心编辑 中心：{name}”来定义您的中心。请按照以下步骤开始操作：
+      使用“／编辑中心 中心：{name}”来自定义您的中心。请按照以下步骤开始操作：
       接下来的步骤：
       1.创建邀请：
       使用“／创建中心邀请”来创建让其他人加入的邀请。
       2.关联频道：
       使用“／加入中心”同时附上之前生成的邀请链接，将一个频道关联到此中心并开始聊天。
       3.设置中心(推荐)：
-      使用“／中心配置设定”、“／中心配置记录”和“／中心防脏话配置”来设置此中心。
-      4.添加管理员：
-      使用“／添加中心管理员”来为此中心添加管理员。
+      使用“／中心配置设定”、“／中心配置记录”和“／中心反脏话配置”来设置此中心。
+      4.添加监管员：
+      使用“／添加中心监管员”来为此中心添加监管员。
       5.自定义中心：
       使用“／编辑中心”来更改此中心的图标、标语和描述。
       6.公开中心：
@@ -239,7 +238,7 @@ hub:
 
         您的邀请已成功创建。其他人现在可以通过使用“／加入中心”指令加入此中心。
 
-        加入方式：“／中心加入邀请：{inviteCode}”
+        加入方式：“／邀请加入中心：{inviteCode}”
         查看邀请：“／中心邀请列表”
         到期时间：{expiry}
         用途：∞
@@ -250,10 +249,10 @@ hub:
       success: '{emoji}邀请{inviteCode}撤回。'
     list:
       title: '邀请码'
-      noInvites: '{emoji}此中心尚未收到邀请。使用“／中心邀请创建”来创建邀请。'
-      notPrivate: '{emoji}只有私人中心才能收到邀请。使用“／中心编辑”将此中心设置为私有。'
+      noInvites: '{emoji}此中心尚未收到邀请。使用“／创建中心邀请”来创建邀请。'
+      notPrivate: '{emoji}只有私人中心才能收到邀请。使用“／编辑编辑”将此中心设置为私有。'
   joined:
-    noJoinedHubs: '{emoji}此服务器尚未加入如何中心。使用“／中心浏览”查看中心列表。'
+    noJoinedHubs: '{emoji}此服务器尚未加入如何中心。使用“／浏览中心”查看中心列表。'
     joinedHubs: 此服务器是{total}中心(群)的一部分。使用“／离开中心”离开中心。
   leave:
     noHub: '{emoji}该频道无效或尚未加入任何中心。'
@@ -263,16 +262,16 @@ hub:
   moderator:
     noModerators: '{emoji}此中心尚未有管理员。使用“／添加中心管理员”添加管理员。'
     add:
-      success: '{emoji}{user}已被添加为身份{position}管理员。'
-      alreadyModerator: '{emoji}{user}已成为管理员。'
+      success: '{emoji}{user}已被添加为身份{position}监管员。'
+      alreadyModerator: '{emoji}{user}已成为监管员。'
     remove:
-      success: '{emoji}{user}已移除管理员身份。'
-      notModerator: '{emoji}{user}不是管理员。'
+      success: '{emoji}{user}已被移除监管员身份。'
+      notModerator: '{emoji}{user}不是监管员。'
       notOwner: '{emoji}只有此中心的所有者可以移除管理员。'
     update:
       success: "{emoji}{user}的身份已更新为{position}。"
-      notModerator: "{emoji}{user}不是管理员。"
-      notAllowed: "{emoji}只有中心管理员可以更新管理员身份。"
+      notModerator: "{emoji}{user}不是监管员。"
+      notAllowed: "{emoji}只有中心管理员可以更新监管员身份。"
       notOwner: "{emoji}只有此中心的所有者可以更新管理员的身份。"
   manage:
     enterImgurUrl: 输入一个有效的Imgur图片网址，且该网址不是图库或相册。
@@ -295,7 +294,7 @@ hub:
         description: 更改此中心的描述。
     banner:
       changed: 中心的标语已成功更改。
-      removed: 中心的标语已成功移除。
+      removed: 中心的标语已被成功移除。
       modal:
         title: 编辑标语
         label: 标语网址
@@ -310,11 +309,11 @@ hub:
     toggleLock:
       selects:
         label: '锁定／解锁中心'
-        description: '关闭／打开此中心聊天区'
+        description: '关闭或打开此中心聊天区'
       confirmation: '中心聊天区现在为{status}。'
       announcementTitle: '中心聊天区现在为{status}。'
       announcementDescription:
-        locked: '只有管理员可以发送信息。'
+        locked: '只有监管员可以发送信息。'
         unlocked: '所有人都可以发送信息。'
     embed:
       visibility: '可见'
@@ -325,13 +324,13 @@ hub:
       users: '用户'
       servers: '服务器'
       hubStats: '中心统计数据'
-      moderators: '管理员'
+      moderators: '监管员'
       owner: '所有者'
     logs:
       title: 配置记录
       reset: '{emoji}成功重置“{type}”记录的配置记录。'
       roleSuccess: '{emoji}“{type}”记录现在将提及{role}！'
-      roleRemoved: '{emoji}“{type}”记录将不再提及某身份。'
+      roleRemoved: '{emoji}“{type}”记录将不再提及身份。'
       channelSuccess: '{emoji}“{type}”记录从现在开始将被发送至{channel}！'
       channelSelect: '#️⃣ 选择一个频道发送记录'
       roleSelect: '🏓 选择触发记录时提及的身份。'
@@ -348,8 +347,8 @@ hub:
         label: 报告
         description: 从用户处收到报告。
       modLogs:
-        label: 管理员记录
-        description: 管理操作记录。（例如：列入黑名单、删除信息等等）
+        label: 监管员记录
+        description: 监管操作记录。（例如：列入黑名单、删除信息等等）
       joinLeaves:
         label: 加入／离开
         description: 当服务器加入或离开此中心时记录下来。
@@ -368,9 +367,9 @@ report:
     bug:
       input1:
         label: 故障详情
-        placeholder: Eg. Frequent interaction failures for /help command...
+        placeholder: 例如，“／帮助” 指令频繁出现互动失败的情况……
       input2:
-        label: Detailed Description (Optional)
+        label: 描述详情（可选）
         placeholder: 要做的步骤。例如：1.运行／帮助 2.等待5秒……
   submitted: '{emoji}报告已成功提交。加入{support_command}获取详情。谢谢！'
   bug:
@@ -381,28 +380,28 @@ language:
   set: 语言设置！我现在将用{lang}回应你。
 errors:
   messageNotSentOrExpired: '{emoji}此消息未在中心发送，已过期，或者您没有执行此操作的权限。'
-  notYourAction: "{emoji} Sorry, you can't perform this action. Please run the command yourself."
-  notMessageAuthor: '{emoji} You are not the author of this message.'
+  notYourAction: "{emoji}抱歉，您无法执行此操作。请自行运行此指令。"
+  notMessageAuthor: '{emoji}您不是这条信息的发布者。'
   commandError: |
-    {emoji} An error occurred while executing this command. It has been logged to our system. If this issue persists, please join our [support server]({support_invite}) and report the error ID!
+    {emoji}执行此指令时发生了错误。该错误已记录到我们的系统中。如果此问题持续存在，请加入我们的[支持服务器]({support_invite})并报告错误 名称！ 
 
-    **Error ID:**
+    错误名称：
     ```{errorId}```
-  mustVote: Please [vote](https://top.gg/bot/769921109209907241/vote) for InterChat to use this command, your support is very much appreciated!
-  inviteLinks: '{emoji} You may not send invite links to this hub. Set an invite in `/connection` instead! Hub mods can configure this using `/hub edit settings`'
-  invalidLangCode: '{emoji} Invalid language code. Please make sure you have entered a correct [language code](https://cloud.google.com/translate/docs/languages).'
-  unknownServer: '{emoji} Unknown server. Please make sure you have entered the correct **Server ID**.'
-  unknownNetworkMessage: '{emoji} Unknown Message. If it has been sent in the past minute, please wait few more seconds and try again.'
-  userNotFound: '{emoji} User not found. Try inputting their ID instead.'
-  blacklisted: '{emoji} You or this server is blacklisted from this hub called {hub}.'
-  userBlacklisted: '{emoji} You are blacklisted from this hub.'
-  serverBlacklisted: '{emoji} This server is blacklisted from this hub.'
-  serverNotBlacklisted: '{emoji} The inputted server is not blacklisted.'
-  userNotBlacklisted: '{emoji} The inputted user is not blacklisted.'
-  missingPermissions: '{emoji} You are missing the following permissions to perform this action: **{permissions}**'
-  botMissingPermissions: '{emoji} Please grant me the following permissions to continue: **{permissions}**'
-  unknown: '{emoji} An unknown error occurred. Please try again later or contact us by joining our [support server]({support_invite}).'
-  notUsable: '{emoji} This is no longer usable.'
+  mustVote: 请[投票](https://top.gg/bot/769921109209907241/vote)给InterChat以使用此指令，非常感谢您的支持！
+  inviteLinks: '{emoji}您不能向此中心发送邀请链接。请改为在“／连接”处设置邀请！中心监管员可以用“／中心编辑设定”来配置'
+  invalidLangCode: '{emoji}语言模式无效。请确保您输入了正确的[语言模式](https://cloud.google.com/translate/docs/languages)。'
+  unknownServer: '{emoji}未知服务器。请确保您输入了正确的服务器名称。'
+  unknownNetworkMessage: '{emoji}未知信息。如果该内容在过去一分钟内已发送过，请再等待几秒钟后重试。'
+  userNotFound: '{emoji}找不到该用户。请尝试输入他们的名称。'
+  blacklisted: '{emoji}您或者此服务器已被此中心{hub}列入黑名单。'
+  userBlacklisted: '{emoji}您已被此中心列入黑名单。'
+  serverBlacklisted: '{emoji}此服务器已被此中心列入黑名单。'
+  serverNotBlacklisted: '{emoji}输入的服务器未被列入黑名单。'
+  userNotBlacklisted: '{emoji}输入的用户未被列入黑名单。'
+  missingPermissions: '{emoji}您没有执行此操作的以下权限：{permissions}'
+  botMissingPermissions: '{emoji}请授予我以下权限以继续：{permissions}'
+  unknown: '{emoji}出现一个未知错误。请稍后重试或通过我们的[支持服务器]({support_invite})来联系我们。'
+  notUsable: '{emoji}这已无法再用。'
   cooldown: '{emoji} You are on cooldown. Please wait until **{time}** before attempting again.'
   serverNameInappropriate: '{emoji} Your server name contains inappropriate words. Please change it before joining the hub.'
   banned: |
