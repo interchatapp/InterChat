@@ -109,7 +109,6 @@ connection:
       connected: Conectada
       emColor: Color del embed
       compact: Modo compacto
-      profanity: Filtro de blasfemias
     footer: Use el botón y el menú desplegable a continuación para administrar su conexión.
   selects:
     placeholder: '🛠️ Seleccione una opción a continuación para administrar su conexión.'
@@ -150,7 +149,6 @@ hub:
       Invite: {invite}
       Connected: {connected}
   blockwords:
-    created: '{emoji} Anti-Swear rule successfully created! Add actions using the `Configure Actions` button. You can also do this using `/hub blockwords edit`.'
     deleted: '{emoji} Anti-Swear rule successfully deleted!'
     notFound: '{emoji} Anti-Swear rule not found.'
     maxRules: '{emoji} You have reached the maximum number of anti-swear rules (2) for this hub. Please delete a rule before adding another one.'
@@ -167,7 +165,7 @@ hub:
     ruleFooter: 'Click the button below to edit the words or rule name!'
     actionSelectPlaceholder: 'Select the actions this rule should perform.'
     embedFields:
-      noActions: '{emoji} None! Configure using the button below.'
+      noActions: '{emoji} **None!** Configure using the menu below.'
       actionsName: 'Configured Actions:'
       actionsValue: '{actions}'
     modal:
@@ -344,9 +342,6 @@ hub:
       modLogs:
         label: Registros de mod
         description: Acciones de moderación de registro. (por ejemplo, la lista negra, el mensaje elimina, etc.)
-      profanity:
-        label: Filtro de blasfemias
-        description: Mensajes de registro que son capturados por el filtro de blasfemias.
       joinLeaves:
         label: Unir/salir
         description: Registre cuando un servidor se une o deja este centro.
