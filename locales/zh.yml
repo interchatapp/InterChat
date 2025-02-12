@@ -260,7 +260,7 @@ hub:
     confirmFooter: 在10秒内使用下面的按钮进行确认。
     success: '{emoji}从{channel}离开中心。此中心将不再向此服务器发送任何消息。您可以使用“／加入中心”重新加入。'
   moderator:
-    noModerators: '{emoji}此中心尚未有管理员。使用“／添加中心管理员”添加管理员。'
+    noModerators: '{emoji}此中心尚未有监管员。使用“／添加中心监管员”添加监管员。'
     add:
       success: '{emoji}{user}已被添加为身份{position}监管员。'
       alreadyModerator: '{emoji}{user}已成为监管员。'
@@ -402,20 +402,20 @@ errors:
   botMissingPermissions: '{emoji}请授予我以下权限以继续：{permissions}'
   unknown: '{emoji}出现一个未知错误。请稍后重试或通过我们的[支持服务器]({support_invite})来联系我们。'
   notUsable: '{emoji}这已无法再用。'
-  cooldown: '{emoji} You are on cooldown. Please wait until **{time}** before attempting again.'
-  serverNameInappropriate: '{emoji} Your server name contains inappropriate words. Please change it before joining the hub.'
+  cooldown: '{emoji}您处于冷却时间内。请等到{time}后再尝试。'
+  serverNameInappropriate: '{emoji}您的服务器名称包含不当内容。请更改后再加入中心。'
   banned: |
-    {emoji} You have been banned from using InterChat for violating our [guidelines](https://interchat.tech/guidelines).
-    If you think an appeal is applicable create a ticket in the [support server]( {support_invite} ).
+    {emoji}由于违反了我们的[准则](https://interchat.tech/guidelines)，您已被禁止使用Interchat。
+    如果您认为可以上诉，请在[支持服务器]({support_invite})创建票证。
 global:
-  webhookNoLongerExists: '{emoji} The webhook for this channel no longer exists. To continue using InterChat, please re-create the webhook by using `/connection unpause`.'
-  noReason: No reason provided.
-  noDesc: No Description.
-  version: InterChat v{version}
-  loading: '{emoji} Please wait while I process your request...'
-  reportOptionMoved: '{emoji} This option has moved! To report a message to hub moderators, use the updated `Apps > Message Info/Report` command. For direct reporting to InterChat staff, just hop into the [support server]({support_invite}) and create a ticket with proof.'
-  private: 'Private'
-  public: 'Public'
-  yes: 'Yes'
-  no: 'No'
-  cancelled: '{emoji} Cancelled. No changes were made.'
+  webhookNoLongerExists: '{emoji}此频道的网络回调已不存在。若要继续使用 InterChat，请使用“／恢复连接”指令重新创建网络回调。'
+  noReason: 未提供原因。
+  noDesc: 没有描述。
+  version: InterChat版本{version}
+  loading: '{emoji}我正在处理您的请求，请稍候……'
+  reportOptionMoved: '{emoji}此选项已移动！如向中心监管员报告，请使用更新的“应用程序＞信息／报告”指令。如直接向InterChat工作人员报告，只需登录[支持服务器]({support_invite})并创建一张带有证明的票证。'
+  private: '私人'
+  public: '公开'
+  yes: '是'
+  no: '否'
+  cancelled: '{emoji}已取消。未进行任何更改。'
