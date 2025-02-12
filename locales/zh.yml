@@ -1,112 +1,112 @@
 rules:
   rules: |
-    ### Rules:
-    These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:
+    规则：
+    这些规则的制定是为了给每个人都带来安全且愉快的体验。请仔细阅读并遵守以下规则：
 
-    1. **No NSFW, NSFL, or Gore Content**
-      -# Applies to profile images, usernames, explicit images, videos, and text.
-    2. **No Racism or Discrimination**
-      -# Treat everyone respectfully and kindly. Hate speech and slurs are prohibited.
-    3. **No Sexual Content**
-      -# This includes suggestive jokes, gifs, and any other form of innuendo. Keep it friendly for everyone.
-    4. **No Advertising or Self-Promotion**
-      -# Avoid sharing links to personal servers, social media, or other bots on InterChat.
-    5. **No Harassment or Doxxing**
-      -# Respect everyone’s privacy and well-being. Harassment, doxxing, and encouraging self-harm are strictly forbidden.
-    6. **No Spam or Flooding**
-      -# Don’t send repetitive messages or flood the chat. Excessive spamming may result in harsher penalties and impacts bot performance.
-    7. **No Controversial Discussions**
-      -# Maintain a friendly, welcoming environment for everyone. Avoid discussing politics, religion, or other controversial topics.
-    8. **Use Common Sense**
-      -# If you think something might not be appropriate, avoid it.
-    9. **Report Violations**
-      -# Use the `Apps > Message Info/Report` command to notify moderators of any rule-breaking content.
+    1.禁止出现成人、暴力及血腥内容
+      适用于个人资料图片、用户名、露骨的图片、视频和文字。
+    2.禁止种族偏见或歧视行为
+      请以尊重和友善的态度对待每个人。禁止仇恨言论和诋毁言辞。
+    3.禁止出现性相关内容
+      包括带有暗示性的笑话、动图及其他任何形式的隐晦内容。要让这里对每个人来说都是友好的环境。
+    4.禁止广告或自我推销
+      请勿在InterChat上分享个人服务 器、社交媒体或其他程序的链接。
+    5.禁止骚扰他人或人肉搜索
+      请尊重每个人的隐私和身心健康。严禁骚扰他人、人肉搜索和鼓励他人自我伤害的行为。
+    6.禁止发送垃圾信息或刷屏
+      请勿发送重复的信息或在聊天中刷屏。过度发送垃圾信息可能导致更严厉的处罚，并且会影响程序的运行。
+    7.禁止进行有争议性的讨论
+      为每个人营造一个友好、包容的环境。请勿讨论政治、宗教或其他有争议的话题。
+    8.运用常识
+      如果您觉得某件事可能不合适，请不要做。
+    9.举报违规行为
+      使用“应用程序＞信息＞举报”指令，向管理员举报任何违反规则的内容。
 
-    And remember to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines).
+    还有要记得遵守［Discord的服务条款］(https://discord.com/terms) 以及［社区准则］(https://discord.com/guidelines)。
   welcome: |
-    {emoji} Hey {user}, welcome to InterChat!
-    Before you can start chatting with people from other servers using InterChat, you need to accept the rules. Use the button below to accept them.
+    {emoji}您好{user}，欢迎来到InterChat！
+    在您开始使用InterChat与其他服务器上的人聊天之前，您需要接受这些规则。请使用下面的按钮接受规则。
   accepted: |
-    {emoji} Welcome to InterChat! You have accepted the rules and are now ready to chat with members from other servers!
-    If you are not already in a hub, use `/hub browse` to join one and start chatting. If you have any questions or need help, feel free to ask in the [support server]({support_invite}).
-    If you enjoy using InterChat, please consider [donating]({donateLink}) to support the development costs.
-  alreadyAccepted: '{emoji} You have already accepted the rules. You can now use InterChat to its full extent.'
+    {emoji}欢迎来到InterChat！您已接受所有规则，现在可以与其他服务器上的成员聊天了！
+    如果您还没有加入中心，请在“浏览中心”加入并开始聊天。如果您有任何问题或需要帮助，请随时在［支持服务器］({support_invite})中提问。
+    如果您喜欢使用InterChat，请考虑一下［捐赠］({donateLink})来支持开发成本。
+  alreadyAccepted: '{emoji}您已接受所有规则。您现在可以尽情使用InterChat。'
 vote:
-  description: By voting you support us by helping InterChat rank higher on topgg searches.
-  footer: Thank you for supporting!
+  description: 通过投票，您可以帮助InterChat在topgg搜索中排名更高来表示对我们的支持。
+  footer: 感谢您的支持！
 network:
-  accountTooNew: '{emoji} {user} Your account is too new to send messages using InterChat. Please try again later.'
-  deleteSuccess: '{emoji} Message by {user} has been deleted from __**{deleted}/{total}**__ servers.'
-  editSuccess: '{emoji} Message by {user} has been edited in __**{edited}/{total}**__ servers.'
+  accountTooNew: '{emoji}{user}您的帐户太新，无法使用InterChat发送消息。请稍后再试。'
+  deleteSuccess: '{emoji}{user}发送的消息已从{deleted}／{total}服务器中删除。'
+  editSuccess: '{emoji}{user}发送的消息已在{edited}／{total}服务器中编辑。'
   onboarding:
     embed:
-      title: '👋 Hey there, welcome to {hubName}!'
+      title: '👋 您好，欢迎来到{hubName}！'
       description: |
-        Hey there! You are trying to join a hub called **{hubName}**. In order to chat with members from other servers, you need to accept InterChat's guidelines. Use the button below to continue.
-      footer: InterChat Network | Version {version}
-    inProgress: '{emoji} {channel} is already in the process of being setup to join a hub. Please wait for the setup to complete or cancel it if you were the one who initiated it.'
+        您好！您正尝试加入一个名为{hubName}的中心。为了与其他服务器上的成员聊天，您需要接受InterChat的准则。使用下面的按钮表示继续。
+      footer: InterChat网络｜版本{version}
+    inProgress: '{emoji}{channel}已经在设置加入中心的过程中。如果是您启动安装，请等待安装完成或取消安装。'
 blacklist:
-  success: '{emoji} **{name}** has been successfully blacklisted!'
-  removed: '{emoji} **{name}** has been removed from the blacklist!'
+  success: '{emoji}{name}已成功列入黑名单！'
+  removed: '{emoji}{name}已从黑名单中移除！'
   modal:
     reason:
-      label: Reason
-      placeholder: Reason for blacklisting
+      label: 原因
+      placeholder: 列入黑名单的原因
     duration:
-      label: Duration
-      placeholder: 'Duration of blacklist. Eg: 1d, 1w, 1m, 1y. Leave blank for permanent.'
+      label: 持续时间
+      placeholder: '黑名单的持续时间。例如：一天、一周、一个月、一年。留空表示永久。'
   user:
-    cannotBlacklistMod: '{emoji} You cannot blacklist a moderator. Please remove their moderator role first.'
-    alreadyBlacklisted: '{emoji} This user is already blacklisted.'
+    cannotBlacklistMod: '{emoji}您不能将管理员列入黑名单。请先删除他们的管理员身份。'
+    alreadyBlacklisted: '{emoji}该用户已被列入黑名单。'
     easterEggs:
-      blacklistBot: You can't blacklist me wtf.
+      blacklistBot: 你不能把我列入黑名单。
   server:
-    alreadyBlacklisted: '{emoji} This server is already blacklisted.'
-    unknownError: Failed to blacklist **{server}**. Enquire with the developers for more information.
+    alreadyBlacklisted: '{emoji}此服务器已被列入黑名单。'
+    unknownError: 未能将{server}列入黑名单。向开发者咨询更多信息。
   list:
     user: |
-      **UserID:** {id}
-      **Moderator:** {moderator}
-      **Reason:** {reason}
-      **Expires:** {expires}
+      用户名称：{id}
+      管理员：{moderator}
+      原因：{reason}
+      期限：{expires}
     server: |
-      **ServerId:** {id}
-      **Moderator:** {moderator}
-      **Reason:** {reason}
-      **Expires:** {expires}
+      服务器名称：{id}
+      管理员：{moderator}
+      原因：{reason}
+      期限：{expires}
 msgInfo:
   buttons:
-    message: Message Info
-    server: Server Info
-    user: User Info
-    report: Report
+    message: 留言信息
+    server: 服务器信息
+    user: 用户信息
+    report: 举报
   report:
-    notEnabled: '{emoji} Reporting is not enabled for this hub.'
-    success: '{emoji} Report submitted successfully. Thank you!'
+    notEnabled: '{emoji}此中心未启用举报功能。'
+    success: '{emoji}举报已成功提交。非常感谢！'
 invite: |
-  Thank you for choosing to invite InterChat! If you have any questions or need help, we are always here to help you in the support server!
+  感谢您选择邀请InterChat！如果您有任何问题或需要帮助，我们随时在支持服务器上为您提供帮助！
 
-  **[{invite_emoji} `Invite Link`]( {invite} ) [{support_emoji} `Support Server`]( {support} )**
+  ［{invite_emoji}“邀请链接”］({invite})［{support_emoji}“支持服务器”］({support})
 connection:
-  joinRequestsDisabled: '{emoji} Join requests are disabled for this hub.'
-  notFound: '{emoji} Invalid connection. Verify the channel ID or select from displayed options.'
-  channelNotFound: '{emoji} Unable to find connected channel. To talk again choose a new channel.'
-  alreadyConnected: '{emoji} Channel {channel} is already connected to a hub.'
-  switchChannel: '{emoji} Select a channel to switch to using the select menu below:'
-  switchCalled: '{emoji} Channel switch called, use the command again to view new connection.'
-  switchSuccess: '{emoji} Channel switched. You are now connected from **{channel}**.'
-  inviteRemoved: '{emoji} Server Invite removed for this hub.'
-  inviteInvalid: '{emoji} Invalid invite. Please make sure you have entered a valid invite link.'
-  inviteAdded: '{emoji} Invite Added. Others can now join this server by using `Apps > Message Info/Report` command.'
-  emColorInvalid: '{emoji} Invalid color. Please make sure you have entered a valid hex color code.'
-  emColorChange: '{emoji} Embed color successfully {action}'
+  joinRequestsDisabled: '{emoji}此中心无法加入请求。'
+  notFound: '{emoji}连接无效。请验证频道名称或从显示的选项中选择。'
+  channelNotFound: '{emoji}无法找到已连接的频道。请选择新频道再次交谈。'
+  alreadyConnected: '{emoji}频道{channel}已连接中心。'
+  switchChannel: '{emoji}请使用下面的选择菜单来选择要切换到的频道：'
+  switchCalled: '{emoji}频道切换已调用，请再次使用该指令查看新连接。'
+  switchSuccess: '{emoji}频道已切换。您现在已从{channel}连接。'
+  inviteRemoved: '{emoji}已移除此中心的服务器邀请。'
+  inviteInvalid: '{emoji}邀请无效。请确保您输入了有效的邀请链接。'
+  inviteAdded: '{emoji}邀请已添加。其他人现在可通过使用“应用程序＞信息／报告”指令来加入此服务器。'
+  emColorInvalid: '{emoji}颜色无效。请确保您输入了有效的十六进制颜色代码。'
+  emColorChange: '{emoji}颜色输入成功{action}'
   embed:
-    title: Connection Details
+    title: 连接详情
     fields:
-      hub: Hub
-      channel: Channel
-      invite: Invite
-      connected: Connected
+      hub: 中心
+      channel: 频道
+      invite: 邀请
+      connected: 已连接
       emColor: Embed Color
       compact: Compact Mode
     footer: Use the button & dropdown below to manage your connection.
@@ -195,10 +195,10 @@ hub:
         placeholder: Enter an Imgur image URL.
       banner:
         label: Banner URL
-        placeholder: Enter an Imgur image URL.
-    maxHubs: '{emoji} You have reached the maximum number of hubs (3) you can create. Please delete a hub before creating another one.'
-    invalidName: '{emoji} Invalid hub name. It must not contain `discord`, `clyde` or \`\`\` . Please choose another name.'
-    nameTaken: '{emoji} This hub name is already taken. Please choose another name.'
+        placeholder: 输入一个Imgur图片的网址。
+    maxHubs: '{emoji}您已达到可以创建的最大中心数量(3)。请在创建另一个中心之前删除一个中心。'
+    invalidName: '{emoji}中心名称无效。名称不能包含“discord”、“clyde”或“＼”。请另选名称。'
+    nameTaken: '{emoji}此中心名称已被占用。请另选名称。'
     success: |
       ### Your __private__ hub, **{name}**, has been successfully created.
       To join, create an invite using `/hub invite create` and share the generated code. Then join using `/hub join`.
@@ -213,20 +213,20 @@ hub:
 
       If you have any questions or need help, feel free to ask in the [support server]({support_invite}). Consider [donating]({donateLink}) to support the development costs.
   delete:
-    confirm: Are you sure you wish to delete **{hub}**? This action is irreversible. All connected servers, invites and message data will be removed from this hub.
-    ownerOnly: '{emoji} Only the owner of this hub can delete it.'
-    success: '{emoji} Hub **{hub}** has been deleted.'
-    cancelled: '{emoji} Hub deletion has been cancelled.'
+    confirm: 您确定要删除{hub}吗？该行动无法撤回。所有已连接的服务器、邀请和消息数据都将从此中心删除。
+    ownerOnly: '{emoji}只有此中心的所有者可以删除它。'
+    success: '{emoji}中心{hub}已被删除。'
+    cancelled: '{emoji}删除中心已取消。'
   browse:
     joinConfirm: |
-      Are you sure you wish to join {hub} from {channel}?
+      您确定要从{channel}加入{hub}吗？
 
-      **Note:** You can always change this later using `/connection`.
-    joinFooter: Want to use a different channel? Use the dropdown below.
-    noHubs: '{emoji} There are no hubs listed here at the moment. Please try again later!'
+      注意：此后您始终可以使用“/连接”进行更改。
+    joinFooter: 想要使用其他频道吗？使用下面的下拉菜单。
+    noHubs: '{emoji}目前此处未列出任何中心。请稍后再试！'
     rating:
-      invalid: Invalid rating. You must enter a number between 1 and 5.
-      success: Rating submitted! Thank you for your feedback.
+      invalid: 打分无效。您必须输入一个1到5之间的数字。
+      success: 打分已提交！感谢您的反馈。
   invite:
     create:
       success: |
