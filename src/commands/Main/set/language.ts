@@ -28,7 +28,7 @@ import {
   ApplicationCommandOptionType,
 } from 'discord.js';
 
-const currSupportedLangs = ['en', 'hi', 'es'] as const;
+const currSupportedLangs = ['en', 'hi', 'es', 'pt'] as const;
 
 export default class SetLanguage extends BaseCommand {
   constructor() {
