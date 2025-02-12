@@ -79,8 +79,10 @@ export default async (
   // loop through all results and extract message data and invalid webhook urls
   for (const res of broadcastResults) {
     if ('error' in res) {
-      if (validErrors.some((e) => res.error.includes(e))) invalidWebhookURLs.push(res.webhookURL);
-      Logger.debug(`Failed to send a message with error: ${res.error}. Disconnecting connection.`);
+      if (validErrors.some((e) => res.error.includes(e))) {
+        invalidWebhookURLs.push(res.webhookURL);
+        Logger.debug(`Failed to send a message with error: ${res.error}. Disconnecting connection.`);
+      }
       continue;
     }
     validBroadcasts.push({

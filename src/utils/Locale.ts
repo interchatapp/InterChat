@@ -50,6 +50,7 @@ export const supportedLocales = {
   uk: { name: 'Ukrainian', emoji: '🇺🇦' },
   vi: { name: 'Vietnamese', emoji: '🇻🇳' },
   hi: { name: 'Hindi', emoji: '🇮🇳' },
+  zh: { name: 'Chinese', emoji: '🇨🇳' },
 } as const;
 
 export type supportedLocaleCodes = keyof typeof supportedLocales;

@@ -50,8 +50,7 @@ export default class ConnectionEditSubcommand extends BaseCommand {
   constructor() {
     super({
       name: 'edit',
-      description:
-        '📝 Set embed colors, compact mode and more!',
+      description: '📝 Set embed colors, compact mode and more!',
       types: { slash: true, prefix: true },
       options: [
         {
@@ -68,9 +67,8 @@ export default class ConnectionEditSubcommand extends BaseCommand {
     await ctx.deferReply();
 
     const channelId =
-      ctx.options
-        .getString('channel')
-        ?.replace(Constants.Regex.ChannelMention, '') ?? ctx.channelId;
+      ctx.options.getString('channel')?.replace(Constants.Regex.ChannelMention, '') ??
+      ctx.channelId;
 
     const isInDb = await db.connection.findFirst({ where: { channelId } });
     const locale = await ctx.getLocale();
@@ -83,9 +81,7 @@ export default class ConnectionEditSubcommand extends BaseCommand {
       return;
     }
 
-    const channelExists = await ctx.guild?.channels
-      .fetch(channelId)
-      .catch(() => null);
+    const channelExists = await ctx.guild?.channels.fetch(channelId).catch(() => null);
     if (!channelExists) {
       await updateConnection({ channelId }, { connected: !isInDb.connected });
 
@@ -98,12 +94,7 @@ export default class ConnectionEditSubcommand extends BaseCommand {
     const iconURL = ctx.guild?.iconURL() ?? ctx.user.avatarURL()?.toString();
 
     const embed = await buildEditEmbed(ctx.client, channelId, iconURL, locale);
-    const editSelect = buildEditSelect(
-      ctx.client,
-      channelId,
-      ctx.user.id,
-      locale,
-    );
+    const editSelect = buildEditSelect(ctx.client, channelId, ctx.user.id, locale);
     const channelSelect = buildChannelSelect(channelId, ctx.user.id);
 
     await ctx.editOrReply({
@@ -138,9 +129,11 @@ export default class ConnectionEditSubcommand extends BaseCommand {
         return;
       }
 
-      const fetchedInvite = await interaction.client
-        ?.fetchInvite(invite)
-        .catch(() => null);
+      const validInvite = Constants.Regex.DiscordInvite.test(invite);
+      const fetchedInvite = validInvite
+        ? await interaction.client?.fetchInvite(invite).catch(() => null)
+        : null;
+
       if (fetchedInvite?.guild?.id !== interaction.guildId) {
         await interaction.followUp({
           content: t('connection.inviteInvalid', locale, {
@@ -193,8 +186,7 @@ export default class ConnectionEditSubcommand extends BaseCommand {
           await buildEditEmbed(
             interaction.client,
             customId.args[0],
-            interaction.guild?.iconURL() ??
-            interaction.user.avatarURL()?.toString(),
+            interaction.guild?.iconURL() ?? interaction.user.avatarURL()?.toString(),
             locale,
           ),
         ],
@@ -242,10 +234,7 @@ export default class ConnectionEditSubcommand extends BaseCommand {
         const modal = new ModalBuilder()
           .setTitle('Add Invite Link')
           .setCustomId(
-            new CustomID()
-              .setIdentifier('connectionModal', 'invite')
-              .setArgs(channelId)
-              .toString(),
+            new CustomID().setIdentifier('connectionModal', 'invite').setArgs(channelId).toString(),
           )
           .addComponents(
             new ActionRowBuilder<TextInputBuilder>().addComponents(
@@ -276,9 +265,7 @@ export default class ConnectionEditSubcommand extends BaseCommand {
                 .setCustomId('embed_color')
                 .setStyle(TextInputStyle.Short)
                 .setLabel('Embed Color')
-                .setPlaceholder(
-                  'Provide a hex color code or leave blank to remove.',
-                )
+                .setPlaceholder('Provide a hex color code or leave blank to remove.')
                 .setValue(connection.embedColor ?? '#000000')
                 .setRequired(false),
             ),
@@ -336,9 +323,7 @@ export default class ConnectionEditSubcommand extends BaseCommand {
     }
 
     if (userIdFilter !== interaction.user.id) {
-      const embed = new InfoEmbed().setDescription(
-        t('errors.notYourAction', locale, { emoji }),
-      );
+      const embed = new InfoEmbed().setDescription(t('errors.notYourAction', locale, { emoji }));
 
       await interaction.reply({ embeds: [embed], flags: ['Ephemeral'] });
       return;
@@ -376,18 +361,14 @@ export default class ConnectionEditSubcommand extends BaseCommand {
       interaction.user.id,
       locale,
     );
-    const channelSelect = buildChannelSelect(
-      newChannel.id,
-      interaction.user.id,
-    );
+    const channelSelect = buildChannelSelect(newChannel.id, interaction.user.id);
 
     await interaction.editReply({
       embeds: [
         await buildEditEmbed(
           interaction.client,
           newChannel.id,
-          interaction.guild?.iconURL() ??
-          interaction.user.avatarURL()?.toString(),
+          interaction.guild?.iconURL() ?? interaction.user.avatarURL()?.toString(),
           locale,
         ),
       ],

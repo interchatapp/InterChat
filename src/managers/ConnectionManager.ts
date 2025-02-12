@@ -27,9 +27,11 @@ export default class ConnectionManager {
   private readonly cache = getRedis();
   private readonly hubService = new HubService();
   private readonly cacheKey: string;
+  private connection: Connection;
 
-  constructor(private connection: Connection) {
-    this.cacheKey = this.buildCacheKey(connection.hubId);
+  constructor(connection: Connection) {
+    this.connection = connection;
+    this.cacheKey = this.getCacheKey(connection.hubId);
   }
 
   get id(): string {
@@ -95,7 +97,7 @@ export default class ConnectionManager {
   }
 
   // Private helper methods
-  private buildCacheKey(hubId: string): string {
+  private getCacheKey(hubId: string): string {
     return `${RedisKeys.Hub}:${hubId}:connections`;
   }
 

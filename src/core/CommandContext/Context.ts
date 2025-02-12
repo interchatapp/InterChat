@@ -143,7 +143,7 @@ export default abstract class Context<T extends classT = classT> {
 
     // TODO: move this to constants
     const regex = /\b\d{17,20}\b|discord\.com\/channels\/\d{17,20}\/\d{17,20}\/(\d{17,20})/g;
-    const matches = regex.exec(value);
+    const matches = value.match(regex);
 
     let messageId = matches?.[1] ?? matches?.[0];
     if (this.interaction instanceof Message && this.interaction.reference) {

@@ -65,6 +65,7 @@ export default {
     ChannelId: /(?<=\/channels\/\d{17,20}\/|<#?)\d{17,20}(?=>?)(?!\d)/,
     UserId: /(?:<@!? ?(\d+)>|\b(\d{17,20})\b(?!\/))/,
     RoleId: /(?:<@& ?(\d+)>|\b(\d{17,20})\b(?!\/))/,
+    DiscordInvite: /(?:https?:\/\/)?(?:www\.)?(?:discord(?:app)?\.com\/invite\/|discord\.gg\/)([a-zA-Z0-9-]{6,32})/g,
   },
 
   Links: {

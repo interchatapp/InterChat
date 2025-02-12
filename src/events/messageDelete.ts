@@ -33,7 +33,9 @@ export default class MessageDelete extends BaseEventListener<'messageDelete'> {
     const fetchedLogs = await message.guild.fetchAuditLogs({
       type: AuditLogEvent.MessageDelete,
       limit: 10,
-    });
+    }).catch(() => null);
+
+    if (!fetchedLogs) return;
 
     const deletedMessageLog = fetchedLogs.entries.find(
       (entry) =>

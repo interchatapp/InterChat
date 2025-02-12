@@ -23,7 +23,6 @@ import { InteractionLoader } from '#src/modules/Loaders/InteractionLoader.js';
 import { handleError } from '#src/utils/Utils.js';
 import {
   type ApplicationCommand,
-  ApplicationCommandOptionType,
   type AutocompleteInteraction,
   type ChatInputCommandInteraction,
   type Client,
@@ -59,22 +58,6 @@ export const findCommand = (
 		| undefined,
 ) => commands?.find((command) => command.name === name);
 
-export const findSubcommand = (
-  cmdName: string,
-  subName: string,
-  commands: Collection<
-    string,
-    ApplicationCommand<{
-      guild: GuildResolvable;
-    }>
-  >,
-) => {
-  const command = commands.find(({ name }) => name === cmdName);
-  return command?.options.find(
-    ({ type, name }) =>
-      type === ApplicationCommandOptionType.Subcommand && name === subName,
-  );
-};
 
 function parseArgs(input: string): string[] {
   // Regex to match key-value pairs with optional quotes or standalone arguments

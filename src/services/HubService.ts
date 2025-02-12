@@ -36,7 +36,7 @@ export interface HubCreationData {
 export class HubService {
   private readonly db: PrismaClient;
   private readonly cache: Redis;
-  public readonly hubKey = `${RedisKeys.Hub}:`;
+  public readonly hubKey = RedisKeys.Hub;
 
   constructor(_db: PrismaClient = db, cache = getRedis()) {
     this.db = _db;
@@ -70,7 +70,7 @@ export class HubService {
 
     // Check cache if we have an ID
     if (where.id) {
-      const fromCache = await this.cache.get(`${this.hubKey}${where.id}`);
+      const fromCache = await this.cache.get(`${this.hubKey}:${where.id}`);
       if (fromCache) {
         return this.createHubManager(fromCache);
       }
@@ -80,7 +80,7 @@ export class HubService {
 
     // Cache result if we found something
     if (hub) {
-      await this.cache.set(`${this.hubKey}${hub.id}`, JSON.stringify(hub));
+      await this.cache.set(`${this.hubKey}:${hub.id}`, JSON.stringify(hub));
       return this.createHubManager(hub);
     }
 
