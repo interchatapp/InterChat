@@ -20,16 +20,16 @@ rules:
     8.运用常识
       如果您觉得某件事可能不合适，请不要做。
     9.举报违规行为
-      使用“应用程序＞信息＞举报”指令，向管理员举报任何违反规则的内容。
+      使用“应用程序＞信息＞报告”指令，向监管员举报任何违反规则的内容。
 
-    还有要记得遵守［Discord的服务条款］(https://discord.com/terms) 以及［社区准则］(https://discord.com/guidelines)。
+    还有要记得遵守[Discord的服务条款](https://discord.com/terms) 以及[社区准则](https://discord.com/guidelines)。
   welcome: |
     {emoji}您好{user}，欢迎来到InterChat！
     在您开始使用InterChat与其他服务器上的人聊天之前，您需要接受这些规则。请使用下面的按钮接受规则。
   accepted: |
     {emoji}欢迎来到InterChat！您已接受所有规则，现在可以与其他服务器上的成员聊天了！
-    如果您还没有加入中心，请在“浏览中心”加入并开始聊天。如果您有任何问题或需要帮助，请随时在［支持服务器］({support_invite})中提问。
-    如果您喜欢使用InterChat，请考虑一下［捐赠］({donateLink})来支持开发成本。
+    如果您还没有加入中心，请在“浏览中心”加入并开始聊天。如果您有任何问题或需要帮助，请随时在[支持服务器]({support_invite})中提问。
+    如果您喜欢使用InterChat，请考虑一下[捐赠]({donateLink})来支持开发成本。
   alreadyAccepted: '{emoji}您已接受所有规则。您现在可以尽情使用InterChat。'
 vote:
   description: 通过投票，您可以帮助InterChat在topgg搜索中排名更高来表示对我们的支持。
@@ -56,7 +56,7 @@ blacklist:
       label: 持续时间
       placeholder: '黑名单的持续时间。例如：一天、一周、一个月、一年。留空表示永久。'
   user:
-    cannotBlacklistMod: '{emoji}您不能将管理员列入黑名单。请先删除他们的管理员身份。'
+    cannotBlacklistMod: '{emoji}您不能将监管员列入黑名单。请先移除他们的监管员身份。'
     alreadyBlacklisted: '{emoji}该用户已被列入黑名单。'
     easterEggs:
       blacklistBot: 你不能把我列入黑名单。
@@ -66,27 +66,27 @@ blacklist:
   list:
     user: |
       用户名称：{id}
-      管理员：{moderator}
+      监管员：{moderator}
       原因：{reason}
       期限：{expires}
     server: |
       服务器名称：{id}
-      管理员：{moderator}
+      监管员：{moderator}
       原因：{reason}
       期限：{expires}
 msgInfo:
   buttons:
-    message: 留言信息
+    message: 信息
     server: 服务器信息
     user: 用户信息
-    report: 举报
+    report: 报告
   report:
-    notEnabled: '{emoji}此中心未启用举报功能。'
-    success: '{emoji}举报已成功提交。非常感谢！'
+    notEnabled: '{emoji}此中心未启用报告功能。'
+    success: '{emoji}报告已成功提交。非常感谢！'
 invite: |
   感谢您选择邀请InterChat！如果您有任何问题或需要帮助，我们随时在支持服务器上为您提供帮助！
 
-  ［{invite_emoji}“邀请链接”］({invite})［{support_emoji}“支持服务器”］({support})
+  [{invite_emoji}“邀请链接”]({invite})[{support_emoji}“支持服务器”]({support})
 connection:
   joinRequestsDisabled: '{emoji}此中心无法加入请求。'
   notFound: '{emoji}连接无效。请验证频道名称或从显示的选项中选择。'
@@ -107,32 +107,32 @@ connection:
       channel: 频道
       invite: 邀请
       connected: 已连接
-      emColor: Embed Color
-      compact: Compact Mode
-    footer: Use the button & dropdown below to manage your connection.
+      emColor: 嵌入颜色
+      compact: 压缩模式
+    footer: 使用下面的按钮和下拉列表管理您的连接。
   selects:
-    placeholder: '🛠️ Select an option to edit this connection'
+    placeholder: '🛠️ 选择一个选项来编辑此连接'
   unpaused:
     desc: |
-      ### {tick_emoji} Unpaused Connection
+      {tick_emoji}已恢复连接
 
-      Unpaused connection for {channel}! Messages from the hub will start coming into the channel and you can send messages to the hub again.
+      {channel}的连接已恢复！来自此中心的信息将开始进入此频道，并且您可以再次发送信息到中心。
     tips: |
-      **💡 Tip:** Use {pause_cmd} to pause the connection or {edit_cmd} to set embed colors, toggle profanity filter, and more.
+      贴士：使用{pause_cmd}来中断连接，或使用{edit_cmd}来设置嵌入颜色、邀请到您的服务器等。
   paused:
     desc: |
-      ### {clock_emoji} Paused Connection
-      Paused connection for {channel}! Messages from the hub will no longer come into the channel and your messages won't be broadcasted to them.
+      {clock_emoji}已中断连接
+      {channel}的连接已中断！来自此中心的信息将不再进入此频道，并且您的信息将不会发送出去。
     tips: |
-      **💡 Tip:** Use {unpause_cmd} to unpause the connection or {leave_cmd} to permanently stop recieving messages.
+      贴士：使用{unpause_cmd}来恢复连接，或使用{leave_cmd}来永久停收信息。
 hub:
-  notFound: '{emoji} Unable to find hub. Please make sure you have entered the correct hub name.'
-  notFound_mod: '{emoji} Unable to find hub. Please make sure you have entered the correct hub name & that you are the owner or a moderator of the hub.'
-  notManager: '{emoji} You must be a hub manager to perform this action.'
-  notModerator: '{emoji} You need to be a hub moderator to perform this action.'
-  notPrivate: '{emoji} This hub is not private.'
-  notOwner: '{emoji} Only the owner of this hub can perform this action.'
-  alreadyJoined: '{emoji} You have already joined **{hub}** from {channel}!'
+  notFound: '{emoji}无法找到中心。请确保您输入了正确的中心名称。'
+  notFound_mod: '{emoji}无法找到中心。请确保您输入了正确的中心名字以及您是此中心的所有者或监管员。'
+  notManager: '{emoji}您必须是中心管理员才能执行此操作。'
+  notModerator: '{emoji}您需要成为中心监管员才能执行此操作。'
+  notPrivate: '{emoji}此中心非私有。'
+  notOwner: '{emoji}只有此中心的所有者可以执行此操作。'
+  alreadyJoined: '{emoji}您已从{channel}加入{hub}！'
   invalidChannel: '{emoji} Invalid channel. Only text and thread channels are supported!'
   invalidImgurUrl: '{emoji} Invalid image URL for icon or banner. Please make sure you have entered a valid Imgur image URL that is not a gallery or album.'
   join:
@@ -216,7 +216,7 @@ hub:
       6.公开中心：
       使用“／中心可见”将中心设为公开，让其他人不用邀请也可以浏览并加入。(可选)
 
-      如果您有任何问题或需要帮助，请随时在［支持服务器］({support_invite})中提问。请考虑一下［捐赠］({donateLink})来支持我们的开发成本。
+      如果您有任何问题或需要帮助，请随时在[支持服务器]({support_invite})中提问。请考虑一下[捐赠]({donateLink})来支持我们的开发成本。
   delete:
     confirm: 您确定要删除{hub}吗？该行动无法撤回。所有已连接的服务器、邀请和消息数据都将从此中心删除。
     ownerOnly: '{emoji}只有此中心的所有者可以删除它。'
@@ -374,7 +374,7 @@ report:
         placeholder: 要做的步骤。例如：1.运行／帮助 2.等待5秒……
   submitted: '{emoji}报告已成功提交。加入{support_command}获取详情。谢谢！'
   bug:
-    title: 问题报告
+    title: 故障报告
     affected: 受影响的部分
     description: 请选择您遇到问题的程序的部分。
 language:
