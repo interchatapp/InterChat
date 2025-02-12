@@ -171,14 +171,12 @@ hub:
       noActions: '{emoji} **None!** Configure using the menu below.'
       actionsName: 'Configured Actions:'
       actionsValue: '{actions}'
-
     modal:
       addRule: Add Anti-Swear Rule
       editingRule: Editing Anti-Swear Rule
       ruleNameLabel: Rule Name
       wordsLabel: 'Words seperated by comma (use * for wildcard)'
       wordsPlaceholder: 'Eg. word1, *word2*, *word3, word4*'
-
     validating: '{emoji} Validating anti-swear rule...'
     noRules: |
       ### {emoji} Let's set up some rules!
@@ -207,15 +205,15 @@ hub:
       ### Next Steps:
       1. **Create an Invite:**
       > Use `/hub invite create` to create an invite for others to join.
-      2. **Link a Channel:** 
+      2. **Link a Channel:**
       > Use `/hub join` **with the invite link previously generated** to link a channel to the hub and start chatting.
       3. **Configure Hub:** (Recommended)
       > Use `/hub config settings`, `/hub config logging` & `/hub config anti-swear` to configure the hub.
-      4. **Add Moderators:** 
+      4. **Add Moderators:**
       > Use `/hub moderator add` to add moderators to the hub.
-      5. **Customize Hub:** 
+      5. **Customize Hub:**
       > Use `/hub edit` to change the hub icon, banner, and description.
-      6. **Go Public:** 
+      6. **Go Public:**
       > Use `/hub visibility` to make the hub public and allow others to browse and join it without using invites. (Optional)
 
       If you have any questions or need help, feel free to ask in the [support server]({support_invite}). Consider [donating]({donateLink}) to support the development costs.

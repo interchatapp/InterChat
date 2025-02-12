@@ -56,6 +56,7 @@ blacklist:
       label: Duración
       placeholder: 'Duración de la lista negra. Por ejemplo: 1d, 1w, 1m, 1y. Deje en blanco para que sea permanente.'
   user:
+    cannotBlacklistMod: '{emoji} You cannot blacklist a moderator. Please remove their moderator role first.'
     alreadyBlacklisted: '{emoji} Este usuario ya está en la lista negra.'
     easterEggs:
       blacklistBot: No puedes incluirme en la lista negra wtf.
@@ -87,6 +88,7 @@ invite: |
 
   - **Servidor de soporte:** {invite_emoji}
 connection:
+  joinRequestsDisabled: '{emoji} Join requests are disabled for this hub.'
   notFound: '{emoji} Conexión no válida. Verifique el ID del canal o seleccione de las opciones mostradas.'
   channelNotFound: '{emoji} No se puede encontrar el canal conectado. Para hablar nuevamente, elija un nuevo canal.'
   alreadyConnected: '{emoji} El canal {channel} ya está conectado a un centro.'
@@ -107,7 +109,6 @@ connection:
       connected: Conectada
       emColor: Color del embed
       compact: Modo compacto
-      profanity: Filtro de blasfemias
     footer: Use el botón y el menú desplegable a continuación para administrar su conexión.
   selects:
     placeholder: '🛠️ Seleccione una opción a continuación para administrar su conexión.'
@@ -147,6 +148,36 @@ hub:
       Joined At: {joinedAt}
       Invite: {invite}
       Connected: {connected}
+  blockwords:
+    deleted: '{emoji} Anti-Swear rule successfully deleted!'
+    notFound: '{emoji} Anti-Swear rule not found.'
+    maxRules: '{emoji} You have reached the maximum number of anti-swear rules (2) for this hub. Please delete a rule before adding another one.'
+    configure: 'Configure actions for rule: {rule}'
+    actionsUpdated: '{emoji} Updated the actions to be taken by the rule. **New Actions:** {actions}'
+    selectRuleToEdit: Select a rule to edit it's words/actions
+    listDescription: |
+      ### {emoji} Anti-Swear Rules
+      This hub has {totalRules}/2 anti-swear rules setup.
+    listFooter: Select a rule using the menu to view it's full details.
+    ruleDescription: |
+      ### {emoji} Editing Rule: {ruleName}
+      {words}
+    ruleFooter: 'Click the button below to edit the words or rule name!'
+    actionSelectPlaceholder: 'Select the actions this rule should perform.'
+    embedFields:
+      noActions: '{emoji} **None!** Configure using the menu below.'
+      actionsName: 'Configured Actions:'
+      actionsValue: '{actions}'
+    modal:
+      addRule: Add Anti-Swear Rule
+      editingRule: Editing Anti-Swear Rule
+      ruleNameLabel: Rule Name
+      wordsLabel: 'Words seperated by comma (use * for wildcard)'
+      wordsPlaceholder: 'Eg. word1, *word2*, *word3, word4*'
+    validating: '{emoji} Validating anti-swear rule...'
+    noRules: |
+      ### {emoji} Let's set up some rules!
+      Use the `Add Rule` button to create one.
   create:
     modal:
       title: Crear centro
@@ -232,7 +263,7 @@ hub:
       notOwner: '{emoji} Solo el propietario de este centro puede eliminar un administrador.'
     update:
       success: "{emoji} **{user}** 'La posición se ha actualizado a **{position}**."
-      notModerator: '{emoji} **{user}** no es un moderador.'
+      notModerator: "{emoji} **{user}** no es un moderador."
       notAllowed: "{emoji} Solo los administradores de centros pueden actualizar la posición de un moderador."
       notOwner: "{emoji} Solo el propietario de este centro puede actualizar la posición de un administrador."
   manage:
@@ -270,28 +301,29 @@ hub:
         description: Haz este centro público o privado.
     toggleLock:
       selects:
-        label: "Lock/Unlock Hub"
-        description: "Lock or unlock the hub chats"
-      confirmation: "Hub chats are now {status}."
-      announcementTitle: "Hub chats are now {status}."
+        label: 'Lock/Unlock Hub'
+        description: 'Lock or unlock the hub chats'
+      confirmation: 'Hub chats are now {status}.'
+      announcementTitle: 'Hub chats are now {status}.'
       announcementDescription:
-        locked: "Only moderators can send messages."
-        unlocked: "Everyone can send messages."
+        locked: 'Only moderators can send messages.'
+        unlocked: 'Everyone can send messages.'
     embed:
-      visibility: "Visibility"
-      connections: "Connections"
-      chatsLocked: "Chats Locked"
-      blacklists: "Blacklists"
-      total: "Total"
-      users: "Users"
-      servers: "Servers"
-      hubStats: "Hub Stats"
-      moderators: "Moderators"
-      owner: "Owner"
+      visibility: 'Visibility'
+      connections: 'Connections'
+      chatsLocked: 'Chats Locked'
+      blacklists: 'Blacklists'
+      total: 'Total'
+      users: 'Users'
+      servers: 'Servers'
+      hubStats: 'Hub Stats'
+      moderators: 'Moderators'
+      owner: 'Owner'
     logs:
       title: Configurar registros
       reset: '{emoji} Se reinició con éxito la configuración de registros para `{type}`.'
       roleSuccess: '{emoji} registros de tipo `{type}` ahora mencionará {role}!'
+      roleRemoved: '{emoji} Logs of type `{type}` will no longer mention a role.'
       channelSuccess: '{emoji} registros de tipo `{type}` se enviará a {channel} de ahora!'
       channelSelect: '#️⃣ Seleccione el tipo de registro para configurar.'
       roleSelect: '🏓 Seleccione el papel a mencionar cuándo se activa un registro.'
@@ -310,9 +342,6 @@ hub:
       modLogs:
         label: Registros de mod
         description: Acciones de moderación de registro. (por ejemplo, la lista negra, el mensaje elimina, etc.)
-      profanity:
-        label: Filtro de blasfemias
-        description: Mensajes de registro que son capturados por el filtro de blasfemias.
       joinLeaves:
         label: Unir/salir
         description: Registre cuando un servidor se une o deja este centro.
@@ -343,7 +372,7 @@ report:
 language:
   set: '¡Sé de idiomas! Ahora te responderé en **{lang}**.'
 errors:
-  messageNotSentOrExpired: "{emoji} This message was not sent in a hub, has expired, or you lack permissions to perform this action."
+  messageNotSentOrExpired: '{emoji} This message was not sent in a hub, has expired, or you lack permissions to perform this action.'
   notYourAction: "{emoji} Lo siento, no puedes realizar esta acción. Por favor ejecute el comando usted mismo."
   notMessageAuthor: '{emoji} No eres el autor de este mensaje.'
   commandError: |
@@ -378,7 +407,8 @@ global:
   version: InterChat v{version}
   loading: '{emoji} Please wait while I process your request...'
   reportOptionMoved: '{emoji} This option has moved! To report a message to hub moderators, use the updated `Apps > Message Info/Report` command. For direct reporting to InterChat staff, just hop into the [support server]({support_invite}) and create a ticket with proof.'
-  private: "Private"
-  public: "Public"
-  yes: "Yes"
-  no: "No"
+  private: 'Private'
+  public: 'Public'
+  yes: 'Yes'
+  no: 'No'
+  cancelled: '{emoji} Cancelled. No changes were made.'
