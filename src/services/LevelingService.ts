@@ -1,8 +1,25 @@
-import UserDbService from '#main/services/UserDbService.js';
-import db from '#main/utils/Db.js';
-import { calculateRequiredXP } from '#main/utils/calculateLevel.js';
-import { PrismaClient, UserData } from '@prisma/client';
-import { Message } from 'discord.js';
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+import UserDbService from '#src/services/UserDbService.js';
+import db from '#src/utils/Db.js';
+import { calculateRequiredXP } from '#src/utils/calculateLevel.js';
+import type { PrismaClient, UserData } from '@prisma/client';
+import { Colors, type Message } from 'discord.js';
 
 type LeaderboardType = 'xp' | 'level' | 'messages';
 
@@ -120,24 +137,22 @@ export class LevelingService {
     return { newLevel, newXP, totalXP };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async handleLevelUp(message: Message<true>, _newLevel: number): Promise<void> {
-    await message.react('⏫').catch(() => null);
-    // TODO: this
-    // const channel = message.channel as TextChannel;
-    // await channel.send({
-    //   embeds: [
-    //     {
-    //       title: '🎉 Level Up!',
-    //       description: `Congratulations ${message.author}! You've reached level ${newLevel}!`,
-    //       footer: {
-    //         text: `Sent for: ${message.author.username}`,
-    //         icon_url: message.author.displayAvatarURL(),
-    //       },
-    //       color: Colors.Green,
-    //     },
-    //   ],
-    // });
+
+  private async handleLevelUp(message: Message<true>, newLevel: number): Promise<void> {
+    // TODO: also send a random tip along with the level up message
+    await message.channel.send({
+      embeds: [
+        {
+          title: '🎉 Level Up!',
+          description: `Congratulations ${message.author}! You've reached level ${newLevel}!`,
+          footer: {
+            text: `Sent for: ${message.author.username}`,
+            icon_url: message.author.displayAvatarURL(),
+          },
+          color: Colors.Green,
+        },
+      ],
+    });
   }
 
   private async getOrCreateUser(userId: string, username: string): Promise<UserData> {

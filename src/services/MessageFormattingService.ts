@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import type { Connection, Hub } from '@prisma/client';
 import {
   type ActionRowBuilder,
@@ -6,7 +23,7 @@ import {
   type WebhookMessageCreateOptions,
   userMention,
 } from 'discord.js';
-import type { BroadcastOpts, ReferredMsgData } from '#main/utils/network/Types.js';
+import type { BroadcastOpts, ReferredMsgData } from '#utils/network/Types.js';
 import { CompactMessageFormatter } from './formatters/CompactMsgFormatter.js';
 import { EmbedMessageFormatter } from './formatters/EmbedMsgFormatter.js';
 
@@ -20,7 +37,6 @@ export interface MessageFormatterStrategy {
 
 export type DefaultFormaterOpts = BroadcastOpts & {
   username: string;
-  censoredContent: string;
   referredContent: string | undefined;
   servername: string;
   author: {

@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import {
   ActionRowBuilder,
   type ButtonInteraction,
@@ -11,11 +28,11 @@ import {
   time,
 } from 'discord.js';
 import ms from 'ms';
-import { buildModPanel } from '#main/interactions/ModPanel.js';
-import BlacklistManager from '#main/managers/BlacklistManager.js';
-import { getEmoji } from '#main/utils/EmojiUtils.js';
-import type { ModAction } from '#main/utils/moderation/modPanel/utils.js';
-import type { OriginalMessage } from '#main/utils/network/messageUtils.js';
+import { buildModPanel } from '#src/interactions/ModPanel.js';
+import BlacklistManager from '#src/managers/BlacklistManager.js';
+import { getEmoji } from '#src/utils/EmojiUtils.js';
+import type { ModAction } from '#src/utils/moderation/modPanel/utils.js';
+import type { OriginalMessage } from '#src/utils/network/messageUtils.js';
 import { deleteConnections } from '#utils/ConnectedListUtils.js';
 import { CustomID } from '#utils/CustomID.js';
 import { type supportedLocaleCodes, t } from '#utils/Locale.js';
@@ -44,7 +61,10 @@ abstract class BaseBlacklistHandler implements ModAction {
     return new ModalBuilder()
       .setTitle(title)
       .setCustomId(
-        new CustomID().setIdentifier('blacklist_modal', type).setArgs(originalMsgId).toString(),
+        new CustomID()
+          .setIdentifier('blacklist_modal', type)
+          .setArgs(originalMsgId)
+          .toString(),
       )
       .addComponents(
         new ActionRowBuilder<TextInputBuilder>().addComponents(
@@ -69,8 +89,10 @@ abstract class BaseBlacklistHandler implements ModAction {
 
   protected getModalData(interaction: ModalSubmitInteraction) {
     const reason = interaction.fields.getTextInputValue('reason');
-    // NOTE: ms() doesn't accept empty string, so we use this hack instead
-    const duration = ms(interaction.fields.getTextInputValue('duration') || ' ');
+    const duration = ms(
+      (interaction.fields.getTextInputValue('duration') ||
+				' ') as ms.StringValue,
+    );
     const expiresAt = duration ? new Date(Date.now() + duration) : null;
 
     return { reason, expiresAt };
@@ -99,7 +121,9 @@ abstract class BaseBlacklistHandler implements ModAction {
         },
         {
           name: 'Expires',
-          value: expires ? `${time(Math.round(expires.getTime() / 1000), 'R')}` : 'Never.',
+          value: expires
+            ? `${time(Math.round(expires.getTime() / 1000), 'R')}`
+            : 'Never.',
           inline: true,
         },
       );
@@ -112,7 +136,9 @@ export class BlacklistUserHandler extends BaseBlacklistHandler {
     originalMsgId: Snowflake,
     locale: supportedLocaleCodes,
   ) {
-    await interaction.showModal(this.buildModal('Blacklist User', 'user', originalMsgId, locale));
+    await interaction.showModal(
+      this.buildModal('Blacklist User', 'user', originalMsgId, locale),
+    );
   }
 
   async handleModal(
@@ -120,7 +146,9 @@ export class BlacklistUserHandler extends BaseBlacklistHandler {
     originalMsg: OriginalMessage,
     locale: supportedLocaleCodes,
   ) {
-    const user = await interaction.client.users.fetch(originalMsg.authorId).catch(() => null);
+    const user = await interaction.client.users
+      .fetch(originalMsg.authorId)
+      .catch(() => null);
 
     if (!user) {
       await interaction.reply({
@@ -142,7 +170,8 @@ export class BlacklistUserHandler extends BaseBlacklistHandler {
 
     if (originalMsg.authorId === interaction.user.id) {
       await interaction.followUp({
-        content: '<a:nuhuh:1256859727158050838> Nuh uh! You can\'t blacklist yourself.',
+        content:
+					'<a:nuhuh:1256859727158050838> Nuh uh! You can\'t blacklist yourself.',
         flags: ['Ephemeral'],
       });
       return;
@@ -235,7 +264,10 @@ export class BlacklistServerHandler extends BaseBlacklistHandler {
     }
 
     const { reason, expiresAt } = this.getModalData(interaction);
-    const blacklistManager = new BlacklistManager('server', originalMsg.guildId);
+    const blacklistManager = new BlacklistManager(
+      'server',
+      originalMsg.guildId,
+    );
 
     await blacklistManager.addBlacklist({
       reason,
@@ -268,7 +300,13 @@ export class BlacklistServerHandler extends BaseBlacklistHandler {
         .catch(() => null);
     }
 
-    const successEmbed = this.buildSuccessEmbed(server.name, reason, expiresAt, client, locale);
+    const successEmbed = this.buildSuccessEmbed(
+      server.name,
+      reason,
+      expiresAt,
+      client,
+      locale,
+    );
 
     const { embed, buttons } = await buildModPanel(interaction, originalMsg);
     await interaction.editReply({ embeds: [embed], components: buttons });

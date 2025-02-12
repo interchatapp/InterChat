@@ -1,8 +1,25 @@
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import type { Connection, Hub } from '@prisma/client';
 import { stripIndents } from 'common-tags';
 import { type EmbedBuilder, WebhookClient } from 'discord.js';
-import { buildConnectionButtons } from '#main/interactions/InactiveConnect.js';
-import Constants from '#main/utils/Constants.js';
+import { buildConnectionButtons } from '#src/interactions/InactiveConnect.js';
+import Constants from '#src/utils/Constants.js';
 import { updateConnections } from '#utils/ConnectedListUtils.js';
 import db from '#utils/Db.js';
 import { InfoEmbed } from '#utils/EmbedUtils.js';

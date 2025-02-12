@@ -1,10 +1,31 @@
-import { modPanelButton } from '#main/interactions/ShowModPanel.js';
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+import { modPanelButton } from '#src/interactions/ShowModPanel.js';
 import {
   findOriginalMessage,
   getBroadcast,
-  getOriginalMessage,
-} from '#main/utils/network/messageUtils.js';
+} from '#src/utils/network/messageUtils.js';
 
+import { markResolvedButton } from '#src/interactions/MarkResolvedButton.js';
+import { HubService } from '#src/services/HubService.js';
+import { getEmoji } from '#src/utils/EmojiUtils.js';
+import db from '#utils/Db.js';
+import { resolveEval } from '#utils/Utils.js';
 import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
@@ -15,11 +36,6 @@ import {
   type User,
   messageLink,
 } from 'discord.js';
-import { markResolvedButton } from '#main/interactions/MarkResolvedButton.js';
-import { HubService } from '#main/services/HubService.js';
-import { getEmoji } from '#main/utils/EmojiUtils.js';
-import db from '#utils/Db.js';
-import { resolveEval } from '#utils/Utils.js';
 import { sendLog } from './Default.js';
 
 export type ReportEvidenceOpts = {
@@ -52,8 +68,7 @@ const genJumpLink = async (
 ) => {
   if (!messageId) return null;
 
-  const originalMsg =
-    (await getOriginalMessage(messageId)) ?? (await findOriginalMessage(messageId));
+  const originalMsg = await findOriginalMessage(messageId);
   if (!originalMsg) return null;
 
   // fetch the reports server ID from the log channel's ID

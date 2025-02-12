@@ -1,18 +1,40 @@
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import { isDate } from 'node:util/types';
 import type { Infraction, InfractionStatus, InfractionType, Prisma } from '@prisma/client';
 import type { Client, Snowflake, User } from 'discord.js';
-import { HubService } from '#main/services/HubService.js';
-import db from '#main/utils/Db.js';
-import { logServerUnblacklist, logUserUnblacklist } from '#main/utils/hub/logger/ModLogs.js';
+import { HubService } from '#src/services/HubService.js';
+import db from '#src/utils/Db.js';
+import { logServerUnblacklist, logUserUnblacklist } from '#src/utils/hub/logger/ModLogs.js';
 import type { ConvertDatesToString } from '#types/Utils.d.ts';
-import { cacheData, getCachedData } from '#utils/CacheUtils.js';
+import { CacheManager } from '#src/managers/CacheManager.js';
+import getRedis from '#src/utils/Redis.js';
 
 export default class InfractionManager {
   public readonly targetId: Snowflake;
   public readonly targetType: 'user' | 'server';
 
   private readonly modelName = 'Infraction';
-  private readonly cacheExpirySecs = 5 * 60;
+  // private readonly cacheExpirySecs = 5 * 60;
+  private readonly cacheManager = new CacheManager(getRedis(), {
+    prefix: this.modelName,
+    expirationMs: 60 * 5 * 1000, // 5 minutes
+  });
 
   constructor(targetType: 'user' | 'server', targetId: Snowflake) {
     this.targetId = targetId;
@@ -20,7 +42,7 @@ export default class InfractionManager {
   }
 
   private getKey(entityId: Snowflake, hubId: string) {
-    return `${this.modelName}:${entityId}:${hubId}`;
+    return `${entityId}:${hubId}`;
   }
 
   public async addInfraction(
@@ -88,13 +110,12 @@ export default class InfractionManager {
   }
 
   public async getHubInfractions(hubId: string, opts?: { type?: InfractionType; count?: number }) {
-    const fetched = await getCachedData(
-      `${this.modelName}:${this.targetId}:${hubId}`,
-      async () => await this.queryEntityInfractions(hubId),
-      this.cacheExpirySecs,
-    );
+    let infractionsArr =
+      (await this.cacheManager.get(
+        `${this.targetId}:${hubId}`,
+        async () => await this.queryEntityInfractions(hubId),
+      )) ?? [];
 
-    let infractionsArr = fetched.data ?? [];
     if (opts?.type) infractionsArr = infractionsArr.filter((i) => i.type === opts.type);
     if (opts?.count) infractionsArr = infractionsArr.slice(0, opts.count);
 
@@ -147,7 +168,7 @@ export default class InfractionManager {
   protected async refreshCache(hubId: string) {
     const key = this.getKey(this.targetId, hubId);
     const infractions = await this.queryEntityInfractions(hubId);
-    await cacheData(key, JSON.stringify(infractions), this.cacheExpirySecs);
+    await this.cacheManager.set(key, infractions);
   }
 
   protected async cacheEntity(entity: Infraction) {
@@ -157,7 +178,7 @@ export default class InfractionManager {
       (i) => i.id !== entity.id,
     );
 
-    return cacheData(key, JSON.stringify([...existing, entity]), this.cacheExpirySecs);
+    return this.cacheManager.set(key, [...existing, entity]);
   }
 
   protected async removeCachedInfraction(entity: Infraction) {
@@ -165,10 +186,9 @@ export default class InfractionManager {
       type: entity.type,
     });
     const entitySnowflake = entity.userId ?? entity.serverId;
-    return cacheData(
+    return this.cacheManager.set(
       this.getKey(entitySnowflake as string, entity.hubId),
-      JSON.stringify(existingInfractions.filter((i) => i.id !== entity.id)),
-      this.cacheExpirySecs,
+      existingInfractions.filter((i) => i.id !== entity.id),
     );
   }
 

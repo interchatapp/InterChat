@@ -1,10 +1,27 @@
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import type { Connection, Prisma } from '@prisma/client';
 import type { HexColorString } from 'discord.js';
-import { HubService } from '#main/services/HubService.js';
-import { cacheHubConnection } from '#main/utils/ConnectedListUtils.js';
-import { RedisKeys } from '#main/utils/Constants.js';
-import db from '#main/utils/Db.js';
-import getRedis from '#main/utils/Redis.js';
+import { HubService } from '#src/services/HubService.js';
+import { cacheHubConnection } from '#src/utils/ConnectedListUtils.js';
+import { RedisKeys } from '#src/utils/Constants.js';
+import db from '#src/utils/Db.js';
+import getRedis from '#src/utils/Redis.js';
 
 export default class ConnectionManager {
   private readonly cache = getRedis();
@@ -75,10 +92,6 @@ export default class ConnectionManager {
     await this.updateConnectionIfExists({
       compact: !this.connection.compact,
     });
-  }
-
-  async setProfanityFilter(profFilter: boolean): Promise<void> {
-    await this.updateConnectionIfExists({ profFilter });
   }
 
   // Private helper methods

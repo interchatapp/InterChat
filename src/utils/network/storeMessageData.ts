@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import type { APIMessage, Message } from 'discord.js';
 import {
   type Broadcast,
@@ -5,9 +22,10 @@ import {
   addBroadcasts,
   storeMessage,
   storeMessageTimestamp,
-} from '#main/utils/network/messageUtils.js';
+} from '#src/utils/network/messageUtils.js';
 import { updateConnections } from '#utils/ConnectedListUtils.js';
 import type { ConnectionMode } from '#utils/Constants.js';
+import Logger from '#src/utils/Logger.js';
 
 interface ErrorResult {
   webhookURL: string;
@@ -43,6 +61,7 @@ export default async (
     messageId: message.id,
     authorId: message.author.id,
     guildId: message.guildId,
+    channelId: message.channelId,
     referredMessageId: dbReference?.messageId,
     timestamp: message.createdTimestamp,
   });
@@ -61,6 +80,7 @@ export default async (
   for (const res of broadcastResults) {
     if ('error' in res) {
       if (validErrors.some((e) => res.error.includes(e))) invalidWebhookURLs.push(res.webhookURL);
+      Logger.debug(`Failed to send a message with error: ${res.error}. Disconnecting connection.`);
       continue;
     }
     validBroadcasts.push({

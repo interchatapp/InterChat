@@ -20,13 +20,13 @@
     "emitDecoratorMetadata": true,
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["bun-types"],
     "paths": {
-      "#main/*": ["./src/*"],
+      "#src/*": ["./src/*"],
       "#utils/*": ["./src/utils/*"],
       "#types/*.d.ts": ["src/types/*.d.ts"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.json"],
-  "exclude": ["node_modules", "build"]
+  "exclude": ["node_modules", "build"],
+  "packageManager": "bun@1.2.1"
 }

@@ -1,3 +1,42 @@
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+import type Context from '#src/core/CommandContext/Context.js';
+import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
+import BlacklistManager from '#src/managers/BlacklistManager.js';
+import { HubService } from '#src/services/HubService.js';
+import { CustomID } from '#src/utils/CustomID.js';
+import db from '#src/utils/Db.js';
+import { InfoEmbed } from '#src/utils/EmbedUtils.js';
+import { getEmoji } from '#src/utils/EmojiUtils.js';
+import { type supportedLocaleCodes, t } from '#src/utils/Locale.js';
+import { checkIfStaff, fetchUserData, fetchUserLocale } from '#src/utils/Utils.js';
+import { isStaffOrHubMod } from '#src/utils/hub/utils.js';
+import { isDeleteInProgress } from '#src/utils/moderation/deleteMessage.js';
+import RemoveReactionsHandler from '#src/utils/moderation/modPanel/handlers/RemoveReactionsHandler.js';
+import {
+  BlacklistServerHandler,
+  BlacklistUserHandler,
+} from '#src/utils/moderation/modPanel/handlers/blacklistHandler.js';
+import DeleteMessageHandler from '#src/utils/moderation/modPanel/handlers/deleteMsgHandler.js';
+import UserBanHandler from '#src/utils/moderation/modPanel/handlers/userBanHandler.js';
+import ViewInfractionsHandler from '#src/utils/moderation/modPanel/handlers/viewInfractions.js';
+import { type OriginalMessage, getOriginalMessage } from '#src/utils/network/messageUtils.js';
+import Constants from '#utils/Constants.js';
 import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
@@ -7,32 +46,10 @@ import {
   type Client,
   EmbedBuilder,
   type Interaction,
-  Message,
   type ModalSubmitInteraction,
   type RepliableInteraction,
   type Snowflake,
 } from 'discord.js';
-import { RegisterInteractionHandler } from '#main/decorators/RegisterInteractionHandler.js';
-import BlacklistManager from '#main/managers/BlacklistManager.js';
-import { HubService } from '#main/services/HubService.js';
-import { CustomID } from '#main/utils/CustomID.js';
-import db from '#main/utils/Db.js';
-import { InfoEmbed } from '#main/utils/EmbedUtils.js';
-import { getEmoji } from '#main/utils/EmojiUtils.js';
-import { type supportedLocaleCodes, t } from '#main/utils/Locale.js';
-import { checkIfStaff, fetchUserData, fetchUserLocale } from '#main/utils/Utils.js';
-import { isStaffOrHubMod } from '#main/utils/hub/utils.js';
-import { isDeleteInProgress } from '#main/utils/moderation/deleteMessage.js';
-import RemoveReactionsHandler from '#main/utils/moderation/modPanel/handlers/RemoveReactionsHandler.js';
-import {
-  BlacklistServerHandler,
-  BlacklistUserHandler,
-} from '#main/utils/moderation/modPanel/handlers/blacklistHandler.js';
-import DeleteMessageHandler from '#main/utils/moderation/modPanel/handlers/deleteMsgHandler.js';
-import UserBanHandler from '#main/utils/moderation/modPanel/handlers/userBanHandler.js';
-import ViewInfractionsHandler from '#main/utils/moderation/modPanel/handlers/viewInfractions.js';
-import { type OriginalMessage, getOriginalMessage } from '#main/utils/network/messageUtils.js';
-import Constants from '#utils/Constants.js';
 
 type BuilderOpts = {
   isUserBlacklisted: boolean;
@@ -123,11 +140,11 @@ export default class ModPanelHandler {
 }
 
 export async function buildModPanel(
-  interaction: Interaction | Message,
+  ctx: Context | Interaction,
   originalMsg: OriginalMessage,
 ) {
-  const user = await interaction.client.users.fetch(originalMsg.authorId);
-  const server = await interaction.client.fetchGuild(originalMsg.guildId);
+  const user = await ctx.client.users.fetch(originalMsg.authorId);
+  const server = await ctx.client.fetchGuild(originalMsg.guildId);
   const deleteInProgress = await isDeleteInProgress(originalMsg.messageId);
 
   const userBlManager = new BlacklistManager('user', originalMsg.authorId);
@@ -140,7 +157,7 @@ export async function buildModPanel(
   const embed = buildInfoEmbed(
     user.username,
     server?.name ?? 'Unknown Server',
-    interaction.client,
+    ctx.client,
     {
       isUserBlacklisted,
       isServerBlacklisted,
@@ -149,7 +166,7 @@ export async function buildModPanel(
     },
   );
 
-  const buttons = buildButtons(interaction, originalMsg.messageId, {
+  const buttons = buildButtons(ctx, originalMsg.messageId, {
     isUserBlacklisted,
     isServerBlacklisted,
     isBanned: Boolean(dbUserTarget?.banReason),
@@ -159,27 +176,27 @@ export async function buildModPanel(
   return { embed, buttons };
 }
 
-function buildButtons(interaction: Interaction | Message, messageId: Snowflake, opts: BuilderOpts) {
-  const author = interaction instanceof Message ? interaction.author : interaction.user;
+function buildButtons(ctx: Context | Interaction, messageId: Snowflake, opts: BuilderOpts) {
+  const author = ctx.user;
   const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
       .setCustomId(new CustomID('modPanel:blacklistUser', [author.id, messageId]).toString())
       .setStyle(ButtonStyle.Secondary)
-      .setEmoji(getEmoji('person_icon', interaction.client))
+      .setEmoji(getEmoji('person_icon', ctx.client))
       .setDisabled(opts.isUserBlacklisted),
     new ButtonBuilder()
       .setCustomId(new CustomID('modPanel:blacklistServer', [author.id, messageId]).toString())
       .setStyle(ButtonStyle.Secondary)
-      .setEmoji(getEmoji('globe_icon', interaction.client))
+      .setEmoji(getEmoji('globe_icon', ctx.client))
       .setDisabled(opts.isServerBlacklisted),
     new ButtonBuilder()
       .setCustomId(new CustomID('modPanel:removeAllReactions', [author.id, messageId]).toString())
       .setStyle(ButtonStyle.Secondary)
-      .setEmoji(getEmoji('plus_icon', interaction.client)),
+      .setEmoji(getEmoji('plus_icon', ctx.client)),
     new ButtonBuilder()
       .setCustomId(new CustomID('modPanel:deleteMsg', [author.id, messageId]).toString())
       .setStyle(ButtonStyle.Secondary)
-      .setEmoji(getEmoji('deleteDanger_icon', interaction.client))
+      .setEmoji(getEmoji('delete_icon', ctx.client))
       .setDisabled(opts.isDeleteInProgress),
   );
 
@@ -188,7 +205,7 @@ function buildButtons(interaction: Interaction | Message, messageId: Snowflake, 
       new ButtonBuilder()
         .setCustomId(new CustomID('modPanel:banUser', [author.id, messageId]).toString())
         .setStyle(ButtonStyle.Secondary)
-        .setEmoji(getEmoji('blobFastBan', interaction.client))
+        .setEmoji(getEmoji('hammer_icon', ctx.client))
         .setDisabled(opts.isBanned),
     );
   }
@@ -198,7 +215,7 @@ function buildButtons(interaction: Interaction | Message, messageId: Snowflake, 
       .setCustomId(new CustomID('modPanel:viewInfractions', [author.id, messageId]).toString())
       .setLabel('View Infractions')
       .setStyle(ButtonStyle.Secondary)
-      .setEmoji(getEmoji('exclamation', interaction.client)),
+      .setEmoji(getEmoji('exclamation', ctx.client)),
   );
 
   return [buttons, extras];
@@ -227,11 +244,11 @@ function buildInfoEmbed(username: string, servername: string, client: Client, op
       text: 'Target will be notified of the blacklist. Use /blacklist list to view all blacklists.',
     })
     .setDescription(stripIndents`
-        ### ${getEmoji('timeout_icon', client)} Moderation Actions
+        ### ${getEmoji('clock_icon', client)} Moderation Actions
         **${getEmoji('person_icon', client)} Blacklist User**: ${userEmbedDesc}
         **${getEmoji('globe_icon', client)} Blacklist Server**: ${serverEmbedDesc}
         **${getEmoji('plus_icon', client)} Remove Reactions**: Remove all reactions from this message.
-        **${getEmoji('deleteDanger_icon', client)} Delete Message**: ${deleteDesc}
-        **${getEmoji('blobFastBan', client)} Ban User**: ${banUserDesc}
+        **${getEmoji('delete_icon', client)} Delete Message**: ${deleteDesc}
+        **${getEmoji('hammer_icon', client)} Ban User**: ${banUserDesc}
     `);
 }

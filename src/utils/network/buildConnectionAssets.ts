@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
@@ -10,7 +27,7 @@ import {
   StringSelectMenuOptionBuilder,
   codeBlock,
 } from 'discord.js';
-import { getEmoji } from '#main/utils/EmojiUtils.js';
+import { getEmoji } from '#src/utils/EmojiUtils.js';
 import Constants from '#utils/Constants.js';
 import { CustomID } from '#utils/CustomID.js';
 import db from '#utils/Db.js';
@@ -46,7 +63,6 @@ export const buildEditEmbed = async (
       ${bold}${t('connection.embed.fields.connected', locale)}${reset}: ${yesOrNoEmoji(networkData?.connected, '✅', '❌')}
       ${bold}${t('connection.embed.fields.compact', locale)}${reset}: ${yesOrNoEmoji(networkData?.compact, '✅', '❌')}
       ${bold}${t('connection.embed.fields.emColor', locale)}${reset}: ${networkData?.embedColor ? networkData?.embedColor : '❌'}
-      ${bold}${t('connection.embed.fields.profanity', locale)}${reset}: ${yesOrNoEmoji(networkData?.profFilter, '✅', '❌')}
     `,
       ),
     )
@@ -93,11 +109,6 @@ export const buildEditSelect = (
           .setEmoji(getEmoji('clipart', client))
           .setDescription('Disable embeds in the network to fit more messages.')
           .setValue('compact'),
-        new StringSelectMenuOptionBuilder()
-          .setLabel('Profanity Filter')
-          .setEmoji('🤬')
-          .setDescription('Toggle swear word censoring for this server.')
-          .setValue('profanity'),
         new StringSelectMenuOptionBuilder()
           .setLabel('Invite Link')
           .setEmoji(getEmoji('members', client))

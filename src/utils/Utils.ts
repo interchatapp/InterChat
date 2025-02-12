@@ -1,6 +1,24 @@
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import { captureException } from '@sentry/node';
 import {
   type CommandInteraction,
+  type ContextMenuCommandInteraction,
   type GuildTextBasedChannel,
   Message,
   type MessageComponentInteraction,
@@ -10,14 +28,19 @@ import {
 } from 'discord.js';
 import startCase from 'lodash/startCase.js';
 import toLower from 'lodash/toLower.js';
-import { ErrorHandlerOptions, createErrorHint, sendErrorResponse } from '#main/utils/ErrorUtils.js';
+import {
+  type ErrorHandlerOptions,
+  createErrorHint,
+  sendErrorResponse,
+} from '#src/utils/ErrorUtils.js';
 import type { RemoveMethods, ThreadParentChannel } from '#types/CustomClientProps.d.ts';
 import Constants from '#utils/Constants.js';
 import { ErrorEmbed } from '#utils/EmbedUtils.js';
 import Logger from '#utils/Logger.js';
-import UserDbService from '#main/services/UserDbService.js';
-import { UserData } from '@prisma/client';
-import { supportedLocaleCodes } from '#main/utils/Locale.js';
+import UserDbService from '#src/services/UserDbService.js';
+import type { UserData } from '@prisma/client';
+import type { supportedLocaleCodes } from '#src/utils/Locale.js';
+import type Context from '#src/core/CommandContext/Context.js';
 
 export const resolveEval = <T>(value: T[]) =>
   value?.find((res) => Boolean(res)) as RemoveMethods<T> | undefined;
@@ -104,7 +127,7 @@ export const replaceLinks = (string: string, replaceText = '`[LINK HIDDEN]`') =>
 export const toTitleCase = (str: string) => startCase(toLower(str));
 
 export const getReplyMethod = (
-  interaction: RepliableInteraction | CommandInteraction | MessageComponentInteraction,
+  interaction: RepliableInteraction | CommandInteraction | MessageComponentInteraction | Context,
 ) => (interaction.replied || interaction.deferred ? 'followUp' : 'reply');
 
 /**
@@ -112,7 +135,7 @@ export const getReplyMethod = (
     It will send an error message to the user and log the error to the system.
   */
 export const sendErrorEmbed = async (
-  repliable: RepliableInteraction | Message,
+  repliable: RepliableInteraction | Message | ContextMenuCommandInteraction,
   errorCode: string,
   comment?: string,
 ) => {
@@ -209,4 +232,19 @@ export const fetchUserData = async (userId: Snowflake) => {
 export const fetchUserLocale = async (user: Snowflake | UserData) => {
   const userData = typeof user === 'string' ? await fetchUserData(user) : user;
   return (userData?.locale ?? 'en') as supportedLocaleCodes;
+};
+
+export const extractChannelId = (input: string | undefined) => {
+  const match = input?.match(Constants.Regex.ChannelId);
+  return match ? match[1] || match[2] || match[3] : null;
+};
+
+export const extractUserId = (input: string | undefined) => {
+  const match = input?.match(Constants.Regex.UserId);
+  return match ? match[1] || match[2] : null;
+};
+
+export const extractRoleId = (input: string | undefined) => {
+  const match = input?.match(Constants.Regex.RoleId);
+  return match ? match[1] || match[2] : null;
 };

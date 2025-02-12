@@ -1,12 +1,29 @@
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import type { ClusterManager } from 'discord-hybrid-sharding';
-import { startApi } from '#main/api/index.js';
-import deleteExpiredInvites from '#main/scheduled/tasks/deleteExpiredInvites.js';
-import pauseIdleConnections from '#main/scheduled/tasks/pauseIdleConnections.js';
-import storeMsgTimestamps from '#main/scheduled/tasks/storeMsgTimestamps.js';
-import syncBotlistStats from '#main/scheduled/tasks/syncBotlistStats.js';
-import Scheduler from '#main/services/SchedulerService.js';
-import Constants from '#main/utils/Constants.js';
-import Logger from '#main/utils/Logger.js';
+import { startApi } from '#src/api/index.js';
+import deleteExpiredInvites from '#src/scheduled/tasks/deleteExpiredInvites.js';
+import pauseIdleConnections from '#src/scheduled/tasks/pauseIdleConnections.js';
+import storeMsgTimestamps from '#src/scheduled/tasks/storeMsgTimestamps.js';
+import syncBotlistStats from '#src/scheduled/tasks/syncBotlistStats.js';
+import Scheduler from '#src/services/SchedulerService.js';
+import Constants from '#src/utils/Constants.js';
+import Logger from '#src/utils/Logger.js';
 
 export default function startTasks(clusterManager: ClusterManager) {
   startApi();

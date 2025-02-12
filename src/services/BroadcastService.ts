@@ -1,53 +1,50 @@
-import type { Connection } from '@prisma/client';
-import {
-  type Client,
-  type HexColorString,
-  type Message,
-  WebhookClient,
-  type WebhookMessageCreateOptions,
-} from 'discord.js';
-import type ConnectionManager from '#main/managers/ConnectionManager.js';
-import type HubManager from '#main/managers/HubManager.js';
-import type HubSettingsManager from '#main/managers/HubSettingsManager.js';
-import MessageFormattingService from '#main/services/MessageFormattingService.js';
-import Logger from '#main/utils/Logger.js';
-import type { BroadcastOpts, ReferredMsgData } from '#main/utils/network/Types.js';
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+import type ConnectionManager from '#src/managers/ConnectionManager.js';
+import type HubManager from '#src/managers/HubManager.js';
+import type HubSettingsManager from '#src/managers/HubSettingsManager.js';
+import MessageFormattingService from '#src/services/MessageFormattingService.js';
+import Logger from '#src/utils/Logger.js';
+import type {
+  BroadcastOpts,
+  ReferredMsgData,
+} from '#src/utils/network/Types.d.ts';
 import { generateJumpButton as getJumpButton } from '#utils/ComponentUtils.js';
 import { ConnectionMode } from '#utils/Constants.js';
 import { getAttachmentURL } from '#utils/ImageUtils.js';
-import { censor } from '#utils/ProfanityUtils.js';
 import { trimAndCensorBannedWebhookWords } from '#utils/Utils.js';
 import storeMessageData, {
   type NetworkWebhookSendResult,
 } from '#utils/network/storeMessageData.js';
-import { getReferredContent, getReferredMsgData } from '#utils/network/utils.js';
-
-const BATCH_SIZE = 15;
-const CONCURRENCY_LIMIT = 10;
+import {
+  getReferredContent,
+  getReferredMsgData,
+} from '#utils/network/utils.js';
+import type { Connection } from '@prisma/client';
+import type {
+  APIMessage,
+  Client,
+  HexColorString,
+  Message,
+  WebhookMessageCreateOptions,
+} from 'discord.js';
 
 export class BroadcastService {
-  private webhookClients: Map<string, WebhookClient> = new Map();
-
-  constructor() {
-    setInterval(() => this.cleanupWebhookClients(), 5 * 60 * 1000); // 5 minutes
-  }
-
-  private getWebhookClient(webhookURL: string): WebhookClient {
-    let client = this.webhookClients.get(webhookURL);
-    if (!client) {
-      client = new WebhookClient({ url: webhookURL });
-      this.webhookClients.set(webhookURL, client);
-    }
-    return client;
-  }
-
-  private cleanupWebhookClients() {
-    this.webhookClients.forEach((client, url) => {
-      client.destroy();
-      this.webhookClients.delete(url);
-    });
-  }
-
   async broadcastMessage(
     message: Message<true>,
     hub: HubManager,
@@ -56,7 +53,6 @@ export class BroadcastService {
     attachmentURL: string | undefined,
   ) {
     const username = this.getUsername(hub.settings, message);
-    const censoredContent = censor(message.content);
     const referredMessage = await this.fetchReferredMessage(message);
     const referredMsgData = await getReferredMsgData(referredMessage);
 
@@ -65,29 +61,20 @@ export class BroadcastService {
       (a, b) => b.data.lastActive.getTime() - a.data.lastActive.getTime(),
     );
 
-    Logger.debug(`Broadcasting message to ${sortedHubConnections.length} connections`);
+    Logger.debug(
+      `Broadcasting message to ${sortedHubConnections.length} connections`,
+    );
 
-    // Split connections into batches
-    const batches = this.chunkArray(sortedHubConnections, BATCH_SIZE);
-    const allResults: NetworkWebhookSendResult[] = [];
-
-    // Process batches with concurrency limit
-    for (const batch of batches) {
-      const batchPromises = batch.map((conn) =>
+    const allResults: NetworkWebhookSendResult[] = await Promise.all(
+      sortedHubConnections.map((conn) =>
         this.sendToConnection(message, hub, conn, {
           attachmentURL,
           referredMsgData,
           embedColor: connection.data.embedColor as HexColorString,
           username,
-          censoredContent,
         }),
-      );
-
-      Logger.debug(`Sending batch of ${batch.length} messages`);
-      const batchResults = await this.processWithConcurrency(batchPromises, CONCURRENCY_LIMIT);
-      allResults.push(...batchResults);
-      Logger.debug(`Sent batch of ${batch.length} messages`);
-    }
+      ),
+    );
 
     // store message data
     await storeMessageData(
@@ -99,57 +86,26 @@ export class BroadcastService {
     );
   }
 
-  private chunkArray<T>(array: T[], size: number): T[][] {
-    const chunks: T[][] = [];
-    for (let i = 0; i < array.length; i += size) {
-      chunks.push(array.slice(i, i + size));
-    }
-    return chunks;
-  }
-
-  private async processWithConcurrency<T>(
-    promises: Promise<T>[],
-    concurrency: number,
-  ): Promise<T[]> {
-    const results: T[] = [];
-    let index = 0;
-
-    async function next(): Promise<void> {
-      const currentIndex = index++;
-      if (currentIndex >= promises.length) return;
-
-      try {
-        const result = await promises[currentIndex];
-        results[currentIndex] = result;
-      }
-      catch (error) {
-        results[currentIndex] = error;
-      }
-
-      await next();
-    }
-
-    // Start initial batch of promises
-    const initialPromises = new Array(Math.min(concurrency, promises.length))
-      .fill(null)
-      .map(() => next());
-
-    await Promise.all(initialPromises);
-    return results;
-  }
   async resolveAttachmentURL(message: Message) {
     return (
       message.attachments.first()?.url ??
-      (await getAttachmentURL(message.content)) ??
-      message.stickers.first()?.url
+			(await getAttachmentURL(message.content)) ??
+			message.stickers.first()?.url
     );
   }
 
-  private async fetchReferredMessage(message: Message<true>): Promise<Message | null> {
-    return message.reference ? await message.fetchReference().catch(() => null) : null;
+  private async fetchReferredMessage(
+    message: Message<true>,
+  ): Promise<Message | null> {
+    return message.reference
+      ? await message.fetchReference().catch(() => null)
+      : null;
   }
 
-  private getUsername(settings: HubSettingsManager, message: Message<true>): string {
+  private getUsername(
+    settings: HubSettingsManager,
+    message: Message<true>,
+  ): string {
     return trimAndCensorBannedWebhookWords(
       settings.has('UseNicknames')
         ? (message.member?.displayName ?? message.author.displayName)
@@ -163,15 +119,26 @@ export class BroadcastService {
     connection: ConnectionManager,
     opts: BroadcastOpts & {
       username: string;
-      censoredContent: string;
       referredMsgData: ReferredMsgData;
     },
   ): Promise<NetworkWebhookSendResult> {
     try {
       const { webhookURL } = connection.data;
-      const messageFormat = this.getMessageFormat(message, connection, hub, opts);
-      const messageRes = await this.sendMessage(webhookURL, messageFormat);
-      const mode = connection.data.compact ? ConnectionMode.Compact : ConnectionMode.Embed;
+      const messageFormat = this.getMessageFormat(
+        message,
+        connection,
+        hub,
+        opts,
+      );
+      const { error, message: messageRes } = await BroadcastService.sendMessage(
+        webhookURL,
+        messageFormat,
+      );
+      const mode = connection.data.compact
+        ? ConnectionMode.Compact
+        : ConnectionMode.Embed;
+
+      if (error || !messageRes) return { error: `${error}`, webhookURL };
 
       return { messageRes, webhookURL, mode };
     }
@@ -190,7 +157,6 @@ export class BroadcastService {
     hub: HubManager,
     opts: BroadcastOpts & {
       username: string;
-      censoredContent: string;
       referredMsgData: ReferredMsgData;
     },
   ): WebhookMessageCreateOptions {
@@ -214,7 +180,9 @@ export class BroadcastService {
       servername,
       jumpButton,
       hub: hub.data,
-      referredContent: dbReferrence ? getReferredContent(dbReferrence) : undefined,
+      referredContent: dbReferrence
+        ? getReferredContent(dbReferrence)
+        : undefined,
     });
   }
 
@@ -236,8 +204,25 @@ export class BroadcastService {
       : undefined;
   }
 
-  private async sendMessage(webhookUrl: string, data: WebhookMessageCreateOptions) {
-    const webhook = this.getWebhookClient(webhookUrl);
-    return await webhook.send(data);
+  static async sendMessage(
+    webhookUrl: string,
+    data: WebhookMessageCreateOptions,
+  ): Promise<{ message?: APIMessage; error?: string }> {
+    const res = await fetch(
+      `http://localhost:${process.env.PORT || 3000}/webhook`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ webhookUrl, data }),
+      },
+    );
+
+    const json = await res.json().catch(() => null);
+
+    if (!res.ok || !json || json?.error) {
+      return { error: json.error ?? 'Unknown error' };
+    }
+
+    return { message: json.data };
   }
 }

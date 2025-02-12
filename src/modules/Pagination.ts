@@ -1,3 +1,24 @@
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+import Context from '#src/core/CommandContext/Context.js';
+import { getEmoji } from '#src/utils/EmojiUtils.js';
+import Logger from '#src/utils/Logger.js';
+import { getReplyMethod, handleError } from '#utils/Utils.js';
 import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
@@ -15,24 +36,12 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from 'discord.js';
-import { getEmoji } from '#main/utils/EmojiUtils.js';
-import Logger from '#main/utils/Logger.js';
-import { getReplyMethod } from '#utils/Utils.js';
 
 type PaginationInteraction = Exclude<RepliableInteraction, ModalSubmitInteraction>;
 
-type ButtonEmojis = {
-  back: string;
-  next: string;
-  search: string;
-  select: string;
-};
+type ButtonEmojis = { back: string; next: string; search: string; select: string };
 
-type RunOptions = {
-  idle?: number;
-  ephemeral?: boolean;
-  deleteOnEnd?: boolean;
-};
+type RunOptions = { idle?: number; ephemeral?: boolean; deleteOnEnd?: boolean };
 
 export class Pagination {
   private readonly pages: BaseMessageOptions[] = [];
@@ -128,10 +137,14 @@ export class Pagination {
     await interaction.showModal(modal);
 
     try {
-      const modalSubmit = await interaction.awaitModalSubmit({
-        time: 30000,
-        filter: (i) => i.customId === 'page_select_modal',
-      });
+      const modalSubmit = await interaction
+        .awaitModalSubmit({ time: 30000, filter: (i) => i.customId === 'page_select_modal' })
+        .catch((e) => {
+          if (!e.message.includes('reason: time')) handleError(e);
+          return null;
+        });
+
+      if (!modalSubmit) return null;
 
       const pageNumber = Number.parseInt(modalSubmit.fields.getTextInputValue('page_number_input'));
 
@@ -143,10 +156,7 @@ export class Pagination {
         return null;
       }
 
-      await modalSubmit.reply({
-        content: `Going to page ${pageNumber}`,
-        flags: ['Ephemeral'],
-      });
+      await modalSubmit.reply({ content: `Going to page ${pageNumber}`, flags: ['Ephemeral'] });
       return pageNumber - 1; // Convert to 0-based index
     }
     catch (error) {
@@ -178,10 +188,14 @@ export class Pagination {
     await interaction.showModal(modal);
 
     try {
-      const modalSubmit = await interaction.awaitModalSubmit({
-        time: 30000,
-        filter: (i) => i.customId === 'search_modal',
-      });
+      const modalSubmit = await interaction
+        .awaitModalSubmit({ time: 30000, filter: (i) => i.customId === 'search_modal' })
+        .catch((e) => {
+          if (!e.message.includes('reason: time')) handleError(e);
+          return null;
+        });
+
+      if (!modalSubmit) return null;
 
       const searchTerm = modalSubmit.fields.getTextInputValue('search_input').toLowerCase();
       const results: { page: number; matches: number }[] = [];
@@ -217,10 +231,7 @@ export class Pagination {
         return topResult.page;
       }
 
-      await modalSubmit.reply({
-        content: 'No matches found',
-        flags: ['Ephemeral'],
-      });
+      await modalSubmit.reply({ content: 'No matches found', flags: ['Ephemeral'] });
       return null;
     }
     catch (error) {
@@ -229,7 +240,7 @@ export class Pagination {
     }
   }
 
-  public async run(ctx: PaginationInteraction | Message, options?: RunOptions) {
+  public async run(ctx: PaginationInteraction | Message | Context, options?: RunOptions) {
     if (this.pages.length < 1) {
       await this.sendReply(
         ctx,
@@ -246,7 +257,7 @@ export class Pagination {
     const listMessage = await this.sendReply(
       ctx,
       { ...resp, content: resp.content },
-      { ephemeral: options?.ephemeral, flags: [] },
+      { flags: options?.ephemeral ? ['Ephemeral'] : [] },
     );
 
     const col = listMessage.createMessageComponentCollector({
@@ -314,21 +325,14 @@ export class Pagination {
   }
 
   private async sendReply(
-    ctx: PaginationInteraction | Message,
+    ctx: PaginationInteraction | Message | Context,
     opts: BaseMessageOptions,
-    interactionOpts?: {
-      ephemeral?: boolean;
-      flags?: InteractionReplyOptions['flags'];
-    },
+    interactionOpts?: { flags?: InteractionReplyOptions['flags'] },
   ) {
-    if (ctx instanceof Message) return await ctx.reply(opts);
+    if (ctx instanceof Message || ctx instanceof Context) return await ctx.reply(opts);
 
     const replyMethod = getReplyMethod(ctx);
-    return await ctx[replyMethod]({
-      ...opts,
-      ephemeral: interactionOpts?.ephemeral,
-      flags: interactionOpts?.flags,
-    });
+    return await ctx[replyMethod]({ ...opts, flags: interactionOpts?.flags });
   }
 
   private adjustIndex(customId: string, index: number) {
@@ -341,10 +345,7 @@ export class Pagination {
     actionButtons: ActionRowBuilder<ButtonBuilder>,
     replyOpts: BaseMessageOptions,
   ) {
-    return {
-      ...replyOpts,
-      components: [actionButtons, ...(replyOpts.components || [])],
-    };
+    return { ...replyOpts, components: [actionButtons, ...(replyOpts.components || [])] };
   }
 
   private createButtons(index: number, totalPages: number) {

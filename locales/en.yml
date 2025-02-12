@@ -109,7 +109,6 @@ connection:
       connected: Connected
       emColor: Embed Color
       compact: Compact Mode
-      profanity: Profanity Filter
     footer: Use the button & dropdown below to manage your connection.
   selects:
     placeholder: '🛠️ Select an option to edit this connection'
@@ -119,7 +118,7 @@ connection:
 
       Unpaused connection for {channel}! Messages from the hub will start coming into the channel and you can send messages to the hub again.
     tips: |
-      **💡 Tip:** Use {pause_cmd} to pause the connection or {edit_cmd} to set embed colors, toggle profanity filter, and more.
+      **💡 Tip:** Use {pause_cmd} to pause the connection or {edit_cmd} to set embed colors, invite to your server and more.
   paused:
     desc: |
       ### {clock_emoji} Paused Connection
@@ -153,7 +152,6 @@ hub:
       Invite: {invite}
       Connected: {connected}
   blockwords:
-    created: '{emoji} Anti-Swear rule successfully created! Add actions using the `Configure Actions` button. You can also do this using `/hub blockwords edit`.'
     deleted: '{emoji} Anti-Swear rule successfully deleted!'
     notFound: '{emoji} Anti-Swear rule not found.'
     maxRules: '{emoji} You have reached the maximum number of anti-swear rules (2) for this hub. Please delete a rule before adding another one.'
@@ -170,15 +168,17 @@ hub:
     ruleFooter: 'Click the button below to edit the words or rule name!'
     actionSelectPlaceholder: 'Select the actions this rule should perform.'
     embedFields:
-      noActions: '{emoji} None! Configure using the button below.'
+      noActions: '{emoji} **None!** Configure using the menu below.'
       actionsName: 'Configured Actions:'
       actionsValue: '{actions}'
+
     modal:
       addRule: Add Anti-Swear Rule
       editingRule: Editing Anti-Swear Rule
       ruleNameLabel: Rule Name
       wordsLabel: 'Words seperated by comma (use * for wildcard)'
       wordsPlaceholder: 'Eg. word1, *word2*, *word3, word4*'
+
     validating: '{emoji} Validating anti-swear rule...'
     noRules: |
       ### {emoji} Let's set up some rules!
@@ -202,16 +202,21 @@ hub:
     invalidName: '{emoji} Invalid hub name. It must not contain `discord`, `clyde` or \`\`\` . Please choose another name.'
     nameTaken: '{emoji} This hub name is already taken. Please choose another name.'
     success: |
-      ### Your __private__ hub, **{name}**, has been successfully created.
-      To join, create an invite using `/hub invite create` and share the generated code. Then join using `/hub join`.
-
-      - **Edit hub:** `/hub edit`
-      - **Generate invite:** `/hub invite create`
-      - **Make public:** `/hub visibility`
-      - **Join hub:** `/hub join`
-      - **Edit hub:** `/hub edit`
-      - **Set report channel:** `/hub logging set_channe;`
-      - **Add moderators:** `/hub moderator add`
+      ## Hub Created! It is __private__ by default.
+      Use `/hub edit hub:{name}` to customize your hub. Please follow the steps below to get started:
+      ### Next Steps:
+      1. **Create an Invite:**
+      > Use `/hub invite create` to create an invite for others to join.
+      2. **Link a Channel:** 
+      > Use `/hub join` **with the invite link previously generated** to link a channel to the hub and start chatting.
+      3. **Configure Hub:** (Recommended)
+      > Use `/hub config settings`, `/hub config logging` & `/hub config anti-swear` to configure the hub.
+      4. **Add Moderators:** 
+      > Use `/hub moderator add` to add moderators to the hub.
+      5. **Customize Hub:** 
+      > Use `/hub edit` to change the hub icon, banner, and description.
+      6. **Go Public:** 
+      > Use `/hub visibility` to make the hub public and allow others to browse and join it without using invites. (Optional)
 
       If you have any questions or need help, feel free to ask in the [support server]({support_invite}). Consider [donating]({donateLink}) to support the development costs.
   delete:
@@ -347,9 +352,6 @@ hub:
       modLogs:
         label: Mod Logs
         description: Log Moderation actions. (eg. blacklist, message deletes, etc.)
-      profanity:
-        label: Profanity Filter
-        description: Log messages that are caught by the profanity filter.
       joinLeaves:
         label: Join/Leave
         description: Log when a server joins or leaves this hub.

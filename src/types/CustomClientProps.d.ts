@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import type { ClusterClient } from 'discord-hybrid-sharding';
 import type {
   Collection,
@@ -7,14 +24,14 @@ import type {
   Snowflake,
   TextChannel,
 } from 'discord.js';
-import type BaseCommand from '#main/core/BaseCommand.js';
-import type BasePrefixCommand from '#main/core/BasePrefixCommand.js';
-import type { InteractionFunction } from '#main/decorators/RegisterInteractionHandler.js';
-import type AntiSpamManager from '#main/managers/AntiSpamManager.js';
-import type EventLoader from '#main/modules/Loaders/EventLoader.js';
-import type CooldownService from '#main/services/CooldownService.js';
-import type Scheduler from '#main/services/SchedulerService.js';
-import { LevelingService } from '#main/services/LevelingService.js';
+import type BaseCommand from '#src/core/BaseCommand.js';
+import type BasePrefixCommand from '#src/core/BasePrefixCommand.js';
+import type { InteractionFunction } from '#src/decorators/RegisterInteractionHandler.js';
+import type AntiSpamManager from '#src/managers/AntiSpamManager.js';
+import type EventLoader from '#src/modules/Loaders/EventLoader.js';
+import type CooldownService from '#src/services/CooldownService.js';
+import type Scheduler from '#src/services/SchedulerService.js';
+import { LevelingService } from '#src/services/LevelingService.js';
 
 export type RemoveMethods<T> = {
   [K in keyof T]: T[K] extends (...args: unknown[]) => unknown ? never : RemoveMethods<T[K]>;

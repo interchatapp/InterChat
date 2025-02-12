@@ -1,12 +1,29 @@
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import type { Hub, PrismaClient, Role } from '@prisma/client';
 import type { Redis } from 'ioredis';
-import HubManager from '#main/managers/HubManager.js';
-import { HubSettingsBits } from '#main/modules/BitFields.js';
-import type { ConvertDatesToString } from '#main/types/Utils.js';
-import { deleteConnections } from '#main/utils/ConnectedListUtils.js';
-import Constants, { RedisKeys } from '#main/utils/Constants.js';
-import db from '#main/utils/Db.js';
-import getRedis from '#main/utils/Redis.js';
+import HubManager from '#src/managers/HubManager.js';
+import { HubSettingsBits } from '#src/modules/BitFields.js';
+import type { ConvertDatesToString } from '#types/Utils.d.ts';
+import { deleteConnections } from '#src/utils/ConnectedListUtils.js';
+import Constants, { RedisKeys } from '#src/utils/Constants.js';
+import db from '#src/utils/Db.js';
+import getRedis from '#src/utils/Redis.js';
 
 export interface HubCreationData {
   name: string;

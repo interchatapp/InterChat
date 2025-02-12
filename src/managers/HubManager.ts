@@ -1,15 +1,32 @@
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import type { BlockWord, Hub } from '@prisma/client';
 import type { Redis } from 'ioredis';
-import { CacheConfig, CacheManager } from '#main/managers/CacheManager.js';
-import HubConnectionsManager from '#main/managers/HubConnectionsManager.js';
-import HubLogManager from '#main/managers/HubLogManager.js';
-import HubModeratorManager from '#main/managers/HubModeratorManager.js';
-import HubSettingsManager from '#main/managers/HubSettingsManager.js';
-import { HubService } from '#main/services/HubService.js';
-import { RedisKeys } from '#main/utils/Constants.js';
-import db from '#main/utils/Db.js';
-import Logger from '#main/utils/Logger.js';
-import getRedis from '#main/utils/Redis.js';
+import { type CacheConfig, CacheManager } from '#src/managers/CacheManager.js';
+import HubConnectionsManager from '#src/managers/HubConnectionsManager.js';
+import HubLogManager from '#src/managers/HubLogManager.js';
+import HubModeratorManager from '#src/managers/HubModeratorManager.js';
+import HubSettingsManager from '#src/managers/HubSettingsManager.js';
+import { HubService } from '#src/services/HubService.js';
+import { RedisKeys } from '#src/utils/Constants.js';
+import db from '#src/utils/Db.js';
+import Logger from '#src/utils/Logger.js';
+import getRedis from '#src/utils/Redis.js';
 
 export default class HubManager {
   private readonly cacheManager: CacheManager;
@@ -109,11 +126,11 @@ export default class HubManager {
     });
   }
 
-  public async fetchBlockWords(): Promise<BlockWord[]> {
-    return await this.cacheManager.getSetMembers<BlockWord>(
-      'blockWords',
-      async () => await db.blockWord.findMany({ where: { hubId: this.hub.id } }),
-    );
+  public async fetchAntiSwearRules(): Promise<BlockWord[]> {
+    return await db.blockWord.findMany({ where: { hubId: this.hub.id } });
+  }
+  public async fetchAntiSwearRule(ruleId: string): Promise<BlockWord | null> {
+    return await db.blockWord.findUnique({ where: { id: ruleId } });
   }
 
   public async fetchInvites() {

@@ -1,3 +1,34 @@
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+import type BaseCommand from '#src/core/BaseCommand.js';
+import type { InteractionFunction } from '#src/decorators/RegisterInteractionHandler.js';
+import AntiSpamManager from '#src/managers/AntiSpamManager.js';
+import EventLoader from '#src/modules/Loaders/EventLoader.js';
+import CooldownService from '#src/services/CooldownService.js';
+import { LevelingService } from '#src/services/LevelingService.js';
+import Scheduler from '#src/services/SchedulerService.js';
+import { loadInteractions } from '#src/utils/CommandUtils.js';
+import { loadCommands } from '#src/utils/Loaders.js';
+import Logger from '#src/utils/Logger.js';
+import type { RemoveMethods } from '#types/CustomClientProps.d.ts';
+import Constants from '#utils/Constants.js';
+import { loadLocales } from '#utils/Locale.js';
+import { resolveEval } from '#utils/Utils.js';
 import { ClusterClient, getInfo } from 'discord-hybrid-sharding';
 import {
   Client,
@@ -8,19 +39,6 @@ import {
   type Snowflake,
   Sweepers,
 } from 'discord.js';
-import type BaseCommand from '#main/core/BaseCommand.js';
-import type BasePrefixCommand from '#main/core/BasePrefixCommand.js';
-import type { InteractionFunction } from '#main/decorators/RegisterInteractionHandler.js';
-import AntiSpamManager from '#main/managers/AntiSpamManager.js';
-import EventLoader from '#main/modules/Loaders/EventLoader.js';
-import CooldownService from '#main/services/CooldownService.js';
-import { LevelingService } from '#main/services/LevelingService.js';
-import Scheduler from '#main/services/SchedulerService.js';
-import { loadCommands, loadInteractions } from '#main/utils/CommandUtils.js';
-import type { RemoveMethods } from '#types/CustomClientProps.d.ts';
-import Constants from '#utils/Constants.js';
-import { loadLocales } from '#utils/Locale.js';
-import { resolveEval } from '#utils/Utils.js';
 
 export default class InterChatClient extends Client {
   static instance: InterChatClient;
@@ -29,7 +47,6 @@ export default class InterChatClient extends Client {
 
   public readonly commands = new Collection<string, BaseCommand>();
   public readonly interactions = new Collection<string, InteractionFunction>();
-  public readonly prefixCommands = new Collection<string, BasePrefixCommand>();
 
   public readonly version = Constants.ProjectVersion;
   public readonly reactionCooldowns = new Collection<string, number>();
@@ -68,9 +85,9 @@ export default class InterChatClient extends Client {
       }),
       sweepers: {
         messages: {
-          interval: 3600,
+          interval: 1800, // 30 minutes
           filter: Sweepers.filterByLifetime({
-            lifetime: 43200, // 12 hours
+            lifetime: 7200, // 2 hours
             getComparisonTimestamp: (message) => message.createdTimestamp,
           }),
         },
@@ -95,22 +112,34 @@ export default class InterChatClient extends Client {
     // initialize the client
     InterChatClient.instance = this;
 
-    // initialize i18n for localization
-    loadLocales('locales');
-    loadCommands(this.commands, this.prefixCommands, this.interactions, this);
-    loadInteractions(this.interactions);
-    this.eventLoader.load();
+    // load commands, interactions and event handlers to memory
+    this.loadResoruces();
 
     // Discord.js automatically uses DISCORD_TOKEN env variable
-    await this.login(process.env.DISCORD_TOKEN);
+    await this.login();
+  }
+
+  async loadResoruces() {
+    // initialize i18n for localization
+    loadLocales('locales');
+
+    await loadCommands(this.commands, this.interactions);
+    Logger.info(`Loaded ${this.commands.size} commands`);
+
+    await loadInteractions(this.interactions);
+    Logger.info(`Loaded ${this.interactions.size} interactions`);
+
+    this.eventLoader.load();
   }
 
   /**
-   * Fetches a guild by its ID from the cache of one of the clusters.
-   * @param guildId The ID of the guild to fetch.
-   * @returns The fetched guild **without any methods**, or undefined if the guild is not found.
-   */
-  async fetchGuild(guildId: Snowflake): Promise<RemoveMethods<Guild> | undefined> {
+	 * Fetches a guild by its ID from the cache of one of the clusters.
+	 * @param guildId The ID of the guild to fetch.
+	 * @returns The fetched guild **without any methods**, or undefined if the guild is not found.
+	 */
+  async fetchGuild(
+    guildId: Snowflake,
+  ): Promise<RemoveMethods<Guild> | undefined> {
     const fetch = (await this.cluster.broadcastEval(
       (client, guildID) => client.guilds.cache.get(guildID),
       { guildId, context: guildId },

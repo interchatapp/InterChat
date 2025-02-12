@@ -1,10 +1,27 @@
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import { stripIndents } from 'common-tags';
 import { type Client, EmbedBuilder, type Snowflake, User, codeBlock } from 'discord.js';
-import BlacklistManager from '#main/managers/BlacklistManager.js';
-import type HubLogManager from '#main/managers/HubLogManager.js';
-import type HubManager from '#main/managers/HubManager.js';
-import { getEmoji } from '#main/utils/EmojiUtils.js';
-import type { OriginalMessage } from '#main/utils/network/messageUtils.js';
+import BlacklistManager from '#src/managers/BlacklistManager.js';
+import type HubLogManager from '#src/managers/HubLogManager.js';
+import type HubManager from '#src/managers/HubManager.js';
+import { getEmoji } from '#src/utils/EmojiUtils.js';
+import type { OriginalMessage } from '#src/utils/network/messageUtils.js';
 import Constants from '#utils/Constants.js';
 import { sendLog } from './Default.js';
 
@@ -120,7 +137,7 @@ export const logMsgDelete = async (
   const embed = new EmbedBuilder()
     .setDescription(
       stripIndents`
-      ### ${getEmoji('deleteDanger_icon', client)} Message Deleted
+      ### ${getEmoji('delete_icon', client)} Message Deleted
       **Content:**
       ${codeBlock(content)}
     `,

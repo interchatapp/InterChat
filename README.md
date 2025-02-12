@@ -51,7 +51,7 @@ A powerful Discord bot for easy and real-time chatting hubs across multiple Disc
 3. Connect a channel to a hub containing many other discord servers using the `/hub join` command.
 4. Start chatting across servers!
 
-For detailed instructions, check out our [Donate](https://ko-fi.com/dev737).
+For detailed instructions, check out our [Donate](https://ko-fi.com/interchat).
 
 ## 💻 Self-Hosting
 
@@ -66,14 +66,14 @@ While InterChat is available as a hosted bot, you can also self-host it. Follow 
 2. Install dependencies:
 
    ```sh
-   pnpm install
+   bun i
    ```
 
 3. Set up your `.env` file with your Discord bot token and other required environment variables.
 4. Run the bot:
 
    ```sh
-   pnpm dev
+   bun dev
    ```
 
 ## 🤝 Contributing

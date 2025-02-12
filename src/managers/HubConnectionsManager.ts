@@ -1,13 +1,30 @@
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import type { Connection, Prisma } from '@prisma/client';
 import type { Redis } from 'ioredis';
 import isEmpty from 'lodash/isEmpty.js';
-import ConnectionManager from '#main/managers/ConnectionManager.js';
-import type HubManager from '#main/managers/HubManager.js';
-import { cacheHubConnection, convertToConnectedList } from '#main/utils/ConnectedListUtils.js';
-import { RedisKeys } from '#main/utils/Constants.js';
-import db from '#main/utils/Db.js';
-import Logger from '#main/utils/Logger.js';
-import getRedis from '#main/utils/Redis.js';
+import ConnectionManager from '#src/managers/ConnectionManager.js';
+import type HubManager from '#src/managers/HubManager.js';
+import { cacheHubConnection, convertToConnectedList } from '#src/utils/ConnectedListUtils.js';
+import { RedisKeys } from '#src/utils/Constants.js';
+import db from '#src/utils/Db.js';
+import Logger from '#src/utils/Logger.js';
+import getRedis from '#src/utils/Redis.js';
 
 interface CacheConfig {
   expirationMs: number;
@@ -37,12 +54,13 @@ export default class HubConnectionsManager {
 
       return this.fetchAndCacheConnection(channelId);
     }
+
     const cachedConnections = await this.getCachedConnections();
     if (cachedConnections.length > 0) {
       return this.createManagersFromConnections(cachedConnections);
     }
 
-    return this.fetchAndCacheConnections();
+    return await this.fetchAndCacheConnections();
   }
 
   async createConnection(data: Prisma.ConnectionCreateInput): Promise<ConnectionManager | null> {

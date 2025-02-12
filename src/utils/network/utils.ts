@@ -1,15 +1,30 @@
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import { Collection, EmbedBuilder, type HexColorString, type Message } from 'discord.js';
 import {
   type OriginalMessage,
   findOriginalMessage,
   getBroadcasts,
-  getOriginalMessage,
-} from '#main/utils/network/messageUtils.js';
+} from '#src/utils/network/messageUtils.js';
 import Constants from '#utils/Constants.js';
 import { stripTenorLinks } from '#utils/ImageUtils.js';
-import { censor } from '#utils/ProfanityUtils.js';
 import type { ReferredMsgData } from './Types.js';
-import { fetchUserData } from '#main/utils/Utils.js';
+import { fetchUserData } from '#src/utils/Utils.js';
 
 /**
  * Retrieves the content of a referred message, which can be either the message's text content or the description of its first embed.
@@ -38,9 +53,7 @@ export const getReferredMsgData = async (
   const { client } = referredMessage;
 
   // check if it was sent in the network
-  const dbReferrenceRaw =
-    (await getOriginalMessage(referredMessage.id)) ??
-    (await findOriginalMessage(referredMessage.id));
+  const dbReferrenceRaw = await findOriginalMessage(referredMessage.id);
 
   if (!dbReferrenceRaw) {
     return {
@@ -63,21 +76,8 @@ export const getReferredMsgData = async (
   return { dbReferrence, referredAuthor, dbReferredAuthor, referredMessage };
 };
 
-const processContent = (
-  content: string,
-  censoredContent: string,
-  attachmentURL?: string | null,
-) => {
-  let msgContent = content;
-  let censoredMsg = censoredContent;
-
-  if (attachmentURL) {
-    msgContent = stripTenorLinks(msgContent, attachmentURL);
-    censoredMsg = stripTenorLinks(censoredContent, attachmentURL);
-  }
-
-  return { msgContent, censoredMsg };
-};
+const processContent = (content: string, attachmentURL?: string | null) =>
+  attachmentURL ? stripTenorLinks(content, attachmentURL) : content;
 
 const createEmbed = (
   message: Message,
@@ -101,16 +101,9 @@ const createEmbed = (
       iconURL: message.guild?.iconURL() ?? undefined,
     });
 
-const createCensoredEmbed = (embed: EmbedBuilder, censoredContent: string) =>
-  EmbedBuilder.from(embed).setDescription(censoredContent || null);
-
-const addReplyField = (normal: EmbedBuilder, censored: EmbedBuilder, referredContent: string) => {
+const addReplyField = (embed: EmbedBuilder, referredContent: string) => {
   const formattedReply = referredContent.replaceAll('\n', '\n> ');
-  normal.setFields({ name: 'Replying To:', value: `> ${formattedReply}` });
-  censored.setFields({
-    name: 'Replying To:',
-    value: `> ${censor(formattedReply)}`,
-  });
+  embed.setFields({ name: 'Replying To:', value: `> ${formattedReply}` });
 };
 
 /**
@@ -121,30 +114,19 @@ const addReplyField = (normal: EmbedBuilder, censored: EmbedBuilder, referredCon
  * @param opts.embedCol The color of the embed.
  * @param opts.referredContent The content of the message being replied to.
  * @param opts.useNicknames Whether to use nicknames instead of usernames in the embed.
- * @returns An object containing the built EmbedBuilder and its censored version.
+ * @returns An object containing the built EmbedBuilder
  */
 export const buildNetworkEmbed = (
   message: Message,
   username: string,
-  censoredContent: string,
-  opts?: {
-    attachmentURL?: string | null;
-    embedCol?: HexColorString;
-    referredContent?: string;
-  },
+  opts?: { attachmentURL?: string | null; embedCol?: HexColorString; referredContent?: string },
 ) => {
-  const { msgContent, censoredMsg } = processContent(
-    message.content,
-    censoredContent,
-    opts?.attachmentURL,
-  );
-
-  const normal = createEmbed(message, username, msgContent, opts);
-  const censored = createCensoredEmbed(normal, censoredMsg);
+  const msgContent = processContent(message.content, opts?.attachmentURL);
+  const embed = createEmbed(message, username, msgContent, opts);
 
   if (opts?.referredContent) {
-    addReplyField(normal, censored, opts.referredContent);
+    addReplyField(embed, opts.referredContent);
   }
 
-  return { normal, censored };
+  return embed;
 };

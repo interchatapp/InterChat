@@ -1,3 +1,37 @@
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
+import type HubManager from '#src/managers/HubManager.js';
+import { HubService } from '#src/services/HubService.js';
+import db from '#src/utils/Db.js';
+import { getEmoji } from '#src/utils/EmojiUtils.js';
+import {
+  type OriginalMessage,
+  findOriginalMessage,
+  storeMessage,
+} from '#src/utils/network/messageUtils.js';
+import Constants from '#utils/Constants.js';
+import { CustomID, type ParsedCustomId } from '#utils/CustomID.js';
+import { t } from '#utils/Locale.js';
+import { fetchUserLocale, getEmojiId } from '#utils/Utils.js';
+import { addReaction, removeReaction, updateReactions } from '#utils/reaction/actions.js';
+import { checkBlacklists } from '#utils/reaction/helpers.js';
+import sortReactions from '#utils/reaction/sortReactions.js';
 import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
@@ -9,24 +43,6 @@ import {
   StringSelectMenuBuilder,
   time,
 } from 'discord.js';
-import { RegisterInteractionHandler } from '#main/decorators/RegisterInteractionHandler.js';
-import type HubManager from '#main/managers/HubManager.js';
-import { HubService } from '#main/services/HubService.js';
-import db from '#main/utils/Db.js';
-import { getEmoji } from '#main/utils/EmojiUtils.js';
-import {
-  type OriginalMessage,
-  findOriginalMessage,
-  getOriginalMessage,
-  storeMessage,
-} from '#main/utils/network/messageUtils.js';
-import Constants from '#utils/Constants.js';
-import { CustomID, type ParsedCustomId } from '#utils/CustomID.js';
-import { t } from '#utils/Locale.js';
-import { fetchUserLocale, getEmojiId } from '#utils/Utils.js';
-import { addReaction, removeReaction, updateReactions } from '#utils/reaction/actions.js';
-import { checkBlacklists } from '#utils/reaction/helpers.js';
-import sortReactions from '#utils/reaction/sortReactions.js';
 
 export default class NetworkReactionInteraction {
   @RegisterInteractionHandler('reaction_')
@@ -37,8 +53,7 @@ export default class NetworkReactionInteraction {
     if (!interaction.inCachedGuild()) return;
 
     const { customId, messageId } = this.getInteractionDetails(interaction);
-    const originalMessage =
-      (await getOriginalMessage(messageId)) ?? (await findOriginalMessage(messageId));
+    const originalMessage = await findOriginalMessage(messageId);
 
     const hubService = new HubService(db);
     const hub = originalMessage ? await hubService.fetchHub(originalMessage?.hubId) : null;
@@ -108,8 +123,7 @@ export default class NetworkReactionInteraction {
     messageId: string,
     hub: HubManager,
   ) {
-    const originalMessage =
-      (await getOriginalMessage(messageId)) ?? (await findOriginalMessage(messageId));
+    const originalMessage = await findOriginalMessage(messageId);
     if (!originalMessage?.reactions || !originalMessage.hubId) {
       await interaction.followUp({
         content: 'There are no more reactions to view.',

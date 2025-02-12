@@ -1,10 +1,28 @@
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import { stripIndents } from 'common-tags';
 import type { Client, Message } from 'discord.js';
-import BaseEventListener from '#main/core/BaseEventListener.js';
-import { showRulesScreening } from '#main/interactions/RulesScreening.js';
-import { MessageProcessor } from '#main/services/MessageProcessor.js';
-import Constants from '#main/utils/Constants.js';
+import BaseEventListener from '#src/core/BaseEventListener.js';
+import { showRulesScreening } from '#src/interactions/RulesScreening.js';
+import { MessageProcessor } from '#src/services/MessageProcessor.js';
+import Constants from '#src/utils/Constants.js';
 import { fetchUserData, handleError, isHumanMessage } from '#utils/Utils.js';
+import { executeCommand, resolveCommand } from '#src/utils/CommandUtils.js';
 
 export default class MessageCreate extends BaseEventListener<'messageCreate'> {
   readonly name = 'messageCreate';
@@ -19,7 +37,7 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
     if (!message.inGuild() || !isHumanMessage(message)) return;
 
     if (message.content.startsWith('c!')) {
-      await this.handlePrefixCommand(message, 'c!');
+      await this.handlePrefixCommand(message);
       return;
     }
     if (
@@ -39,30 +57,20 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
         .catch(() => null);
     }
 
-    await this.handleChatMessage(message).catch((e) => handleError(e, { repliable: message }));
+    await this.handleChatMessage(message).catch(handleError);
   }
 
-  private async handlePrefixCommand(message: Message, prefix: string) {
-    try {
-      const userData = await fetchUserData(message.author.id);
-      if (!userData?.acceptedRules) return await showRulesScreening(message, userData);
-
-      const args = message.content.slice(prefix.length).trim().split(/ +/);
-      const commandName = args.shift()?.toLowerCase();
-
-      if (!commandName) return;
-
-      const command =
-        message.client.prefixCommands.get(commandName) ||
-        message.client.prefixCommands.find((cmd) => cmd.data.aliases?.includes(commandName));
-
-      if (!command) return;
-
-      await command.execute(message, args);
+  private async handlePrefixCommand(message: Message): Promise<void> {
+    const userData = await fetchUserData(message.author.id);
+    if (!userData?.acceptedRules) {
+      await showRulesScreening(message, userData);
+      return;
     }
-    catch (e) {
-      handleError(e, { repliable: message });
-    }
+
+    const { command, prefixArgs } = resolveCommand(message);
+    if (!command) return;
+
+    await executeCommand(message, command, prefixArgs);
   }
 
   private async handleChatMessage(message: Message<true>) {

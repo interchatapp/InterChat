@@ -1,14 +1,30 @@
-import type { MessageReaction, PartialMessageReaction, PartialUser, User } from 'discord.js';
-import BaseEventListener from '#main/core/BaseEventListener.js';
-import { HubService } from '#main/services/HubService.js';
-import db from '#main/utils/Db.js';
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+import BaseEventListener from '#src/core/BaseEventListener.js';
+import { HubService } from '#src/services/HubService.js';
+import db from '#src/utils/Db.js';
 import {
   findOriginalMessage,
-  getOriginalMessage,
   storeMessage,
-} from '#main/utils/network/messageUtils.js';
+} from '#src/utils/network/messageUtils.js';
 import { addReaction, updateReactions } from '#utils/reaction/actions.js';
 import { checkBlacklists } from '#utils/reaction/helpers.js';
+import type { MessageReaction, PartialMessageReaction, PartialUser, User } from 'discord.js';
 
 export default class ReadctionAdd extends BaseEventListener<'messageReactionAdd'> {
   readonly name = 'messageReactionAdd';
@@ -24,9 +40,7 @@ export default class ReadctionAdd extends BaseEventListener<'messageReactionAdd'
     // add user to cooldown list
     user.client.reactionCooldowns.set(user.id, Date.now() + 3000);
 
-    const originalMsg =
-      (await getOriginalMessage(reaction.message.id)) ??
-      (await findOriginalMessage(reaction.message.id));
+    const originalMsg = await findOriginalMessage(reaction.message.id);
 
     const hubService = new HubService(db);
     const hub = originalMsg ? await hubService.fetchHub(originalMsg?.hubId) : null;

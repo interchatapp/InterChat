@@ -1,17 +1,17 @@
 {
   "name": "interchat",
   "private": true,
-  "version": "4.2.2",
+  "version": "4.3.0-0",
   "description": "A growing Discord bot which provides inter-server chat!",
-  "main": "src/index.ts",
+  "main": "build/index.js",
   "license": "AGPL-3.0-only",
   "scripts": {
-    "start": "bun run .",
+    "start": "node .",
     "start:prod": "pm2 start .ecosystem.config.js",
-    "dev": "nodemon --exec \"bun typecheck && bun start\" --ext ts,js,json",
+    "dev": "nodemon --exec \"bun run build && npm start\" --ext ts,js,json --ignore build/",
     "build": "tsc --build",
     "typecheck": "tsc --noEmit",
-    "gen:locale-types": "bun scripts/genLocaleTypes.js",
+    "locale-types": "bun scripts/genLocaleTypes.js",
     "sync:commands": "bun scripts/syncCommands.js",
     "sync:emojis": "bun scripts/syncEmojis.js",
     "release": "release-it",
@@ -19,42 +19,45 @@
     "prepare": "husky"
   },
   "sponsor": {
-    "url": "https://ko-fi.com/dev737"
+    "url": "https://ko-fi.com/interchat"
   },
   "type": "module",
   "dependencies": {
-    "@prisma/client": "^6.1.0",
-    "@sentry/bun": "^8.47.0",
-    "canvas": "^3.0.0-rc3",
+    "@hono/node-server": "^1.13.8",
+    "@prisma/client": "^6.3.1",
+    "@sentry/node": "^9.0.0",
+    "@sentry/profiling-node": "^9.0.0",
+    "canvas": "^3.1.0",
     "common-tags": "^1.8.2",
-    "discord-hybrid-sharding": "^2.2.3",
-    "discord.js": "^14.17.2",
+    "discord-hybrid-sharding": "^2.2.4",
+    "discord.js": "^14.18.0",
+    "dotenv": "^16.4.7",
+    "hono": "^4.7.0",
     "husky": "^9.1.7",
-    "ioredis": "^5.4.2",
+    "ioredis": "^5.5.0",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
     "lz-string": "^1.5.0",
     "ms": "^2.1.3",
     "reflect-metadata": "^0.2.2",
-    "uuid": "^11.0.3",
+    "uuid": "^11.0.5",
     "winston": "^3.17.0"
   },
   "devDependencies": {
-    "@stylistic/eslint-plugin": "^2.12.1",
+    "@stylistic/eslint-plugin": "^3.1.0",
     "@types/common-tags": "^1.8.4",
     "@types/js-yaml": "^4.0.9",
-    "@types/lodash": "^4.17.13",
-    "@types/ms": "^0.7.34",
-    "bun-types": "^1.1.42",
+    "@types/lodash": "^4.17.15",
+    "@types/ms": "^2.1.0",
     "cz-conventional-changelog": "^3.3.0",
-    "eslint": "9.17.0",
-    "lint-staged": "^15.3.0",
+    "eslint": "^9.20.0",
+    "lint-staged": "^15.4.3",
     "nodemon": "^3.1.9",
-    "prettier": "^3.4.2",
-    "prisma": "^6.1.0",
-    "release-it": "18",
-    "typescript": "^5.7.2",
-    "typescript-eslint": "^8.19.0"
+    "prettier": "^3.5.0",
+    "prisma": "^6.3.1",
+    "release-it": "^18.1.2",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.24.0"
   },
   "config": {
     "commitizen": {
@@ -67,7 +70,10 @@
     ]
   },
   "imports": {
-    "#main/*.js": "./src/*.ts",
-    "#utils/*.js": "./src/utils/*.ts"
-  }
+    "#src/*.js": "./build/*.js",
+    "#utils/*.js": "./build/utils/*.js"
+  },
+  "trustedDependencies": [
+    "@sentry-internal/node-cpu-profiler"
+  ]
 }

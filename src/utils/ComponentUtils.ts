@@ -1,4 +1,22 @@
-import { randomBytes } from 'node:crypto';
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+import { getEmoji } from '#src/utils/EmojiUtils.js';
+import Constants from '#utils/Constants.js';
 import {
   type ActionRow,
   ActionRowBuilder,
@@ -6,14 +24,10 @@ import {
   ButtonStyle,
   type Client,
   ComponentType,
-  type Message,
   type MessageActionRowComponent,
   type Snowflake,
   messageLink,
 } from 'discord.js';
-import type Scheduler from '#main/services/SchedulerService.js';
-import { getEmoji } from '#main/utils/EmojiUtils.js';
-import Constants from '#utils/Constants.js';
 
 export const greyOutButton = (row: ActionRowBuilder<ButtonBuilder>, disableElement: number) => {
   row.components.forEach((c) => c.setDisabled(false));
@@ -64,29 +78,6 @@ export const disableAllComponents = (
 
     return jsonRow;
   });
-
-/**
- *
- * @param scheduler The scheduler to use
- * @param message The message on which to disable components
- * @param time The time in milliseconds after which to disable the components
- */
-export const setComponentExpiry = (
-  scheduler: Scheduler,
-  message: Message,
-  time: number | Date,
-): string => {
-  const timerId = randomBytes(8).toString('hex');
-  scheduler.addTask(`disableComponents_${timerId}`, time, async () => {
-    const updatedMsg = await message.fetch().catch(() => null);
-    if (updatedMsg?.components.length === 0 || !updatedMsg?.editable) return;
-
-    const disabled = disableAllComponents(message.components);
-    await updatedMsg.edit({ components: disabled });
-  });
-
-  return timerId;
-};
 
 export const donateButton = new ButtonBuilder()
   .setLabel('Donate')

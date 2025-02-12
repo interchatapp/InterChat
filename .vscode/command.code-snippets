@@ -3,7 +3,7 @@
     "scope": "javascript,typescript",
     "prefix": ["command", "discord command"],
     "body": [
-      "import BaseCommand from '#main/core/BaseCommand.js';",
+      "import BaseCommand from '#src/core/BaseCommand.js';",
       "import { ChatInputCommandInteraction } from 'discord.js';",
 
       "export default class $1 extends BaseCommand {",
@@ -11,7 +11,7 @@
       "\t\tname: '$2',",
       "\t\tdescription: '$3',",
       "\t};",
-      "\tasync execute(interaction: ChatInputCommandInteraction) {",
+      "\tasync execute(ctx: Context) {",
       "\t\t$4",
       "\t}",
       "}",
@@ -25,7 +25,7 @@
       "import $1 from './index.js';",
       "import { ChatInputCommandInteraction } from 'discord.js';\n",
       "export default class $3 extends $1 {",
-      "\tasync execute(interaction: ChatInputCommandInteraction) {",
+      "\tasync execute(ctx: Context) {",
       "\t\t$4",
       "\t}",
       "}",

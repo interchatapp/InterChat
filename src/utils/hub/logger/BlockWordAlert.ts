@@ -1,10 +1,27 @@
+/*
+ * Copyright (C) 2025 InterChat
+ *
+ * InterChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * InterChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import type { BlockWord } from '@prisma/client';
 import { stripIndents } from 'common-tags';
 import { EmbedBuilder, type Message } from 'discord.js';
-import HubLogManager from '#main/managers/HubLogManager.js';
-import { getEmoji } from '#main/utils/EmojiUtils.js';
-import { sendLog } from '#main/utils/hub/logger/Default.js';
-import { ACTION_LABELS, createRegexFromWords } from '#main/utils/moderation/blockWords.js';
+import HubLogManager from '#src/managers/HubLogManager.js';
+import { getEmoji } from '#src/utils/EmojiUtils.js';
+import { sendLog } from '#src/utils/hub/logger/Default.js';
+import { ACTION_LABELS, createRegexFromWords } from '#utils/moderation/antiSwear.js';
 
 const boldANSIText = (text: string) => `\u001b[1;2m${text}\u001b[0m`;
 
