@@ -1,28 +1,29 @@
 rules:
   rules: |
-    ### {rules_emoji} Rules:
-    These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:
+    ### Regras:
+    Estas regras foram estabelecidas para proporcionar uma experiência segura e agradável para todos. Leia-as e siga-as cuidadosamente:
 
-    1. **No NSFW, NSFL, or Gore Content**
-      -# Applies to profile images, usernames, explicit images, videos, and text.
-    2. **No Racism or Discrimination**
-      -# Treat everyone respectfully and kindly. Hate speech and slurs are prohibited.
-    3. **No Sexual Content**
-      -# This includes suggestive jokes, gifs, and any other form of innuendo. Keep it friendly for everyone.
-    4. **No Advertising or Self-Promotion**
-      -# Avoid sharing links to personal servers, social media, or other bots on InterChat.
-    5. **No Harassment or Doxxing**
-      -# Respect everyone’s privacy and well-being. Harassment, doxxing, and encouraging self-harm are strictly forbidden.
-    6. **No Spam or Flooding**
-      -# Don’t send repetitive messages or flood the chat. Excessive spamming may result in harsher penalties and impacts bot performance.
-    7. **No Controversial Discussions**
-      -# Maintain a friendly, welcoming environment for everyone. Avoid discussing politics, religion, or other controversial topics.
-    8. **Use Common Sense**
-      -# If you think something might not be appropriate, avoid it.
-    9. **Report Violations**
-      -# Use the `Apps > Message Info/Report` command to notify moderators of any rule-breaking content.
+    1. **Não há conteúdo NSFW, NSFL ou Gore**
+      -# Aplica-se a imagens de perfil, nomes de usuário, imagens explícitas, vídeos e texto.
+    2. **Não há racismo ou discriminação**
+      -# Trate todos com respeito e gentileza. Discursos de ódio e calúnias são proibidos.
+    3. **Não há conteúdo sexual**
+      -# Isso inclui piadas sugestivas, gifs e qualquer outra forma de insinuação. Mantenha o ambiente amigável para todos.
+    4. **Não há publicidade ou autopromoção**
+      -# Evite compartilhar links para servidores pessoais, mídias sociais ou outros bots no InterChat.
+    5. **Não há assédio ou Doxxing**
+      -# Respeite a privacidade e o bem-estar de todos. O assédio, o doxxing e o incentivo à automutilação são estritamente proibidos.
+    6. **Não há spam ou flooding**
+      -# Não envie mensagens repetitivas nem inunde o bate-papo. O excesso de spam pode resultar em penalidades mais severas e afetar o desempenho do bot.
+    7. **Não há discussões polêmicas**
+      -# Mantenha um ambiente amigável e acolhedor para todos. Evite discutir política, religião ou outros tópicos polêmicos.
+    8. **Use o bom senso**
+      -# Se você acha que algo pode não ser apropriado, evite-o.
+    9. **Relatar violações**
+      -# Use o comando `Apps > Message Info/Report` para notificar os moderadores sobre qualquer conteúdo que viole as regras.
 
-    And remember to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines).
+    E lembre-se de seguir os [Termos de Serviço do Discord] (https://discord.com/terms) e as [Diretrizes da Comunidade] (https://discord.com/guidelines)
+    🇧🇷𝕯𝖆𝖓𝖎𝖊𝖑.
   welcome: |
     {emoji} Hey {user}, bem-vindo ao InterChat!
     Antes de começar a conversar com pessoas de outros servidores usando o InterChat, você precisa aceitar as regras. Use o botão abaixo para aceitá-las.
@@ -30,7 +31,7 @@ rules:
     {emoji} Bem-vindo ao InterChat! Você aceitou as regras e agora está pronto para conversar com membros de outros servidores!
     Se ainda não estiver em um hub, use `/hub browse` para entrar em um e começar a conversar. Se você tiver alguma dúvida ou precisar de ajuda, fique à vontade para perguntar no [servidor de suporte]({support_invite}).
     Se você gosta de usar o InterChat, considere a possibilidade de [doar]({donateLink}) para ajudar nos custos de desenvolvimento.
-  alreadyAccepted: "### Regras:\nEstas regras foram estabelecidas para proporcionar uma experiência segura e agradável para todos. Leia-as e siga-as cuidadosamente:\n\n1. **Não há conteúdo NSFW, NSFL ou Gore**\n  -# Aplica-se a imagens de perfil, nomes de usuário, imagens explícitas, vídeos e texto.\n2. **Não há racismo ou discriminação**\n  -# Trate todos com respeito e gentileza. Discursos de ódio e calúnias são proibidos.\n3. **Não há conteúdo sexual**\n  -# Isso inclui piadas sugestivas, gifs e qualquer outra forma de insinuação. Mantenha o ambiente amigável para todos.\n4. **Não há publicidade ou autopromoção**\n  -# Evite compartilhar links para servidores pessoais, mídias sociais ou outros bots no InterChat.\n5. **Não há assédio ou Doxxing**\n  -# Respeite a privacidade e o bem-estar de todos. O assédio, o doxxing e o incentivo à automutilação são estritamente proibidos.\n6. **Não há spam ou flooding**\n  -# Não envie mensagens repetitivas nem inunde o bate-papo. O excesso de spam pode resultar em penalidades mais severas e afetar o desempenho do bot.\n7. **Não há discussões polêmicas**\n  -# Mantenha um ambiente amigável e acolhedor para todos. Evite discutir política, religião ou outros tópicos polêmicos.\n8. **Use o bom senso**\n  -# Se você acha que algo pode não ser apropriado, evite-o.\n9. **Relatar violações**\n  -# Use o comando `Apps > Message Info/Report` para notificar os moderadores sobre qualquer conteúdo que viole as regras.\n\nE lembre-se de seguir os [Termos de Serviço do Discord] (https://discord.com/terms) e as [Diretrizes da Comunidade] (https://discord.com/guidelines)\n\n🇧🇷Tradução feita por: 𝕯𝖆𝖓𝖎𝖊𝖑 𝕭𝖆𝖗𝖇𝖔𝖘𝖆 @dannybarbosabr."
+  alreadyAccepted: '{emoji} Você já aceitou as regras. Agora você pode usar o InterChat em toda sua danelização.'
 vote:
   description: Ao votar, você nos apoia ajudando o InterChat a ter uma classificação mais alta nas principais pesquisas.
   footer: Obrigado pelo apoio!
@@ -56,7 +57,7 @@ blacklist:
       label: Duração
       placeholder: 'Duração da lista negra. Ex.: 1d, 1s, 1m, 1a. Deixe em branco para permanente.'
   user:
-    cannotBlacklistMod: '{emoji} You cannot blacklist a moderator. Please remove their moderator role first.'
+    cannotBlacklistMod: '{emoji} Você não pode colocar um moderador na lista negra. Por favor, remova a função de moderador dele primeiro.'
     alreadyBlacklisted: '{emoji} Este usuário já está na lista negra.'
     easterEggs:
       blacklistBot: Você não pode me colocar na lista negra, wtf, tá achando que e o danny ou devoid.
@@ -88,7 +89,7 @@ invite: |
 
   **[{invite_emoji} `Link de convite`]( {invite} ) [{support_emoji}
 connection:
-  joinRequestsDisabled: '{emoji} Join requests are disabled for this hub.'
+  joinRequestsDisabled: '{emoji} As solicitações de adesão estão desabilitadas para este hub.'
   notFound: '{emoji} Conexão inválida. Verifique o ID do canal ou selecione entre as opções exibidas.'
   channelNotFound: '{emoji} Não é possível encontrar o canal conectado. Para falar novamente, escolha um novo canal.'
   alreadyConnected: '{emoji} O canal {channel} já está conectado a um hub.'
@@ -150,35 +151,35 @@ hub:
       Convidar: {invite}
       Conectado: {connected}
   blockwords:
-    deleted: '{emoji} Anti-Swear rule successfully deleted!'
-    notFound: '{emoji} Anti-Swear rule not found.'
-    maxRules: '{emoji} You have reached the maximum number of anti-swear rules (2) for this hub. Please delete a rule before adding another one.'
-    configure: 'Configure actions for rule: {rule}'
-    actionsUpdated: '{emoji} Updated the actions to be taken by the rule. **New Actions:** {actions}'
-    selectRuleToEdit: Select a rule to edit it's words/actions
+    deleted: '{emoji} Regra anti-palavrões excluída com sucesso!'
+    notFound: '{emoji} Regra anti-palavrões não encontrada.'
+    maxRules: '{emoji} Você atingiu o número máximo de regras anti-palavrões (2) para este hub. Exclua uma regra antes de adicionar outra.'
+    configure: 'Configurar ações para a regra: {rule}'
+    actionsUpdated: '{emoji} Atualizadas as ações a serem tomadas pela regra. **Novas ações:** {actions}'
+    selectRuleToEdit: Selecione uma regra para editar suas palavras/ações
     listDescription: |
-      ### {emoji} Anti-Swear Rules
-      This hub has {totalRules}/2 anti-swear rules setup.
-    listFooter: Select a rule using the menu to view it's full details.
+      ### {emoji} Regras anti-palavrões
+      Este hub tem {totalRules}/2 regras anti-palavrões configuradas.
+    listFooter: Selecione uma regra usando o menu para visualizar todos os detalhes.
     ruleDescription: |
-      ### {emoji} Editing Rule: {ruleName}
+      ### {emoji} Regra de edição: {ruleName}
       {words}
-    ruleFooter: 'Click the button below to edit the words or rule name!'
-    actionSelectPlaceholder: 'Select the actions this rule should perform.'
+    ruleFooter: 'Clique no botão abaixo para editar as palavras ou o nome da regra!'
+    actionSelectPlaceholder: 'Selecione as ações que esta regra deve executar.'
     embedFields:
-      noActions: '{emoji} **None!** Configure using the menu below.'
-      actionsName: 'Configured Actions:'
+      noActions: '{emoji} **Nenhum!** Configure usando o menu abaixo.'
+      actionsName: 'Ações configuradas:'
       actionsValue: '{actions}'
     modal:
-      addRule: Add Anti-Swear Rule
-      editingRule: Editing Anti-Swear Rule
-      ruleNameLabel: Rule Name
-      wordsLabel: 'Words seperated by comma (use * for wildcard)'
-      wordsPlaceholder: 'Eg. word1, *word2*, *word3, word4*'
-    validating: '{emoji} Validating anti-swear rule...'
+      addRule: Adicionar regra anti-palavrões
+      editingRule: Editando a regra anti-palavrões
+      ruleNameLabel: Nome da regra
+      wordsLabel: 'Palavras separadas por vírgula (use * como curinga)'
+      wordsPlaceholder: 'Por exemplo, palavra1, *palavra2*, *palavra3, palavra4*'
+    validating: '{emoji} Validando regra anti-palavrões...'
     noRules: |
-      ### {emoji} Let's set up some rules!
-      Use the `Add Rule` button to create one.
+      ### {emoji} Vamos configurar algumas regras!
+      Use o botão `Add Rule` para criar uma.
   create:
     modal:
       title: Criar Hub
@@ -322,7 +323,7 @@ hub:
       title: Configuração de Logs
       reset: '{emoji} A configuração de logs para logs `{type}` foi redefinida com sucesso.'
       roleSuccess: '{emoji} Os logs do tipo `{type}` agora mencionarão {role}!'
-      roleRemoved: '{emoji} Logs of type `{type}` will no longer mention a role.'
+      roleRemoved: '{emoji} Logs do tipo `{type}` não mencionarão mais uma função.'
       channelSuccess: '{emoji} Logs of type `{type}` will be sent to  {channel} from now!'
       channelSelect: '#️⃣ Selecione um canal para enviar os logs'
       roleSelect: 'Selecione a função a ser mencionada quando um log for acionado.'
