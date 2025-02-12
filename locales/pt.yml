@@ -65,9 +65,9 @@ blacklist:
     unknownError: Falha ao colocar **{server}** na lista negra. Entre em contato com os desenvolvedores para obter mais informações.
   list:
     user: |
-      **UserID:** {id} 
-      **Moderador:** {moderator} 
-      **Motivo:** {reason} 
+      **UserID:** {id}
+      **Moderador:** {moderator}
+      **Motivo:** {reason}
       **Expira:** {expires}
     server: |
       **ServerId:** {id}
@@ -136,7 +136,7 @@ hub:
   invalidImgurUrl: '.'
   join:
     success: |
-      . Entrou com sucesso no hub **{hub}** de {channel}! Agora você pode bater papo com membros de outros servidores deste canal. - Use `/connection` para explorar várias personalizações para esta conexão. - 
+      . Entrou com sucesso no hub **{hub}** de {channel}! Agora você pode bater papo com membros de outros servidores deste canal. - Use `/connection` para explorar várias personalizações para esta conexão. -
       - Use `/hub leave` para parar de receber mensagens deste hub.
       - Use **`/connection edit`** para mudar de canal.
   servers:
