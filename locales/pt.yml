@@ -1,30 +1,28 @@
 rules:
   rules: |
-    ### Regras:
-    Estas regras foram estabelecidas para proporcionar uma experiência segura e agradável para todos. Leia-as e siga-as cuidadosamente:
+    ### {rules_emoji} Rules:
+    These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:
 
-    1. **Não há conteúdo NSFW, NSFL ou Gore**
-      -# Aplica-se a imagens de perfil, nomes de usuário, imagens explícitas, vídeos e texto.
-    2. **Não há racismo ou discriminação**
-      -# Trate todos com respeito e gentileza. Discursos de ódio e calúnias são proibidos.
-    3. **Não há conteúdo sexual**
-      -# Isso inclui piadas sugestivas, gifs e qualquer outra forma de insinuação. Mantenha o ambiente amigável para todos.
-    4. **Não há publicidade ou autopromoção**
-      -# Evite compartilhar links para servidores pessoais, mídias sociais ou outros bots no InterChat.
-    5. **Não há assédio ou Doxxing**
-      -# Respeite a privacidade e o bem-estar de todos. O assédio, o doxxing e o incentivo à automutilação são estritamente proibidos.
-    6. **Não há spam ou flooding**
-      -# Não envie mensagens repetitivas nem inunde o bate-papo. O excesso de spam pode resultar em penalidades mais severas e afetar o desempenho do bot.
-    7. **Não há discussões polêmicas**
-      -# Mantenha um ambiente amigável e acolhedor para todos. Evite discutir política, religião ou outros tópicos polêmicos.
-    8. **Use o bom senso**
-      -# Se você acha que algo pode não ser apropriado, evite-o.
-    9. **Relatar violações**
-      -# Use o comando `Apps > Message Info/Report` para notificar os moderadores sobre qualquer conteúdo que viole as regras.
+    1. **No NSFW, NSFL, or Gore Content**
+      -# Applies to profile images, usernames, explicit images, videos, and text.
+    2. **No Racism or Discrimination**
+      -# Treat everyone respectfully and kindly. Hate speech and slurs are prohibited.
+    3. **No Sexual Content**
+      -# This includes suggestive jokes, gifs, and any other form of innuendo. Keep it friendly for everyone.
+    4. **No Advertising or Self-Promotion**
+      -# Avoid sharing links to personal servers, social media, or other bots on InterChat.
+    5. **No Harassment or Doxxing**
+      -# Respect everyone’s privacy and well-being. Harassment, doxxing, and encouraging self-harm are strictly forbidden.
+    6. **No Spam or Flooding**
+      -# Don’t send repetitive messages or flood the chat. Excessive spamming may result in harsher penalties and impacts bot performance.
+    7. **No Controversial Discussions**
+      -# Maintain a friendly, welcoming environment for everyone. Avoid discussing politics, religion, or other controversial topics.
+    8. **Use Common Sense**
+      -# If you think something might not be appropriate, avoid it.
+    9. **Report Violations**
+      -# Use the `Apps > Message Info/Report` command to notify moderators of any rule-breaking content.
 
-    E lembre-se de seguir os [Termos de Serviço do Discord] (https://discord.com/terms) e as [Diretrizes da Comunidade] (https://discord.com/guidelines)
-
-    🇧🇷Tradução feita por: 𝕯𝖆𝖓𝖎𝖊𝖑 𝕭𝖆𝖗𝖇𝖔𝖘𝖆 @dannybarbosabr.
+    And remember to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines).
   welcome: |
     {emoji} Hey {user}, bem-vindo ao InterChat!
     Antes de começar a conversar com pessoas de outros servidores usando o InterChat, você precisa aceitar as regras. Use o botão abaixo para aceitá-las.
@@ -111,7 +109,6 @@ connection:
       connected: Conectado
       emColor: Incorporar cor
       compact: Modo compacto
-      profanity: Filtro de profanidade
     footer: Use o botão e o menu suspenso abaixo para gerenciar sua conexão.
   selects:
     placeholder: 'Selecione uma opção para editar esta conexão'
@@ -121,7 +118,7 @@ connection:
 
       Conexão não pausada para {channel}! Mensagens do hub começarão a chegar ao canal e você poderá enviar mensagens para o hub novamente.
     tips: |
-      **💡 Dica:** Use {pause_cmd} para pausar a conexão ou {edit_cmd} para definir cores incorporadas, alternar filtros de palavrões e muito mais.
+      **💡 Tip:** Use {pause_cmd} to pause the connection or {edit_cmd} to set embed colors, toggle profanity filter, and more.
   paused:
     desc: |
       ### {clock_emoji} Conexão pausada Conexão pausada para {channel}! Mensagens do hub não chegarão mais ao canal e suas mensagens não serão transmitidas a eles.
@@ -153,7 +150,6 @@ hub:
       Convidar: {invite}
       Conectado: {connected}
   blockwords:
-    created: '{emoji} Anti-Swear rule successfully created! Add actions using the `Configure Actions` button. You can also do this using `/hub blockwords edit`.'
     deleted: '{emoji} Anti-Swear rule successfully deleted!'
     notFound: '{emoji} Anti-Swear rule not found.'
     maxRules: '{emoji} You have reached the maximum number of anti-swear rules (2) for this hub. Please delete a rule before adding another one.'
@@ -170,7 +166,7 @@ hub:
     ruleFooter: 'Click the button below to edit the words or rule name!'
     actionSelectPlaceholder: 'Select the actions this rule should perform.'
     embedFields:
-      noActions: '{emoji} None! Configure using the button below.'
+      noActions: '{emoji} **None!** Configure using the menu below.'
       actionsName: 'Configured Actions:'
       actionsValue: '{actions}'
     modal:
@@ -202,21 +198,18 @@ hub:
     invalidName: '{emoji} Nome de hub inválido. Não deve conter `discord`, `clyde` ou \`\`\` . Escolha outro nome.'
     nameTaken: '{emoji} Este nome de hub já foi usado. Por favor, escolha outro nome.'
     success: |
-      ### Seu hub __private__, **{name}**, foi criado com sucesso.
-      Para participar, crie um convite usando `/hub invite create` e compartilhe o código gerado. Então participe usando `/hub join`.
+      ### Your __private__ hub, **{name}**, has been successfully created.
+      To join, create an invite using `/hub invite create` and share the generated code. Then join using `/hub join`.
 
-      - **Editar hub:** `/hub edit`
-      Gerar convite:** `/hub invite create`
-      - **Tornar público:** `/hub visibility`
-      - **Participar do hub:** `/hub join`
-      - **Editar hub:** `/hub edit`
-      - **Definir canal de relatório:** `/hub logging 
-      - **Definir canal de relatório:** `/hub logging set_channe;`
-      - **Adicionar moderadores:** `/hub moderator add`
+      - **Edit hub:** `/hub edit`
+      - **Generate invite:** `/hub invite create`
+      - **Make public:** `/hub visibility`
+      - **Join hub:** `/hub join`
+      - **Edit hub:** `/hub edit`
+      - **Set report channel:** `/hub logging set_channe;`
+      - **Add moderators:** `/hub moderator add`
 
-      Se você tiver alguma dúvida ou precisar de ajuda, sinta-se à vontade para perguntar no [servidor de suporte]({support_invite}). Considere [doar]({donateLink}) para dar suporte ao desenvolvimento
-
-      🇧🇷 Traduzido por @dannybarbosabr.
+      If you have any questions or need help, feel free to ask in the [support server]({support_invite}). Consider [donating]({donateLink}) to support the development costs.
   delete:
     confirm: Tem certeza de que deseja excluir **{hub}**? Esta ação é irreversível. Todos os servidores conectados, convites e dados de mensagens serão removidos deste hub.
     ownerOnly: '{emoji} Somente o proprietário deste hub pode excluí-lo.'
@@ -348,9 +341,6 @@ hub:
       modLogs:
         label: Registros de Mods
         description: Ações de moderação de log. (por exemplo, lista negra, exclusões de mensagens, etc.)
-      profanity:
-        label: Filtro de profanidade
-        description: Registre mensagens que são capturadas pelo filtro de palavrões.
       joinLeaves:
         label: Entrar/Sair
         description: Registre quando um servidor entra ou sai deste hub.
