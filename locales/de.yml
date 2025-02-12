@@ -109,7 +109,6 @@ connection:
       connected: Verbunden
       emColor: Einbettung-Farbe
       compact: Kompakter Modus
-      profanity: Profanität-Filter
     footer: Use the button & dropdown below to manage your connection.
   selects:
     placeholder: '🛠️ Select an option to edit this connection'
@@ -153,7 +152,6 @@ hub:
       Invite: {invite}
       Connected: {connected}
   blockwords:
-    created: '{emoji} Anti-Swear rule successfully created! Add actions using the `Configure Actions` button. You can also do this using `/hub blockwords edit`.'
     deleted: '{emoji} Anti-Swear rule successfully deleted!'
     notFound: '{emoji} Anti-Swear rule not found.'
     maxRules: '{emoji} You have reached the maximum number of anti-swear rules (2) for this hub. Please delete a rule before adding another one.'
@@ -170,7 +168,7 @@ hub:
     ruleFooter: 'Click the button below to edit the words or rule name!'
     actionSelectPlaceholder: 'Select the actions this rule should perform.'
     embedFields:
-      noActions: '{emoji} None! Configure using the button below.'
+      noActions: '{emoji} **None!** Configure using the menu below.'
       actionsName: 'Configured Actions:'
       actionsValue: '{actions}'
     modal:
@@ -347,9 +345,6 @@ hub:
       modLogs:
         label: Mod Logs
         description: 'Zeichne Moderator Aktionen auf. (Z.b.: Schwarzlisten, Nachrichten löschen, usw.)'
-      profanity:
-        label: Profanität-Filter
-        description: Log messages that are caught by the profanity filter.
       joinLeaves:
         label: Beitreten/ Verlassen
         description: Log when a server joins or leaves this hub.
