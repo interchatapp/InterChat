@@ -78,20 +78,20 @@ model HubModerator {
 }
 
 model Connection {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  channelId  String   @unique
-  parentId   String? // Parent channel ID for threads
-  serverId   String
-  hubId      String   @db.ObjectId
-  connected  Boolean  @default(true)
-  compact    Boolean  @default(false)
-  invite     String?
-  profFilter Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  embedColor String?
-  webhookURL String
-  lastActive DateTime @default(now())
-  hub        Hub      @relation(fields: [hubId], references: [id])
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
+  channelId            String   @unique
+  parentId             String? // Parent channel ID for threads
+  serverId             String
+  hubId                String   @db.ObjectId
+  connected            Boolean  @default(true)
+  compact              Boolean  @default(false)
+  invite               String?
+  createdAt            DateTime @default(now())
+  embedColor           String?
+  webhookURL           String
+  lastActive           DateTime @default(now())
+  joinRequestsDisabled Boolean? @default(false)
+  hub                  Hub      @relation(fields: [hubId], references: [id])
 
   @@unique([channelId, serverId])
   @@index([hubId, channelId])
@@ -102,15 +102,16 @@ model Infraction {
   hubId       String           @db.ObjectId
   type        InfractionType   @default(BLACKLIST)
   status      InfractionStatus @default(ACTIVE)
-  moderatorId String
+  moderator   UserData         @relation(name: "issuedInfractions", fields: [moderatorId], references: [id])
+  moderatorId String           @db.String
   reason      String
   expiresAt   DateTime?
   appealedAt  DateTime?
   appealedBy  String? // User ID
 
   // For user infractions
+  user   UserData? @relation(name: "infractions", fields: [userId], references: [id])
   userId String?   @db.String
-  user   UserData? @relation(fields: [userId], references: [id])
 
   // For server infractions
   serverId   String?
@@ -144,7 +145,6 @@ model HubLogConfig {
   hubId         String      @unique @db.ObjectId
   modLogs       LogChannel?
   joinLeaves    LogChannel?
-  profanity     LogChannel?
   appeals       LogChannel?
   reports       LogChannel?
   networkAlerts LogChannel?
@@ -161,22 +161,23 @@ model HubInvite {
 }
 
 model UserData {
-  id             String         @id @map("_id") @db.String
-  username       String?
-  locale         String?
-  voteCount      Int            @default(0)
-  lastVoted      DateTime?
-  banReason      String?
-  mentionOnReply Boolean        @default(true)
-  acceptedRules  Boolean        @default(false)
-  infractions    Infraction[]
-  modPositions   HubModerator[]
-  updatedAt      DateTime       @updatedAt
-  xp             Int            @default(0)
-  level          Int            @default(0)
-  messageCount   Int            @default(0)
-  lastMessageAt  DateTime       @default(now())
-  ownedHubs      Hub[]
+  id                String         @id @map("_id") @db.String
+  username          String?
+  locale            String?
+  voteCount         Int            @default(0)
+  lastVoted         DateTime?
+  banReason         String?
+  mentionOnReply    Boolean        @default(true)
+  acceptedRules     Boolean        @default(false)
+  updatedAt         DateTime       @updatedAt
+  xp                Int            @default(0)
+  level             Int            @default(0)
+  messageCount      Int            @default(0)
+  lastMessageAt     DateTime       @default(now())
+  modPositions      HubModerator[]
+  ownedHubs         Hub[]
+  infractions       Infraction[]   @relation("infractions")
+  issuedInfractions Infraction[]   @relation("issuedInfractions")
 
   @@index([xp])
   @@index([level])
