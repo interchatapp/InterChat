@@ -138,17 +138,21 @@ async function processActions(
 ): Promise<BlockResult> {
   if (!triggeredRule.actions.length) return { shouldBlock: false };
 
+  let shouldBlock = false;
+  // the final reason for blocking.
+  // TODO: (should we have priority for the last action?)
+  let reason;
+
   for (const actionToTake of triggeredRule.actions) {
     const result = await executeAction(actionToTake, message, triggeredRule, matches);
     if (result.success && result.shouldBlock) {
-      return {
-        shouldBlock: true,
-        reason: result.message,
-      };
+      shouldBlock = true;
+      reason = result.message;
+      continue; // We dont break here to ensure all actions are executed (eg. block, blacklist and then alert)
     }
   }
 
-  return { shouldBlock: false };
+  return { shouldBlock, reason };
 }
 
 async function checkRuleAndExecuteAction(

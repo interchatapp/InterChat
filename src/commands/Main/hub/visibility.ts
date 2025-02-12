@@ -68,7 +68,7 @@ export default class HubVisibilitySubcommnd extends BaseCommand {
     }
 
     if (visibility === 'public') {
-      await ctx.reply(
+      await ctx.editOrReply(
         `${ctx.getEmoji('offline_anim')} Checking requirements...`,
       );
       const passedChecks = await this.runPublicRequirementChecks(ctx, hub);

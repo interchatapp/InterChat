@@ -65,6 +65,8 @@ export class BroadcastService {
       `Broadcasting message to ${sortedHubConnections.length} connections`,
     );
 
+    console.timeEnd(`processHubMessage:${message.id}`);
+
     const allResults: NetworkWebhookSendResult[] = await Promise.all(
       sortedHubConnections.map((conn) =>
         this.sendToConnection(message, hub, conn, {
