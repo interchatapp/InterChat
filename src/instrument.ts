@@ -11,11 +11,10 @@ if (!Constants.isDevBuild) {
     profilesSampleRate: 1.0,
     maxValueLength: 1000,
     integrations: [
-      Sentry.captureConsoleIntegration(),
+      nodeProfilingIntegration(),
       Sentry.onUncaughtExceptionIntegration({
         exitEvenIfOtherHandlersAreRegistered: false,
       }),
-      nodeProfilingIntegration(),
     ],
   });
 }

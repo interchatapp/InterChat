@@ -60,8 +60,8 @@ export class VoteManager {
     );
   }
 
-  async middleware(c: Context<BlankEnv, '/dbl', BlankInput>) {
-    const dblHeader = c.header('Authorization');
+  async handleVote(c: Context<BlankEnv, '/dbl', BlankInput>) {
+    const dblHeader = c.req.header('Authorization');
     if (dblHeader !== process.env.TOPGG_WEBHOOK_SECRET) {
       return c.json({ message: 'Unauthorized' }, 401);
     }

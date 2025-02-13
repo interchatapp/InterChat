@@ -20,11 +20,7 @@ import Constants from '#src/utils/Constants.js';
 import { handleError } from '#src/utils/Utils.js';
 import Logger from '#utils/Logger.js';
 import { serve } from '@hono/node-server';
-import {
-  Collection,
-  WebhookClient,
-  type WebhookMessageCreateOptions,
-} from 'discord.js';
+import { Collection, WebhookClient, type WebhookMessageCreateOptions } from 'discord.js';
 import { Hono } from 'hono';
 
 export const webhookMap = new Collection<string, WebhookClient>();
@@ -35,10 +31,7 @@ export const startApi = () => {
 
   app.get('/', (c) => c.redirect(Constants.Links.Website));
 
-  app.post('/dbl', async (c) => {
-    await voteManager.middleware(c);
-    return c.text('Vote received');
-  });
+  app.post('/dbl', voteManager.handleVote.bind(voteManager));
 
   app.post('/webhook', async (c) => {
     const body = await c.req.json<{

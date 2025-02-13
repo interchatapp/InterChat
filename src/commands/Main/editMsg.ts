@@ -33,7 +33,6 @@ import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import type { SerializedHubSettings } from '#src/modules/BitFields.js';
-import VoteBasedLimiter from '#src/modules/VoteBasedLimiter.js';
 import { HubService } from '#src/services/HubService.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
@@ -85,14 +84,6 @@ export default class EditMessage extends BaseCommand {
   async execute(ctx: Context): Promise<void> {
     const target = await ctx.getTargetMessage('message');
     const locale = await fetchUserLocale(ctx.user.id);
-    const voteLimiter = new VoteBasedLimiter('editMsg', ctx.user.id);
-
-    if (await voteLimiter.hasExceededLimit()) {
-      await ctx.reply({
-        content: `${ctx.getEmoji('topggSparkles')} You've hit your daily limit for message edits. [Vote for InterChat](${Constants.Links.Vote}) on top.gg to get unlimited edits!`,
-      });
-      return;
-    }
 
     const messageInDb = target ? await findOriginalMessage(target.id) : undefined;
     if (!target || !messageInDb) {
@@ -245,10 +236,6 @@ export default class EditMessage extends BaseCommand {
         }),
       )
       .catch(handleError);
-
-    // Decrement the vote limiter
-    const voteLimiter = new VoteBasedLimiter('editMsg', interaction.user.id);
-    await voteLimiter.decrementUses();
   }
 
   private async getImageURLs(

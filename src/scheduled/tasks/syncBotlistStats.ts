@@ -33,7 +33,7 @@ type TopggStats = {
   shardCount: number;
 };
 
-export default async ({ serverCount, shardCount }: TopggStats) => {
+export default async (stats: TopggStats) => {
   if (process.env.CLIENT_ID !== '769921109209907241') {
     Logger.warn(
       '[TopGGPostStats]: CLIENT_ID environment variable does not match InterChat\'s actual ID.',
@@ -41,9 +41,9 @@ export default async ({ serverCount, shardCount }: TopggStats) => {
     return;
   }
 
-  await fetch('https://top.gg/api/v1/bots/769921109209907241/stats', {
+  await fetch('https://top.gg/api/bots/769921109209907241/stats', {
     method: 'POST',
-    body: JSON.stringify({ serverCount, shardCount }),
+    body: JSON.stringify({ server_count: stats.serverCount, shard_count: stats.shardCount }),
     headers: {
       'Content-Type': 'application/json',
       Authorization: process.env.TOPGG_API_KEY as string,
@@ -57,7 +57,7 @@ export default async ({ serverCount, shardCount }: TopggStats) => {
         return;
       }
 
-      logPostSuccess(data);
+      logPostSuccess(stats);
     })
     .catch(logPostError);
 };

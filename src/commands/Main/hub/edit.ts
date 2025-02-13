@@ -392,7 +392,8 @@ export default class HubEditSubcommand extends BaseCommand {
           emoji: getEmoji('x_icon', interaction.client),
         }),
       );
-      await interaction.editReply({ embeds: [embed] });
+
+      await interaction.reply({ embeds: [embed] });
       return;
     }
 
