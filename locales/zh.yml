@@ -36,8 +36,8 @@ vote:
   footer: 感谢您的支持！
 network:
   accountTooNew: '{emoji}{user}您的帐户太新，无法使用InterChat发送消息。请稍后再试。'
-  deleteSuccess: '{emoji}{user}发送的消息已从{deleted}／{total}服务器中删除。'
-  editSuccess: '{emoji}{user}发送的消息已在{edited}／{total}服务器中编辑。'
+  deleteSuccess: '{emoji}{user}发送的消息已从 __**{deleted}/{total}**__ 服务器中删除。'
+  editSuccess: '{emoji}{user}发送的消息已在__**{edited}／{total}**__服务器中编辑。'
   onboarding:
     embed:
       title: '👋 您好，欢迎来到{hubName}！'
@@ -46,8 +46,8 @@ network:
       footer: InterChat网络｜版本{version}
     inProgress: '{emoji}{channel}已经在设置加入中心的过程中。如果是您启动安装，请等待安装完成或取消安装。'
 blacklist:
-  success: '{emoji}{name}已成功列入黑名单！'
-  removed: '{emoji}{name}已从黑名单中移除！'
+  success: '{emoji}**{name}**已成功列入黑名单！'
+  removed: '{emoji}**{name}**已从黑名单中移除！'
   modal:
     reason:
       label: 原因
@@ -65,10 +65,10 @@ blacklist:
     unknownError: 未能将{server}列入黑名单。向开发者咨询更多信息。
   list:
     user: |
-      用户名称：{id}
-      监管员：{moderator}
-      原因：{reason}
-      期限：{expires}
+      **用户名称**：{id}
+      **监管员：**：{moderator}
+      **原因**：{reason}
+      **期限**：{expires}
     server: |
       服务器名称：{id}
       监管员：{moderator}
@@ -383,7 +383,7 @@ errors:
   notYourAction: "{emoji}抱歉，您无法执行此操作。请自行运行此指令。"
   notMessageAuthor: '{emoji}您不是这条信息的发布者。'
   commandError: |
-    {emoji}执行此指令时发生了错误。该错误已记录到我们的系统中。如果此问题持续存在，请加入我们的[支持服务器]({support_invite})并报告错误 名称！ 
+    {emoji}执行此指令时发生了错误。该错误已记录到我们的系统中。如果此问题持续存在，请加入我们的[支持服务器]({support_invite})并报告错误 名称！
 
     错误名称：
     ```{errorId}```
