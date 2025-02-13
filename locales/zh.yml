@@ -4,28 +4,28 @@ rules:
     这些规则的制定是为了给每个人都带来安全且愉快的体验。请仔细阅读并遵守以下规则：
 
     1. **禁止出现成人、暴力及血腥内容**
-      适用于个人资料图片、用户名、露骨的图片、视频和文字。
+      包括头像、用户名、图片、视频和文字在内的所有内容。
     2. **禁止种族偏见或歧视行为**
-      请以尊重和友善的态度对待每个人。禁止仇恨言论和诋毁言辞。
-    3. **禁止出现性相关内容**
-      包括带有暗示性的笑话、动图及其他任何形式的隐晦内容。要让这里对每个人来说都是友好的环境。
-    4. **禁止广告或自我推销**
-      请勿在InterChat上分享个人服务 器、社交媒体或其他程序的链接。
-    5. **禁止骚扰他人或人肉搜索**
-      请尊重每个人的隐私和身心健康。严禁骚扰他人、人肉搜索和鼓励他人自我伤害的行为。
+      请以尊重友善的态度对待每个人。禁止仇恨言论和诋毁言辞。
+    3. **禁止出现性暗示内容**
+      包括带有暗示性的笑话、动图及其他任何形式的隐晦内容。请维护这里的友好氛围。
+    4. **禁止商业推广**
+      请勿在InterChat上分享个人服务器、社交媒体或其他程序的链接。
+    5. **禁止骚扰或人肉搜索行为**
+      请尊重每个人的隐私和身心健康。严禁骚扰、人肉搜索和煽动自残的行为。
     6. **禁止发送垃圾信息或刷屏**
       请勿发送重复的信息或在聊天中刷屏。过度发送垃圾信息可能导致更严厉的处罚，并且会影响程序的运行。
     7. *禁止进行有争议性的讨论**
       为每个人营造一个友好、包容的环境。请勿讨论政治、宗教或其他有争议的话题。
     8. **运用常识**
-      如果您觉得某件事可能不合适，请不要做。
+      如果您不确定行为是否合规，请勿尝试。
     9. **举报违规行为**
-      使用“应用程序＞信息＞报告”指令，向管理员举报任何违反规则的内容。
+      使用“应用程序＞信息＞报告”指令，向监管员举报任何违规内容。
 
-    还有要记得遵守［Discord的服务条款](https://discord.com/terms) 以及 [社区准则](https://discord.com/guidelines)。
+    请同时遵守 [Discord的服务条款](https://discord.com/terms) 以及 [社区准则](https://discord.com/guidelines)。
   welcome: |
-    {emoji}您好{user}，欢迎来到InterChat！
-    在您开始使用InterChat与其他服务器上的人聊天之前，您需要接受这些规则。请使用下面的按钮接受规则。
+    {emoji}{user}您好，欢迎来到InterChat！
+    在您开始使用InterChat与其他服务器上的人聊天之前，您需要接受这些规则。请通过下方按钮接受规则。
   accepted: |
     {emoji}欢迎来到InterChat！您已接受所有规则，现在可以与其他服务器上的成员聊天了！
     如果您还没有加入中心，请在“浏览中心”加入并开始聊天。如果您有任何问题或需要帮助，请随时在[支持服务器]({support_invite})中提问。
@@ -35,19 +35,19 @@ vote:
   description: 通过投票，您可以帮助InterChat在topgg搜索中排名更高来表示对我们的支持。
   footer: 感谢您的支持！
 network:
-  accountTooNew: '{emoji}{user}您的帐户太新，无法使用InterChat发送消息。请稍后再试。'
-  deleteSuccess: '{emoji}{user}发送的消息已从{deleted}／{total}服务器中删除。'
-  editSuccess: '{emoji}{user}发送的消息已在{edited}／{total}服务器中编辑。'
+  accountTooNew: '{emoji}{user}您的账号注册时间不足，无法在InterChat发送消息。请稍后再试。'
+  deleteSuccess: '{emoji}{user}发送的消息已从 __**{deleted}/{total}**__ 服务器中删除。'
+  editSuccess: '{emoji}{user}发送的消息已在__**{edited}／{total}**__服务器中完成编辑。'
   onboarding:
     embed:
       title: '👋 您好，欢迎来到{hubName}！'
       description: |
-        您好！您正尝试加入一个名为{hubName}的中心。为了与其他服务器上的成员聊天，您需要接受InterChat的准则。使用下面的按钮表示继续。
+        您好！您正在申请加入{hubName}中心。您需要接受InterChat的准则，才能与其他服务器上的成员聊天。请通过下方按钮确认继续。
       footer: InterChat网络｜版本{version}
-    inProgress: '{emoji}{channel}已经在设置加入中心的过程中。如果是您启动安装，请等待安装完成或取消安装。'
+    inProgress: '{emoji}{channel}加入中心的流程正在进行中。您启动安装后，请等待安装完成或取消安装。'
 blacklist:
-  success: '{emoji}{name}已成功列入黑名单！'
-  removed: '{emoji}{name}已从黑名单中移除！'
+  success: '{emoji}**{name}**已成功列入黑名单！'
+  removed: '{emoji}**{name}**已从黑名单中移除！'
   modal:
     reason:
       label: 原因
@@ -65,10 +65,10 @@ blacklist:
     unknownError: 未能将{server}列入黑名单。向开发者咨询更多信息。
   list:
     user: |
-      用户名称：{id}
-      监管员：{moderator}
-      原因：{reason}
-      期限：{expires}
+      **用户名称**：{id}
+      **监管员：**：{moderator}
+      **原因**：{reason}
+      **期限**：{expires}
     server: |
       服务器名称：{id}
       监管员：{moderator}
@@ -88,11 +88,11 @@ invite: |
 
   [{invite_emoji}“邀请链接”]({invite})[{support_emoji}“支持服务器”]({support})
 connection:
-  joinRequestsDisabled: '{emoji}此中心无法加入请求。'
-  notFound: '{emoji}连接无效。请验证频道名称或从显示的选项中选择。'
-  channelNotFound: '{emoji}无法找到已连接的频道。请选择新频道再次交谈。'
+  joinRequestsDisabled: '{emoji}此中心暂不开放加入申请。'
+  notFound: '{emoji}连接无效。请检查频道名称或从显示的选项中选择。'
+  channelNotFound: '{emoji}无法找到目标频道。请重新选择频道。'
   alreadyConnected: '{emoji}频道{channel}已连接中心。'
-  switchChannel: '{emoji}请使用下面的选择菜单来选择要切换到的频道：'
+  switchChannel: '{emoji}请通过下方的选择菜单来选择目标频道：'
   switchCalled: '{emoji}频道切换已调用，请再次使用该指令查看新连接。'
   switchSuccess: '{emoji}频道已切换。您现在已从{channel}连接。'
   inviteRemoved: '{emoji}已移除此中心的服务器邀请。'
@@ -108,8 +108,8 @@ connection:
       invite: 邀请
       connected: 已连接
       emColor: 嵌入颜色
-      compact: 压缩模式
-    footer: 使用下面的按钮和下拉列表管理您的连接。
+      compact: 简洁模式
+    footer: 使用下方按钮和下拉列表管理您的连接。
   selects:
     placeholder: '🛠️ 选择一个选项来编辑此连接'
   unpaused:
@@ -118,13 +118,13 @@ connection:
 
       {channel}的连接已恢复！来自此中心的信息将开始进入此频道，并且您可以再次发送信息到中心。
     tips: |
-      贴士：使用{pause_cmd}来中断连接，或使用{edit_cmd}来设置嵌入颜色、邀请到您的服务器等。
+      提示：使用{pause_cmd}来中断连接，或使用{edit_cmd}来设置嵌入颜色、邀请到您的服务器等。
   paused:
     desc: |
       {clock_emoji}已中断连接
       {channel}的连接已中断！来自此中心的信息将不再进入此频道，并且您的信息将不会发送出去。
     tips: |
-      贴士：使用{unpause_cmd}来恢复连接，或使用{leave_cmd}来永久停收信息。
+      提示：使用{unpause_cmd}来恢复连接，或使用{leave_cmd}来永久停收信息。
 hub:
   notFound: '{emoji}无法找到中心。请确保您输入了正确的中心名称。'
   notFound_mod: '{emoji}无法找到中心。请确保您输入了正确的中心名字以及您是此中心的所有者或监管员。'
@@ -144,42 +144,42 @@ hub:
   servers:
     total: '目前已连接的服务器：{from}-­­­­­­­­­­{to}­／{total}'
     noConnections: '{emoji}尚未有服务器加入此中心。使用“／加入中心”加入此中心。'
-    notConnected: "{emoji}那个服务器不是{hub}的一部分。"
+    notConnected: "{emoji}目标服务器未连接{hub}。"
     connectionInfo: |
       服务器名称：{serverId}
       频道：#{channelName}“({channelId})”
-      加入于：{joinedAt}
+      加入时间：{joinedAt}
       邀请：{invite}
       已连接：{connected}
   blockwords:
-    deleted: '{emoji}反脏话规则已成功删除！'
-    notFound: '{emoji}未找到反脏话规则。'
-    maxRules: '{emoji}您已达到此中心的反脏话规则最大数量（2条）。请先删除一条规则，然后再添加新的规则。'
-    configure: '规则：{rule}的设置操作'
+    deleted: '{emoji}过滤规则已成功删除！'
+    notFound: '{emoji}未找到过滤规则。'
+    maxRules: '{emoji}已达到此中心的过滤规则最大数量（2条）。请删除旧规则后新增。'
+    configure: '{rule}规则配置'
     actionsUpdated: '{emoji}已更新此规则将进行的操作。新操作：{actions}'
-    selectRuleToEdit: 选择一条规则来编辑其词语／操作
+    selectRuleToEdit: 选择一条规则来编辑关键词／操作
     listDescription: |
-      {emoji}反脏话规则
-      此中心已设置{totalRules}／2条反脏话规则。
-    listFooter: 选择一条规则并用菜单查看其全部详情。
+      {emoji}过滤规则
+      此中心已配置{totalRules}／2条过滤规则。
+    listFooter: 选择一条规则并用菜单查看详情。
     ruleDescription: |
       {emoji}编辑规则：{ruleName}{words}
-    ruleFooter: '点击下面的按钮来编辑词语或规则名称！'
+    ruleFooter: '点击下方按钮来编辑关键词或规则名称！'
     actionSelectPlaceholder: '选择此规则应该执行的操作。'
     embedFields:
-      noActions: '{emoji}无！使用下方的菜单进行设置。'
-      actionsName: '设置操作：'
+      noActions: '{emoji}无配置！请通过下方菜单进行配置。'
+      actionsName: '配置操作：'
       actionsValue: '{actions}'
     modal:
-      addRule: 添加反脏话规则
-      editingRule: 编辑反脏话规则
+      addRule: 添加过滤规则
+      editingRule: 编辑过滤规则
       ruleNameLabel: 规则名称
-      wordsLabel: '用逗号分隔词语(使用 * 作为通配符)'
-      wordsPlaceholder: '例如：词语一，*词语二*，词语三，词语四*'
-    validating: '{emoji}正在验证反脏话规则……'
+      wordsLabel: '用逗号分隔关键词(使用 * 作为通配符)'
+      wordsPlaceholder: '例如：关键词一，*关键词二*，关键词三，关键词四*'
+    validating: '{emoji}正在校验过滤规则……'
     noRules: |
       {emoji}让我们制定一些规则吧！
-      使用“添加规则”按钮创建一条规则。
+      通过“添加规则”按钮创建一条规则。
   create:
     modal:
       title: 创建中心
@@ -195,11 +195,11 @@ hub:
       banner:
         label: 标语网址
         placeholder: 输入一个Imgur图片网址。
-    maxHubs: '{emoji}您已达到可以创建的最大中心数量(3)。请在创建另一个中心之前删除一个中心。'
+    maxHubs: '{emoji}已达到可以创建的最大中心数量(3)。请删除旧中心后新建。'
     invalidName: '{emoji}中心名称无效。名称不能包含“discord”、“clyde”或“＼”。请另选名称。'
     nameTaken: '{emoji}此中心名称已被占用。请另选名称。'
     success: |
-      中心已创建！默认情况下属__private__私有。
+      中心已创建！默认情况为__private__。
       使用“／编辑中心 中心：{name}”来自定义您的中心。请按照以下步骤开始操作：
       接下来的步骤：
       1.创建邀请：
@@ -207,7 +207,7 @@ hub:
       2.关联频道：
       使用“／加入中心”同时附上之前生成的邀请链接，将一个频道关联到此中心并开始聊天。
       3.设置中心(推荐)：
-      使用“／中心配置设定”、“／中心配置记录”和“／中心反脏话配置”来设置此中心。
+      使用“／中心配置设定”、“／中心配置记录”和“／中心过滤规则配置”来设置此中心。
       4.添加监管员：
       使用“／添加中心监管员”来为此中心添加监管员。
       5.自定义中心：
@@ -215,7 +215,7 @@ hub:
       6.公开中心：
       使用“／中心可见”将中心设为公开，让其他人不用邀请也可以浏览并加入。(可选)
 
-      如果您有任何问题或需要帮助，请随时在[支持服务器]({support_invite})中提问。请考虑一下[捐赠]({donateLink})来支持我们的开发成本。
+      如果您有任何问题或需要帮助，请随时在[支持服务器]({support_invite})中提问。请考虑一下[捐赠]({donateLink})来支持开发成本。
   delete:
     confirm: 您确定要删除{hub}吗？该行动无法撤回。所有已连接的服务器、邀请和消息数据都将从此中心删除。
     ownerOnly: '{emoji}只有此中心的所有者可以删除它。'
@@ -226,11 +226,11 @@ hub:
       您确定要从{channel}加入{hub}吗？
 
       注意：此后您始终可以使用“/连接”进行更改。
-    joinFooter: 想要使用其他频道吗？使用下面的下拉菜单。
+    joinFooter: 想要使用其他频道吗？请使用下方的下拉菜单。
     noHubs: '{emoji}目前此处未列出任何中心。请稍后再试！'
     rating:
-      invalid: 打分无效。您必须输入一个1到5之间的数字。
-      success: 打分已提交！感谢您的反馈。
+      invalid: 评分无效。您必须输入一个1到5之间的数字。
+      success: 评分已提交！感谢您的反馈。
   invite:
     create:
       success: |
@@ -241,7 +241,7 @@ hub:
         加入方式：“／邀请加入中心：{inviteCode}”
         查看邀请：“／中心邀请列表”
         到期时间：{expiry}
-        用途：∞
+        使用次数：无限
 
         注意：您可以随时使用“／中心邀请撤回{inviteCode}”来撤回此邀请。
     revoke:
@@ -253,26 +253,26 @@ hub:
       notPrivate: '{emoji}只有私人中心才能收到邀请。使用“／编辑编辑”将此中心设置为私有。'
   joined:
     noJoinedHubs: '{emoji}此服务器尚未加入如何中心。使用“／浏览中心”查看中心列表。'
-    joinedHubs: 此服务器是{total}中心(群)的一部分。使用“／离开中心”离开中心。
+    joinedHubs: 此服务器已连接{total}中心(群)。使用“／离开中心”离开中心。
   leave:
     noHub: '{emoji}该频道无效或尚未加入任何中心。'
     confirm: 您确定想要从{channel}离开{hub}吗？此中心将不再向此服务器发送任何消息。
-    confirmFooter: 在10秒内使用下面的按钮进行确认。
+    confirmFooter: 请在10秒内使用下面的按钮进行确认。
     success: '{emoji}从{channel}离开中心。此中心将不再向此服务器发送任何消息。您可以使用“／加入中心”重新加入。'
   moderator:
     noModerators: '{emoji}此中心尚未有监管员。使用“／添加中心监管员”添加监管员。'
     add:
-      success: '{emoji}{user}已被添加为身份{position}监管员。'
+      success: '{emoji}{user}已被添加为{position}级监管员。'
       alreadyModerator: '{emoji}{user}已成为监管员。'
     remove:
       success: '{emoji}{user}已被移除监管员身份。'
       notModerator: '{emoji}{user}不是监管员。'
       notOwner: '{emoji}只有此中心的所有者可以移除管理员。'
     update:
-      success: "{emoji}{user}的身份已更新为{position}。"
+      success: "{emoji}{user}的级别已更新为{position}。"
       notModerator: "{emoji}{user}不是监管员。"
-      notAllowed: "{emoji}只有中心管理员可以更新监管员身份。"
-      notOwner: "{emoji}只有此中心的所有者可以更新管理员的身份。"
+      notAllowed: "{emoji}只有中心管理员可以更新监管员级别。"
+      notOwner: "{emoji}只有此中心的所有者可以更新管理员的级别。"
   manage:
     enterImgurUrl: 输入一个有效的Imgur图片网址，且该网址不是图库或相册。
     icon:
@@ -304,7 +304,7 @@ hub:
     visibility:
       success: '{emoji}中心可见已成功更改为{visibility}。'
       selects:
-        label: 更改可见
+        label: 可见性设置
         description: 将中心设为公开或私有。
     toggleLock:
       selects:
@@ -316,7 +316,7 @@ hub:
         locked: '只有监管员可以发送信息。'
         unlocked: '所有人都可以发送信息。'
     embed:
-      visibility: '可见'
+      visibility: '可见性'
       connections: '连接'
       chatsLocked: '聊天区已关闭'
       blacklists: '黑名单'
@@ -329,20 +329,20 @@ hub:
     logs:
       title: 配置记录
       reset: '{emoji}成功重置“{type}”记录的配置记录。'
-      roleSuccess: '{emoji}“{type}”记录现在将提及{role}！'
-      roleRemoved: '{emoji}“{type}”记录将不再提及身份。'
+      roleSuccess: '{emoji}“{type}”记录现在将通知{role}！'
+      roleRemoved: '{emoji}“{type}”记录将不再通知对象。'
       channelSuccess: '{emoji}“{type}”记录从现在开始将被发送至{channel}！'
       channelSelect: '#️⃣ 选择一个频道发送记录'
-      roleSelect: '🏓 选择触发记录时提及的身份。'
+      roleSelect: '🏓 选择触发记录时通知的对象。'
       reportChannelFirst: '{emoji}请先设置一个记录频道。'
       config:
-        title: 设置“{type}”记录
+        title: '“{type}”配置记录'
         description: |
-          {arrow}从下面的下拉列表中选择要被提醒的记录频道和／或身份。
-          {arrow}您也可以用下面的按钮来停用记录功能。
+          {arrow}从下方的下拉列表中选择要通知的记录频道和／或对象。
+          {arrow}您也可以通过下方按钮来停用记录功能。
         fields:
           channel: 频道
-          role: 身份提及
+          role: 通知对象
       reports:
         label: 报告
         description: 从用户处收到报告。
@@ -375,15 +375,15 @@ report:
   bug:
     title: 故障报告
     affected: 受影响的部分
-    description: 请选择您遇到问题的程序的部分。
+    description: 请选择出现问题的程序部分。
 language:
-  set: 语言设置！我现在将用{lang}回应你。
+  set: 语言设置！现在将用{lang}进行回应。
 errors:
   messageNotSentOrExpired: '{emoji}此消息未在中心发送，已过期，或者您没有执行此操作的权限。'
-  notYourAction: "{emoji}抱歉，您无法执行此操作。请自行运行此指令。"
+  notYourAction: "{emoji}抱歉，您无法执行此操作。请由本人行此指令。"
   notMessageAuthor: '{emoji}您不是这条信息的发布者。'
   commandError: |
-    {emoji}执行此指令时发生了错误。该错误已记录到我们的系统中。如果此问题持续存在，请加入我们的[支持服务器]({support_invite})并报告错误 名称！ 
+    {emoji}执行此指令时发生了错误。该错误已记录到我们的系统中。如果此问题持续存在，请加入我们的[支持服务器]({support_invite})并报告错误 名称！
 
     错误名称：
     ```{errorId}```
@@ -410,7 +410,7 @@ errors:
 global:
   webhookNoLongerExists: '{emoji}此频道的网络回调已不存在。若要继续使用 InterChat，请使用“／恢复连接”指令重新创建网络回调。'
   noReason: 未提供原因。
-  noDesc: 没有描述。
+  noDesc: 无说明。
   version: InterChat版本{version}
   loading: '{emoji}我正在处理您的请求，请稍候……'
   reportOptionMoved: '{emoji}此选项已移动！如向中心监管员报告，请使用更新的“应用程序＞信息／报告”指令。如直接向InterChat工作人员报告，只需登录[支持服务器]({support_invite})并创建一张带有证明的票证。'
