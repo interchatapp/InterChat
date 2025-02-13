@@ -15,6 +15,12 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import Scheduler from '#src/services/SchedulerService.js';
+import UserDbService from '#src/services/UserDbService.js';
+import type { WebhookPayload } from '#types/TopGGPayload.d.ts';
+import Constants from '#utils/Constants.js';
+import db from '#utils/Db.js';
+import { getOrdinalSuffix } from '#utils/Utils.js';
 import { stripIndents } from 'common-tags';
 import {
   type APIGuildMember,
@@ -27,15 +33,6 @@ import {
   userMention,
 } from 'discord.js';
 import ms from 'ms';
-import UserDbService from '#src/services/UserDbService.js';
-import Scheduler from '#src/services/SchedulerService.js';
-import type { WebhookPayload } from '#types/TopGGPayload.d.ts';
-import Constants from '#utils/Constants.js';
-import db from '#utils/Db.js';
-import Logger from '#utils/Logger.js';
-import { getOrdinalSuffix } from '#utils/Utils.js';
-import type { Context } from 'hono';
-import type { BlankEnv, BlankInput } from 'hono/types';
 
 export class VoteManager {
   private scheduler: Scheduler;
@@ -58,32 +55,6 @@ export class VoteManager {
         }
       },
     );
-  }
-
-  async handleVote(c: Context<BlankEnv, '/dbl', BlankInput>) {
-    const dblHeader = c.req.header('Authorization');
-    if (dblHeader !== process.env.TOPGG_WEBHOOK_SECRET) {
-      return c.json({ message: 'Unauthorized' }, 401);
-    }
-
-    const payload = await c.req.json();
-
-    if (!this.isValidVotePayload(payload)) {
-      Logger.error(
-        'Invalid payload received from top.gg, possible untrusted request: %O',
-        payload,
-      );
-      return c.json({ message: 'Invalid payload' }, 400);
-    }
-
-    if (payload.type === 'upvote') {
-      await this.incrementUserVote(payload.user);
-      await this.addVoterRole(payload.user);
-    }
-
-    await this.announceVote(payload);
-
-    return c.status(204);
   }
 
   async getUserVoteCount(id: string) {
@@ -171,7 +142,7 @@ export class VoteManager {
     });
   }
 
-  private isValidVotePayload(payload: WebhookPayload) {
+  public isValidVotePayload(payload: WebhookPayload) {
     const payloadTypes = ['upvote', 'test'];
     const isValidData =
 			typeof payload.user === 'string' &&

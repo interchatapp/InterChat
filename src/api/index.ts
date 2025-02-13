@@ -31,7 +31,28 @@ export const startApi = () => {
 
   app.get('/', (c) => c.redirect(Constants.Links.Website));
 
-  app.post('/dbl', voteManager.handleVote.bind(voteManager));
+  app.post('/dbl', async (c) => {
+    const dblHeader = c.req.header('Authorization');
+    if (dblHeader !== process.env.TOPGG_WEBHOOK_SECRET) {
+      return c.json({ message: 'Unauthorized' }, 401);
+    }
+
+    const payload = await c.req.json();
+
+    if (!voteManager.isValidVotePayload(payload)) {
+      Logger.error('Invalid payload received from top.gg, possible untrusted request: %O', payload);
+      return c.json({ message: 'Invalid payload' }, 400);
+    }
+
+    if (payload.type === 'upvote') {
+      await voteManager.incrementUserVote(payload.user);
+      await voteManager.addVoterRole(payload.user);
+    }
+
+    await voteManager.announceVote(payload);
+
+    return c.body(null, 204);
+  });
 
   app.post('/webhook', async (c) => {
     const body = await c.req.json<{
