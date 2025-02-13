@@ -22,8 +22,7 @@ rules:
     9. **Relatar violações**
       -# Use o comando `Apps > Message Info/Report` para notificar os moderadores sobre qualquer conteúdo que viole as regras.
 
-    E lembre-se de seguir os [Termos de Serviço do Discord] (https://discord.com/terms) e as [Diretrizes da Comunidade] (https://discord.com/guidelines)
-    🇧🇷𝕯𝖆𝖓𝖎𝖊𝖑.
+    E lembre-se de seguir os [Termos de Serviço do Discord] (https://discord.com/terms) e as [Diretrizes da Comunidade] (https://discord.com/guidelines)..
   welcome: |
     {emoji} Hey {user}, bem-vindo ao InterChat!
     Antes de começar a conversar com pessoas de outros servidores usando o InterChat, você precisa aceitar as regras. Use o botão abaixo para aceitá-las.
@@ -60,15 +59,15 @@ blacklist:
     cannotBlacklistMod: '{emoji} Você não pode colocar um moderador na lista negra. Por favor, remova a função de moderador dele primeiro.'
     alreadyBlacklisted: '{emoji} Este usuário já está na lista negra.'
     easterEggs:
-      blacklistBot: Você não pode me colocar na lista negra, wtf, tá achando que e o danny ou devoid.
+      blacklistBot: Você não pode me colocar na lista negra, wtf.
   server:
     alreadyBlacklisted: '{emoji}{emoji} Este servidor já está na lista negra.'
     unknownError: Falha ao colocar **{server}** na lista negra. Entre em contato com os desenvolvedores para obter mais informações.
   list:
     user: |
-      **UserID:** {id}
-      **Moderador:** {moderator}
-      **Motivo:** {reason}
+      **UserID:** {id} 
+      **Moderador:** {moderator} 
+      **Motivo:** {reason} 
       **Expira:** {expires}
     server: |
       **ServerId:** {id}
@@ -112,7 +111,7 @@ connection:
       compact: Modo compacto
     footer: Use o botão e o menu suspenso abaixo para gerenciar sua conexão.
   selects:
-    placeholder: 'Selecione uma opção para editar esta conexão'
+    placeholder: '🛠️ Selecione uma opção para editar esta conexão'
   unpaused:
     desc: |
       ### {tick_emoji} Conexão não pausada
@@ -134,14 +133,14 @@ hub:
   notOwner: '{emoji} Somente o proprietário deste hub pode executar esta ação.'
   alreadyJoined: '{emoji} Você já entrou no **{hub}** do {channel}!'
   invalidChannel: '{emoji} Canal inválido. Somente canais de texto e thread são suportados!'
-  invalidImgurUrl: '.'
+  invalidImgurUrl: '{emoji} URL de imagem inválida para ícone ou banner. Certifique -se de que você inseriu um URL de imagem imgur válido que não é uma galeria ou álbum.'
   join:
     success: |
       . Entrou com sucesso no hub **{hub}** de {channel}! Agora você pode bater papo com membros de outros servidores deste canal. - Use `/connection` para explorar várias personalizações para esta conexão. -
       - Use `/hub leave` para parar de receber mensagens deste hub.
       - Use **`/connection edit`** para mudar de canal.
   servers:
-    total: 'Servidores conectados atualmente: {de}-{para} / **{total}**'
+    total: 'Servidores conectados atualmente: {from}-{to} / **{total}**'
     noConnections: '{emoji} Nenhum servidor se juntou a este hub ainda. Use `/hub join` para se juntar a este hub.'
     notConnected: "{emoji} Esse servidor não faz parte do **{hub}**."
     connectionInfo: |
