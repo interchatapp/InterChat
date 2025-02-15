@@ -38,6 +38,14 @@ interface SendResult {
   webhookURL: string;
 }
 
+export const webhookErrorMessages = [
+  'Unknown Webhook',
+  'Unknown Channel',
+  'Missing Permissions',
+  'Invalid Webhook Token',
+  'The provided webhook URL is not valid.',
+];
+
 export type NetworkWebhookSendResult = ErrorResult | SendResult;
 
 /**
@@ -68,18 +76,11 @@ export default async (
 
   const invalidWebhookURLs: string[] = [];
   const validBroadcasts: Broadcast[] = [];
-  const validErrors = [
-    'Unknown Webhook',
-    'Unknown Channel',
-    'Missing Permissions',
-    'Invalid Webhook Token',
-    'The provided webhook URL is not valid.',
-  ];
 
   // loop through all results and extract message data and invalid webhook urls
   for (const res of broadcastResults) {
     if ('error' in res) {
-      if (validErrors.some((e) => res.error.includes(e))) {
+      if (webhookErrorMessages.some((e) => res.error.includes(e))) {
         invalidWebhookURLs.push(res.webhookURL);
         Logger.debug(`Failed to send a message with error: ${res.error}. Disconnecting connection.`);
       }
@@ -98,6 +99,7 @@ export default async (
 
   // disconnect network if, webhook does not exist/bot cannot access webhook
   if (invalidWebhookURLs.length > 0) {
+    Logger.debug(`Disconnecting invalid connections: ${invalidWebhookURLs.join(', ')}`);
     await updateConnections({ webhookURL: { in: invalidWebhookURLs } }, { connected: false });
   }
 };

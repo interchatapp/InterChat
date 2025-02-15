@@ -18,18 +18,19 @@
 import BaseCommand from '#src/core/BaseCommand.js';
 import type HubManager from '#src/managers/HubManager.js';
 import { findOriginalMessage, type OriginalMessage } from '#src/utils/network/messageUtils.js';
-
 import type Context from '#src/core/CommandContext/Context.js';
 import { fetchUserLocale } from '#src/utils/Utils.js';
 import { t } from '#utils/Locale.js';
 import { logMsgDelete } from '#utils/hub/logger/ModLogs.js';
-import { fetchHub, isStaffOrHubMod } from '#utils/hub/utils.js';
+import { isStaffOrHubMod } from '#utils/hub/utils.js';
 import { deleteMessageFromHub, isDeleteInProgress } from '#utils/moderation/deleteMessage.js';
 import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js';
 import { replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
+import { HubService } from '#src/services/HubService.js';
 
 export default class DeleteMessage extends BaseCommand {
   readonly cooldown = 10_000;
+  private readonly hubService = new HubService();
 
   constructor() {
     super({
@@ -62,7 +63,7 @@ export default class DeleteMessage extends BaseCommand {
 
     const targetId = ctx.getTargetMessageId('message');
     const originalMsg = targetId ? await findOriginalMessage(targetId) : null;
-    const hub = await fetchHub({ id: originalMsg?.hubId });
+    const hub = await this.hubService.fetchHub({ id: originalMsg?.hubId });
 
     const validation = await this.validateMessage(ctx, originalMsg, hub);
     if (!validation || !originalMsg) return;

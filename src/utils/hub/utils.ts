@@ -17,26 +17,21 @@
 
 import Context from '#src/core/CommandContext/Context.js';
 import type HubManager from '#src/managers/HubManager.js';
-import { HubService } from '#src/services/HubService.js';
+import { BroadcastService } from '#src/services/BroadcastService.js';
 import { InfoEmbed } from '#src/utils/EmbedUtils.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { t } from '#src/utils/Locale.js';
-import {
-  deleteConnection,
-  getHubConnections,
-} from '#utils/ConnectedListUtils.js';
-import {
-  checkIfStaff,
-  fetchUserLocale,
-  getReplyMethod,
-  handleError,
-} from '#utils/Utils.js';
+import { webhookErrorMessages } from '#src/utils/network/storeMessageData.js';
+import { getHubConnections, updateConnections } from '#utils/ConnectedListUtils.js';
+import { checkIfStaff, fetchUserLocale, getReplyMethod } from '#utils/Utils.js';
 import type { HubModerator, Role } from '@prisma/client';
-import {
-  type RepliableInteraction,
-  WebhookClient,
-  type WebhookMessageCreateOptions,
-} from 'discord.js';
+import { type RepliableInteraction, type WebhookMessageCreateOptions } from 'discord.js';
+
+interface ValidationCheck {
+  condition: boolean;
+  validator: () => Promise<boolean> | boolean;
+  errorMessageKey: 'hub.notManager' | 'hub.notModerator' | 'hub.notFound_mod' | 'hub.notOwner';
+}
 
 /**
  * Sends a message to all connections in a hub's network.
@@ -44,10 +39,7 @@ import {
  * @param message The message to send. Can be a string or a MessageCreateOptions object.
  * @returns A array of the responses from each connection's webhook.
  */
-export const sendToHub = async (
-  hubId: string,
-  message: string | WebhookMessageCreateOptions,
-) => {
+export const sendToHub = async (hubId: string, message: string | WebhookMessageCreateOptions) => {
   const connections = await getHubConnections(hubId);
   if (!connections?.length) return;
 
@@ -56,35 +48,17 @@ export const sendToHub = async (
 
     const threadId = parentId ? channelId : undefined;
     const payload =
-			typeof message === 'string'
-			  ? { content: message, threadId }
-			  : { ...message, threadId };
+      typeof message === 'string' ? { content: message, threadId } : { ...message, threadId };
 
-    try {
-      const webhook = new WebhookClient({ url: webhookURL });
-      await webhook.send({ ...payload, allowedMentions: { parse: [] } });
-    }
-    catch (e) {
-      const validErrors = [
-        'Unknown Webhook',
-        'Invalid Webhook Token',
-        'The provided webhook URL is not valid.',
-      ];
+    const { error } = await BroadcastService.sendMessage(webhookURL, payload);
 
-      if (validErrors.includes(e.message)) await deleteConnection({ channelId });
-
-      handleError(e, {
-        comment: `Failed to send to connection ${channelId} ${e.message}`,
-      });
+    if (error && webhookErrorMessages.includes(error)) {
+      await updateConnections({ channelId }, { connected: false });
     }
   }
 };
 
-export const isHubMod = (
-  userId: string,
-  mods: HubModerator[],
-  checkRoles?: Role[],
-) =>
+export const isHubMod = (userId: string, mods: HubModerator[], checkRoles?: Role[]) =>
   mods.some((mod) => {
     if (mod.userId !== userId) return false;
     if (!checkRoles) return true;
@@ -94,16 +68,6 @@ export const isHubMod = (
 
 export const isStaffOrHubMod = async (userId: string, hub: HubManager) =>
   checkIfStaff(userId) || (await hub.isMod(userId));
-
-interface ValidationCheck {
-  condition: boolean;
-  validator: () => Promise<boolean> | boolean;
-  errorMessageKey:
-		| 'hub.notManager'
-		| 'hub.notModerator'
-		| 'hub.notFound_mod'
-		| 'hub.notOwner';
-}
 
 export const executeHubRoleChecksAndReply = async (
   hub: HubManager,
@@ -158,14 +122,4 @@ export const executeHubRoleChecksAndReply = async (
   }
 
   return true;
-};
-
-export const fetchHub = async ({
-  id,
-  name,
-}: { id?: string; name?: string }) => {
-  const hubService = new HubService();
-  if (id) return await hubService.fetchHub(id);
-  if (name) return (await hubService.findHubsByName(name)).at(0) ?? null;
-  return null;
 };

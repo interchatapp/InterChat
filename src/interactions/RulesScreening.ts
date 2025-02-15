@@ -144,11 +144,16 @@ export default class RulesScreeningInteraction {
         .setStyle(ButtonStyle.Danger),
     );
 
-    await interaction.reply({
-      embeds: [rulesEmbed],
-      components: [components],
-      flags: ['Ephemeral'],
-    });
+    await interaction
+      .reply({
+        embeds: [rulesEmbed],
+        components: [components],
+        flags: ['Ephemeral'],
+      })
+      .catch((e) =>
+        // TODO: this is temporary. Used only for debugging an error in v4.3.0
+        handleError(e, { repliable: interaction, comment: 'Failed to show rules. Try again.' }),
+      );
   }
 
   private async acceptRules(interaction: ButtonInteraction) {

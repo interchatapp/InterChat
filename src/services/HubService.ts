@@ -64,9 +64,7 @@ export class HubService {
     const where: { id?: string; name?: string } =
       typeof whereInput === 'string' ? { id: whereInput } : whereInput;
 
-    if (!where.id && !where.name) {
-      return null;
-    }
+    if (!where.id && !where.name) return null;
 
     // Check cache if we have an ID
     if (where.id) {

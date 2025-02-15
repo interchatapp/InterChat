@@ -26,7 +26,7 @@ import { type supportedLocaleCodes, t } from '#src/utils/Locale.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import { executeHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
-import { fetchUserLocale, toTitleCase } from '#src/utils/Utils.js';
+import { fetchUserLocale, getReplyMethod, toTitleCase } from '#src/utils/Utils.js';
 import { InfoEmbed } from '#src/utils/EmbedUtils.js';
 import { stripIndents } from 'common-tags';
 import HubLogManager, {
@@ -219,6 +219,8 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
     logManager: HubLogManager,
     locale: supportedLocaleCodes,
   ): Promise<void> {
+    await interaction.deferUpdate();
+
     const [channelId] = interaction.values;
 
     if (!channelId) {
@@ -237,6 +239,8 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
     logConfig: HubLogManager,
     locale: supportedLocaleCodes,
   ): Promise<void> {
+    await interaction.deferUpdate();
+
     const [roleId] = interaction.values;
 
     if (!roleId) {
@@ -272,7 +276,8 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
       role: roleId ? `<@&${roleId}>` : '',
     });
 
-    await interaction.reply({ content, flags: ['Ephemeral'] });
+    const replyMethod = getReplyMethod(interaction);
+    await interaction[replyMethod]({ content, flags: ['Ephemeral'] });
   }
 
   private getLogTypeOptions(locale: supportedLocaleCodes): LogTypeOption[] {

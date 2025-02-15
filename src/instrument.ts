@@ -1,5 +1,4 @@
 import * as Sentry from '@sentry/node';
-import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import Constants from '#utils/Constants.js';
 import 'dotenv/config';
 
@@ -11,7 +10,6 @@ if (!Constants.isDevBuild) {
     profilesSampleRate: 1.0,
     maxValueLength: 1000,
     integrations: [
-      nodeProfilingIntegration(),
       Sentry.onUncaughtExceptionIntegration({
         exitEvenIfOtherHandlersAreRegistered: false,
       }),

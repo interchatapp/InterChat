@@ -45,7 +45,6 @@ export class MessageProcessor {
   }
 
   async processHubMessage(message: Message<true>) {
-    console.time(`processHubMessage:${message.id}`);
     const hubData = await MessageProcessor.getHubAndConnections(message.channelId, this.hubService);
     if (!hubData) return;
 

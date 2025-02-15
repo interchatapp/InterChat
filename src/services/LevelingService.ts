@@ -152,7 +152,7 @@ export class LevelingService {
           color: Colors.Green,
         },
       ],
-    });
+    }).catch(() => null);
   }
 
   private async getOrCreateUser(userId: string, username: string): Promise<UserData> {
