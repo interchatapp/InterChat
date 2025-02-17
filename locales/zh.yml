@@ -174,8 +174,8 @@ hub:
       addRule: 添加过滤规则
       editingRule: 编辑过滤规则
       ruleNameLabel: 规则名称
-      wordsLabel: '用逗号分隔关键词(使用 * 作为通配符)'
-      wordsPlaceholder: '例如：关键词一，*关键词二*，关键词三，关键词四*'
+      wordsLabel: 'Words'
+      wordsPlaceholder: 'Words seperated by comma. (Use * for wildcard). Eg. word1, *word2*, *word3, word4*'
     validating: '{emoji}正在校验过滤规则……'
     noRules: |
       {emoji}让我们制定一些规则吧！
