@@ -174,7 +174,7 @@ hub:
       editingRule: Editando a regra anti-palavrões
       ruleNameLabel: Nome da regra
       wordsLabel: 'Palavras'
-      wordsPlaceholder: 'Palavras separadas por vírgula (use * como curinga). Por exemplo, palavra1, *palavra2*, *palavra3, palavra4*'
+      wordsPlaceholder: 'Palavras separadas por vírgula (use * como curinga). p. ex. palavra1, *palavra2*, *palavra3, palavra4*'
     validating: '{emoji} Validando regra anti-palavrões...'
     noRules: |
       ### {emoji} Vamos configurar algumas regras!
