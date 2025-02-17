@@ -358,8 +358,10 @@ export default class HubConfigAntiSwearSubcommand extends BaseCommand {
 
     const rule = await hub.fetchAntiSwearRule(ruleId);
     if (!rule) {
+      const replyMethod = getReplyMethod(interaction);
       const locale = await fetchUserLocale(interaction.user.id);
-      await interaction.reply({
+
+      await interaction[replyMethod]({
         content: t('hub.blockwords.notFound', locale, {
           emoji: getEmoji('x_icon', interaction.client),
         }),

@@ -49,7 +49,7 @@ export default class DeleteMessage extends BaseCommand {
         {
           type: ApplicationCommandOptionType.String,
           name: 'message',
-          description: 'The message to delete',
+          description: 'The message ID or message link of the message to delete',
           required: true,
         },
       ],
