@@ -172,8 +172,8 @@ hub:
       addRule: Add Anti-Swear Rule
       editingRule: Editing Anti-Swear Rule
       ruleNameLabel: Rule Name
-      wordsLabel: 'Words seperated by comma (use * for wildcard)'
-      wordsPlaceholder: 'Eg. word1, *word2*, *word3, word4*'
+      wordsLabel: 'Words'
+      wordsPlaceholder: 'Words seperated by comma. (Use * for wildcard). Eg. word1, *word2*, *word3, word4*'
     validating: '{emoji} Validating anti-swear rule...'
     noRules: |
       ### {emoji} Let's set up some rules!
