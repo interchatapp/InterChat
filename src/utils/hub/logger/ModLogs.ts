@@ -138,8 +138,8 @@ export const logMsgDelete = async (
     .setDescription(
       stripIndents`
       ### ${getEmoji('delete_icon', client)} Message Deleted
-      **Content:**
-      ${codeBlock(content)}
+      **Message Content:**
+      ${codeBlock(content.length > 0 ? content : 'No content provided.')}
     `,
     )
     .setColor(Constants.Colors.invisible)

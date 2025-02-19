@@ -48,7 +48,7 @@ export const sendLog = async (
       if (channel?.isSendable()) {
         await channel
           .send({
-            content: `${ctx.roleMentionIds?.map((id) => `<@&${id}>`).join(' ') ?? ''}`,
+            content: `${ctx.roleMentionIds?.map((id) => `<@&${id}>`).join(' ') ?? ''} ${ctx.content}`,
             embeds: [ctx.embed],
             components: ctx.components,
             allowedMentions: { roles: ctx.roleMentionIds },
