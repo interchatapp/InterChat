@@ -23,6 +23,7 @@ import Logger from '#src/utils/Logger.js';
 import {
   ApplicationCommandOptionType,
   ChatInputCommandInteraction,
+  ContextMenuCommandInteraction,
   InteractionType,
   Message,
   type Attachment,
@@ -84,9 +85,16 @@ function isPrefixContext(ctx: Context): ctx is PrefixContext {
  */
 function isChatInputCommandInteraction(interaction: ValidContextInteractions) {
   return (
-    interaction &&
+    interaction.type === InteractionType.ApplicationCommand && interaction.isChatInputCommand()
+  );
+}
+
+function isContextMenuInteraction(
+  interaction: ValidContextInteractions,
+): interaction is ContextMenuCommandInteraction {
+  return (
     interaction.type === InteractionType.ApplicationCommand &&
-    interaction.isChatInputCommand()
+    interaction.isMessageContextMenuCommand()
   );
 }
 
@@ -188,6 +196,18 @@ class ChatInputOptionResolver implements OptionResolver {
   }
 }
 
+class ContextMenuOptionResolver implements OptionResolver {
+  private readonly interaction: ContextMenuCommandInteraction;
+  constructor(interaction: ContextMenuCommandInteraction) {
+    this.interaction = interaction;
+  }
+
+  getOption<T>(name: string): T | null {
+    // Context menu commands don't support extra options.
+    throw new Error(`Context menu commands do not support options like '${name}'`);
+  }
+}
+
 /**
  * The main ContextOptions class that provides a unified interface for retrieving
  * command options across different Discord interaction types.
@@ -210,6 +230,9 @@ export default class ContextOptions {
     else if (isChatInputCommandInteraction(ctx.originalInteraction)) {
       this.resolver = new ChatInputOptionResolver(ctx.originalInteraction);
     }
+    else if (isContextMenuInteraction(ctx.originalInteraction)) {
+      this.resolver = new ContextMenuOptionResolver(ctx.originalInteraction);
+    }
     else {
       throw new OptionError('Unsupported interaction type for options', 'context_type');
     }
@@ -223,8 +246,6 @@ export default class ContextOptions {
    * @returns The option value or null if not found/compatible
    * @throws {OptionError} If required option is missing or on retrieval errors
    */
-  private getOption<T>(name: string, type: SupportedOptionTypes, required: true): T;
-  private getOption<T>(name: string, type: SupportedOptionTypes, required?: boolean): T | null;
   private getOption<T>(name: string, type: SupportedOptionTypes, required = false): T | null {
     let option;
     try {
@@ -232,7 +253,6 @@ export default class ContextOptions {
     }
     catch (error) {
       if (error instanceof OptionError) throw error;
-      Logger.error(`Error in getOption for '${name}'`, error);
       throw new OptionError(`Option retrieval failed: ${error.message}`, name);
     }
 
@@ -254,9 +274,6 @@ export default class ContextOptions {
   public getString(name: string, required?: boolean): string | null;
   public getString(name: string, required = false): string | null {
     const option = this.getOption<string>(name, ApplicationCommandOptionType.String, required);
-    if (required && !option) {
-      throw new OptionError('Missing required option', name);
-    }
     return option;
   }
 
@@ -267,6 +284,8 @@ export default class ContextOptions {
    * @returns The number value or null if not found
    * @throws {OptionError} If required option is missing or value can't be converted to number
    */
+  public getNumber(name: string, required: true): number;
+  public getNumber(name: string, required?: boolean): number | null;
   public getNumber(name: string, required = false): number | null {
     const value = this.getOption<number>(name, ApplicationCommandOptionType.Number, required);
     if (value !== null && isNaN(Number(value))) {
@@ -282,6 +301,8 @@ export default class ContextOptions {
    * @returns The boolean value or null if not found
    * @throws {OptionError} If required option is missing
    */
+  public getBoolean(name: string, required: true): boolean;
+  public getBoolean(name: string, required?: boolean): boolean | null;
   public getBoolean(name: string, required = false): boolean | null {
     return this.getOption<boolean>(name, ApplicationCommandOptionType.Boolean, required);
   }
@@ -293,6 +314,8 @@ export default class ContextOptions {
    * @returns The user ID or null if not found
    * @throws {OptionError} If required option is missing
    */
+  public getUserId(name: string, required: true): string;
+  public getUserId(name: string, required?: boolean): string | null;
   public getUserId(name: string, required = false): string | null {
     return this.getOption<string>(name, ApplicationCommandOptionType.User, required);
   }
@@ -304,6 +327,8 @@ export default class ContextOptions {
    * @returns The user object or null if not found/fetchable
    * @throws {OptionError} If required option is missing
    */
+  public async getUser(name: string, required: true): Promise<User>;
+  public async getUser(name: string, required?: boolean): Promise<User | null>;
   public async getUser(name: string, required = false): Promise<User | null> {
     try {
       if (isChatInputCommandInteraction(this.ctx.originalInteraction)) {
@@ -323,7 +348,6 @@ export default class ContextOptions {
     }
     catch (error) {
       if (error instanceof OptionError) throw error;
-      Logger.error(`Error in getUser for '${name}'`, error);
       throw new OptionError(`Failed to get user: ${error.message}`, name);
     }
   }
@@ -363,7 +387,6 @@ export default class ContextOptions {
     }
     catch (error) {
       if (error instanceof OptionError) throw error;
-      Logger.error(`Error in getChannel for '${name}'`, error);
       throw new OptionError(`Failed to get channel: ${error.message}`, name);
     }
   }
@@ -375,6 +398,8 @@ export default class ContextOptions {
    * @returns The role ID or null if not found
    * @throws {OptionError} If required option is missing
    */
+  public getRoleId(name: string, required: true): string;
+  public getRoleId(name: string, required?: boolean): string | null;
   public getRoleId(name: string, required = false): string | null {
     return this.getOption<string>(name, ApplicationCommandOptionType.Role, required);
   }
@@ -396,10 +421,6 @@ export default class ContextOptions {
 
     try {
       if (isChatInputCommandInteraction(this.ctx.originalInteraction)) {
-        Logger.info(
-          'Using getRole from ChatInputCommandInteraction %O',
-          this.ctx.originalInteraction.options.getRole(name),
-        );
         return this.ctx.originalInteraction.options.getRole(name, required);
       }
 
@@ -410,7 +431,6 @@ export default class ContextOptions {
     }
     catch (error) {
       if (error instanceof OptionError) throw error;
-      Logger.error(`Error in getRole for '${name}'`, error);
       throw new OptionError(`Failed to get role: ${error.message}`, name);
     }
   }
@@ -433,7 +453,6 @@ export default class ContextOptions {
       return null;
     }
     catch (error) {
-      Logger.error(`Error in getAttachment for '${name}'`, error);
       throw new OptionError(`Failed to get attachment: ${error.message}`, name);
     }
   }
