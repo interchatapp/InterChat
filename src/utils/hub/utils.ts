@@ -50,7 +50,10 @@ export const sendToHub = async (hubId: string, message: string | WebhookMessageC
     const payload =
       typeof message === 'string' ? { content: message, threadId } : { ...message, threadId };
 
-    const { error } = await BroadcastService.sendMessage(webhookURL, payload);
+    const { error } = await BroadcastService.sendMessage(webhookURL, {
+      ...payload,
+      allowedMentions: { parse: [] },
+    });
 
     if (error && webhookErrorMessages.includes(error)) {
       await updateConnections({ channelId }, { connected: false });
