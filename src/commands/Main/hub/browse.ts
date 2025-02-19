@@ -43,7 +43,6 @@ import {
   time,
 } from 'discord.js';
 
-
 export default class BrowseCommand extends BaseCommand {
   private readonly HUBS_PER_PAGE = 4;
   constructor() {
@@ -74,9 +73,7 @@ export default class BrowseCommand extends BaseCommand {
   }
 
   @RegisterInteractionHandler('hub_browse', 'joinLeaveMenu')
-  async handleJoinLeave(
-    interaction: StringSelectMenuInteraction<'cached'>,
-  ): Promise<void> {
+  async handleJoinLeave(interaction: StringSelectMenuInteraction<'cached'>): Promise<void> {
     if (!interaction.inCachedGuild() || !interaction.channel?.isTextBased()) return;
 
     const [action, chosenHubId] = interaction.values[0].split(':');
@@ -114,10 +111,7 @@ export default class BrowseCommand extends BaseCommand {
     interaction: StringSelectMenuInteraction<'cached'>,
     hub: HubManager,
   ): Promise<void> {
-    const joinService = new HubJoinService(
-      interaction,
-      await fetchUserLocale(interaction.user.id),
-    );
+    const joinService = new HubJoinService(interaction, await fetchUserLocale(interaction.user.id));
 
     if (!interaction.channel) return;
 
@@ -141,9 +135,7 @@ export default class BrowseCommand extends BaseCommand {
 
     await interaction.editReply({
       content: 'Are you sure you want to leave this hub?',
-      components: [
-        hubLeaveConfirmButtons(connection.channelId, connection.hubId),
-      ],
+      components: [hubLeaveConfirmButtons(connection.channelId, connection.hubId)],
     });
   }
   /* ------------------------------------------------------------------------------------ */
@@ -164,20 +156,13 @@ export default class BrowseCommand extends BaseCommand {
 
     // Fetch all connections upfront to avoid repeated database calls
     for (const hub of hubs) {
-      const connections = (await hub.connections.fetch()).filter(
-        (c) => c.data.connected,
-      );
+      const connections = (await hub.connections.fetch()).filter((c) => c.data.connected);
       connectionsByHub.set(hub.id, connections);
     }
 
     for (let i = 0; i < hubs.length; i += this.HUBS_PER_PAGE) {
       const pageHubs = hubs.slice(i, i + this.HUBS_PER_PAGE);
-      const page = this.buildHubsPage(
-        client,
-        guildId,
-        pageHubs,
-        connectionsByHub,
-      );
+      const page = this.buildHubsPage(client, guildId, pageHubs, connectionsByHub);
       pages.push(page);
     }
 
@@ -191,32 +176,19 @@ export default class BrowseCommand extends BaseCommand {
     connectionsByHub: Map<string, ConnectionManager[]>,
   ): BaseMessageOptions {
     const fields: EmbedField[] = [];
-    const joinMenu =
-			new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-			  new StringSelectMenuBuilder()
-			    .setCustomId(new CustomID('hub_browse:joinLeaveMenu').toString())
-			    .setPlaceholder('👋 Select a hub to leave/join...'),
-			);
+    const joinMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+      new StringSelectMenuBuilder()
+        .setCustomId(new CustomID('hub_browse:joinLeaveMenu').toString())
+        .setPlaceholder('👋 Select a hub to leave/join...'),
+    );
 
-    let fieldIndex = 0;
-    for (const hub of pageHubs) {
-      if (fieldIndex % 2 === 1) {
-        fields.push({ name: '\u200b', value: '\u200b', inline: true });
-        fieldIndex++;
-      }
-
+    pageHubs.forEach((hub, i) => {
       const hubConnections = connectionsByHub.get(hub.id) || [];
-      fields.push(this.buildHubField(client, hub.data, hubConnections));
+      fields.push(this.buildHubField(client, hub.data, hubConnections, i + 1));
       joinMenu.components[0].addOptions(
         this.buildHubMenuOption(client, guildId, hub, hubConnections),
       );
-      fieldIndex++;
-    }
-
-    // Pad with empty fields if necessary to ensure proper layout
-    while (fields.length % 3 !== 0 && fields.length > 0) {
-      fields.push({ name: '\u200b', value: '\u200b', inline: true });
-    }
+    });
 
     return {
       content: `**✨ NEW**: View and join hubs directly from the website, with a much better experience! - ${Constants.Links.Website}/hubs`,
@@ -225,10 +197,7 @@ export default class BrowseCommand extends BaseCommand {
     };
   }
 
-  private buildHubListEmbed(
-    totalHubs: number,
-    fields: EmbedField[],
-  ): InfoEmbed {
+  private buildHubListEmbed(totalHubs: number, fields: EmbedField[]): InfoEmbed {
     return new InfoEmbed()
       .addFields(fields)
       .setThumbnail('https://i.imgur.com/D0RfqQK.png')
@@ -245,17 +214,17 @@ export default class BrowseCommand extends BaseCommand {
     client: Client,
     hub: Hub,
     connections: ConnectionManager[],
+    index: number,
   ): EmbedField {
     const lastActiveConnection = connections.at(0); // Assuming the first connection is the most recently active
 
     return {
-      name: `${hub.name}`,
+      name: `${index}. ${hub.name}`,
       value:
-				stripIndents`${getEmoji('person_icon', client)} ${connections.length}
-              ${getEmoji('chat_icon', client)} ${time(lastActiveConnection?.data.lastActive ?? new Date(), 'R')}
+        stripIndents`${getEmoji('person_icon', client)} ${connections.length}_ _ _ _ _ _ _ _ _ _ _ _${getEmoji('chat_icon', client)} ${time(lastActiveConnection?.data.lastActive ?? new Date(), 'R')}
 
               ${hub.description}`.slice(0, 300),
-      inline: true,
+      inline: false,
     };
   }
 
@@ -268,13 +237,8 @@ export default class BrowseCommand extends BaseCommand {
     const isMember = connections.some((c) => c.data.serverId === guildId);
     const label = isMember ? `Leave ${hub.data.name}` : `Join ${hub.data.name}`;
     const value = isMember ? `leave:${hub.id}` : `join:${hub.id}`;
-    const emoji = isMember
-      ? getEmoji('hangup_icon', client)
-      : getEmoji('call_icon', client);
+    const emoji = isMember ? getEmoji('hangup_icon', client) : getEmoji('call_icon', client);
 
-    return new StringSelectMenuOptionBuilder()
-      .setLabel(label)
-      .setValue(value)
-      .setEmoji(emoji);
+    return new StringSelectMenuOptionBuilder().setLabel(label).setValue(value).setEmoji(emoji);
   }
 }
