@@ -34,14 +34,14 @@ import type {
   MessageComponentInteraction,
 } from 'discord.js';
 // eslint-disable-next-line no-duplicate-imports
-import type { CachedContextType } from '#src/core/CommandContext/Context.js';
+import type { CacheContext } from '#src/core/CommandContext/Context.js';
 import { checkRule } from '#src/utils/network/antiSwearChecks.js';
 
 export class HubJoinService {
   private readonly interaction:
     | ChatInputCommandInteraction<'cached'>
     | MessageComponentInteraction<'cached'>
-    | Context<CachedContextType>;
+    | Context<CacheContext>;
   private readonly locale: supportedLocaleCodes;
   private readonly hubService: HubService;
 
@@ -49,7 +49,7 @@ export class HubJoinService {
     interaction:
       | ChatInputCommandInteraction<'cached'>
       | MessageComponentInteraction<'cached'>
-      | Context<CachedContextType>,
+      | Context<CacheContext>,
     locale: supportedLocaleCodes,
     hubService: HubService = new HubService(),
   ) {

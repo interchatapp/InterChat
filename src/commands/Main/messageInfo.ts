@@ -93,10 +93,10 @@ export default class MessageInfo extends BaseCommand {
   async execute(ctx: Context) {
     await ctx.deferReply({ flags: ['Ephemeral'] });
 
-    const { locale, originalMsg, hub, target } = await this.getMessageInfo(ctx);
+    const { locale, originalMsg, hub, targetId } = await this.getMessageInfo(ctx);
 
-    if (!hub || !originalMsg || !target) {
-      await replyWithUnknownMessage(ctx);
+    if (!hub || !originalMsg || !targetId) {
+      await replyWithUnknownMessage(ctx, { edit: true });
       return;
     }
 
@@ -118,7 +118,7 @@ export default class MessageInfo extends BaseCommand {
     const connection = (await hub.connections.fetch())?.find(
       (c) => c.data.connected && c.data.serverId === originalMsg.guildId,
     );
-    const components = this.buildButtons(ctx.client, target.id, locale, {
+    const components = this.buildButtons(ctx.client, targetId, locale, {
       buildModActions: await isStaffOrHubMod(ctx.user.id, hub),
       inviteButtonUrl: connection?.data.invite,
     });
@@ -161,12 +161,12 @@ export default class MessageInfo extends BaseCommand {
             server,
             locale,
             hub,
-            messageId: target.id,
+            messageId: targetId,
           });
           break;
 
         case 'report':
-          this.handleReportButton(i, { hub, locale, messageId: target.id });
+          this.handleReportButton(i, { hub, locale, messageId: targetId });
           break;
 
         default:
@@ -317,7 +317,7 @@ export default class MessageInfo extends BaseCommand {
     }
 
     const embed = new InfoEmbed()
-      .setDescription(`### ${getEmoji('info', interaction.client)} Message Info`)
+      .setDescription(`### ${getEmoji('info_icon', interaction.client)} Message Info`)
       .addFields([
         { name: 'Sender', value: codeBlock(author.username), inline: true },
         { name: 'From Server', value: codeBlock(`${server?.name}`), inline: true },
@@ -371,13 +371,13 @@ export default class MessageInfo extends BaseCommand {
 
   private async getMessageInfo(ctx: Context) {
     const locale = (await fetchUserLocale(ctx.user.id)) ?? 'en';
-    const target = await ctx.getTargetMessage('message');
-    if (!target) return { target: null, locale, originalMsg: null, hub: null };
+    const targetId = ctx.getTargetMessageId('message');
+    if (!targetId) return { target: null, locale, originalMsg: null, hub: null };
 
-    const originalMsg = await findOriginalMessage(target.id);
+    const originalMsg = await findOriginalMessage(targetId);
     const hub = await this.fetchHub(originalMsg?.hubId);
 
-    return { target, locale, originalMsg, hub };
+    return { targetId, locale, originalMsg, hub };
   }
 
   private async getModalMessageInfo(interaction: ModalSubmitInteraction<CacheType>) {
@@ -414,6 +414,7 @@ export default class MessageInfo extends BaseCommand {
       extras.push(
         new ButtonBuilder()
           .setLabel('Join Server')
+          .setEmoji(getEmoji('join', client))
           .setStyle(ButtonStyle.Link)
           .setURL(opts.inviteButtonUrl)
           .setDisabled(false),

@@ -78,15 +78,15 @@ export default class EditMessage extends BaseCommand {
     });
   }
 
-  // FIXME: Implement cooldown
+  // TODO: Implement cooldown
   readonly cooldown = 10_000;
 
   async execute(ctx: Context): Promise<void> {
-    const target = await ctx.getTargetMessage('message');
+    const targetId = ctx.getTargetMessageId('message');
     const locale = await fetchUserLocale(ctx.user.id);
 
-    const messageInDb = target ? await findOriginalMessage(target.id) : undefined;
-    if (!target || !messageInDb) {
+    const messageInDb = targetId ? await findOriginalMessage(targetId) : undefined;
+    if (!targetId || !messageInDb) {
       await replyWithUnknownMessage(ctx);
       return;
     }
@@ -100,7 +100,7 @@ export default class EditMessage extends BaseCommand {
     }
 
     const modal = new ModalBuilder()
-      .setCustomId(new CustomID().setIdentifier('editMsg').setArgs(target.id).toString())
+      .setCustomId(new CustomID().setIdentifier('editMsg').setArgs(targetId).toString())
       .setTitle('Edit Message')
       .addComponents(
         new ActionRowBuilder<TextInputBuilder>().addComponents(

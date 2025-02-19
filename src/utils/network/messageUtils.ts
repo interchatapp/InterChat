@@ -20,7 +20,7 @@ import isEmpty from 'lodash/isEmpty.js';
 import Logger from '#src/utils/Logger.js';
 import getRedis from '#src/utils/Redis.js';
 import { handleError } from '#src/utils/Utils.js';
-import Constants, { RedisKeys } from '#utils/Constants.js';
+import { RedisKeys } from '#utils/Constants.js';
 
 export interface OriginalMessage {
   hubId: string;
@@ -211,7 +211,3 @@ export const deleteMessageCache = async (originalMsgId: Snowflake) => {
   return count;
 };
 
-export const getMessageIdFromStr = (str: string) => {
-  const match = str.match(Constants.Regex.MessageLink)?.[3] ?? str.match(/(\d{17,19})/)?.[0];
-  return match;
-};

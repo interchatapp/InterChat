@@ -15,6 +15,15 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import type BaseCommand from '#src/core/BaseCommand.js';
+import ContextOptions from '#src/core/CommandContext/ContextOpts.js';
+import type InteractionContext from '#src/core/CommandContext/InteractionContext.js';
+import type PrefixContext from '#src/core/CommandContext/PrefixContext.js';
+import type { TranslationKeys } from '#src/types/TranslationKeys.js';
+import { InfoEmbed } from '#src/utils/EmbedUtils.js';
+import { type EmojiKeys, getEmoji } from '#src/utils/EmojiUtils.js';
+import { type supportedLocaleCodes, t } from '#src/utils/Locale.js';
+import { fetchUserLocale, extractMessageId } from '#src/utils/Utils.js';
 import {
   type APIActionRowComponent,
   type APIInteractionGuildMember,
@@ -42,34 +51,28 @@ import {
   type ModalComponentData,
   UserContextMenuCommandInteraction,
 } from 'discord.js';
-import type BaseCommand from '#src/core/BaseCommand.js';
-import ContextOptions from '#src/core/CommandContext/ContextOpts.js';
-import type InteractionContext from '#src/core/CommandContext/InteractionContext.js';
-import type PrefixContext from '#src/core/CommandContext/PrefixContext.js';
-import type { TranslationKeys } from '#src/types/TranslationKeys.js';
-import { InfoEmbed } from '#src/utils/EmbedUtils.js';
-import { type EmojiKeys, getEmoji } from '#src/utils/EmojiUtils.js';
-import { type supportedLocaleCodes, t } from '#src/utils/Locale.js';
-import { fetchUserLocale } from '#src/utils/Utils.js';
 
-type SupportedInteractions = Message | ChatInputCommandInteraction | ContextMenuCommandInteraction;
+export type ValidContextInteractions =
+  | Message
+  | ChatInputCommandInteraction
+  | ContextMenuCommandInteraction;
 
-type SupportedInteractionsCached =
+export type SupportedCachedInteractionsForContext =
   | Message<true>
   | ChatInputCommandInteraction<'cached'>
   | ContextMenuCommandInteraction<'cached'>;
 
-interface classT {
-  interaction: SupportedInteractions;
+interface ContextT {
+  interaction: ValidContextInteractions;
   ctx: PrefixContext | InteractionContext;
   responseType: Message | InteractionResponse;
 }
 
-export interface CachedContextType extends classT {
-  interaction: SupportedInteractionsCached;
+export interface CacheContext extends ContextT {
+  interaction: SupportedCachedInteractionsForContext;
 }
 
-export default abstract class Context<T extends classT = classT> {
+export default abstract class Context<T extends ContextT = ContextT> {
   protected readonly interaction: T['interaction'];
   protected readonly command: BaseCommand;
   protected readonly _options: ContextOptions;
@@ -80,7 +83,7 @@ export default abstract class Context<T extends classT = classT> {
   constructor(interaction: T['interaction'], command: BaseCommand) {
     this.interaction = interaction;
     this.command = command;
-    this._options = new ContextOptions(this, command);
+    this._options = new ContextOptions(this);
   }
 
   public get options() {
@@ -97,26 +100,26 @@ export default abstract class Context<T extends classT = classT> {
   public get channelId() {
     return this.interaction.channelId;
   }
-  public get guild(): T extends CachedContextType ? Guild : Guild | null {
-    return this.interaction.guild as T extends CachedContextType ? Guild : Guild | null;
+  public get guild(): T extends CacheContext ? Guild : Guild | null {
+    return this.interaction.guild as T extends CacheContext ? Guild : Guild | null;
   }
-  public get guildId(): T extends CachedContextType ? string : string | null {
-    return this.interaction.guildId as T extends CachedContextType ? string : string | null;
+  public get guildId(): T extends CacheContext ? string : string | null {
+    return this.interaction.guildId as T extends CacheContext ? string : string | null;
   }
   public get user() {
     return this.interaction instanceof Message ? this.interaction.author : this.interaction.user;
   }
-  public get member(): T extends CachedContextType
+  public get member(): T extends CacheContext
     ? GuildMember | (APIInteractionGuildMember & GuildMember)
     : null {
-    return this.interaction.member as T extends CachedContextType
+    return this.interaction.member as T extends CacheContext
       ? GuildMember | (APIInteractionGuildMember & GuildMember)
       : null;
   }
   public get client() {
     return this.interaction.client;
   }
-  public inGuild(): this is Context<CachedContextType> {
+  public inGuild(): this is Context<CacheContext> {
     if (this.interaction instanceof Message) return this.interaction.inGuild();
     return this.interaction.inCachedGuild();
   }
@@ -141,11 +144,7 @@ export default abstract class Context<T extends classT = classT> {
     const value = this.options.getString(name);
     if (!value) return null;
 
-    // TODO: move this to constants
-    const regex = /\b\d{17,20}\b|discord\.com\/channels\/\d{17,20}\/\d{17,20}\/(\d{17,20})/g;
-    const matches = value.match(regex);
-
-    let messageId = matches?.[1] ?? matches?.[0];
+    let messageId: string | null | undefined = extractMessageId(value);
     if (this.interaction instanceof Message && this.interaction.reference) {
       messageId = this.interaction.reference.messageId;
     }
@@ -222,7 +221,10 @@ export default abstract class Context<T extends classT = classT> {
   ): Promise<T['responseType'] | null> {
     const data_ = typeof data === 'string' ? { content: data } : { ...data };
     if (this.deferred || this.replied) {
-      return await this.editReply({ ...data_, flags: flags.includes('SuppressEmbeds') ? 'SuppressEmbeds' : [] });
+      return await this.editReply({
+        ...data_,
+        flags: flags.includes('SuppressEmbeds') ? 'SuppressEmbeds' : [],
+      });
     }
     return await this.reply(data_);
   }

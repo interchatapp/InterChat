@@ -18,10 +18,7 @@
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import { isDev, resolveEval } from '#utils/Utils.js';
-import {
-  ApplicationCommandOptionType,
-  type Guild,
-} from 'discord.js';
+import { ApplicationCommandOptionType, type Guild } from 'discord.js';
 
 export default class Respawn extends BaseCommand {
   constructor() {

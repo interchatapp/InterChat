@@ -15,10 +15,23 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import UserDbService from '#src/services/UserDbService.js';
+import {
+  type ErrorHandlerOptions,
+  createErrorHint,
+  sendErrorResponse,
+} from '#src/utils/ErrorUtils.js';
+import { type supportedLocaleCodes } from '#src/utils/Locale.js';
+import type { RemoveMethods, ThreadParentChannel } from '#types/CustomClientProps.d.ts';
+import Constants from '#utils/Constants.js';
+import { ErrorEmbed } from '#utils/EmbedUtils.js';
+import Logger from '#utils/Logger.js';
+import type { UserData } from '@prisma/client';
 import { captureException } from '@sentry/node';
 import {
   type CommandInteraction,
   type ContextMenuCommandInteraction,
+  type Guild,
   type GuildTextBasedChannel,
   Message,
   type MessageComponentInteraction,
@@ -28,19 +41,6 @@ import {
 } from 'discord.js';
 import startCase from 'lodash/startCase.js';
 import toLower from 'lodash/toLower.js';
-import {
-  type ErrorHandlerOptions,
-  createErrorHint,
-  sendErrorResponse,
-} from '#src/utils/ErrorUtils.js';
-import type { RemoveMethods, ThreadParentChannel } from '#types/CustomClientProps.d.ts';
-import Constants from '#utils/Constants.js';
-import { ErrorEmbed } from '#utils/EmbedUtils.js';
-import Logger from '#utils/Logger.js';
-import UserDbService from '#src/services/UserDbService.js';
-import type { UserData } from '@prisma/client';
-import type { supportedLocaleCodes } from '#src/utils/Locale.js';
-import type Context from '#src/core/CommandContext/Context.js';
 
 export const resolveEval = <T>(value: T[]) =>
   value?.find((res) => Boolean(res)) as RemoveMethods<T> | undefined;
@@ -127,7 +127,7 @@ export const replaceLinks = (string: string, replaceText = '`[LINK HIDDEN]`') =>
 export const toTitleCase = (str: string) => startCase(toLower(str));
 
 export const getReplyMethod = (
-  interaction: RepliableInteraction | CommandInteraction | MessageComponentInteraction | Context,
+  interaction: RepliableInteraction | CommandInteraction | MessageComponentInteraction,
 ) => (interaction.replied || interaction.deferred ? 'followUp' : 'reply');
 
 /**
@@ -236,15 +236,42 @@ export const fetchUserLocale = async (user: Snowflake | UserData) => {
 
 export const extractChannelId = (input: string | undefined) => {
   const match = input?.match(Constants.Regex.ChannelId);
-  return match ? match[1] || match[2] || match[3] : null;
+  return match?.[1] || match?.[2] || null;
 };
 
 export const extractUserId = (input: string | undefined) => {
   const match = input?.match(Constants.Regex.UserId);
-  return match ? match[1] || match[2] : null;
+  return match?.[1] || match?.[2] || null;
 };
 
 export const extractRoleId = (input: string | undefined) => {
   const match = input?.match(Constants.Regex.RoleId);
-  return match ? match[1] || match[2] : null;
+  return match?.[1] || match?.[2] || null;
+};
+
+export const extractMessageId = (input: string) =>
+  input.match(Constants.Regex.MessageId)?.[1] ?? null;
+
+
+interface InviteCreationResult {
+  success: boolean;
+  inviteUrl?: string;
+}
+
+export const createServerInvite = async (
+  channelId: string,
+  guild: Guild,
+  username: string,
+): Promise<InviteCreationResult> => {
+  const invite = await guild.invites
+    .create(channelId, {
+      maxAge: 0,
+      reason: `InterChat Hub connection invite. Initiated by ${username}.`,
+    })
+    .catch(() => null);
+
+  return {
+    success: Boolean(invite),
+    inviteUrl: invite?.url,
+  };
 };

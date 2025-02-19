@@ -57,9 +57,8 @@ export default class ModPanelCommand extends BaseCommand {
 
   async execute(ctx: Context) {
     await ctx.deferReply({ flags: ['Ephemeral'] });
-    const targetMessage = await ctx.getTargetMessage('message');
-
-    if (!targetMessage) {
+    const targetMsgId = ctx.getTargetMessageId('message');
+    if (!targetMsgId) {
       await ctx.replyEmbed('errors.messageNotSentOrExpired', {
         t: { emoji: ctx.getEmoji('x_icon') },
         edit: true,
@@ -68,7 +67,7 @@ export default class ModPanelCommand extends BaseCommand {
       return;
     }
 
-    const originalMsg = await findOriginalMessage(targetMessage.id);
+    const originalMsg = await findOriginalMessage(targetMsgId);
     if (!originalMsg || !(await this.validateMessage(ctx, originalMsg))) {
       await ctx.replyEmbed('errors.messageNotSentOrExpired', {
         t: { emoji: ctx.getEmoji('x_icon') },

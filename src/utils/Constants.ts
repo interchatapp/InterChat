@@ -58,7 +58,7 @@ export default {
     Hexcode: /^#[0-9A-F]{6}$/i,
     ChannelMention: /<#|!|>/g,
     ImgurImage: /https?:\/\/i\.imgur\.com\/[a-zA-Z0-9]+\.((jpg)|(jpeg)|(png)|(gif))/g,
-    MessageLink: /https:\/\/(?:canary\.|ptb\.)?discord\.com\/channels\/(\d+)\/(\d+)\/(\d+)/,
+    MessageId: /(?:https?:\/\/(?:ptb\.|canary\.)?discord\.com\/channels\/\d+\/\d+\/)?(\d{17,20})/,
     SimpleRegexEscape: /[.*+?^${}()|[\]\\]/g,
     RegexChars: /[-[\]{}()*+?.,\\^$|#\s]/g,
     DiscordEmojiUrl: /^https:\/\/cdn\.discordapp\.com\/emojis\/(\d+)\.[a-z]+$/i,
