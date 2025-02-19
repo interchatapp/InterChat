@@ -20,6 +20,14 @@ import BlacklistManager from '#src/managers/BlacklistManager.js';
 import HubLogManager from '#src/managers/HubLogManager.js';
 import InfractionManager from '#src/managers/InfractionManager.js';
 
+import { HubService } from '#src/services/HubService.js';
+import db from '#src/utils/Db.js';
+import { CustomID } from '#utils/CustomID.js';
+import { ErrorEmbed, InfoEmbed } from '#utils/EmbedUtils.js';
+import Logger from '#utils/Logger.js';
+import { getReplyMethod, msToReadable } from '#utils/Utils.js';
+import logAppeals from '#utils/hub/logger/Appeals.js';
+import { buildAppealSubmitModal } from '#utils/moderation/blacklistUtils.js';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -29,16 +37,7 @@ import {
   type ModalSubmitInteraction,
   type RepliableInteraction,
   type Snowflake,
-  type User,
 } from 'discord.js';
-import { HubService } from '#src/services/HubService.js';
-import db from '#src/utils/Db.js';
-import { CustomID } from '#utils/CustomID.js';
-import { ErrorEmbed, InfoEmbed } from '#utils/EmbedUtils.js';
-import Logger from '#utils/Logger.js';
-import { getReplyMethod, msToReadable } from '#utils/Utils.js';
-import logAppeals from '#utils/hub/logger/Appeals.js';
-import { buildAppealSubmitModal } from '#utils/moderation/blacklistUtils.js';
 
 export const buildAppealSubmitButton = (type: 'user' | 'server', hubId: string) =>
   new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -148,11 +147,7 @@ export default class AppealInteraction {
 
     await interaction.update({ components: [button] });
 
-    const blacklistManager =
-      type === 'user'
-        ? new BlacklistManager('user', targetId)
-        : new BlacklistManager('server', targetId);
-
+    const blacklistManager = new BlacklistManager(type, targetId);
     const blacklist = await blacklistManager.fetchBlacklist(hubId);
     if (!blacklist) return;
 
@@ -160,32 +155,35 @@ export default class AppealInteraction {
     const hubService = new HubService(db);
     const hub = await hubService.fetchHub(hubId);
 
-    let appealer: User;
-    let appealTarget: string;
-    let extraServerSteps = '';
-    if (type === 'user') {
-      appealer = await interaction.client.users.fetch(targetId);
-      appealTarget = `user \`${appealer.username}\``;
-    }
-    else {
-      appealTarget =
-        'serverName' in blacklist ? `server \`${blacklist.serverName}\`` : 'your server';
-      appealer =
-        'appealerUserId' in blacklist
-          ? await interaction.client.users.fetch(blacklist.appealerUserId as string)
-          : await interaction.client.users.fetch(targetId);
-      extraServerSteps = `You can re-join the hub by running \`/hub join hub:${hub?.data.name}\`.`;
-    }
+    const appealer = blacklist.appealedBy
+      ? await interaction.client.users.fetch(blacklist.appealedBy).catch(() => null)
+      : null;
+    const appealTarget =
+      type === 'user' ? `user \`${appealer?.tag}\`` : `server \`${blacklist.serverName}\``;
+    const extraServerSteps =
+      type === 'server'
+        ? `You can re-join the hub by running \`/hub join hub:${hub?.data.name}\`.`
+        : '';
 
+    // TODO: localize
     const approvalStatus = customId.suffix === 'approve' ? 'appealed 🎉' : 'rejected';
     const message = `
       ### Blacklist Appeal Review
-      Your blacklist appeal for ${appealTarget} in the hub **${hub?.data.name}** has been ${approvalStatus}. ${extraServerSteps}
+      Your blacklist appeal for ${appealTarget} in the hub **${hub?.data.name}** has been ${approvalStatus}.\n${extraServerSteps}
     `;
 
     const embed = new EmbedBuilder()
       .setColor(approvalStatus === 'rejected' ? 'Red' : 'Green')
       .setDescription(message);
+
+    if (!appealer) {
+      Logger.error(`Failed to fetch appealer for blacklist appeal review: ${targetId}`);
+      await interaction.followUp({
+        content: 'I couldn\'t DM appeal approval to appealer.',
+        ephemeral: true,
+      });
+      return;
+    }
 
     await appealer
       .send({ embeds: [embed] })
