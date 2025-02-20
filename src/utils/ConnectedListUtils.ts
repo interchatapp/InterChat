@@ -15,14 +15,20 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Connection, Prisma } from '@prisma/client';
-import isEmpty from 'lodash/isEmpty.js';
+import Context, {
+  CacheContext,
+} from '#src/core/CommandContext/Context.js';
+import { getEmoji } from '#src/utils/EmojiUtils.js';
+import { supportedLocaleCodes, t } from '#src/utils/Locale.js';
 import Logger from '#src/utils/Logger.js';
-import { handleError } from '#src/utils/Utils.js';
+import { createServerInvite, getReplyMethod, handleError } from '#src/utils/Utils.js';
 import type { ConvertDatesToString } from '#types/Utils.d.ts';
 import { RedisKeys } from '#utils/Constants.js';
 import db from '#utils/Db.js';
 import getRedis from '#utils/Redis.js';
+import type { Connection, Prisma } from '@prisma/client';
+import { MessageComponentInteraction, RepliableInteraction } from 'discord.js';
+import isEmpty from 'lodash/isEmpty.js';
 
 type whereUniuqeInput = Prisma.ConnectionWhereUniqueInput;
 type whereInput = Prisma.ConnectionWhereInput;
@@ -184,14 +190,69 @@ export const updateConnection = async (where: whereUniuqeInput, data: dataInput)
   return connection;
 };
 
+// TODO: test this function
 export const updateConnections = async (where: whereInput, data: dataInput) => {
+  const connectionIds = db.connection
+    .findMany({ where, select: { id: true } })
+    .then((connections) => connections.map(({ id }) => id));
+
   // Update in database
   const updated = await db.connection.updateMany({ where, data });
 
-  db.connection.findMany({ where }).then(async (connections) => {
-    await cacheConnectionHubId(...connections);
-    connections.forEach(cacheHubConnection);
+  connectionIds.then(async (ids) => {
+    const updatedConnections = await db.connection.findMany({
+      where: { id: { in: ids } },
+    });
+
+    await cacheConnectionHubId(...updatedConnections);
+    updatedConnections.forEach(cacheHubConnection);
   });
 
   return updated;
+};
+
+export const sendInviteCreatedResponse = async (
+  interaction: RepliableInteraction | Context | MessageComponentInteraction,
+  success: boolean,
+  locale: supportedLocaleCodes,
+): Promise<void> => {
+  const messageKey = success ? 'connection.inviteAdded' : 'connection.setInviteError';
+  const emojiKey = success ? 'tick_icon' : 'x_icon';
+
+  const data = {
+    flags: ['Ephemeral'],
+    content: t(messageKey, locale, {
+      emoji: getEmoji(emojiKey, interaction.client),
+    }),
+  } as const;
+
+  await (interaction instanceof Context
+    ? interaction.reply(data)
+    : interaction[getReplyMethod(interaction)](data));
+};
+
+/**
+ * @returns The invite code if the invite was created successfully
+ */
+export const handleConnectionInviteCreation = async (
+  interaction:
+    | RepliableInteraction<'cached'>
+    | Context<CacheContext>
+    | MessageComponentInteraction<'cached'>,
+  connection: Connection,
+  locale: supportedLocaleCodes,
+): Promise<string | undefined> => {
+  const { channelId } = connection;
+  const { success, inviteUrl: invite } = await createServerInvite(
+    channelId,
+    interaction.guild,
+    interaction.user.username,
+  );
+
+  if (success && invite) {
+    await updateConnection({ channelId }, { invite });
+  }
+
+  await sendInviteCreatedResponse(interaction, success, locale);
+  return invite;
 };

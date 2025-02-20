@@ -37,14 +37,12 @@ import { yesOrNoEmoji } from '#utils/Utils.js';
 export const buildEditEmbed = async (
   client: Client<true>,
   channelId: string,
-  iconURL: string | undefined,
   locale: supportedLocaleCodes = 'en',
 ) => {
   const networkData = await db.connection.findFirst({
     where: { channelId },
     include: { hub: true },
   });
-
   const bold = '\x1b[1m';
   const reset = '\x1b[0m';
   const invite = networkData?.invite
@@ -52,10 +50,7 @@ export const buildEditEmbed = async (
     : 'Not Set.';
 
   return new EmbedBuilder()
-    .setAuthor({
-      name: t('connection.embed.title', locale),
-      iconURL,
-    })
+    .setAuthor({ name: t('connection.embed.title', locale) })
     .setDescription(
       codeBlock(
         'ansi',
@@ -73,7 +68,7 @@ export const buildEditEmbed = async (
         inline: true,
       },
       {
-        name: `${getEmoji('chat_icon', client)} ${t('connection.embed.fields.channel', locale)}`,
+        name: `${getEmoji('hash_icon', client)} ${t('connection.embed.fields.channel', locale)}`,
         value: `<#${channelId}>`,
         inline: true,
       },
@@ -106,13 +101,13 @@ export const buildEditSelect = (
       .addOptions(
         new StringSelectMenuOptionBuilder()
           .setLabel('Compact')
-          .setEmoji(getEmoji('clipart', client))
-          .setDescription('Disable embeds in the network to fit more messages.')
+          .setEmoji(getEmoji('chat_icon', client))
+          .setDescription('No big embeds, just the essentials.')
           .setValue('compact'),
         new StringSelectMenuOptionBuilder()
           .setLabel('Invite Link')
-          .setEmoji(getEmoji('members', client))
-          .setDescription('Set an invite for network users to join your server easily!')
+          .setEmoji(getEmoji('plus_icon', client))
+          .setDescription('Let hub members join your server.')
           .setValue('invite'),
         new StringSelectMenuOptionBuilder()
           .setLabel('Embed Color')
