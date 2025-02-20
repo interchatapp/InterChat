@@ -134,7 +134,7 @@ export class HubService {
       where: {
         name: {
           mode: opts?.insensitive ? 'insensitive' : 'default',
-          contains: name,
+          equals: name,
         },
         ownerId: opts?.ownerId,
       },

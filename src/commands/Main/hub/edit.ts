@@ -92,11 +92,7 @@ export default class HubEditSubcommand extends BaseCommand {
     return await HubCommand.handleManagerCmdAutocomplete(interaction, this.hubService);
   }
 
-  private buildActionsSelectMenu(
-    userId: string,
-    hubId: string,
-    locale: supportedLocaleCodes,
-  ) {
+  private buildActionsSelectMenu(userId: string, hubId: string, locale: supportedLocaleCodes) {
     return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
       new StringSelectMenuBuilder()
         .setCustomId(
@@ -110,10 +106,7 @@ export default class HubEditSubcommand extends BaseCommand {
           {
             label: t('hub.manage.description.selects.label', locale),
             value: HubEditAction.Description,
-            description: t(
-              'hub.manage.description.selects.description',
-              locale,
-            ),
+            description: t('hub.manage.description.selects.description', locale),
             emoji: '📝',
           },
           {
@@ -153,8 +146,7 @@ export default class HubEditSubcommand extends BaseCommand {
   async handleLogChannelSelect(interaction: MessageComponentInteraction) {
     if (!interaction.isChannelSelectMenu()) return;
 
-    const { hub, customId, locale } =
-			await this.ensureComponentValidity(interaction);
+    const { hub, customId, locale } = await this.ensureComponentValidity(interaction);
     if (!hub) return;
 
     const logType = customId.args[2] as HubConfigTypes;
@@ -172,8 +164,7 @@ export default class HubEditSubcommand extends BaseCommand {
 
   @RegisterInteractionHandler(HUB_EDIT_MODAL_IDENTIFIER)
   async handleModalSubmission(interaction: ModalSubmitInteraction) {
-    const { hub, customId, locale } =
-			await this.ensureModalValidity(interaction);
+    const { hub, customId, locale } = await this.ensureModalValidity(interaction);
     if (!hub) return;
 
     switch (customId.suffix) {
@@ -198,7 +189,7 @@ export default class HubEditSubcommand extends BaseCommand {
   private async getHubAndLocale(ctx: Context) {
     const locale = await fetchUserLocale(ctx.user.id);
     const hubName = ctx.options.getString('hub', true);
-    const hub = (await this.hubService.findHubsByName(hubName)).at(0);
+    const [hub] = await this.hubService.findHubsByName(hubName);
 
     if (!hub) {
       await ctx.replyEmbed('hub.notFound_mod', {
@@ -244,19 +235,13 @@ export default class HubEditSubcommand extends BaseCommand {
     locale: supportedLocaleCodes,
   ) {
     const modal = new ModalBuilder()
-      .setCustomId(
-        new CustomID(`${HUB_EDIT_MODAL_IDENTIFIER}:${actionType}`, [
-          hubId,
-        ]).toString(),
-      )
+      .setCustomId(new CustomID(`${HUB_EDIT_MODAL_IDENTIFIER}:${actionType}`, [hubId]).toString())
       .setTitle(t(`hub.manage.${actionType}.modal.title`, locale));
 
     const inputField = new TextInputBuilder()
       .setLabel(t(`hub.manage.${actionType}.modal.label`, locale))
       .setStyle(
-        actionType === HubEditAction.Description
-          ? TextInputStyle.Paragraph
-          : TextInputStyle.Short,
+        actionType === HubEditAction.Description ? TextInputStyle.Paragraph : TextInputStyle.Short,
       )
       .setCustomId(actionType);
 
@@ -271,9 +256,7 @@ export default class HubEditSubcommand extends BaseCommand {
       inputField.setRequired(false);
     }
 
-    modal.addComponents(
-      new ActionRowBuilder<TextInputBuilder>().addComponents(inputField),
-    );
+    modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(inputField));
     await interaction.showModal(modal);
   }
 
@@ -293,11 +276,7 @@ export default class HubEditSubcommand extends BaseCommand {
       `${lockedStatus === 'locked' ? '🔒' : '🔓'} ${t('hub.manage.toggleLock.confirmation', locale, { status: `**${lockedStatus}**` })}`,
     );
 
-    const embed = await this.getRefreshedHubEmbed(
-      hub,
-      locale,
-      interaction.client,
-    );
+    const embed = await this.getRefreshedHubEmbed(hub, locale, interaction.client);
     await interaction.message.edit({ embeds: [embed] }).catch(() => null);
 
     await sendToHub(hub.id, {
@@ -309,10 +288,7 @@ export default class HubEditSubcommand extends BaseCommand {
             `🛡️ ${t('hub.manage.toggleLock.announcementTitle', locale, { status: lockedStatus })}`,
           )
           .setDescription(
-            t(
-              `hub.manage.toggleLock.announcementDescription.${lockedStatus}`,
-              locale,
-            ),
+            t(`hub.manage.toggleLock.announcementDescription.${lockedStatus}`, locale),
           ),
       ],
     });
@@ -329,10 +305,7 @@ export default class HubEditSubcommand extends BaseCommand {
 
     const embed = interaction.message.embeds[0]?.toJSON();
     if (embed?.fields?.at(0)) {
-      embed.fields[0].value = this.channelMention(
-        channelId,
-        interaction.client,
-      );
+      embed.fields[0].value = this.channelMention(channelId, interaction.client);
       await interaction.update({ embeds: [embed] });
     }
 
@@ -355,9 +328,7 @@ export default class HubEditSubcommand extends BaseCommand {
     hubId: string,
     locale: supportedLocaleCodes,
   ) {
-    const description = interaction.fields.getTextInputValue(
-      HubEditAction.Description,
-    );
+    const description = interaction.fields.getTextInputValue(HubEditAction.Description);
     const hub = await this.hubService.fetchHub(hubId);
 
     if (!hub) {
@@ -372,11 +343,7 @@ export default class HubEditSubcommand extends BaseCommand {
     }
 
     await hub.update({ description });
-    await this.replySuccess(
-      interaction,
-      t('hub.manage.description.changed', locale),
-      true,
-    );
+    await this.replySuccess(interaction, t('hub.manage.description.changed', locale), true);
   }
 
   private async updateHubIcon(
@@ -401,11 +368,7 @@ export default class HubEditSubcommand extends BaseCommand {
     if (!hub) return;
 
     await hub.update({ iconUrl });
-    await this.replySuccess(
-      interaction,
-      t('hub.manage.icon.changed', locale),
-      true,
-    );
+    await this.replySuccess(interaction, t('hub.manage.icon.changed', locale), true);
   }
 
   private async updateHubBanner(
@@ -418,9 +381,7 @@ export default class HubEditSubcommand extends BaseCommand {
     const hub = await this.getHubOrReplyError(interaction, hubId, locale);
     if (!hub) return;
 
-    const bannerUrl = interaction.fields.getTextInputValue(
-      HubEditAction.Banner,
-    );
+    const bannerUrl = interaction.fields.getTextInputValue(HubEditAction.Banner);
 
     if (!bannerUrl) {
       await hub.update({ bannerUrl: null });
@@ -451,18 +412,12 @@ export default class HubEditSubcommand extends BaseCommand {
   ) {
     const updatedHub = await this.hubService.fetchHub(hubId);
     if (updatedHub) {
-      const embed = await this.getRefreshedHubEmbed(
-        updatedHub,
-        locale,
-        interaction.client,
-      );
+      const embed = await this.getRefreshedHubEmbed(updatedHub, locale, interaction.client);
       await interaction.message?.edit({ embeds: [embed] }).catch(() => null);
     }
   }
 
-  private async ensureComponentValidity(
-    interaction: MessageComponentInteraction,
-  ) {
+  private async ensureComponentValidity(interaction: MessageComponentInteraction) {
     const customId = CustomID.parseCustomId(interaction.customId);
     const locale = await fetchUserLocale(interaction.user.id);
 
@@ -543,13 +498,7 @@ export default class HubEditSubcommand extends BaseCommand {
   ) {
     const connections = await hub.connections.fetch();
     const mods = await hub.moderators.fetchAll();
-    return await this.buildHubEmbed(
-      hub.data,
-      connections.length,
-      mods.size,
-      locale,
-      client,
-    );
+    return await this.buildHubEmbed(hub.data, connections.length, mods.size, locale, client);
   }
 
   private async buildHubEmbed(
@@ -609,9 +558,7 @@ export default class HubEditSubcommand extends BaseCommand {
     const flags = ephemeral ? (['Ephemeral'] as const) : [];
     await interaction[method]({
       embeds: [
-        new InfoEmbed().setDescription(
-          `${getEmoji('x_icon', interaction.client)} ${content}`,
-        ),
+        new InfoEmbed().setDescription(`${getEmoji('x_icon', interaction.client)} ${content}`),
       ],
       flags,
     });
@@ -626,9 +573,7 @@ export default class HubEditSubcommand extends BaseCommand {
     const flags = ephemeral ? (['Ephemeral'] as const) : [];
     await interaction[method]({
       embeds: [
-        new InfoEmbed().setDescription(
-          `${getEmoji('tick_icon', interaction.client)} ${content}`,
-        ),
+        new InfoEmbed().setDescription(`${getEmoji('tick_icon', interaction.client)} ${content}`),
       ],
       flags,
     });
