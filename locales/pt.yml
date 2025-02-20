@@ -96,8 +96,8 @@ connection:
   switchCalled: '{emoji} Troca de canal chamada, use o comando novamente para visualizar a nova conexão.'
   switchSuccess: '{emoji} Canal trocado. Agora você está conectado de **{channel}**.'
   inviteRemoved: '{emoji} Convite do servidor removido para este hub.'
-  inviteInvalid: '{emoji} Convite inválido. Certifique-se de ter inserido um link de convite válido.'
-  inviteAdded: '{emoji} Convite Adicionado. Outros agora podem se juntar a este servidor usando o comando `Apps > Message Info/Report`.'
+  setInviteError: '{emoji} Unable to create invite. Please grant me  the `Create Invite` permission for the connected channel.'
+  inviteAdded: '{emoji} Invite Added. Others can now join this server by using `Apps > Message Info/Report` command and `/joinrequest` command.'
   emColorInvalid: '{emoji} Cor inválida. Certifique-se de ter inserido um código de cor hexadecimal válido.'
   emColorChange: '{emoji} Incorporar cor com sucesso {action}'
   embed:
@@ -109,7 +109,7 @@ connection:
       connected: Conectado
       emColor: Incorporar cor
       compact: Modo compacto
-    footer: Use o botão e o menu suspenso abaixo para gerenciar sua conexão.
+    footer: Use the dropdown menu below to manage your connection.
   selects:
     placeholder: '🛠️ Selecione uma opção para editar esta conexão'
   unpaused:
