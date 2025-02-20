@@ -45,7 +45,7 @@ export type TranslationKeys = {
   'connection.switchCalled': 'emoji';
   'connection.switchSuccess': 'emoji' | 'channel';
   'connection.inviteRemoved': 'emoji';
-  'connection.inviteInvalid': 'emoji';
+  'connection.setInviteError': 'emoji';
   'connection.inviteAdded': 'emoji';
   'connection.emColorInvalid': 'emoji';
   'connection.emColorChange': 'emoji' | 'action';
