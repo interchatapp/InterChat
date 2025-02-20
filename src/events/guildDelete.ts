@@ -18,7 +18,6 @@
 import type { Guild } from 'discord.js';
 import BaseEventListener from '#src/core/BaseEventListener.js';
 import { deleteConnections } from '#utils/ConnectedListUtils.js';
-import Constants from '#utils/Constants.js';
 import { logGuildLeave } from '#utils/GuildUtils.js';
 import Logger from '#utils/Logger.js';
 import { logGuildLeaveToHub } from '#utils/hub/logger/JoinLeave.js';
@@ -36,6 +35,6 @@ export default class Ready extends BaseEventListener<'guildDelete'> {
       if (connection) await logGuildLeaveToHub(connection.hubId, guild);
     });
 
-    await logGuildLeave(guild, Constants.Channels.goal);
+    await logGuildLeave(guild);
   }
 }

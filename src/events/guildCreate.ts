@@ -32,7 +32,7 @@ export default class Ready extends BaseEventListener<'guildCreate'> {
     Logger.info(`Joined ${guild.name} (${guild.id})`);
 
     // log that bot joined a guild to goal channel in support server
-    await logGuildJoin(guild, Constants.Channels.goal);
+    await logGuildJoin(guild);
 
     const { guildOwner, guildChannel } = await getGuildOwnerAndFirstChannel(guild);
 
