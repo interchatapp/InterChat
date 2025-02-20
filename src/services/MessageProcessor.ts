@@ -57,17 +57,14 @@ export class MessageProcessor {
     }
 
     const attachmentURL = await this.broadcastService.resolveAttachmentURL(message);
+    const checker = await runChecks(message, hub, {
+      userData,
+      settings: hub.settings,
+      attachmentURL,
+      totalHubConnections: hubConnections.length + 1,
+    });
 
-    if (
-      !(await runChecks(message, hub, {
-        userData,
-        settings: hub.settings,
-        attachmentURL,
-        totalHubConnections: hubConnections.length + 1,
-      }))
-    ) {
-      return;
-    }
+    if (!checker.passed) return;
 
     message.channel.sendTyping().catch(() => null);
 

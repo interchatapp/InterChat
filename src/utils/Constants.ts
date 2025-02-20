@@ -20,7 +20,8 @@ export const enum RedisKeys {
   broadcasts = 'broadcasts',
   messageReverse = 'messageReverse',
   Hub = 'hub',
-  Spam = 'spam',
+  SpamBucket = 'spamBucket',
+  Spam = 'spam', // FIXME: remove
 }
 
 export const enum ConnectionMode {
@@ -80,7 +81,6 @@ export default {
   },
 
   Channels: {
-    goal: '906460473065615403',
     inviteLogs: '1246117516099457146',
   },
 
