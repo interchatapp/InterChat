@@ -221,7 +221,7 @@ export default class BrowseCommand extends BaseCommand {
     return {
       name: `${index}. ${hub.name}`,
       value:
-        stripIndents`${getEmoji('person_icon', client)} ${connections.length}_ _ _ _ _ _ _ _ _ _ _ _${getEmoji('chat_icon', client)} ${time(lastActiveConnection?.data.lastActive ?? new Date(), 'R')}
+        stripIndents`${getEmoji('person_icon', client)} ${connections.length}      ${getEmoji('chat_icon', client)} ${time(lastActiveConnection?.data.lastActive ?? new Date(), 'R')}
 
               ${hub.description}`.slice(0, 300),
       inline: false,
