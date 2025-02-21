@@ -139,17 +139,15 @@ export default abstract class Context<T extends ContextT = ContextT> {
     if (this.interaction instanceof MessageContextMenuCommandInteraction) {
       return this.interaction.targetId;
     }
+
+    if (this.interaction instanceof Message && this.interaction.reference) {
+      return this.interaction.reference.messageId ?? null;
+    }
     if (!name) return null;
 
     const value = this.options.getString(name);
     if (!value) return null;
-
-    let messageId: string | null | undefined = extractMessageId(value);
-    if (this.interaction instanceof Message && this.interaction.reference) {
-      messageId = this.interaction.reference.messageId;
-    }
-
-    return messageId ?? null;
+    return extractMessageId(value) ?? null;
   }
 
   public async getTargetUser(name?: string) {
