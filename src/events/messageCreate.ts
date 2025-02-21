@@ -80,7 +80,10 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
 
   private async handleChatMessage(message: Message<true>) {
     const { handled } = await this.messageProcessor.processHubMessage(message);
-    if (handled === true) this.showDevAlertsIfAny(message);
+
+    if (handled === true) {
+      await this.showDevAlertsIfAny(message);
+    }
   }
 
   private async showDevAlertsIfAny(message: Message) {
