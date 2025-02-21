@@ -91,14 +91,14 @@ export default class RankCommand extends BaseCommand {
     await ctx.deferReply();
 
     try {
-      const targetUser = await ctx.options.getUser('user') ?? ctx.user;
-      const stats = await ctx.client.userLevels.getStats(
-        targetUser.id,
-        targetUser.username,
-      );
-      const rankCard = await this.createRankCard(targetUser, stats);
+      // const targetUser = await ctx.options.getUser('user') ?? ctx.user;
+      // const stats = await ctx.client.userLevels.getStats(
+      //   targetUser.id,
+      //   targetUser.username,
+      // );
+      // const rankCard = await this.createRankCard(targetUser, stats);
 
-      await ctx.editReply({ files: [rankCard] });
+      // await ctx.editReply({ files: [rankCard] });
     }
     catch (error) {
       handleError(error, {

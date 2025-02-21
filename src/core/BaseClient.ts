@@ -20,7 +20,6 @@ import type { InteractionFunction } from '#src/decorators/RegisterInteractionHan
 import AntiSpamManager from '#src/managers/AntiSpamManager.js';
 import EventLoader from '#src/modules/Loaders/EventLoader.js';
 import CooldownService from '#src/services/CooldownService.js';
-import { LevelingService } from '#src/services/LevelingService.js';
 import Scheduler from '#src/services/SchedulerService.js';
 import { loadInteractions } from '#src/utils/CommandUtils.js';
 import { loadCommands } from '#src/utils/Loaders.js';
@@ -58,8 +57,6 @@ export default class InterChatClient extends Client {
     timeWindow: 3000,
     spamCountExpirySecs: 60,
   });
-
-  public readonly userLevels: LevelingService = new LevelingService();
 
   constructor() {
     super({
