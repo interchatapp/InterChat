@@ -104,6 +104,6 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
       })
       .catch(() => null);
 
-    await redis.set(key, Date.now().toString());
+    await redis.set(key, Date.now().toString(), 'EX', 600);
   }
 }
