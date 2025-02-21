@@ -16,6 +16,7 @@ import {
 export default class DevAnnounceCommand extends BaseCommand {
   constructor() {
     super({
+      staffOnly: true,
       name: 'send-alert',
       description: 'Alert something to all users. This will go to their inbox.',
       types: { slash: true, prefix: true },

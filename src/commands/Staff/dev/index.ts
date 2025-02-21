@@ -4,6 +4,7 @@ import BaseCommand from '#src/core/BaseCommand.js';
 export default class DevCommand extends BaseCommand {
   constructor() {
     super({
+      staffOnly: true,
       name: 'dev',
       description: 'ooh spooky',
       types: {
