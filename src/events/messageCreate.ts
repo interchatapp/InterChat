@@ -15,23 +15,27 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { stripIndents } from 'common-tags';
-import type { Client, Message } from 'discord.js';
 import BaseEventListener from '#src/core/BaseEventListener.js';
 import { showRulesScreening } from '#src/interactions/RulesScreening.js';
 import { MessageProcessor } from '#src/services/MessageProcessor.js';
-import Constants from '#src/utils/Constants.js';
-import { fetchUserData, handleError, isHumanMessage } from '#utils/Utils.js';
+import UserDbService from '#src/services/UserDbService.js';
 import { executeCommand, resolveCommand } from '#src/utils/CommandUtils.js';
+import Constants, { RedisKeys } from '#src/utils/Constants.js';
+import getRedis from '#src/utils/Redis.js';
+import {
+  createUnreadDevAlertEmbed,
+  fetchUserData,
+  handleError,
+  hasUnreadDevAlert,
+  isHumanMessage,
+} from '#utils/Utils.js';
+import { stripIndents } from 'common-tags';
+import type { Message } from 'discord.js';
 
 export default class MessageCreate extends BaseEventListener<'messageCreate'> {
   readonly name = 'messageCreate';
-  private readonly messageProcessor: MessageProcessor;
-
-  constructor(client: Client<true> | null) {
-    super(client ?? null);
-    this.messageProcessor = new MessageProcessor();
-  }
+  private readonly messageProcessor = new MessageProcessor();
+  private readonly userDbService = new UserDbService();
 
   async execute(message: Message) {
     if (!message.inGuild() || !isHumanMessage(message)) return;
@@ -71,9 +75,35 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
     if (!command) return;
 
     await executeCommand(message, command, prefixArgs);
+    await this.showDevAlertsIfAny(message);
   }
 
   private async handleChatMessage(message: Message<true>) {
-    await this.messageProcessor.processHubMessage(message);
+    const { handled } = await this.messageProcessor.processHubMessage(message);
+    if (handled === true) this.showDevAlertsIfAny(message);
+  }
+
+  private async showDevAlertsIfAny(message: Message) {
+    const redis = getRedis();
+    const key = `${RedisKeys.DevAnnouncement}:${message.author.id}:lastAskedDate`;
+    const lastAsked = await redis.get(key);
+
+    // check if the user has been asked to check inbox in the last 10 minutes
+    if (lastAsked && Date.now() - Number(lastAsked) < 600_000) return;
+
+    const userData = await fetchUserData(message.author.id);
+    if (!userData) return;
+
+    const shouldShow = await hasUnreadDevAlert(userData);
+    if (!shouldShow) return;
+
+    await message
+      .reply({
+        embeds: [createUnreadDevAlertEmbed(this.getEmoji('info_icon'))],
+        allowedMentions: { repliedUser: true },
+      })
+      .catch(() => null);
+
+    await redis.set(key, Date.now().toString(), 'EX', 600);
   }
 }

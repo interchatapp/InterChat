@@ -21,6 +21,7 @@ export const enum RedisKeys {
   messageReverse = 'messageReverse',
   Hub = 'hub',
   Spam = 'spam',
+  DevAnnouncement = 'DevAnnouncement',
 }
 
 export const enum ConnectionMode {

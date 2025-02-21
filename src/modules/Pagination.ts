@@ -28,7 +28,9 @@ import {
   type Client,
   ComponentType,
   type EmbedBuilder,
+  InteractionCallbackResponse,
   type InteractionReplyOptions,
+  InteractionResponse,
   Message,
   ModalBuilder,
   type ModalSubmitInteraction,
@@ -45,7 +47,7 @@ type RunOptions = { idle?: number; ephemeral?: boolean; deleteOnEnd?: boolean };
 
 export class Pagination {
   private readonly pages: BaseMessageOptions[] = [];
-  private readonly hiddenButtons: Partial<Record<keyof ButtonEmojis, boolean>> = {};
+  private readonly hiddenButtons: (keyof ButtonEmojis)[] = [];
   private readonly client: Client<true>;
   private customEmojis: ButtonEmojis;
 
@@ -53,10 +55,10 @@ export class Pagination {
     client: Client<true>,
     opts: {
       customEmojis?: ButtonEmojis;
-      hideButtons?: Partial<Record<keyof ButtonEmojis, boolean>>;
+      hiddenButtons?: (keyof ButtonEmojis)[];
     } = {},
   ) {
-    if (opts.hideButtons) this.hiddenButtons = opts.hideButtons;
+    if (opts.hiddenButtons) this.hiddenButtons = opts.hiddenButtons;
 
     this.client = client;
     this.customEmojis = opts.customEmojis ?? {
@@ -240,7 +242,7 @@ export class Pagination {
     }
   }
 
-  public async run(ctx: PaginationInteraction | Message | Context, options?: RunOptions) {
+  public async run(ctx: RepliableInteraction | Message | Context, options?: RunOptions) {
     if (this.pages.length < 1) {
       await this.sendReply(
         ctx,
@@ -259,6 +261,8 @@ export class Pagination {
       { ...resp, content: resp.content },
       { flags: options?.ephemeral ? ['Ephemeral'] : [] },
     );
+
+    if (!listMessage) return;
 
     const col = listMessage.createMessageComponentCollector({
       idle: options?.idle || 60000,
@@ -301,10 +305,11 @@ export class Pagination {
 
       if (!interaction) {
         if (options?.ephemeral) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-          options?.deleteOnEnd
-            ? await listMessage.delete()
-            : await listMessage.edit({ components: [] });
+
+          (options?.deleteOnEnd
+            ? listMessage.delete()
+            : listMessage.edit({ components: [] })
+          ).catch(() => null);
         }
         return;
       }
@@ -319,20 +324,28 @@ export class Pagination {
         await interaction.deleteReply();
       }
       else if (ackd === false) {
-        await interaction.message.edit({ components: [] }).catch(() => null);
+        await interaction.message.edit({ components: [] });
       }
     });
   }
 
   private async sendReply(
-    ctx: PaginationInteraction | Message | Context,
+    ctx: RepliableInteraction | Message | Context,
     opts: BaseMessageOptions,
     interactionOpts?: { flags?: InteractionReplyOptions['flags'] },
-  ) {
+  ): Promise<Message | InteractionResponse | null> {
     if (ctx instanceof Message || ctx instanceof Context) return await ctx.reply(opts);
 
     const replyMethod = getReplyMethod(ctx);
-    return await ctx[replyMethod]({ ...opts, flags: interactionOpts?.flags });
+    const reply = await ctx[replyMethod]({
+      ...opts,
+      flags: interactionOpts?.flags,
+      withResponse: true,
+    });
+
+    return 'resource' in reply
+      ? ((reply as unknown as InteractionCallbackResponse).resource?.message ?? null)
+      : reply;
   }
 
   private adjustIndex(customId: string, index: number) {
@@ -349,42 +362,38 @@ export class Pagination {
   }
 
   private createButtons(index: number, totalPages: number) {
-    const { back, next, search, select } = this.hiddenButtons;
+    const buttons = {
+      select: new ButtonBuilder()
+        .setEmoji(this.customEmojis.select)
+        .setCustomId('page_:select')
+        .setStyle(ButtonStyle.Secondary),
+      back: new ButtonBuilder()
+        .setEmoji(this.customEmojis.back)
+        .setCustomId('page_:back')
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(index === 0),
+      index: new ButtonBuilder()
+        .setCustomId('page_:index')
+        .setDisabled(true)
+        .setLabel(`${index + 1}/${totalPages}`)
+        .setStyle(ButtonStyle.Primary),
+      next: new ButtonBuilder()
+        .setEmoji(this.customEmojis.next)
+        .setCustomId('page_:next')
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(totalPages <= index + 1),
+      search: new ButtonBuilder()
+        .setEmoji(this.customEmojis.search)
+        .setCustomId('page_:search')
+        .setStyle(ButtonStyle.Secondary),
+    };
 
     return new ActionRowBuilder<ButtonBuilder>().addComponents(
-      [
-        select
-          ? null
-          : new ButtonBuilder()
-            .setEmoji(this.customEmojis.select)
-            .setCustomId('page_:select')
-            .setStyle(ButtonStyle.Secondary),
-        back
-          ? null
-          : new ButtonBuilder()
-            .setEmoji(this.customEmojis.back)
-            .setCustomId('page_:back')
-            .setStyle(ButtonStyle.Secondary)
-            .setDisabled(index === 0),
-        new ButtonBuilder()
-          .setCustomId('page_:index')
-          .setDisabled(true)
-          .setLabel(`${index + 1}/${totalPages}`)
-          .setStyle(ButtonStyle.Primary),
-        next
-          ? null
-          : new ButtonBuilder()
-            .setEmoji(this.customEmojis.next)
-            .setCustomId('page_:next')
-            .setStyle(ButtonStyle.Secondary)
-            .setDisabled(totalPages <= index + 1),
-        search
-          ? null
-          : new ButtonBuilder()
-            .setEmoji(this.customEmojis.search)
-            .setCustomId('page_:search')
-            .setStyle(ButtonStyle.Secondary),
-      ].filter(Boolean) as ButtonBuilder[],
+      Object.entries(buttons)
+        .filter(
+          ([key]) => key === 'index' || !this.hiddenButtons.includes(key as keyof ButtonEmojis),
+        )
+        .map(([, btn]) => btn),
     );
   }
 }
