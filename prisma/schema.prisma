@@ -169,9 +169,6 @@ model UserData {
   banReason         String?
   mentionOnReply    Boolean        @default(true)
   acceptedRules     Boolean        @default(false)
-  updatedAt         DateTime       @updatedAt
-  xp                Int            @default(0)
-  level             Int            @default(0)
   messageCount      Int            @default(0)
   lastMessageAt     DateTime       @default(now())
   modPositions      HubModerator[]
@@ -179,9 +176,9 @@ model UserData {
   infractions       Infraction[]   @relation("infractions")
   issuedInfractions Infraction[]   @relation("issuedInfractions")
   inboxLastReadDate DateTime?      @default(now())
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 
-  @@index([xp])
-  @@index([level])
   @@index([messageCount])
 }
 
