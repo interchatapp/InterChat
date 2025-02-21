@@ -36,6 +36,7 @@ export default class UserDbService {
       lastMessageAt: new Date(user.lastMessageAt),
       updatedAt: new Date(user.updatedAt),
       lastVoted: user.lastVoted ? new Date(user.lastVoted) : null,
+      inboxLastReadDate: new Date(user.inboxLastReadDate ?? 0),
     };
     return { ...user, ...dates };
   }

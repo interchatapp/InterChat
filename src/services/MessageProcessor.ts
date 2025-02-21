@@ -44,16 +44,16 @@ export class MessageProcessor {
     return { hub, hubConnections, connection };
   }
 
-  async processHubMessage(message: Message<true>) {
+  async processHubMessage(message: Message<true>): Promise<{ handled: boolean }> {
     const hubData = await MessageProcessor.getHubAndConnections(message.channelId, this.hubService);
-    if (!hubData) return;
+    if (!hubData) return { handled: false };
 
     const { hub, hubConnections, connection } = hubData;
 
     const userData = await fetchUserData(message.author.id);
     if (!userData?.acceptedRules) {
       await showRulesScreening(message, userData);
-      return;
+      return { handled: true };
     }
 
     const attachmentURL = await this.broadcastService.resolveAttachmentURL(message);
@@ -66,7 +66,7 @@ export class MessageProcessor {
         totalHubConnections: hubConnections.length + 1,
       }))
     ) {
-      return;
+      return { handled: false };
     }
 
     message.channel.sendTyping().catch(() => null);
@@ -80,5 +80,6 @@ export class MessageProcessor {
     );
 
     await message.client.userLevels.handleMessage(message);
+    return { handled: true };
   }
 }

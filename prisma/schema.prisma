@@ -178,10 +178,20 @@ model UserData {
   ownedHubs         Hub[]
   infractions       Infraction[]   @relation("infractions")
   issuedInfractions Infraction[]   @relation("issuedInfractions")
+  inboxLastReadDate DateTime?      @default(now())
 
   @@index([xp])
   @@index([level])
   @@index([messageCount])
+}
+
+model Announcement {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  content   String
+  thumbnailUrl   String?
+  imageUrl String?
+  createdAt DateTime @default(now())
 }
 
 model ServerData {
