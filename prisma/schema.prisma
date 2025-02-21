@@ -186,12 +186,12 @@ model UserData {
 }
 
 model Announcement {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  title     String
-  content   String
-  thumbnailUrl   String?
-  imageUrl String?
-  createdAt DateTime @default(now())
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  title        String
+  content      String
+  thumbnailUrl String?
+  imageUrl     String?
+  createdAt    DateTime @default(now())
 }
 
 model ServerData {
@@ -199,6 +199,7 @@ model ServerData {
   premiumStatus Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  inviteCode    String?
   messageCount  Int      @default(0)
   lastMessageAt DateTime @default(now())
 }

@@ -240,6 +240,10 @@ export type TranslationKeys = {
   'errors.cooldown': 'emoji' | 'time';
   'errors.serverNameInappropriate': 'emoji';
   'errors.banned': 'emoji' | 'support_invite';
+  'config.setInvite.success': 'emoji';
+  'config.setInvite.removed': 'emoji';
+  'config.setInvite.invalid': 'emoji';
+  'config.setInvite.notFromServer': 'emoji';
   'global.webhookNoLongerExists': 'emoji';
   'global.noReason': never;
   'global.noDesc': never;

@@ -18,6 +18,7 @@
 import { showRulesScreening } from '#src/interactions/RulesScreening.js';
 import { HubService } from '#src/services/HubService.js';
 import { getConnectionHubId } from '#src/utils/ConnectedListUtils.js';
+import { updateLeaderboards } from '#src/utils/Leaderboard.js';
 import { runChecks } from '#src/utils/network/runChecks.js';
 import { fetchUserData } from '#src/utils/Utils.js';
 import type { Message } from 'discord.js';
@@ -79,7 +80,9 @@ export class MessageProcessor {
       attachmentURL,
     );
 
-    await message.client.userLevels.handleMessage(message);
+    updateLeaderboards('user', message.author.id);
+    updateLeaderboards('server', message.guildId);
+
     return { handled: true };
   }
 }
