@@ -111,7 +111,7 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
     const { command } = resolveCommand(interaction);
     if (!command) return;
 
-    if (!this.validateCommandAccess(command, interaction)) return;
+    if (command.staffOnly && !checkIfStaff(interaction.user.id)) return;
 
     if (interaction.isAutocomplete()) {
       await this.handleAutocomplete(command, interaction);
@@ -119,16 +119,6 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
     }
 
     await executeCommand(interaction, command);
-  }
-
-  private validateCommandAccess(
-    command: BaseCommand | undefined,
-    interaction: Interaction | ContextMenuCommandInteraction,
-  ) {
-    if (command?.staffOnly && !checkIfStaff(interaction.user.id)) {
-      return false;
-    }
-    return true;
   }
 
   private async handleAutocomplete(

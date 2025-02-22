@@ -56,7 +56,7 @@ export default class ConnectionManager {
 
   // Public methods
   async fetchHub() {
-    return this.hubService.fetchHub(this.hubId);
+    return await this.hubService.fetchHub(this.hubId);
   }
 
   async pause(): Promise<void> {
@@ -117,11 +117,7 @@ export default class ConnectionManager {
       where: { id: this.connection.id },
       data,
     });
-    await this.updateCache();
-  }
-
-  private async updateCache(): Promise<void> {
-    cacheHubConnection(this.connection);
+    await cacheHubConnection(this.connection);
   }
 
   private async clearCache(): Promise<void> {

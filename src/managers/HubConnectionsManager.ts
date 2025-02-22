@@ -70,7 +70,7 @@ export default class HubConnectionsManager {
     }
 
     const connection = await db.connection.create({ data });
-    await this.cacheConnection(connection);
+    await cacheHubConnection(connection);
     return new ConnectionManager(connection);
   }
 
@@ -85,7 +85,7 @@ export default class HubConnectionsManager {
   }
 
   async setConnection(connection: Connection): Promise<ConnectionManager> {
-    await this.cacheConnection(connection);
+    await cacheHubConnection(connection);
     return new ConnectionManager(connection);
   }
 
@@ -146,10 +146,6 @@ export default class HubConnectionsManager {
     await this.redis.expire(this.cacheKey, this.cacheConfig.expirationMs);
 
     Logger.debug(`Cached ${connections.length} connections for hub ${this.hub.id}`);
-  }
-
-  private async cacheConnection(connection: Connection): Promise<void> {
-    cacheHubConnection(connection);
   }
 
   private createManagersFromConnections(connections: Connection[]): ConnectionManager[] {
