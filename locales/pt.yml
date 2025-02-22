@@ -399,6 +399,15 @@ errors:
   banned: |
     {emoji} Você foi banido do uso do InterChat por violar nossas [diretrizes](https://interchat.tech/guidelines).
     Se você acha que um recurso é aplicável, crie um tíquete no [servidor de suporte]{support_invite} ).
+config:
+  setInvite:
+    success: |
+      ### {emoji} Invite Link Set
+      - Your server's invite will be used when people use `/joinserver`.
+      - It will be displayed in `/leaderboard server`.
+    removed: '{emoji} Invite removed successfully!'
+    invalid: '{emoji} Invalid invite. Please make sure you have entered a valid invite link. Eg. `https://discord.gg/discord`'
+    notFromServer: '{emoji} This invite is not from this server.'
 global:
   webhookNoLongerExists: '{emoji} O webhook para este canal não existe mais. Para continuar usando o InterChat, recrie o webhook usando `/connection unpause`.'
   noReason: Nenhuma razão fornecida.
