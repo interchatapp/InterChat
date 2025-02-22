@@ -170,6 +170,19 @@ export default class JoinRequestCommand extends BaseCommand {
 
   @RegisterInteractionHandler('joinReq')
   async handleJoinRequest(interaction: ButtonInteraction) {
+    if (!interaction.inCachedGuild()) return;
+
+    if (!interaction.member.permissions.has('ManageMessages')) {
+      await interaction.reply({
+        content: t('errors.missingPermissions', await fetchUserLocale(interaction.user.id), {
+          emoji: getEmoji('x_icon', interaction.client),
+          permissions: 'Manage Messages',
+        }),
+        flags: ['Ephemeral'],
+      });
+      return;
+    }
+
     const customId = CustomID.parseCustomId(interaction.customId);
     const action = customId.suffix as 'accept' | 'reject';
     const [userId] = customId.args;
@@ -187,8 +200,6 @@ export default class JoinRequestCommand extends BaseCommand {
     }
 
     if (action === 'accept') {
-      if (!interaction.inCachedGuild()) return;
-
       const connection = await fetchConnection(interaction.channelId);
       if (!connection) {
         await interaction.reply({
