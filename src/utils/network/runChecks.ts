@@ -29,6 +29,7 @@ import Constants from '#utils/Constants.js';
 import { t } from '#utils/Locale.js';
 import { containsInviteLinks, fetchUserLocale, replaceLinks } from '#utils/Utils.js';
 import { checkBlockedWords } from '#src/utils/network/antiSwearChecks.js';
+import { checkSpam } from '#src/utils/checkSpam.js';
 
 export interface CheckResult {
   passed: boolean;
@@ -50,7 +51,7 @@ const checks: CheckFunction[] = [
   checkBanAndBlacklist,
   checkAntiSwear,
   checkHubLock,
-  checkSpam,
+  checkSpamContent,
   checkNewUser,
   checkMessageLength,
   checkInviteLinks,
@@ -85,16 +86,16 @@ export const runChecks = async (
     totalHubConnections: number;
     attachmentURL?: string | null;
   },
-): Promise<boolean> => {
+): Promise<CheckResult> => {
   for (const check of checks) {
     const result = await check(message, { ...opts, hub });
     if (!result.passed) {
       if (result.reason) await replyToMsg(message, { content: result.reason });
-      return false;
+      return { passed: false };
     }
   }
 
-  return true;
+  return { passed: true };
 };
 
 async function checkAntiSwear(
@@ -125,7 +126,7 @@ async function checkHubLock(
     return {
       passed: false,
       reason:
-        'This hub\'s chat has been locked. Only moderators can send messages. Please check back later as this may be temporary.',
+        'This hub is currently locked. Only moderators can send messages until the lock is removed.',
     };
   }
   return { passed: true };
@@ -144,39 +145,38 @@ function checkLinks(message: Message<true>, opts: CheckFunctionOpts): CheckResul
   return { passed: true };
 }
 
-async function checkSpam(message: Message<true>, opts: CheckFunctionOpts): Promise<CheckResult> {
+async function checkSpamContent(
+  message: Message<true>,
+  opts: CheckFunctionOpts,
+): Promise<CheckResult> {
   const { settings, hub } = opts;
-  const result = await message.client.antiSpamManager.handleMessage(message);
+  const allowed = await checkSpam(message.author.id);
 
-  if (settings.has('SpamFilter') && result) {
-    if (result.messageCount >= 6) {
-      const expiresAt = new Date(Date.now() + 60 * 5000);
-      const reason = 'Auto-blacklisted for spamming.';
-      const target = message.author;
-      const mod = message.client.user;
+  if (!allowed) {
+    message.react(getEmoji('timeout', message.client)).catch(() => null);
+    if (!settings.has('SpamFilter')) return { passed: false };
 
-      const blacklistManager = new BlacklistManager('user', target.id);
-      await blacklistManager.addBlacklist({
-        hubId: hub.id,
-        reason,
-        expiresAt,
-        moderatorId: mod.id,
-      });
+    const expiresAt = new Date(Date.now() + 60 * 10_000);
+    const reason = 'Auto-blacklisted for spamming.';
+    const target = message.author;
+    const mod = message.client.user;
 
-      await blacklistManager.log(hub.id, message.client, {
-        mod,
-        reason,
-        expiresAt,
-      });
-      await sendBlacklistNotif('user', message.client, {
-        target,
-        hubId: hub.id,
-        expiresAt,
-        reason,
-      }).catch(() => null);
-    }
+    const blacklistManager = new BlacklistManager('user', target.id);
+    await blacklistManager.addBlacklist({
+      hubId: hub.id,
+      reason,
+      expiresAt,
+      moderatorId: mod.id,
+    });
 
-    await message.react(getEmoji('timeout', message.client)).catch(() => null);
+    await blacklistManager.log(hub.id, message.client, { mod, reason, expiresAt });
+    await sendBlacklistNotif('user', message.client, {
+      target,
+      hubId: hub.id,
+      expiresAt,
+      reason,
+    }).catch(() => null);
+
     return { passed: false };
   }
   return { passed: true };
