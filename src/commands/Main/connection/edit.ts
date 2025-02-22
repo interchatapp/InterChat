@@ -19,7 +19,7 @@ import type Context from '#src/core/CommandContext/Context.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import Logger from '#src/utils/Logger.js';
 import { isGuildTextBasedChannel } from '#utils/ChannelUtls.js';
-import { updateConnection } from '#utils/ConnectedListUtils.js';
+import { handleConnectionInviteCreation, updateConnection } from '#utils/ConnectedListUtils.js';
 import Constants from '#utils/Constants.js';
 import { CustomID } from '#utils/CustomID.js';
 import db from '#utils/Db.js';
@@ -91,9 +91,7 @@ export default class ConnectionEditSubcommand extends BaseCommand {
       });
     }
 
-    const iconURL = ctx.guild?.iconURL() ?? ctx.user.avatarURL()?.toString();
-
-    const embed = await buildEditEmbed(ctx.client, channelId, iconURL, locale);
+    const embed = await buildEditEmbed(ctx.client, channelId, locale);
     const editSelect = buildEditSelect(ctx.client, channelId, ctx.user.id, locale);
     const channelSelect = buildChannelSelect(channelId, ctx.user.id);
 
@@ -112,49 +110,8 @@ export default class ConnectionEditSubcommand extends BaseCommand {
     const customId = CustomID.parseCustomId(interaction.customId);
     const locale = await fetchUserLocale(interaction.user.id);
 
-    if (customId.suffix === 'invite') {
-      await interaction.deferReply({ flags: ['Ephemeral'] });
 
-      const invite = interaction.fields.getTextInputValue('connInviteField');
-      const [channelId] = customId.args;
-
-      if (!invite) {
-        await updateConnection({ channelId }, { invite: { unset: true } });
-        await interaction.followUp({
-          content: t('connection.inviteRemoved', locale, {
-            emoji: getEmoji('tick_icon', interaction.client),
-          }),
-          flags: ['Ephemeral'],
-        });
-        return;
-      }
-
-      const validInvite = Constants.Regex.DiscordInvite.test(invite);
-      const fetchedInvite = validInvite
-        ? await interaction.client?.fetchInvite(invite).catch(() => null)
-        : null;
-
-      if (fetchedInvite?.guild?.id !== interaction.guildId) {
-        await interaction.followUp({
-          // FIXME: remove ts
-          content: t('connection.setInviteError', locale, {
-            emoji: getEmoji('x_icon', interaction.client),
-          }),
-          flags: ['Ephemeral'],
-        });
-        return;
-      }
-
-      await updateConnection({ channelId }, { invite });
-
-      await interaction.followUp({
-        content: t('connection.inviteAdded', locale, {
-          emoji: getEmoji('tick_icon', interaction.client),
-        }),
-        flags: ['Ephemeral'],
-      });
-    }
-    else if (customId.suffix === 'embed_color') {
+    if (customId.suffix === 'embed_color') {
       const embedColor = interaction.fields.getTextInputValue('embed_color');
 
       if (!Constants.Regex.Hexcode.test(embedColor)) {
@@ -183,14 +140,7 @@ export default class ConnectionEditSubcommand extends BaseCommand {
 
     await interaction.message
       ?.edit({
-        embeds: [
-          await buildEditEmbed(
-            interaction.client,
-            customId.args[0],
-            interaction.guild?.iconURL() ?? interaction.user.avatarURL()?.toString(),
-            locale,
-          ),
-        ],
+        embeds: [await buildEditEmbed(interaction.client, customId.args[0], locale)],
       })
       .catch(() => null);
   }
@@ -232,23 +182,9 @@ export default class ConnectionEditSubcommand extends BaseCommand {
         break;
 
       case 'invite': {
-        const modal = new ModalBuilder()
-          .setTitle('Add Invite Link')
-          .setCustomId(
-            new CustomID().setIdentifier('connectionModal', 'invite').setArgs(channelId).toString(),
-          )
-          .addComponents(
-            new ActionRowBuilder<TextInputBuilder>().addComponents(
-              new TextInputBuilder()
-                .setLabel('Invite Link')
-                .setValue('https://discord.gg/')
-                .setCustomId('connInviteField')
-                .setRequired(false)
-                .setStyle(TextInputStyle.Short),
-            ),
-          );
-
-        await interaction.showModal(modal);
+        // TODO: maybe send them error message
+        if (!interaction.inCachedGuild()) return;
+        await handleConnectionInviteCreation(interaction, connection, locale);
         break;
       }
       case 'embed_color': {
@@ -280,12 +216,7 @@ export default class ConnectionEditSubcommand extends BaseCommand {
         break;
     }
 
-    const newEmbeds = await buildEditEmbed(
-      interaction.client,
-      channelId,
-      interaction.guild?.iconURL() ?? interaction.user.avatarURL()?.toString(),
-      locale,
-    );
+    const newEmbeds = await buildEditEmbed(interaction.client, channelId, locale);
     const msgBody = { embeds: [newEmbeds] };
 
     try {
@@ -365,14 +296,7 @@ export default class ConnectionEditSubcommand extends BaseCommand {
     const channelSelect = buildChannelSelect(newChannel.id, interaction.user.id);
 
     await interaction.editReply({
-      embeds: [
-        await buildEditEmbed(
-          interaction.client,
-          newChannel.id,
-          interaction.guild?.iconURL() ?? interaction.user.avatarURL()?.toString(),
-          locale,
-        ),
-      ],
+      embeds: [await buildEditEmbed(interaction.client, newChannel.id, locale)],
       components: [channelSelect, editSelect],
     });
   }
