@@ -110,6 +110,7 @@ export default class ConnectionEditSubcommand extends BaseCommand {
     const customId = CustomID.parseCustomId(interaction.customId);
     const locale = await fetchUserLocale(interaction.user.id);
 
+
     if (customId.suffix === 'embed_color') {
       const embedColor = interaction.fields.getTextInputValue('embed_color');
 

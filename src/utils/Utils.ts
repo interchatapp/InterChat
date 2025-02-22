@@ -16,6 +16,7 @@
  */
 
 import UserDbService from '#src/services/UserDbService.js';
+import db from '#src/utils/Db.js';
 import {
   type ErrorHandlerOptions,
   createErrorHint,
@@ -31,6 +32,7 @@ import { captureException } from '@sentry/node';
 import {
   type CommandInteraction,
   type ContextMenuCommandInteraction,
+  EmbedBuilder,
   type Guild,
   type GuildTextBasedChannel,
   Message,
@@ -252,7 +254,6 @@ export const extractRoleId = (input: string | undefined) => {
 export const extractMessageId = (input: string) =>
   input.match(Constants.Regex.MessageId)?.[1] ?? null;
 
-
 interface InviteCreationResult {
   success: boolean;
   inviteUrl?: string;
@@ -275,3 +276,23 @@ export const createServerInvite = async (
     inviteUrl: invite?.url,
   };
 };
+
+export const getLatestDevAlert = async () =>
+  await db.announcement.findFirst({ orderBy: { createdAt: 'desc' } });
+
+export const hasUnreadDevAlert = async (userData: UserData) => {
+  const latestDevAnnouncement = await getLatestDevAlert();
+  return Boolean(
+    userData?.inboxLastReadDate &&
+      latestDevAnnouncement &&
+      latestDevAnnouncement.createdAt > userData.inboxLastReadDate,
+  );
+};
+
+export const createUnreadDevAlertEmbed = (emoji: string) =>
+  new EmbedBuilder()
+    .setTitle(`${emoji} You have a new message from the developers!`)
+    .setColor(Constants.Colors.invisible)
+    .setDescription(
+      'Use `/inbox` or `c!inbox` to read the latest announcement and dismiss this message.',
+    );

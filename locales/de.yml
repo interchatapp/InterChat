@@ -96,8 +96,8 @@ connection:
   switchCalled: '{emoji} Channel switch called, use the command again to view new connection.'
   switchSuccess: '{emoji} Channel switched. You are now connected from **{channel}**.'
   inviteRemoved: '{emoji} Server Invite removed for this hub.'
-  inviteInvalid: '{emoji} Invalid invite. Please make sure you have entered a valid invite link.'
-  inviteAdded: '{emoji} Invite Added. Others can now join this server by using `Apps > Message Info/Report` command.'
+  setInviteError: '{emoji} Unable to create invite. Please grant me  the `Create Invite` permission for the connected channel.'
+  inviteAdded: '{emoji} Invite Added. Others can now join this server by using `Apps > Message Info/Report` command and `/joinrequest` command.'
   emColorInvalid: '{emoji} Invalid color. Please make sure you have entered a valid hex color code.'
   emColorChange: '{emoji} Embed color successfully {action}'
   embed:
@@ -109,7 +109,7 @@ connection:
       connected: Verbunden
       emColor: Einbettung-Farbe
       compact: Kompakter Modus
-    footer: Use the button & dropdown below to manage your connection.
+    footer: Use the dropdown menu below to manage your connection.
   selects:
     placeholder: '🛠️ Select an option to edit this connection'
   unpaused:
@@ -403,6 +403,15 @@ errors:
   banned: |
     {emoji} You have been banned from using InterChat for violating our [guidelines](https://interchat.tech/guidelines).
     If you think an appeal is applicable create a ticket in the [support server]( {support_invite} ).
+config:
+  setInvite:
+    success: |
+      ### {emoji} Invite Link Set
+      - Your server's invite will be used when people use `/joinserver`.
+      - It will be displayed in `/leaderboard server`.
+    removed: '{emoji} Invite removed successfully!'
+    invalid: '{emoji} Invalid invite. Please make sure you have entered a valid invite link. Eg. `https://discord.gg/discord`'
+    notFromServer: '{emoji} This invite is not from this server.'
 global:
   webhookNoLongerExists: '{emoji} The webhook for this channel no longer exists. To continue using InterChat, please re-create the webhook by using `/connection unpause`.'
   noReason: No reason provided.

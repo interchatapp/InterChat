@@ -60,7 +60,7 @@ export class Spinner {
       const text = `${greyText(frame)} ${this.message}`.slice(0, maxTextLength);
 
       // Clear the current line
-      process.stdout.write('\r\x1B[K' + text);
+      process.stdout.write(`\r\x1B[K${text}`);
 
       this.lastLineLength = text.length;
       this.frameIndex = (this.frameIndex + 1) % this.frames.length;
@@ -73,10 +73,10 @@ export class Spinner {
     this.isSpinning = false;
 
     // Clear the spinner line
-    process.stdout.write('\r' + ' '.repeat(this.lastLineLength) + '\r');
+    process.stdout.write(`\r${' '.repeat(this.lastLineLength)}\r`);
 
     if (message) {
-      process.stdout.write(message + '\n');
+      process.stdout.write(`${message}\n`);
     }
 
     process.stdout.write('\x1B[?25h'); // Show cursor

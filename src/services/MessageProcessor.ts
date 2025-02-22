@@ -18,6 +18,7 @@
 import { showRulesScreening } from '#src/interactions/RulesScreening.js';
 import { HubService } from '#src/services/HubService.js';
 import { getConnectionHubId } from '#src/utils/ConnectedListUtils.js';
+import { updateLeaderboards } from '#src/utils/Leaderboard.js';
 import { runChecks } from '#src/utils/network/runChecks.js';
 import { fetchUserData } from '#src/utils/Utils.js';
 import type { Message } from 'discord.js';
@@ -44,16 +45,16 @@ export class MessageProcessor {
     return { hub, hubConnections, connection };
   }
 
-  async processHubMessage(message: Message<true>) {
+  async processHubMessage(message: Message<true>): Promise<{ handled: boolean }> {
     const hubData = await MessageProcessor.getHubAndConnections(message.channelId, this.hubService);
-    if (!hubData) return;
+    if (!hubData) return { handled: false };
 
     const { hub, hubConnections, connection } = hubData;
 
     const userData = await fetchUserData(message.author.id);
     if (!userData?.acceptedRules) {
       await showRulesScreening(message, userData);
-      return;
+      return { handled: true };
     }
 
     const attachmentURL = await this.broadcastService.resolveAttachmentURL(message);
@@ -66,7 +67,7 @@ export class MessageProcessor {
         totalHubConnections: hubConnections.length + 1,
       }))
     ) {
-      return;
+      return { handled: false };
     }
 
     message.channel.sendTyping().catch(() => null);
@@ -79,6 +80,9 @@ export class MessageProcessor {
       attachmentURL,
     );
 
-    await message.client.userLevels.handleMessage(message);
+    updateLeaderboards('user', message.author.id);
+    updateLeaderboards('server', message.guildId);
+
+    return { handled: true };
   }
 }

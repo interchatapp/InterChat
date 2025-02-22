@@ -96,8 +96,8 @@ connection:
   switchCalled: '{emoji}频道切换已调用，请再次使用该指令查看新连接。'
   switchSuccess: '{emoji}频道已切换。您现在已从{channel}连接。'
   inviteRemoved: '{emoji}已移除此中心的服务器邀请。'
-  inviteInvalid: '{emoji}邀请无效。请确保您输入了有效的邀请链接。'
-  inviteAdded: '{emoji}邀请已添加。其他人现在可通过使用“应用程序＞信息／报告”指令来加入此服务器。'
+  setInviteError: '{emoji}无法创建邀请。请授予我在已连接频道的“创建邀请”权限。'
+  inviteAdded: '{emoji}邀请已添加。其他人现在可通过使用“应用程序＞信息／报告”指令和“／加入申请”指令来加入此服务器。'
   emColorInvalid: '{emoji}颜色无效。请确保您输入了有效的十六进制颜色代码。'
   emColorChange: '{emoji}嵌入颜色成功{action}'
   embed:
@@ -109,7 +109,7 @@ connection:
       connected: 已连接
       emColor: 嵌入颜色
       compact: 简洁模式
-    footer: 使用下方按钮和下拉列表管理您的连接。
+    footer: 使用下方的下拉列表管理您的连接。
   selects:
     placeholder: '🛠️ 选择一个选项来编辑此连接'
   unpaused:
@@ -174,8 +174,8 @@ hub:
       addRule: 添加过滤规则
       editingRule: 编辑过滤规则
       ruleNameLabel: 规则名称
-      wordsLabel: 'Words'
-      wordsPlaceholder: 'Words seperated by comma. (Use * for wildcard). Eg. word1, *word2*, *word3, word4*'
+      wordsLabel: '关键词'
+      wordsPlaceholder: '用逗号分隔关键词。(使用 * 作为通配符)。例如：关键词一，*关键词二*，*关键词三，关键词四*'
     validating: '{emoji}正在校验过滤规则……'
     noRules: |
       {emoji}让我们制定一些规则吧！
@@ -407,6 +407,15 @@ errors:
   banned: |
     {emoji}由于违反了我们的[准则](https://interchat.tech/guidelines)，您已被禁止使用Interchat。
     如果您认为可以上诉，请在[支持服务器]({support_invite})创建票证。
+config:
+  setInvite:
+    success: |
+      ### {emoji} Invite Link Set
+      - Your server's invite will be used when people use `/joinserver`.
+      - It will be displayed in `/leaderboard server`.
+    removed: '{emoji} Invite removed successfully!'
+    invalid: '{emoji} Invalid invite. Please make sure you have entered a valid invite link. Eg. `https://discord.gg/discord`'
+    notFromServer: '{emoji} This invite is not from this server.'
 global:
   webhookNoLongerExists: '{emoji}此频道的网络回调已不存在。若要继续使用 InterChat，请使用“／恢复连接”指令重新创建网络回调。'
   noReason: 未提供原因。
