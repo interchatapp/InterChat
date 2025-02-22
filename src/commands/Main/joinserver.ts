@@ -50,39 +50,32 @@ export default class JoinRequestCommand extends BaseCommand {
 
   async execute(ctx: Context): Promise<void> {
     const targetMessage = await ctx.getTargetMessage('messageorserverid');
-
     const commandChannelConnection = await fetchConnection(ctx.channelId);
+
     if (!commandChannelConnection) {
       await replyWithUnknownMessage(ctx);
       return;
     }
 
-    const targetServerId = await this.getTargetServerId(
+    // Resolve the target server ID from the message or provided option.
+    const targetServerId = await this.resolveTargetServerId(
       targetMessage,
       ctx.options.getString('messageorserverid'),
     );
 
     if (!targetMessage && !targetServerId) {
-      // TODO: Use localizations
       await ctx.reply('You must provide a message ID or server ID');
       return;
     }
 
-    const connection = await this.getTargetConnection(commandChannelConnection, targetServerId);
+    // Retrieve the connection for the target server.
+    const connection = await this.findTargetConnection(commandChannelConnection, targetServerId);
+    // Fallback: if no invite is available from the connection, try fetching server data.
+    const serverData = targetServerId && !connection?.invite
+      ? await db.serverData.findFirst({ where: { id: targetServerId } })
+      : null;
 
-    if (connection?.invite) {
-      const server = await ctx.client.fetchGuild(connection.serverId);
-      await ctx.reply({
-        content: 'I have DM\'d you the invite link to the server!',
-        flags: ['Ephemeral'],
-      });
-      await ctx.user.send(`
-        ### Join Request
-        You requested to join the server \`${server?.name}\` through InterChat. Here is the invite link:
-        ${connection.invite}
-      `);
-    }
-
+    // TODO: implement disabling join request in `/connection edit`
     if (connection?.joinRequestsDisabled) {
       await ctx.replyEmbed('connection.joinRequestsDisabled', {
         t: { emoji: ctx.getEmoji('x_icon') },
@@ -90,21 +83,35 @@ export default class JoinRequestCommand extends BaseCommand {
       return;
     }
 
-    const webhookURL = connection?.webhookURL;
+    const invite = connection?.invite ||
+      (serverData?.inviteCode ? `https://discord.gg/${serverData.inviteCode}` : null);
 
+    if (invite && targetServerId) {
+      const server = await ctx.client.fetchGuild(targetServerId);
+      await ctx.reply({
+        content: 'I have DM\'d you the invite link to the server!',
+        flags: ['Ephemeral'],
+      });
+      await ctx.user.send(stripIndents`
+        ### Join Request
+        You requested to join the server \`${server?.name}\` through InterChat. Here is the invite link:
+        ${invite}
+      `);
+    }
+
+    const webhookURL = connection?.webhookURL;
     if (!webhookURL) {
       await replyWithUnknownMessage(ctx);
       return;
     }
 
+    // Broadcast the join request to the server administrators.
     await BroadcastService.sendMessage(webhookURL, {
       content: `User \`${ctx.user.username}\` from \`${ctx.guild?.name}\` has requested to join this server. Do you want to accept them?`,
       components: [
         new ActionRowBuilder<ButtonBuilder>().addComponents(
           new ButtonBuilder()
-            .setCustomId(
-              new CustomID('joinReq:accept').setArgs(ctx.user.id, ctx.channelId).toString(),
-            )
+            .setCustomId(new CustomID('joinReq:accept').setArgs(ctx.user.id, ctx.channelId).toString())
             .setLabel('Accept')
             .setStyle(ButtonStyle.Success),
           new ButtonBuilder()
@@ -120,20 +127,32 @@ export default class JoinRequestCommand extends BaseCommand {
     );
   }
 
-  private async getTargetConnection(isChannelConnected: Connection, targetServerId: string | null) {
+  /**
+   * Resolves the target server ID from a given message or option.
+   */
+  private async resolveTargetServerId(
+    targetMessage: Message | null,
+    serverIdOpt: string | null,
+  ): Promise<string | null> {
+    if (targetMessage) {
+      const originalMessage = await findOriginalMessage(targetMessage.id);
+      return originalMessage?.guildId || serverIdOpt;
+    }
+    return serverIdOpt;
+  }
+
+  /**
+   * Finds the connection for a given target server within the current hub.
+   */
+  private async findTargetConnection(
+    channelConnection: Connection,
+    targetServerId: string | null,
+  ) {
     if (!targetServerId) return null;
 
     return await db.connection.findFirst({
-      where: { hubId: isChannelConnected.hubId, serverId: targetServerId },
+      where: { hubId: channelConnection.hubId, serverId: targetServerId },
     });
-  }
-
-  private async getTargetServerId(targetMessage: Message | null, serverIdOpt: string | null) {
-    if (targetMessage) {
-      const originalMessage = await findOriginalMessage(targetMessage.id);
-      return originalMessage?.guildId ?? serverIdOpt;
-    }
-    return serverIdOpt;
   }
 
   @RegisterInteractionHandler('joinReq')
@@ -150,16 +169,14 @@ export default class JoinRequestCommand extends BaseCommand {
         }),
         flags: ['Ephemeral'],
       });
-
-      await this.setButtonState(interaction, 'reject');
+      await this.updateButtonState(interaction, 'reject');
       return;
     }
 
     if (action === 'accept') {
-      // TODO: maybe send error for this too
       if (!interaction.inCachedGuild()) return;
-      const connection = await fetchConnection(interaction.channelId);
 
+      const connection = await fetchConnection(interaction.channelId);
       if (!connection) {
         await interaction.reply({
           flags: ['Ephemeral'],
@@ -173,19 +190,17 @@ export default class JoinRequestCommand extends BaseCommand {
       await interaction.reply(
         `${getEmoji('loading', interaction.client)} This server does not have an invite link yet. Creating one...`,
       );
+
       const inviteLink = await handleConnectionInviteCreation(interaction, connection, locale);
 
       const user = await interaction.client.users.fetch(userId).catch(() => null);
       if (!user) return;
 
-      const dmStatus = await user
-        .send(
-          stripIndents`
-          ### Join Request
-          You requested to join the server \`${interaction.guild?.name}\` through InterChat. Here is the invite link:
-          ${inviteLink}`,
-        )
-        .catch(() => null);
+      const dmStatus = await user.send(stripIndents`
+        ### Join Request
+        You requested to join the server \`${interaction.guild?.name}\` through InterChat. Here is the invite link:
+        ${inviteLink}
+      `).catch(() => null);
 
       await interaction.editReply(
         dmStatus
@@ -193,22 +208,34 @@ export default class JoinRequestCommand extends BaseCommand {
           : `${getEmoji('x_icon', interaction.client)} The invite link could not be sent to the user. They may have DMs disabled.`,
       );
 
-      if (dmStatus) await this.setButtonState(interaction, 'accept');
+      if (dmStatus) {
+        await this.updateButtonState(interaction, 'accept');
+      }
     }
   }
 
-  private async setButtonState(
+  /**
+   * Updates the state of the interaction button based on the action taken.
+   */
+  private async updateButtonState(
     interaction: ButtonInteraction | ModalSubmitInteraction,
     action: 'accept' | 'reject',
   ) {
     if (!interaction.message) return;
 
-    const button = this.createUpdatedButton(interaction, action);
-
-    (await interaction.message.fetchWebhook())
-      .editMessage(interaction.message, { components: [button] })
-      .catch(() => null);
+    const updatedButton = this.createUpdatedButton(interaction, action);
+    try {
+      const webhook = await interaction.message.fetchWebhook();
+      await webhook.editMessage(interaction.message, { components: [updatedButton] });
+    }
+    catch {
+      // Fail silently if button update fails.
+    }
   }
+
+  /**
+   * Creates an updated button reflecting the accepted or rejected state.
+   */
   private createUpdatedButton(
     interaction: ButtonInteraction | ModalSubmitInteraction,
     action: 'accept' | 'reject',
