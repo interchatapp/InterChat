@@ -22,6 +22,7 @@ export const enum RedisKeys {
   Hub = 'hub',
   SpamBucket = 'spamBucket',
   Spam = 'spam', // FIXME: remove
+  DevAnnouncement = 'DevAnnouncement',
 }
 
 export const enum ConnectionMode {

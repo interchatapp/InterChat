@@ -132,7 +132,7 @@ async function updateEmojiJson(emojis) {
 
   await Bun.write(jsonFile, JSON.stringify(updatedEmojiSet, null, 2));
   newSpinner.stop(
-    orangeText('ⓘ ') + `Added ${emojis.length} emojis with new emoji IDs to emojis.json file.`,
+    `${orangeText('ⓘ')} Added ${emojis.length} emoji(s) with new emoji ID(s) to emojis.json file.`,
   );
 }
 

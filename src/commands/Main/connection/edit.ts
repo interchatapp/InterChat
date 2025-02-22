@@ -136,7 +136,8 @@ export default class ConnectionEditSubcommand extends BaseCommand {
 
       if (fetchedInvite?.guild?.id !== interaction.guildId) {
         await interaction.followUp({
-          content: t('connection.inviteInvalid', locale, {
+          // FIXME: remove ts
+          content: t('connection.setInviteError', locale, {
             emoji: getEmoji('x_icon', interaction.client),
           }),
           flags: ['Ephemeral'],

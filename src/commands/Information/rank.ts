@@ -83,7 +83,11 @@ export default class RankCommand extends BaseCommand {
     });
   }
 
-  async execute(ctx: Context): Promise<void> {
+  async execute(ctx: Context) {
+    await ctx.reply('This command is currently disabled. Use `/leaderboard user` instead.');
+  }
+
+  async executeOld(ctx: Context): Promise<void> {
     await ctx.deferReply();
 
     try {

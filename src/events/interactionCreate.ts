@@ -15,6 +15,22 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import type BaseCommand from '#src/core/BaseCommand.js';
+import BaseEventListener from '#src/core/BaseEventListener.js';
+import { showRulesScreening } from '#src/interactions/RulesScreening.js';
+import { executeCommand, resolveCommand } from '#src/utils/CommandUtils.js';
+import Constants from '#utils/Constants.js';
+import { CustomID, type ParsedCustomId } from '#utils/CustomID.js';
+import { InfoEmbed } from '#utils/EmbedUtils.js';
+import { t } from '#utils/Locale.js';
+import {
+  checkIfStaff,
+  createUnreadDevAlertEmbed,
+  fetchUserData,
+  fetchUserLocale,
+  handleError,
+  hasUnreadDevAlert,
+} from '#utils/Utils.js';
 import type { UserData } from '@prisma/client';
 import type {
   AutocompleteInteraction,
@@ -25,15 +41,6 @@ import type {
   MessageComponentInteraction,
   ModalSubmitInteraction,
 } from 'discord.js';
-import type BaseCommand from '#src/core/BaseCommand.js';
-import BaseEventListener from '#src/core/BaseEventListener.js';
-import { showRulesScreening } from '#src/interactions/RulesScreening.js';
-import Constants from '#utils/Constants.js';
-import { CustomID, type ParsedCustomId } from '#utils/CustomID.js';
-import { InfoEmbed } from '#utils/EmbedUtils.js';
-import { t } from '#utils/Locale.js';
-import { checkIfStaff, fetchUserData, fetchUserLocale, handleError } from '#utils/Utils.js';
-import { executeCommand, resolveCommand } from '#src/utils/CommandUtils.js';
 
 export default class InteractionCreate extends BaseEventListener<'interactionCreate'> {
   readonly name = 'interactionCreate';
@@ -42,12 +49,29 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
     try {
       const preCheckResult = await this.performPreChecks(interaction);
       if (!preCheckResult.shouldContinue) return;
+      await this.handleInteraction(interaction, preCheckResult.dbUser).catch((e) => {
+        handleError(e, { repliable: interaction });
+      });
 
-      await this.handleInteraction(interaction, preCheckResult.dbUser);
+      await this.showDevAlertIfAny(interaction, preCheckResult.dbUser);
     }
     catch (e) {
       handleError(e, { repliable: interaction });
     }
+  }
+
+  private async showDevAlertIfAny(interaction: Interaction, dbUser: UserData | null) {
+    if (!interaction.isRepliable() || !interaction.replied || !dbUser) return;
+
+    const shouldShow = await hasUnreadDevAlert(dbUser);
+    if (!shouldShow) return;
+
+    await interaction
+      .followUp({
+        embeds: [createUnreadDevAlertEmbed(this.getEmoji('info_icon'))],
+        flags: ['Ephemeral'],
+      })
+      .catch(() => null);
   }
 
   private async performPreChecks(interaction: Interaction) {
@@ -87,7 +111,7 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
     const { command } = resolveCommand(interaction);
     if (!command) return;
 
-    if (!this.validateCommandAccess(command, interaction)) return;
+    if (command.staffOnly && !checkIfStaff(interaction.user.id)) return;
 
     if (interaction.isAutocomplete()) {
       await this.handleAutocomplete(command, interaction);
@@ -95,16 +119,6 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
     }
 
     await executeCommand(interaction, command);
-  }
-
-  private validateCommandAccess(
-    command: BaseCommand | undefined,
-    interaction: Interaction | ContextMenuCommandInteraction,
-  ) {
-    if (command?.staffOnly && !checkIfStaff(interaction.user.id)) {
-      return false;
-    }
-    return true;
   }
 
   private async handleAutocomplete(
