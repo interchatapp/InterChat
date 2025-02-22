@@ -3,7 +3,7 @@ import Context from '#src/core/CommandContext/Context.js';
 import Constants from '#src/utils/Constants.js';
 import db from '#src/utils/Db.js';
 import { getUserLeaderboardRank } from '#src/utils/Leaderboard.js';
-import { fetchUserData } from '#src/utils/Utils.js';
+import { checkIfStaff, fetchUserData } from '#src/utils/Utils.js';
 import { ApplicationCommandOptionType, EmbedBuilder, time } from 'discord.js';
 export default class ProfileCommand extends BaseCommand {
   constructor() {
@@ -31,7 +31,7 @@ export default class ProfileCommand extends BaseCommand {
     }
 
     const embed = new EmbedBuilder()
-      .setTitle(`@${user.username}`)
+      .setDescription(`### @${user.username} ${checkIfStaff(user.id) ? ctx.getEmoji('staff_badge') : ''}`)
       .addFields([
         {
           name: 'Leaderboard Rank',
