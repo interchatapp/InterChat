@@ -54,6 +54,18 @@ export async function getLeaderboard(type: 'user' | 'server', limit = 10): Promi
   return results;
 }
 
+
+/**
+ * Retrieves the leaderboard rank for a given user.
+ * Redis' zrevrank returns a 0-indexed rank, so we add 1.
+ */
+export async function getUserLeaderboardRank(userId: string): Promise<number | null> {
+  const redis = getRedis();
+  const leaderboardKey = getLeaderboardKey('leaderboard:messages:users');
+  const rank = await redis.zrevrank(leaderboardKey, userId);
+  return rank !== null ? rank + 1 : null;
+}
+
 /**
  * Returns the display value for a given rank.
  * Adds medal icons for the top three ranks.

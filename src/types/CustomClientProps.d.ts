@@ -15,6 +15,13 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import type BaseCommand from '#src/core/BaseCommand.js';
+import type BasePrefixCommand from '#src/core/BasePrefixCommand.js';
+import type { InteractionFunction } from '#src/decorators/RegisterInteractionHandler.js';
+import type AntiSpamManager from '#src/managers/AntiSpamManager.js';
+import type EventLoader from '#src/modules/Loaders/EventLoader.js';
+import type CooldownService from '#src/services/CooldownService.js';
+import type Scheduler from '#src/services/SchedulerService.js';
 import type { ClusterClient } from 'discord-hybrid-sharding';
 import type {
   Collection,
@@ -24,14 +31,6 @@ import type {
   Snowflake,
   TextChannel,
 } from 'discord.js';
-import type BaseCommand from '#src/core/BaseCommand.js';
-import type BasePrefixCommand from '#src/core/BasePrefixCommand.js';
-import type { InteractionFunction } from '#src/decorators/RegisterInteractionHandler.js';
-import type AntiSpamManager from '#src/managers/AntiSpamManager.js';
-import type EventLoader from '#src/modules/Loaders/EventLoader.js';
-import type CooldownService from '#src/services/CooldownService.js';
-import type Scheduler from '#src/services/SchedulerService.js';
-import { LevelingService } from '#src/services/LevelingService.js';
 
 export type RemoveMethods<T> = {
   [K in keyof T]: T[K] extends (...args: unknown[]) => unknown ? never : RemoveMethods<T[K]>;
@@ -53,8 +52,6 @@ declare module 'discord.js' {
     readonly reactionCooldowns: Collection<string, number>;
     readonly cluster: ClusterClient<Client>;
     readonly antiSpamManager: AntiSpamManager;
-
-    readonly userLevels: LevelingService;
 
     fetchGuild(guildId: Snowflake): Promise<RemoveMethods<Guild> | undefined>;
     getScheduler(): Scheduler;

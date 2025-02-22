@@ -530,5 +530,9 @@
   "zap_icon": {
     "url": "https://cdn.discordapp.com/emojis/1338726325682311200.png",
     "updatedAt": "2025-02-11T04:20:28.375Z"
+  },
+  "staff_badge": {
+    "url": "https://cdn.discordapp.com/emojis/1342718965817802764.png",
+    "updatedAt": "2025-02-22T04:45:47.963Z"
   }
 }
