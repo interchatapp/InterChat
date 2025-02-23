@@ -75,7 +75,7 @@ function getRankDisplay(rank: number, dotEmoji: string): string {
   if (rank === 2) return '🥈';
   if (rank === 3) return '🥉';
   // use purple emoji for rest
-  return `${dotEmoji} ${rank}`;
+  return `${dotEmoji}`;
 }
 
 /**
@@ -131,17 +131,16 @@ export async function formatServerLeaderboard(
     const guild = (await client.fetchGuild(serverId).catch(() => null)) ?? { name: 'Unknown' };
 
     // Limit the server name length for table formatting.
-    const serverName = guild.name.length > 20 ? `${guild.name.slice(0, 17)}...` : guild.name;
     const serverData = inviteLinks.find((link) => link.id === serverId && Boolean(link.inviteCode));
     const inviteCode =
       serverData?.inviteCode ?? ('vanityURLCode' in guild ? guild.vanityURLCode : null);
-    const invite = inviteCode ? `([join](https://discord.gg/${inviteCode}))` : '';
+    const invite = inviteCode ? `([join server](https://discord.gg/${inviteCode}))` : '';
 
     // Use the helper function to get the rank display value.
     const rankDisplay = getRankDisplay(rank, getEmoji('dot', client));
 
     // Pad each column for alignment.
-    output += `${rankDisplay} \` ${score.toString()} \` - ${serverName} ${invite}\n`;
+    output += `${rankDisplay} \` ${score.toString()} msgs \` - ${guild.name} ${invite}\n`;
   }
 
   return output;
