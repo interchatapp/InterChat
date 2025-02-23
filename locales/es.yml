@@ -132,7 +132,7 @@ hub:
   notModerator: '{emoji} You need to be a hub moderator to perform this action.'
   notPrivate: '{emoji} This hub is not private.'
   notOwner: '{emoji} Only the owner of this hub can perform this action.'
-  alreadyJoined: '{emoji} Ya se ha unido a **{hub}** de {channel}!'
+  alreadyJoined: '{emoji} You have already joined another hub **{hub}** from {channel}! Use `/hub leave` on it and then try again using `/hub join`.'
   invalidChannel: '{emoji} El canal no es válido. ¡Solo se admiten los canales de texto y hilo!'
   invalidImgurUrl: '{emoji} URL de imagen no válida para icono o banner. Asegúrese de haber ingresado una URL de imagen de Imgur válida que no es una galería o álbum.'
   join:
