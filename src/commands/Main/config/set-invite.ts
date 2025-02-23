@@ -18,7 +18,7 @@
 import BaseCommand from '#src/core/BaseCommand.js';
 import Context from '#src/core/CommandContext/Context.js';
 import db from '#src/utils/Db.js';
-import { ApplicationCommandOptionType, Invite } from 'discord.js';
+import { ApplicationCommandOptionType, Invite, PermissionsBitField } from 'discord.js';
 
 export default class ConfigSetInviteSubcommand extends BaseCommand {
   constructor() {
@@ -27,6 +27,7 @@ export default class ConfigSetInviteSubcommand extends BaseCommand {
       description:
         'Set the invite link for the server. People can use it to join through InterChat leaderboards.',
       types: { slash: true, prefix: true },
+      defaultPermissions: new PermissionsBitField('ManageMessages'),
       options: [
         {
           type: ApplicationCommandOptionType.String,

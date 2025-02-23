@@ -109,7 +109,6 @@ export async function formatUserLeaderboard(
     output += `${rankDisplay.padEnd(2)} | ${username.padEnd(18)} | ${score.toString().padEnd(7)}\n`;
   }
 
-  // Wrap the table in a code block for fixed-width font.
   return `\`\`\`css\n${output}\`\`\``;
 }
 
@@ -140,7 +139,7 @@ export async function formatServerLeaderboard(
 
     // Limit the server name length for table formatting.
     const serverName =
-      guild.name.length > 20 ? `${guild.name.slice(0, 18)}..` : guild.name;
+    guild.name.length > 20 ? `${guild.name.slice(0, 17)}...` : guild.name;
     const serverData = inviteLinks.find(
       (link) => link.id === serverId && Boolean(link.inviteCode),
     );
@@ -155,6 +154,5 @@ export async function formatServerLeaderboard(
     output += `${rankDisplay.padEnd(2)} | ${serverName.padEnd(20)} | ${score.toString().padEnd(3)} | ${invite.padEnd(15)}\n`;
   }
 
-  // Wrap the table in a code block for fixed-width font.
   return `\`\`\`css\n${output}\`\`\``;
 }
