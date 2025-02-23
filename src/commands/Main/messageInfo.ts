@@ -113,7 +113,7 @@ export default class MessageInfo extends BaseCommand {
         { name: 'Sent At', value: time(new Date(originalMsg.timestamp), 't'), inline: true },
       ])
       .setThumbnail(author.displayAvatarURL())
-      .setColor(Constants.Colors.interchatBlue);
+      .setColor(Constants.Colors.interchat);
 
     const connection = (await hub.connections.fetch())?.find(
       (c) => c.data.connected && c.data.serverId === originalMsg.guildId,
@@ -259,7 +259,7 @@ export default class MessageInfo extends BaseCommand {
       ])
       .setThumbnail(iconUrl)
       .setImage(bannerUrL)
-      .setColor(Constants.Colors.interchatBlue);
+      .setColor(Constants.Colors.interchat);
 
     // disable the server info button
     greyOutButton(components[0], 1);

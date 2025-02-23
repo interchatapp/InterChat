@@ -79,7 +79,7 @@ export default class HubSettingsManager {
   getEmbed(client: Client): EmbedBuilder {
     const embed = new InfoEmbed()
       .setTitle('Hub Settings')
-      .setColor(Constants.Colors.interchatBlue)
+      .setColor(Constants.Colors.interchat)
       .setDescription('Current settings for this hub:');
 
     for (const [key, value] of Object.entries(this.getAll())) {

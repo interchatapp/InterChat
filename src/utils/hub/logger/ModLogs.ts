@@ -41,9 +41,9 @@ const getUnblacklistEmbed = (
     .setAuthor({ name: `${type} ${opts.name} unblacklisted` })
     .setDescription(
       stripIndents`
-      ${getEmoji('dotBlue', client)} **${type}:** ${opts.name} (${opts.id})
-      ${getEmoji('dotBlue', client)} **Moderator:** ${opts.mod.username} (${opts.mod.id})
-      ${getEmoji('dotBlue', client)} **Hub:** ${opts.hubName}
+      ${getEmoji('dot', client)} **${type}:** ${opts.name} (${opts.id})
+      ${getEmoji('dot', client)} **Moderator:** ${opts.mod.username} (${opts.mod.id})
+      ${getEmoji('dot', client)} **Hub:** ${opts.hubName}
     `,
     )
     .addFields(
@@ -58,7 +58,7 @@ const getUnblacklistEmbed = (
         inline: true,
       },
     )
-    .setColor(Constants.Colors.interchatBlue)
+    .setColor(Constants.Colors.interchat)
     .setFooter({
       text: `Unblacklisted by: ${opts.mod.username}`,
       iconURL: opts.mod instanceof User ? opts.mod.displayAvatarURL() : undefined,

@@ -101,7 +101,7 @@ export default class About extends BaseCommand {
 
     const usernames = await this.getUsernames(interaction.client);
     const creditsDivider = `${getEmoji('blueLine', interaction.client).repeat(9)} **CREDITS** ${getEmoji('blueLine', interaction.client).repeat(9)}`;
-    const dotBlue = getEmoji('dotBlue', interaction.client);
+    const dotBlue = getEmoji('dot', interaction.client);
 
     const creditsEmbed = new InfoEmbed()
       .setDescription(

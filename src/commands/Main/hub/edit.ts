@@ -512,11 +512,11 @@ export default class HubEditSubcommand extends BaseCommand {
       where: { hubId: hub.id, status: 'ACTIVE' },
     });
 
-    const dotBlueEmoji = getEmoji('dotBlue', client);
+    const dotBlueEmoji = getEmoji('dot', client);
 
     return new EmbedBuilder()
       .setTitle(hub.name)
-      .setColor(Constants.Colors.interchatBlue)
+      .setColor(Constants.Colors.interchat)
       .setDescription(
         stripIndents`
           ${hub.description}

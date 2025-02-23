@@ -69,7 +69,7 @@ export const buildBlacklistNotifEmbed = (
     .setDescription(
       `${targetStr} been blacklisted from talking in hub **${opts.hubName}**.`,
     )
-    .setColor(Constants.Colors.interchatBlue)
+    .setColor(Constants.Colors.interchat)
     .setFields(
       {
         name: 'Reason',

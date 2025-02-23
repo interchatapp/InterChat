@@ -131,7 +131,7 @@ export default class RulesScreeningInteraction {
         }),
       )
       .setImage(Constants.Links.RulesBanner)
-      .setColor(Constants.Colors.interchatBlue);
+      .setColor(Constants.Colors.interchat);
 
     const components = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()

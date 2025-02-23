@@ -160,7 +160,7 @@ export default class RankCommand extends BaseCommand {
 
     // Level
     ctx.font = RankCommand.FONTS.LEVEL;
-    ctx.fillStyle = Constants.Colors.interchatBlue;
+    ctx.fillStyle = Constants.Colors.interchat;
     ctx.fillText(`Level ${stats.level}`, textX, avatarY + 80);
 
     // Rank

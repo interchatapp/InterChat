@@ -60,7 +60,7 @@ export const drawRankProgressBar = (
   height: number,
   progress: number,
   backgroundColor = '#484b4e',
-  progressColor = Constants.Colors.interchatBlue,
+  progressColor = Constants.Colors.interchat,
 ): void => {
   // Draw background
   ctx.fillStyle = backgroundColor;

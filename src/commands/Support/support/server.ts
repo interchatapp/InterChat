@@ -32,7 +32,7 @@ export default class SupportServer extends BaseCommand {
     const embed = new EmbedBuilder()
       .setTitle('InterChat Central')
       .setDescription(`[Click Here](${Constants.Links.SupportInvite}) to join the support server.`)
-      .setColor(Constants.Colors.interchatBlue)
+      .setColor(Constants.Colors.interchat)
       .setTimestamp();
     await ctx.reply({ embeds: [embed] });
   }

@@ -64,7 +64,7 @@ export default class Stats extends BaseCommand {
     const memoryUsed = memoryUsedRaw.reduce((p, n) => p + (n ?? 0), 0);
 
     const embed = new EmbedBuilder()
-      .setColor(Constants.Colors.interchatBlue)
+      .setColor(Constants.Colors.interchat)
       .setDescription(`### ${ctx.getEmoji('fire_icon')} InterChat Statistics`)
       .setFooter({
         text: `InterChat v${ctx.client.version}${Constants.isDevBuild ? '+dev' : ''}`,

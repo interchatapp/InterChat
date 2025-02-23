@@ -91,7 +91,7 @@ export const logGuildJoin = async (guild: Guild) => {
       context: {
         inviteLogs: Constants.Channels.inviteLogs,
         logsEmbed: buildLogsEmbed(guild, guildOwner.username, totalGuilds, {
-          color: Constants.Colors.interchatBlue,
+          color: Constants.Colors.interchat,
           title: '✨ Invited to New Server',
         }).toJSON(),
       },
@@ -118,7 +118,7 @@ export const logGuildLeave = async (guild: Guild) => {
       context: {
         inviteLogs: Constants.Channels.inviteLogs,
         logsEmbed: buildLogsEmbed(guild, guildOwner.username, totalGuilds, {
-          color: Constants.Colors.interchatBlue,
+          color: Constants.Colors.interchat,
           title: '👢 Kicked from server',
         }).toJSON(),
       },

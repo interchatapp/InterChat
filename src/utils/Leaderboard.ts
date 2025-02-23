@@ -1,4 +1,5 @@
 import db from '#src/utils/Db.js';
+import { getEmoji } from '#src/utils/EmojiUtils.js';
 import getRedis from '#src/utils/Redis.js';
 import { Client } from 'discord.js';
 
@@ -54,7 +55,6 @@ export async function getLeaderboard(type: 'user' | 'server', limit = 10): Promi
   return results;
 }
 
-
 /**
  * Retrieves the leaderboard rank for a given user.
  * Redis' zrevrank returns a 0-indexed rank, so we add 1.
@@ -70,11 +70,12 @@ export async function getUserLeaderboardRank(userId: string): Promise<number | n
  * Returns the display value for a given rank.
  * Adds medal icons for the top three ranks.
  */
-function getRankDisplay(rank: number): string {
+function getRankDisplay(rank: number, dotEmoji: string): string {
   if (rank === 1) return '🥇';
   if (rank === 2) return '🥈';
   if (rank === 3) return '🥉';
-  return rank.toString();
+  // use purple emoji for rest
+  return `${dotEmoji} ${rank}`;
 }
 
 /**
@@ -85,9 +86,7 @@ export async function formatUserLeaderboard(
   client: Client,
 ): Promise<string> {
   // Build header
-  let output = '#  | User               | Messages\n';
-  output += '---|--------------------|---------\n';
-
+  let output = '';
   // Iterate through pairs: [userId, score, ...]
   for (let i = 0; i < leaderboardData.length; i += 2) {
     const rank = i / 2 + 1;
@@ -98,18 +97,14 @@ export async function formatUserLeaderboard(
       username: 'Unknown',
     }));
 
-    // Limit the username length for table formatting.
-    const username =
-      user.username.length > 18 ? `${user.username.slice(0, 15)}...` : user.username;
-
     // Use the helper function to get the rank display value.
-    const rankDisplay = getRankDisplay(rank);
+    const rankDisplay = getRankDisplay(rank, getEmoji('dot', client));
 
     // Pad each column for alignment.
-    output += `${rankDisplay.padEnd(2)} | ${username.padEnd(18)} | ${score.toString().padEnd(7)}\n`;
+    output += `${rankDisplay} ${`\` ${score} msgs \``} ${user.username}\n`;
   }
 
-  return `\`\`\`css\n${output}\`\`\``;
+  return output;
 }
 
 /**
@@ -121,9 +116,7 @@ export async function formatServerLeaderboard(
   client: Client,
 ): Promise<string> {
   // Build header with adjusted column widths
-  let output = '#  | Server               | Msg | Invite\n';
-  output += '---|----------------------|-----|---------------\n';
-
+  let output = '';
   const inviteLinks = await db.serverData.findMany({
     where: { id: { in: leaderboardData.filter((_, i) => i % 2 === 0) } },
     select: { id: true, inviteCode: true },
@@ -138,21 +131,18 @@ export async function formatServerLeaderboard(
     const guild = (await client.fetchGuild(serverId).catch(() => null)) ?? { name: 'Unknown' };
 
     // Limit the server name length for table formatting.
-    const serverName =
-    guild.name.length > 20 ? `${guild.name.slice(0, 17)}...` : guild.name;
-    const serverData = inviteLinks.find(
-      (link) => link.id === serverId && Boolean(link.inviteCode),
-    );
+    const serverName = guild.name.length > 20 ? `${guild.name.slice(0, 17)}...` : guild.name;
+    const serverData = inviteLinks.find((link) => link.id === serverId && Boolean(link.inviteCode));
     const inviteCode =
       serverData?.inviteCode ?? ('vanityURLCode' in guild ? guild.vanityURLCode : null);
-    const invite = inviteCode ? `.gg/${inviteCode}` : 'N/A';
+    const invite = inviteCode ? `([join](https://discord.gg/${inviteCode}))` : '';
 
     // Use the helper function to get the rank display value.
-    const rankDisplay = getRankDisplay(rank);
+    const rankDisplay = getRankDisplay(rank, getEmoji('dot', client));
 
     // Pad each column for alignment.
-    output += `${rankDisplay.padEnd(2)} | ${serverName.padEnd(20)} | ${score.toString().padEnd(3)} | ${invite.padEnd(15)}\n`;
+    output += `${rankDisplay} \` ${score.toString()} \` - ${serverName} ${invite}\n`;
   }
 
-  return `\`\`\`css\n${output}\`\`\``;
+  return output;
 }

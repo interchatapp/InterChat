@@ -75,7 +75,7 @@ export default class HubServersSubcommand extends BaseCommand {
       .setTitle(
         `${server?.name ?? 'Unknown Server'} \`(${connection.data.serverId})\``,
       )
-      .setColor(Constants.Colors.interchatBlue)
+      .setColor(Constants.Colors.interchat)
       .setDescription(
         t('hub.servers.connectionInfo', locale, {
           serverId: connection.data.serverId,
@@ -223,7 +223,7 @@ export default class HubServersSubcommand extends BaseCommand {
                 total: `${totalConnections}`,
               }),
             )
-            .setColor(Constants.Colors.interchatBlue)
+            .setColor(Constants.Colors.interchat)
             .setFields(fields),
         ],
       });

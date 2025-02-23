@@ -143,7 +143,7 @@ export default class BlacklistManager {
       type = 'User';
     }
 
-    const dotBlueEmoji = getEmoji('dotBlue', client);
+    const dotBlueEmoji = getEmoji('dot', client);
     const embed = new EmbedBuilder()
       .setAuthor({ name: `${type} ${name} blacklisted`, iconURL })
       .setDescription(
@@ -161,7 +161,7 @@ export default class BlacklistManager {
           inline: true,
         },
       )
-      .setColor(Constants.Colors.interchatBlue)
+      .setColor(Constants.Colors.interchat)
       .setFooter({
         text: `Blacklisted by: ${mod.username}`,
         iconURL: mod.displayAvatarURL(),

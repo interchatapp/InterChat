@@ -31,7 +31,7 @@ export const logJoinToHub = async (
   const logManager = await HubLogManager.create(hubId);
   if (!logManager.config.joinLeaves) return;
 
-  const dotBlueEmoji = getEmoji('dotBlue', server.client);
+  const dotBlueEmoji = getEmoji('dot', server.client);
   const owner = await server.fetchOwner();
   const embed = new EmbedBuilder()
     .setTitle('New Server Joined')
@@ -42,7 +42,7 @@ export const logJoinToHub = async (
         ${dotBlueEmoji} **Member Count:** ${server.memberCount}
       `,
     )
-    .setColor(Constants.Colors.interchatBlue)
+    .setColor(Constants.Colors.interchat)
     .setThumbnail(server.iconURL())
     .setFooter({
       text: `We have ${opt?.totalConnections} server(s) connected to ${opt?.hubName} now!`,
