@@ -230,7 +230,7 @@ export default class SetupCommand extends BaseCommand {
   }
 
   private async handleChannelSelection(
-    ctx: MessageComponentInteraction,
+    interaction: MessageComponentInteraction,
     originalUserId: Snowflake,
     hubName: string,
   ): Promise<SetupResult> {
@@ -245,25 +245,25 @@ export default class SetupCommand extends BaseCommand {
         .setPlaceholder('Select a text channel for InterChat'),
     );
 
-    await ctx.reply({
+    await interaction.followUp({
       content:
         'Please select a text channel where InterChat will post messages to and from the hub.',
       components: [channelRow],
       flags: ['Ephemeral'],
     });
 
-    const interaction = await ctx.channel
+    const i = await interaction.channel
       ?.awaitMessageComponent({
         componentType: ComponentType.ChannelSelect,
         time: SetupCommand.BUTTON_TIMEOUT,
       })
       .catch(() => null);
 
-    if (!this.validateChannelSelection(interaction, originalUserId)) {
+    if (!this.validateChannelSelection(i, originalUserId)) {
       return { success: false };
     }
 
-    return await this.setupChannelConnection(interaction, hubName);
+    return await this.setupChannelConnection(i, hubName);
   }
 
   private validateChannelSelection(
