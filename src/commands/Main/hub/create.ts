@@ -45,56 +45,7 @@ export default class HubCreateSubCommand extends BaseCommand {
   private readonly hubService = new HubService();
 
   async execute(ctx: Context) {
-    const locale = await fetchUserLocale(ctx.user.id);
-
-    const modal = new ModalBuilder()
-      .setTitle(t('hub.create.modal.title', locale))
-      .setCustomId(new CustomID('hub_create_modal').toString())
-      .addComponents(
-        new ActionRowBuilder<TextInputBuilder>().addComponents(
-          new TextInputBuilder()
-            .setLabel(t('hub.create.modal.name.label', locale))
-            .setPlaceholder(t('hub.create.modal.name.placeholder', locale))
-            .setMinLength(2)
-            .setMaxLength(100)
-            .setStyle(TextInputStyle.Short)
-            .setCustomId('name'),
-        ),
-        new ActionRowBuilder<TextInputBuilder>().addComponents(
-          new TextInputBuilder()
-            .setLabel(t('hub.create.modal.description.label', locale))
-            .setPlaceholder(t('hub.create.modal.description.placeholder', locale))
-            .setMaxLength(1024)
-            .setStyle(TextInputStyle.Paragraph)
-            .setCustomId('description'),
-        ),
-        new ActionRowBuilder<TextInputBuilder>().addComponents(
-          new TextInputBuilder()
-            .setLabel(t('hub.create.modal.icon.label', locale))
-            .setPlaceholder(t('hub.create.modal.icon.placeholder', locale))
-            .setMaxLength(300)
-            .setStyle(TextInputStyle.Short)
-            .setRequired(false)
-            .setCustomId('icon'),
-        ),
-        new ActionRowBuilder<TextInputBuilder>().addComponents(
-          new TextInputBuilder()
-            .setLabel(t('hub.create.modal.banner.label', locale))
-            .setPlaceholder(t('hub.create.modal.banner.placeholder', locale))
-            .setMaxLength(300)
-            .setStyle(TextInputStyle.Short)
-            .setRequired(false)
-            .setCustomId('banner'),
-        ),
-        // new ActionRowBuilder<TextInputBuilder>().addComponents(
-        //   new TextInputBuilder()
-        //     .setLabel('Language')
-        //     .setPlaceholder('Pick a language for this hub.')
-        //     .setStyle(TextInputStyle.Short)
-        //     .setCustomId('language'),
-        // ),
-      );
-
+    const modal = HubCreateSubCommand.hubCreateModal(await ctx.getLocale());
     await ctx.showModal(modal);
   }
 
@@ -161,5 +112,55 @@ export default class HubCreateSubCommand extends BaseCommand {
       .setTimestamp();
 
     await interaction.editReply({ embeds: [successEmbed] });
+  }
+
+  static hubCreateModal(locale: supportedLocaleCodes): ModalBuilder {
+    return new ModalBuilder()
+      .setTitle(t('hub.create.modal.title', locale))
+      .setCustomId(new CustomID('hub_create_modal').toString())
+      .addComponents(
+        new ActionRowBuilder<TextInputBuilder>().addComponents(
+          new TextInputBuilder()
+            .setLabel(t('hub.create.modal.name.label', locale))
+            .setPlaceholder(t('hub.create.modal.name.placeholder', locale))
+            .setMinLength(2)
+            .setMaxLength(100)
+            .setStyle(TextInputStyle.Short)
+            .setCustomId('name'),
+        ),
+        new ActionRowBuilder<TextInputBuilder>().addComponents(
+          new TextInputBuilder()
+            .setLabel(t('hub.create.modal.description.label', locale))
+            .setPlaceholder(t('hub.create.modal.description.placeholder', locale))
+            .setMaxLength(1024)
+            .setStyle(TextInputStyle.Paragraph)
+            .setCustomId('description'),
+        ),
+        new ActionRowBuilder<TextInputBuilder>().addComponents(
+          new TextInputBuilder()
+            .setLabel(t('hub.create.modal.icon.label', locale))
+            .setPlaceholder(t('hub.create.modal.icon.placeholder', locale))
+            .setMaxLength(300)
+            .setStyle(TextInputStyle.Short)
+            .setRequired(false)
+            .setCustomId('icon'),
+        ),
+        new ActionRowBuilder<TextInputBuilder>().addComponents(
+          new TextInputBuilder()
+            .setLabel(t('hub.create.modal.banner.label', locale))
+            .setPlaceholder(t('hub.create.modal.banner.placeholder', locale))
+            .setMaxLength(300)
+            .setStyle(TextInputStyle.Short)
+            .setRequired(false)
+            .setCustomId('banner'),
+        ),
+      // new ActionRowBuilder<TextInputBuilder>().addComponents(
+      //   new TextInputBuilder()
+      //     .setLabel('Language')
+      //     .setPlaceholder('Pick a language for this hub.')
+      //     .setStyle(TextInputStyle.Short)
+      //     .setCustomId('language'),
+      // ),
+      );
   }
 }

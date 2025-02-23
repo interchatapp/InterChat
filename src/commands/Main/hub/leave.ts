@@ -45,16 +45,10 @@ export default class HubLeaveSubcommand extends BaseCommand {
 
     const locale = await fetchUserLocale(ctx.user.id);
     if (!isChannelConnected) {
-      await ctx.replyEmbed(
-        t('hub.leave.noHub', locale, { emoji: ctx.getEmoji('x_icon') }),
-      );
+      await ctx.replyEmbed('hub.leave.noHub', { t: { emoji: ctx.getEmoji('x_icon') } });
       return;
     }
-    if (
-      !ctx.guild?.members.cache
-        .get(ctx.user.id)
-        ?.permissions.has('ManageChannels')
-    ) {
+    if (!ctx.guild?.members.cache.get(ctx.user.id)?.permissions.has('ManageChannels')) {
       await ctx.replyEmbed(
         t('errors.missingPermissions', locale, {
           permissions: 'Manage Channels',
@@ -91,9 +85,7 @@ export default class HubLeaveSubcommand extends BaseCommand {
     const networks = await db.connection.findMany({
       where: {
         serverId: interaction.guild.id,
-        channelId: focusedValue
-          ? { contains: focusedValue, mode: 'insensitive' }
-          : undefined,
+        channelId: focusedValue ? { contains: focusedValue, mode: 'insensitive' } : undefined,
       },
       select: { channelId: true, hub: true },
       take: 25,
@@ -101,9 +93,7 @@ export default class HubLeaveSubcommand extends BaseCommand {
 
     const choices = await Promise.all(
       networks
-        .filter((network) =>
-          network.hub?.name.toLowerCase().includes(focusedValue.toLowerCase()),
-        )
+        .filter((network) => network.hub?.name.toLowerCase().includes(focusedValue.toLowerCase()))
         .map(async (network) => {
           const channel = await interaction.guild.channels
             .fetch(network.channelId)

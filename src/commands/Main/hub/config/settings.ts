@@ -60,7 +60,7 @@ export default class HubConfigSettingsSubcommand extends BaseCommand {
 
     await ctx.reply({
       embeds: [hub.settings.getEmbed(ctx.client)],
-      components: [this.getSettingsMenu(hub, ctx.client)],
+      components: [HubConfigSettingsSubcommand.getSettingsMenu(hub, ctx.client)],
     });
   }
 
@@ -81,7 +81,7 @@ export default class HubConfigSettingsSubcommand extends BaseCommand {
 
     await interaction.update({
       embeds: [hub.settings.getEmbed(interaction.client)],
-      components: [this.getSettingsMenu(hub, interaction.client)],
+      components: [HubConfigSettingsSubcommand.getSettingsMenu(hub, interaction.client)],
     });
 
     await interaction.followUp({
@@ -90,7 +90,7 @@ export default class HubConfigSettingsSubcommand extends BaseCommand {
     });
   }
 
-  private getSettingsMenu(hub: HubManager, client: Client) {
+  static getSettingsMenu(hub: HubManager, client: Client) {
     const settings = Object.keys(hub.settings.getAll());
     return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
       new StringSelectMenuBuilder()

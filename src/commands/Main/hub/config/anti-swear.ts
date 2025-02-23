@@ -75,7 +75,7 @@ export default class HubConfigAntiSwearSubcommand extends BaseCommand {
 
     const locale = await ctx.getLocale();
     const antiSwearRules = await hub.fetchAntiSwearRules();
-    const components = this.buildComponents(antiSwearRules, hub.id, locale);
+    const components = HubConfigAntiSwearSubcommand.buildComponents(antiSwearRules, hub.id, locale);
 
     if (!antiSwearRules.length) {
       await ctx.replyEmbed('hub.blockwords.noRules', {
@@ -175,7 +175,7 @@ export default class HubConfigAntiSwearSubcommand extends BaseCommand {
 
     const antiSwearRules = await hub.fetchAntiSwearRules();
     const locale = await fetchUserLocale(interaction.user.id);
-    const components = this.buildComponents(antiSwearRules, hub.id, locale);
+    const components = HubConfigAntiSwearSubcommand.buildComponents(antiSwearRules, hub.id, locale);
     if (!antiSwearRules.length) {
       const embed = new InfoEmbed().setDescription(
         t('hub.blockwords.noRules', await fetchUserLocale(interaction.user.id), {
@@ -267,7 +267,7 @@ export default class HubConfigAntiSwearSubcommand extends BaseCommand {
     });
   }
 
-  private buildComponents(rules: BlockWord[], hubId: string, locale: supportedLocaleCodes) {
+  static buildComponents(rules: BlockWord[], hubId: string, locale: supportedLocaleCodes) {
     const components: ActionRowBuilder<ButtonBuilder | StringSelectMenuBuilder>[] = [
       new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()

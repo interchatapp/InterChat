@@ -53,19 +53,9 @@ export default class ModActionsButton {
     const locale = await fetchUserLocale(interaction.user.id);
 
     const hub = await this.hubService.fetchHub(hubId);
-    if (!hub) {
-      await interaction.update({
-        content: t('hub.leave.noHub', locale, {
-          emoji: getEmoji('x_icon', interaction.client),
-        }),
-        embeds: [],
-        components: [],
-      });
-      return;
-    }
+    const success = await hub?.connections.deleteConnection(channelId);
 
-    const success = await hub.connections.deleteConnection(channelId);
-    if (!success) {
+    if (!hub || !success) {
       await interaction.update({
         content: t('hub.leave.noHub', locale, {
           emoji: getEmoji('x_icon', interaction.client),
