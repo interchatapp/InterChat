@@ -132,7 +132,7 @@ hub:
   notModerator: '{emoji}您需要成为中心监管员才能执行此操作。'
   notPrivate: '{emoji}此中心非私有。'
   notOwner: '{emoji}只有此中心的所有者可以执行此操作。'
-  alreadyJoined: '{emoji}您已从{channel}加入{hub}！'
+  alreadyJoined: '{emoji} You have already joined another hub **{hub}** from {channel}! Use `/hub leave` on it and then try again using `/hub join`.'
   invalidChannel: '{emoji}频道无效。仅支持文本频道和对话线程频道！'
   invalidImgurUrl: '{emoji}图标或标语的图片网址无效。请确保您输入了有效的Imgur图片网址且该网址不是图库或相册。'
   join:
