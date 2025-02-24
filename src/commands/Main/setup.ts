@@ -27,7 +27,8 @@ import { HubService } from '#src/services/HubService.js';
 import { HubJoinService } from '#src/services/HubJoinService.js';
 import HubManager from '#src/managers/HubManager.js';
 import Logger from '#src/utils/Logger.js';
-import { fetchUserLocale, wait } from '#src/utils/Utils.js';
+import { fetchUserLocale, getReplyMethod, wait } from '#src/utils/Utils.js';
+import { stripIndents } from 'common-tags';
 
 interface SetupResult {
   success: boolean;
@@ -93,8 +94,12 @@ export default class SetupCommand extends BaseCommand {
     );
 
     await ctx.reply({
-      content:
-        'Welcome to InterChat setup! Would you like to **create a new hub** or **join an existing one**?',
+      content: stripIndents`
+        ### Welcome to InterChat Setup!
+        To get started, select one of the following options:
+        1. **Create New Hub**: Create a new inter-server chat hub. Other servers can join this hub.
+        2. **Join a Hub**: Join an existing hub to chat with other servers. (Recommended for first-time users)
+      `,
       components: [hubChoiceRow],
       flags: ['Ephemeral'],
     });
@@ -126,6 +131,7 @@ export default class SetupCommand extends BaseCommand {
       await interaction.followUp({
         content: 'Hub creation timed out.',
         components: [],
+        flags: ['Ephemeral'],
       });
       return;
     }
@@ -219,7 +225,8 @@ export default class SetupCommand extends BaseCommand {
 
       if (i.customId === 'invite_or_name') {
         await i.reply({
-          content: 'Use the invite code/hub name with </hub join:1107639810014847049> to join the hub.',
+          content:
+            'Use the invite code/hub name with </hub join:1107639810014847049> to join the hub.',
           flags: ['Ephemeral'],
         });
       }
@@ -245,7 +252,8 @@ export default class SetupCommand extends BaseCommand {
         .setPlaceholder('Select a text channel for InterChat'),
     );
 
-    await interaction.followUp({
+    const replyMethod = getReplyMethod(interaction);
+    await interaction[replyMethod]({
       content:
         'Please select a text channel where InterChat will post messages to and from the hub.',
       components: [channelRow],

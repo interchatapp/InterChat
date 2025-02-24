@@ -17,12 +17,14 @@
 
 import ConfigSetInviteSubcommand from '#src/commands/Main/config/set-invite.js';
 import BaseCommand from '#src/core/BaseCommand.js';
+import { PermissionsBitField } from 'discord.js';
 export default class ConfigCommand extends BaseCommand {
   constructor() {
     super({
       name: 'config',
       description: 'Configure Server settings for InterChat.',
       types: { slash: true, prefix: true },
+      defaultPermissions: new PermissionsBitField('ManageMessages'),
       subcommands: {
         'set-invite': new ConfigSetInviteSubcommand(),
       },

@@ -21,7 +21,7 @@ import {
   type ModalSubmitInteraction,
 } from 'discord.js';
 
-export default class JoinRequestCommand extends BaseCommand {
+export default class JoinServerCommand extends BaseCommand {
   constructor() {
     super({
       name: 'joinserver',
