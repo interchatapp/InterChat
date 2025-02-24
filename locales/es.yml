@@ -97,7 +97,7 @@ connection:
   switchSuccess: '{emoji} El canal ha sido conmutado. Ahora está conectado desde **{channel}**.'
   inviteRemoved: '{emoji} Invitación del servidor eliminada para este centro.'
   setInviteError: '{emoji} Unable to create invite. Please grant me  the `Create Invite` permission for the connected channel.'
-  inviteAdded: '{emoji} Invite Added. Others can now join this server by using `Apps > Message Info/Report` command and `/joinrequest` command.'
+  inviteAdded: '{emoji} Invite Added. Others can now join this server by using `Apps > Message Info/Report` command and `/joinserver` command.'
   emColorInvalid: '{emoji} Color no válido. Asegúrese de haber ingresado un código de color hexadecimal válido.'
   emColorChange: '{emoji} Se estableció el color exitosamente: {action}'
   embed:
