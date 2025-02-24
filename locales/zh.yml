@@ -97,7 +97,7 @@ connection:
   switchSuccess: '{emoji}频道已切换。您现在已从{channel}连接。'
   inviteRemoved: '{emoji}已移除此中心的服务器邀请。'
   setInviteError: '{emoji}无法创建邀请。请授予我在已连接频道的“创建邀请”权限。'
-  inviteAdded: '{emoji}邀请已添加。其他人现在可通过使用“应用程序＞信息／报告”指令和“／加入申请”指令来加入此服务器。'
+  inviteAdded: '{emoji} Invite Added. Others can now join this server by using `Apps > Message Info/Report` command and `/joinserver` command.'
   emColorInvalid: '{emoji}颜色无效。请确保您输入了有效的十六进制颜色代码。'
   emColorChange: '{emoji}嵌入颜色成功{action}'
   embed:
