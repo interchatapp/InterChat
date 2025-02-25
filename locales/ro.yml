@@ -97,7 +97,7 @@ connection:
   switchSuccess: '{emoji} Channel switched. You are now connected from **{channel}**.'
   inviteRemoved: '{emoji} Server Invite removed for this hub.'
   setInviteError: '{emoji} Unable to create invite. Please grant me  the `Create Invite` permission for the connected channel.'
-  inviteAdded: '{emoji} Invite Added. Others can now join this server by using `Apps > Message Info/Report` command and `/joinrequest` command.'
+  inviteAdded: '{emoji} Invite Added. Others can now join this server by using `Apps > Message Info/Report` command and `/joinserver` command.'
   emColorInvalid: '{emoji} Invalid color. Please make sure you have entered a valid hex color code.'
   emColorChange: '{emoji} Embed color successfully {action}'
   embed:
@@ -132,7 +132,7 @@ hub:
   notModerator: '{emoji} You need to be a hub moderator to perform this action.'
   notPrivate: '{emoji} This hub is not private.'
   notOwner: '{emoji} Only the owner of this hub can perform this action.'
-  alreadyJoined: '{emoji} You have already joined **{hub}** from {channel}!'
+  alreadyJoined: '{emoji} You have already joined another hub **{hub}** from {channel}! Use `/hub leave` on it and then try again using `/hub join`.'
   invalidChannel: '{emoji} Invalid channel. Only text and thread channels are supported!'
   invalidImgurUrl: '{emoji} Invalid image URL for icon or banner. Please make sure you have entered a valid Imgur image URL that is not a gallery or album.'
   join:
