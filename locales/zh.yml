@@ -410,12 +410,12 @@ errors:
 config:
   setInvite:
     success: |
-      ### {emoji} Invite Link Set
-      - Your server's invite will be used when people use `/joinserver`.
-      - It will be displayed in `/leaderboard server`.
-    removed: '{emoji} Invite removed successfully!'
-    invalid: '{emoji} Invalid invite. Please make sure you have entered a valid invite link. Eg. `https://discord.gg/discord`'
-    notFromServer: '{emoji} This invite is not from this server.'
+      ### {emoji} 邀请链接设置
+      - 当用户使用“／加入服务器”指令时，将自动使用您的服务器邀请链接。
+      - 该链接同时会在“／服务器排行榜”中显示。
+    removed: '{emoji}邀请已成功移除！'
+    invalid: '{emoji}邀请无效。请确保您输入了有效的邀请链接。例如：“https://discord.gg/discord”'
+    notFromServer: '{emoji}此邀请不是来自此服务器。'
 global:
   webhookNoLongerExists: '{emoji}此频道的网络回调已不存在。若要继续使用 InterChat，请使用“／恢复连接”指令重新创建网络回调。'
   noReason: 未提供原因。
