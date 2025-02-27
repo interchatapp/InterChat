@@ -45,10 +45,7 @@ export default function startTasks(clusterManager: ClusterManager) {
     scheduler.addRecurringTask('syncBotlistStats', 10 * 60 * 10_000, async () => {
       const servers = await clusterManager.fetchClientValues('guilds.cache.size');
       const serverCount = servers.reduce((p: number, n: number) => p + n, 0);
-      syncBotlistStats({
-        serverCount,
-        shardCount: clusterManager.totalShards,
-      });
+      syncBotlistStats(serverCount);
     });
   }
 }

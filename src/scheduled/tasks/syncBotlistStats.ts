@@ -22,18 +22,11 @@ const logPostError = (error: unknown) => {
   handleError(error, { comment: 'Failed to update top.gg stats' });
 };
 
-const logPostSuccess = (data: TopggStats) => {
-  Logger.info(
-    `[TopGGPostStats]: Updated top.gg stats with ${data.serverCount} guilds and ${data.shardCount} shards`,
-  );
+const logPostSuccess = (server_count: number) => {
+  Logger.info(`[TopGGPostStats]: Updated top.gg stats with ${server_count} guilds`);
 };
 
-type TopggStats = {
-  serverCount: number;
-  shardCount: number;
-};
-
-export default async (stats: TopggStats) => {
+export default async (server_count: number) => {
   if (process.env.CLIENT_ID !== '769921109209907241') {
     Logger.warn(
       '[TopGGPostStats]: CLIENT_ID environment variable does not match InterChat\'s actual ID.',
@@ -43,21 +36,21 @@ export default async (stats: TopggStats) => {
 
   await fetch('https://top.gg/api/bots/769921109209907241/stats', {
     method: 'POST',
-    body: JSON.stringify({ server_count: stats.serverCount, shard_count: stats.shardCount }),
+    body: JSON.stringify({ server_count }),
     headers: {
       'Content-Type': 'application/json',
       Authorization: process.env.TOPGG_API_KEY as string,
     },
   })
     .then(async (res) => {
-      const data = (await res.json()) as TopggStats;
 
       if (res.status !== 200) {
+        const data = await res.json().catch(() => res.statusText);
         logPostError(data);
         return;
       }
 
-      logPostSuccess(stats);
+      logPostSuccess(server_count);
     })
     .catch(logPostError);
 };
