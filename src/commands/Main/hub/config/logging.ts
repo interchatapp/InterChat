@@ -325,12 +325,13 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
 
   private async getHubForUser(ctx: Context): Promise<HubManager | null> {
     const hubName = ctx.options.getString('hub', true);
-    const hubs = await this.hubService.findHubsByName(hubName, {
-      insensitive: true,
-      ownerId: ctx.user.id,
-    });
+    const [hub] = await this.hubService.findHubsByName(hubName, { insensitive: true });
 
-    return hubs[0] ?? null;
+    if (!hub || !(await executeHubRoleChecksAndReply(hub, ctx, { checkIfManager: true }))) {
+      return null;
+    }
+
+    return hub;
   }
 
   private buildComponents(
