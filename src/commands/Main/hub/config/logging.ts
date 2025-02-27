@@ -62,7 +62,10 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
 
   public async execute(ctx: Context): Promise<void> {
     const hub = await this.getHubForUser(ctx);
-    if (!hub) return;
+    if (!hub) {
+      await ctx.replyEmbed('hub.notFound', { t: { emoji: ctx.getEmoji('slash') } });
+      return;
+    }
 
     const embed = await this.getEmbed(ctx.client, hub);
     const components = this.buildComponents(hub.id, ctx.user.id, await ctx.getLocale());
@@ -75,7 +78,7 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
   }
 
   @RegisterInteractionHandler(CUSTOM_ID_PREFIX, 'logsRefresh')
-  private async handleRefreshButton(interaction: ButtonInteraction): Promise<void> {
+  async handleRefreshButton(interaction: ButtonInteraction): Promise<void> {
     await interaction.deferUpdate();
 
     const {
@@ -91,7 +94,7 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
   }
 
   @RegisterInteractionHandler(CUSTOM_ID_PREFIX, 'logsSelect')
-  private async handleSelectLogs(interaction: StringSelectMenuInteraction): Promise<void> {
+  async handleSelectLogs(interaction: StringSelectMenuInteraction): Promise<void> {
     const {
       args: [userId, hubId],
     } = CustomID.parseCustomId(interaction.customId);
