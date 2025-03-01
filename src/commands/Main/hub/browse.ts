@@ -35,7 +35,7 @@ export default class BrowseCommand extends BaseCommand {
     await ctx.reply({
       content: stripIndents`
       ### [🔍 Use the hub-browser on the website!](${Constants.Links.Website}/hubs)
-      Hey there! This command has been moved to InterChat's website: ${Constants.Links.Website}/hubs. As it is much easier to use there with a better interface and more features. You can browse public hubs, join them, and even create your own hub!
+      Hey there! This command has been moved to InterChat's website: ${Constants.Links.Website}/hubs as it is much easier to use there with a better interface and more features!
       `,
       flags: ['Ephemeral'],
     });

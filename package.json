@@ -25,7 +25,7 @@
   "dependencies": {
     "@hono/node-server": "^1.13.8",
     "@prisma/client": "^6.4.1",
-    "@sentry/node": "^9.2.0",
+    "@sentry/node": "^9.3.0",
     "canvas": "^3.1.0",
     "common-tags": "^1.8.2",
     "discord-hybrid-sharding": "^2.2.4",
@@ -42,10 +42,10 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
-    "@stylistic/eslint-plugin": "^4.0.1",
+    "@stylistic/eslint-plugin": "^4.1.0",
     "@types/common-tags": "^1.8.4",
     "@types/js-yaml": "^4.0.9",
-    "@types/lodash": "^4.17.15",
+    "@types/lodash": "^4.17.16",
     "@types/ms": "^2.1.0",
     "cz-conventional-changelog": "^3.3.0",
     "eslint": "^9.21.0",
@@ -54,7 +54,7 @@
     "prettier": "^3.5.2",
     "prisma": "^6.4.1",
     "release-it": "^18.1.2",
-    "typescript": "^5.7.3",
+    "typescript": "^5.8.2",
     "typescript-eslint": "^8.25.0"
   },
   "config": {
