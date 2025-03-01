@@ -5,6 +5,7 @@ import Constants from '#src/utils/Constants.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import db from '#src/utils/Db.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
+import { isDev } from '#src/utils/Utils.js';
 import {
   ActionRowBuilder,
   ModalBuilder,
@@ -23,6 +24,13 @@ export default class DevAnnounceCommand extends BaseCommand {
     });
   }
   async execute(ctx: Context) {
+    if (!isDev(ctx.user.id)) {
+      await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} You don't have permission to use this command.`,
+        ephemeral: true,
+      });
+      return;
+    }
     const modal = new ModalBuilder()
       .setCustomId(new CustomID('devAnnounceModal').toString())
       .setTitle('Announcement Creation')
