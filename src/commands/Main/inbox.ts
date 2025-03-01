@@ -46,7 +46,8 @@ export async function showInbox(
     })
     : await db.announcement.findMany({
       where: { createdAt: { lt: inboxLastRead } },
-      take: 50, // limit to 50 older announcementsorderBy: { createdAt: 'desc' },
+      take: 50, // limit to 50 older announcements
+      orderBy: { createdAt: 'desc' },
     });
 
   const components = !opts?.showOlder

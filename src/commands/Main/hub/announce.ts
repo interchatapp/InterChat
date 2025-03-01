@@ -104,11 +104,20 @@ export default class AnnounceCommand extends BaseCommand {
 
   @RegisterInteractionHandler('hub_announce')
   async handleAnnounceModal(interaction: ModalSubmitInteraction) {
+    const announcement = interaction.fields.getTextInputValue('announcement');
+
+    if (announcement.length > 4000) {
+      await interaction.reply({
+        content: `${getEmoji('x_icon', interaction.client)} Announcement cannot exceed 4000 characters.`,
+        flags: ['Ephemeral'],
+      });
+      return;
+    }
+
     await interaction.reply(
       `${getEmoji('loading', interaction.client)} Sending announcement to all connected servers...`,
     );
     const [hubId] = CustomID.parseCustomId(interaction.customId).args;
-    const announcement = interaction.fields.getTextInputValue('announcement');
     const hubService = new HubService(db);
     const hub = await hubService.fetchHub(hubId);
 

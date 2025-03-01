@@ -16,7 +16,12 @@
  */
 
 import { stripIndents } from 'common-tags';
-import { ApplicationCommandOptionType, type AutocompleteInteraction, EmbedBuilder, GuildPremiumTier } from 'discord.js';
+import {
+  ApplicationCommandOptionType,
+  type AutocompleteInteraction,
+  EmbedBuilder,
+  GuildPremiumTier,
+} from 'discord.js';
 import Constants from '#utils/Constants.js';
 import db from '#utils/Db.js';
 import { toTitleCase } from '#utils/Utils.js';
@@ -44,7 +49,6 @@ export default class Server extends BaseCommand {
           description: 'The response will be hidden for others. (Default: True)',
         },
       ],
-
     });
   }
   async execute(ctx: Context): Promise<void> {
@@ -54,7 +58,7 @@ export default class Server extends BaseCommand {
     const serverId = ctx.options.getString('server', true);
     const guild = await ctx.client.guilds.fetch(serverId).catch(() => null);
     if (!guild) {
-      await ctx.editReply('Unknown Server.');
+      await ctx.editOrReply('Unknown Server.');
       return;
     }
 
@@ -72,7 +76,7 @@ export default class Server extends BaseCommand {
 
     const guildHubs =
       guildInDb.length > 0 ? guildInDb.map(({ hub }) => hub?.name).join(', ') : 'None';
-    const guildConnections = guildInDb?.map(({ channelId }) => `<#${channelId}> (${channelId}))`);
+    const guildConnections = guildInDb?.map(({ channelId }) => `<#${channelId}> (${channelId})`);
 
     const embed = new EmbedBuilder()
       .setAuthor({
@@ -114,7 +118,7 @@ export default class Server extends BaseCommand {
         },
       ]);
 
-    await ctx.editReply({
+    await ctx.editOrReply({
       content: guild?.id,
       embeds: [embed],
     });
@@ -131,7 +135,7 @@ export default class Server extends BaseCommand {
       .filter(
         (choice) =>
           choice.name.toLowerCase().includes(focusedValue) ||
-                choice.value.toLowerCase().includes(focusedValue),
+          choice.value.toLowerCase().includes(focusedValue),
       )
       .slice(0, 25);
 
