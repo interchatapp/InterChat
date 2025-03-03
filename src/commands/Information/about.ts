@@ -55,7 +55,7 @@ export default class About extends BaseCommand {
         - Webhook management for smoother message handling
         - [And more](${Constants.Links.Website}/#features)! 🚀
         ### Quick Links:
-       [Donate](${Constants.Links.Donate}) • [Invite](https://discord.com/application-directory/769921109209907241) • [Support Server](${Constants.Links.SupportInvite}) • [Vote](https://top.gg/bot/769921109209907241/vote) • [Privacy](${Constants.Links.Donate}/legal/privacy) • [Terms](${Constants.Links.Donate}/legal/terms)
+       [Donate](${Constants.Links.Donate}) • [Invite](https://discord.com/application-directory/769921109209907241) • [Support Server](${Constants.Links.SupportInvite}) • [Vote](https://top.gg/bot/769921109209907241/vote) • [Privacy](${Constants.Links.Website}/privacy) • [Terms](${Constants.Links.Website}/terms)
       `,
       )
       .setFooter({

@@ -15,15 +15,15 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Connection, Hub } from '@prisma/client';
-import { stripIndents } from 'common-tags';
-import { type EmbedBuilder, WebhookClient } from 'discord.js';
 import { buildConnectionButtons } from '#src/interactions/InactiveConnect.js';
 import Constants from '#src/utils/Constants.js';
 import { updateConnections } from '#utils/ConnectedListUtils.js';
 import db from '#utils/Db.js';
 import { InfoEmbed } from '#utils/EmbedUtils.js';
 import Logger from '#utils/Logger.js';
+import type { Connection, Hub } from '@prisma/client';
+import { stripIndents } from 'common-tags';
+import { type EmbedBuilder, WebhookClient } from 'discord.js';
 
 const INACTIVITY_HOURS = 24;
 const MIN_CONNECTIONS = 50;
@@ -100,9 +100,6 @@ async function sendInactivityNotifications(
     catch (error) {
       Logger.error(`[InterChat]: Failed to notify channel ${connection.channelId}:`, error);
     }
-
-    // Small delay between webhooks to prevent rate limiting
-    await new Promise((resolve) => setTimeout(resolve, 50));
   }
 
   return channelIds;

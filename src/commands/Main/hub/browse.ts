@@ -17,12 +17,10 @@
 
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
-import { HubService } from '#src/services/HubService.js';
 import Constants from '#utils/Constants.js';
 import { stripIndents } from 'common-tags';
 
 export default class BrowseCommand extends BaseCommand {
-  private readonly HUBS_PER_PAGE = 4;
   constructor() {
     super({
       name: 'browse',
@@ -30,7 +28,7 @@ export default class BrowseCommand extends BaseCommand {
       types: { slash: true, prefix: true },
     });
   }
-  private readonly hubService = new HubService();
+
   async execute(ctx: Context): Promise<void> {
     await ctx.reply({
       content: stripIndents`
