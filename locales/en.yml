@@ -132,18 +132,18 @@ hub:
   notModerator: '{emoji} You need to be a hub moderator to perform this action.'
   notPrivate: '{emoji} This hub is not private.'
   notOwner: '{emoji} Only the owner of this hub can perform this action.'
-  alreadyJoined: '{emoji} You have already joined another hub **{hub}** from {channel}! Use `/hub leave` on it and then try again using `/hub join`.'
+  alreadyJoined: '{emoji} You have already joined another hub **{hub}** from {channel}! Use `/disconnect` on it and then try again using `/connect`.'
   invalidChannel: '{emoji} Invalid channel. Only text and thread channels are supported!'
   invalidImgurUrl: '{emoji} Invalid image URL for icon or banner. Please make sure you have entered a valid Imgur image URL that is not a gallery or album.'
   join:
     success: |
       Successfully joined hub **{hub}** from {channel}! You can now chat with members from other servers from this channel.
       - Use `/connection` to explore various customizations for this connection.
-      - Use `/hub leave` to stop receiving messages from this hub.
+      - Use `/disconnect` to stop receiving messages from this hub.
       - Use **`/connection edit`** to change channels.
   servers:
     total: 'Current connected servers: {from}-{to} / **{total}**'
-    noConnections: '{emoji} No server has joined this hub yet. Use `/hub join` to join this hub.'
+    noConnections: '{emoji} No server has joined this hub yet. Use `/connect` to join this hub.'
     notConnected: "{emoji} That server isn't a part of **{hub}**."
     connectionInfo: |
       ServerID: {serverId}
@@ -206,7 +206,7 @@ hub:
       1. **Create an Invite:**
       > Use `/hub invite create` to create an invite for others to join.
       2. **Link a Channel:**
-      > Use `/hub join` **with the invite link previously generated** to link a channel to the hub and start chatting.
+      > Use `/connect` **with the invite link previously generated** to link a channel to the hub and start chatting.
       3. **Configure Hub:** (Recommended)
       > Use `/hub config settings`, `/hub config logging` & `/hub config anti-swear` to configure the hub.
       4. **Add Moderators:**
@@ -237,9 +237,9 @@ hub:
       success: |
         ### Invite Created!
 
-        Your invite has been successfully created. Others can now join this hub by using the `/hub join` command.
+        Your invite has been successfully created. Others can now join this hub by using the `/connect` command.
 
-        - **Join using:** `/hub join invite:{inviteCode}`
+        - **Join using:** `/connect invite:{inviteCode}`
         - **View invites:** `/hub invite list`
         - **Expiry:** {expiry}
         - **Uses**: ∞
@@ -254,12 +254,12 @@ hub:
       notPrivate: '{emoji} Only private hubs can have invites. Use `/hub edit` to make this hub private.'
   joined:
     noJoinedHubs: '{emoji} This server has not joined any hubs yet. Use `/hub browse` to view a list of hubs.'
-    joinedHubs: This server is a part of **{total}** hub(s). Use `/hub leave` to leave a hub.
+    joinedHubs: This server is a part of **{total}** hub(s). Use `/disconnect` to leave a hub.
   leave:
     noHub: '{emoji} That channel is invalid or has not joined any hubs.'
     confirm: Are you sure you wish to leave **{hub}** from {channel}? No more messages will be sent to this server from this hub.
     confirmFooter: Confirm using the button below within 10 seconds.
-    success: '{emoji} Left the hub from {channel}. No more messages will be sent to this server from this hub. You can rejoin using `/hub join`.'
+    success: '{emoji} Left the hub from {channel}. No more messages will be sent to this server from this hub. You can rejoin using `/connect`.'
   moderator:
     noModerators: '{emoji} This hub has no moderators yet. Use `/hub moderator add` to add one.'
     add:
