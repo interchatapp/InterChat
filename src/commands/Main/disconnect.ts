@@ -24,11 +24,11 @@ import type Context from '#src/core/CommandContext/Context.js';
 import BaseCommand from '#src/core/BaseCommand.js';
 import { hubOption } from '#src/commands/Main/hub/index.js';
 
-export default class HubLeaveSubcommand extends BaseCommand {
+export default class DisconnectCommand extends BaseCommand {
   constructor() {
     super({
-      name: 'leave',
-      description: '👋 Leave a hub from this server.',
+      name: 'disconnect',
+      description: '👋 Disconnect a channel from a hub',
       types: { slash: true, prefix: true },
       options: [hubOption],
     });

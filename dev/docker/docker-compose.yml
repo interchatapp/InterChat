@@ -1,27 +1,27 @@
 services:
-  # mongodb_container:
-  #   # This image automatically creates a replica set required for transactions
-  #   image: prismagraphql/mongo-single-replica:5.0.3
-  #   environment:
-  #     MONGO_INITDB_ROOT_USERNAME: root
-  #     MONGO_INITDB_ROOT_PASSWORD: prisma
-  #     INIT_WAIT_SEC: 3
-  #   ports:
-  #     - 27017:27017
-  #   volumes:
-  #     - "./db/data:/data/db"
-  #     - "./db/config:/data/configdb"
+  mongodb_container:
+    # This image automatically creates a replica set required for transactions
+    image: prismagraphql/mongo-single-replica:5.0.3
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: prisma
+      INIT_WAIT_SEC: 3
+    ports:
+      - 27017:27017
+    volumes:
+      - "./db/data:/data/db"
+      - "./db/config:/data/configdb"
             
-  # safe-content-ai:
-  #   ports:
-  #     - 8000:8000
-  #   image: steelcityamir/safe-content-ai:latest
+  safe-content-ai:
+    ports:
+      - 8000:8000
+    image: steelcityamir/safe-content-ai:latest
 
-  # # redis with multithread support
-  # keydb:
-  #   image: eqalpha/keydb
-  #   ports:
-  #     - 127.0.0.1:6379:6379
+  # redis with multithread support
+  keydb:
+    image: eqalpha/keydb
+    ports:
+      - 127.0.0.1:6379:6379
 
   prometheus:
     image: prom/prometheus:latest
