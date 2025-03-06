@@ -34,6 +34,16 @@ export class ShardMetricsService {
 
   private constructor(client: InterChatClient) {
     this.client = client;
+    setInterval(() => {
+      this.client.cluster.send({
+        type: 'METRICS',
+        data: {
+          metric: 'cluster_memory_mb',
+          value: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+          labels: { cluster: this.client.cluster.id.toString() },
+        },
+      });
+    }, 15000);
   }
 
   public static init(client: InterChatClient): ShardMetricsService {
@@ -53,13 +63,13 @@ export class ShardMetricsService {
     });
   }
 
-  public incrementMessage(hubId: string): void {
+  public incrementMessage(hubName: string): void {
     this.client.cluster.send({
       type: 'METRICS',
       data: {
         metric: 'message',
         labels: {
-          hub_id: hubId,
+          hub: hubName,
           cluster: this.client.cluster.id.toString(),
         },
       },

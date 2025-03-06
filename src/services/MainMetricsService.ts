@@ -30,6 +30,7 @@ export default class MainMetricsService {
   public readonly guildGauge: Gauge;
   public readonly hubGauge: Gauge;
   public readonly shardGauge: Gauge;
+  public readonly clusterMemGauge: Gauge;
 
   constructor(clusterManager: ClusterManager) {
     this.registry = new Registry();
@@ -47,7 +48,7 @@ export default class MainMetricsService {
     this.messageCounter = new Counter({
       name: 'interchat_messages_total',
       help: 'Total number of messages processed',
-      labelNames: ['hub_id', 'cluster'],
+      labelNames: ['hub', 'cluster'],
       registers: [this.registry],
     });
 
@@ -68,6 +69,13 @@ export default class MainMetricsService {
       name: 'interchat_shards_status',
       help: 'Status of shards (1 = ready, 0 = disconnected)',
       labelNames: ['cluster', 'shard'],
+      registers: [this.registry],
+    });
+
+    this.clusterMemGauge = new Gauge({
+      name: 'interchat_cluster_memory_mb',
+      help: 'Memory usage of cluster',
+      labelNames: ['cluster'],
       registers: [this.registry],
     });
 
@@ -94,6 +102,9 @@ export default class MainMetricsService {
             break;
           case 'shard_status':
             this.shardGauge.set({ ...labels }, Number(value));
+            break;
+          case 'cluster_memory_mb':
+            this.clusterMemGauge.set({ ...labels }, Number(value));
             break;
         }
       }

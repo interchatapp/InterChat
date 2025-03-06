@@ -210,8 +210,8 @@ async function generateDashboard() {
     },
     targets: [
       {
-        expr: 'sum(rate(interchat_messages_total[5m])) by (hub_id)',
-        legendFormat: 'Hub: {{hub_id}}',
+        expr: 'sum(rate(interchat_messages_total[5m])) by (hub)',
+        legendFormat: 'Hub: {{hub}}',
         refId: 'A',
       },
     ],
@@ -472,6 +472,50 @@ async function generateDashboard() {
         placement: 'bottom',
       },
     },
+  });
+
+  // cluster memory usage
+  dashboard.panels.push({
+    id: nextPanelId(),
+    title: 'Cluster Memory Usage',
+    type: 'timeseries',
+    datasource: 'Prometheus',
+    gridPos: { x: 0, y: 33, w: 12, h: 8 },
+    options: {
+      legend: { calcs: [], displayMode: 'list', placement: 'bottom', showLegend: true },
+      tooltip: { mode: 'single', sort: 'none' },
+    },
+    fieldConfig: {
+      defaults: {
+        custom: {
+          drawStyle: 'line',
+          lineInterpolation: 'linear',
+          barAlignment: 0,
+          lineWidth: 1,
+          fillOpacity: 10,
+          gradientMode: 'none',
+          spanNulls: false,
+          showPoints: 'auto',
+          pointSize: 5,
+          stacking: { mode: 'none', group: 'A' },
+          axisPlacement: 'auto',
+          axisLabel: '',
+          scaleDistribution: { type: 'linear' },
+          hideFrom: { tooltip: false, viz: false, legend: false },
+          thresholdsStyle: { mode: 'off' },
+        },
+        color: { mode: 'palette-classic' },
+        unit: 'bytes',
+      },
+      overrides: [],
+    },
+    targets: [
+      {
+        expr: 'interchat_cluster_memory_mb',
+        legendFormat: 'Cluster {{cluster}}',
+        refId: 'A',
+      },
+    ],
   });
 
   // Save dashboard JSON to file

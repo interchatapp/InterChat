@@ -25,6 +25,7 @@ const template = fs.readFileSync('prometheus-template.yml', 'utf8');
 const config = template
   .replace('${GRAFANA_CLOUD_URL}', process.env.GRAFANA_CLOUD_URL)
   .replace('${GRAFANA_CLOUD_USERNAME}', process.env.GRAFANA_CLOUD_USERNAME)
-  .replace('${GRAFANA_CLOUD_API_KEY}', process.env.GRAFANA_CLOUD_API_KEY);
+  .replace('${GRAFANA_CLOUD_API_KEY}', process.env.GRAFANA_CLOUD_API_KEY)
+  .replace('${PORT}', process.env.PORT);
 
 fs.writeFileSync('prometheus.yml', config);
