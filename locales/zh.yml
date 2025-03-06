@@ -132,18 +132,18 @@ hub:
   notModerator: '{emoji}您需要成为中心监管员才能执行此操作。'
   notPrivate: '{emoji}此中心非私有。'
   notOwner: '{emoji}只有此中心的所有者可以执行此操作。'
-  alreadyJoined: '{emoji}您已从{channel}加入另一个中心**{hub}**！请使用“／离开中心”后再次尝试使用“／加入中心”。'
+  alreadyJoined: '{emoji} You have already joined another hub **{hub}** from {channel}! Use `/disconnect` on it and then try again using `/connect`.'
   invalidChannel: '{emoji}频道无效。仅支持文本频道和对话线程频道！'
   invalidImgurUrl: '{emoji}图标或标语的图片网址无效。请确保您输入了有效的Imgur图片网址且该网址不是图库或相册。'
   join:
     success: |
-      成功从{channel}加入了{hub}！您现在可以和此频道其他服务器上的成员聊天了。
-      使用“／连接”来探索此连接的各种自定义设置。
-      使用“／离开中心”来停收此中心的信息。
-      使用“／编辑连接”来切换频道。
+      Successfully joined hub **{hub}** from {channel}! You can now chat with members from other servers from this channel.
+      - Use `/connection` to explore various customizations for this connection.
+      - Use `/disconnect` to stop receiving messages from this hub.
+      - Use **`/connection edit`** to change channels.
   servers:
     total: '目前已连接的服务器：{from}-­­­­­­­­­­{to}­／{total}'
-    noConnections: '{emoji}尚未有服务器加入此中心。使用“／加入中心”加入此中心。'
+    noConnections: '{emoji} No server has joined this hub yet. Use `/connect` to join this hub.'
     notConnected: "{emoji}目标服务器未连接{hub}。"
     connectionInfo: |
       服务器名称：{serverId}
@@ -199,23 +199,23 @@ hub:
     invalidName: '{emoji}中心名称无效。名称不能包含“discord”、“clyde”或“＼”。请另选名称。'
     nameTaken: '{emoji}此中心名称已被占用。请另选名称。'
     success: |
-      中心已创建！默认情况为__private__。
-      使用“／编辑中心 中心：{name}”来自定义您的中心。请按照以下步骤开始操作：
-      接下来的步骤：
-      1.创建邀请：
-      使用“／创建中心邀请”来创建让其他人加入的邀请。
-      2.关联频道：
-      使用“／加入中心”同时附上之前生成的邀请链接，将一个频道关联到此中心并开始聊天。
-      3.设置中心(推荐)：
-      使用“／中心配置设定”、“／中心配置记录”和“／中心过滤规则配置”来设置此中心。
-      4.添加监管员：
-      使用“／添加中心监管员”来为此中心添加监管员。
-      5.自定义中心：
-      使用“／编辑中心”来更改此中心的图标、标语和描述。
-      6.公开中心：
-      使用“／中心可见”将中心设为公开，让其他人不用邀请也可以浏览并加入。(可选)
+      ## Hub Created! It is __private__ by default.
+      Use `/hub edit hub:{name}` to customize your hub. Please follow the steps below to get started:
+      ### Next Steps:
+      1. **Create an Invite:**
+      > Use `/hub invite create` to create an invite for others to join.
+      2. **Link a Channel:**
+      > Use `/connect` **with the invite link previously generated** to link a channel to the hub and start chatting.
+      3. **Configure Hub:** (Recommended)
+      > Use `/hub config settings`, `/hub config logging` & `/hub config anti-swear` to configure the hub.
+      4. **Add Moderators:**
+      > Use `/hub moderator add` to add moderators to the hub.
+      5. **Customize Hub:**
+      > Use `/hub edit` to change the hub icon, banner, and description.
+      6. **Go Public:**
+      > Use `/hub visibility` to make the hub public and allow others to browse and join it without using invites. (Optional)
 
-      如果您有任何问题或需要帮助，请随时在[支持服务器]({support_invite})中提问。请考虑一下[捐赠]({donateLink})来支持开发成本。
+      If you have any questions or need help, feel free to ask in the [support server]({support_invite}). Consider [donating]({donateLink}) to support the development costs.
   delete:
     confirm: 您确定要删除{hub}吗？该行动无法撤回。所有已连接的服务器、邀请和消息数据都将从此中心删除。
     ownerOnly: '{emoji}只有此中心的所有者可以删除它。'
@@ -234,16 +234,16 @@ hub:
   invite:
     create:
       success: |
-        邀请已创建！
+        ### Invite Created!
 
-        您的邀请已成功创建。其他人现在可以通过使用“／加入中心”指令加入此中心。
+        Your invite has been successfully created. Others can now join this hub by using the `/connect` command.
 
-        加入方式：“／邀请加入中心：{inviteCode}”
-        查看邀请：“／中心邀请列表”
-        到期时间：{expiry}
-        使用次数：无限
+        - **Join using:** `/connect invite:{inviteCode}`
+        - **View invites:** `/hub invite list`
+        - **Expiry:** {expiry}
+        - **Uses**: ∞
 
-        注意：您可以随时使用“／中心邀请撤回{inviteCode}”来撤回此邀请。
+        **Note:** You can revoke this invite anytime using `/hub invite revoke {inviteCode}`.
     revoke:
       invalidCode: '{emoji}邀请码无效。请确保您输入了有效的邀请码。'
       success: '{emoji}邀请{inviteCode}撤回。'
@@ -253,12 +253,12 @@ hub:
       notPrivate: '{emoji}只有私人中心才能收到邀请。使用“／编辑编辑”将此中心设置为私有。'
   joined:
     noJoinedHubs: '{emoji}此服务器尚未加入如何中心。使用“／浏览中心”查看中心列表。'
-    joinedHubs: 此服务器已连接{total}中心(群)。使用“／离开中心”离开中心。
+    joinedHubs: This server is a part of **{total}** hub(s). Use `/disconnect` to leave a hub.
   leave:
     noHub: '{emoji}该频道无效或尚未加入任何中心。'
     confirm: 您确定想要从{channel}离开{hub}吗？此中心将不再向此服务器发送任何消息。
     confirmFooter: 请在10秒内使用下面的按钮进行确认。
-    success: '{emoji}从{channel}离开中心。此中心将不再向此服务器发送任何消息。您可以使用“／加入中心”重新加入。'
+    success: '{emoji} Left the hub from {channel}. No more messages will be sent to this server from this hub. You can rejoin using `/connect`.'
   moderator:
     noModerators: '{emoji}此中心尚未有监管员。使用“／添加中心监管员”添加监管员。'
     add:
