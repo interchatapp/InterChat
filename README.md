@@ -57,11 +57,11 @@ Visit https://interchat.tech/invite
 
 ```bash
 # Clone the repository
-git clone https://github.com/discord-interchat/interchat.git
+git clone https://github.com/discord-interchat/InterChat.git
 
 # Install dependencies
 cd interchat
-bun i
+bun install
 
 # Configure environment
 # Edit .env with your credentials
@@ -69,7 +69,7 @@ bun i
 bun run build
 bun sync:commands --private --public
 bun sync:emojis
-bun local-types
+bun locale-types
 
 # Start development server
 bun dev
