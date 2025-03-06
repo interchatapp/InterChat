@@ -22,6 +22,7 @@ import type AntiSpamManager from '#src/managers/AntiSpamManager.js';
 import type EventLoader from '#src/modules/Loaders/EventLoader.js';
 import type CooldownService from '#src/services/CooldownService.js';
 import type Scheduler from '#src/services/SchedulerService.js';
+import { ShardMetricsService } from '#src/services/ShardMetricsService.js';
 import type { ClusterClient } from 'discord-hybrid-sharding';
 import type {
   Collection,
@@ -52,6 +53,8 @@ declare module 'discord.js' {
     readonly reactionCooldowns: Collection<string, number>;
     readonly cluster: ClusterClient<Client>;
     readonly antiSpamManager: AntiSpamManager;
+
+    readonly shardMetrics: ShardMetricsService;
 
     fetchGuild(guildId: Snowflake): Promise<RemoveMethods<Guild> | undefined>;
     getScheduler(): Scheduler;

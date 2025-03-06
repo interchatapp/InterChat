@@ -162,7 +162,7 @@ export default class AppealInteraction {
       type === 'user' ? `user \`${appealer?.tag}\`` : `server \`${blacklist.serverName}\``;
     const extraServerSteps =
       type === 'server'
-        ? `You can re-join the hub by running \`/hub join hub:${hub?.data.name}\`.`
+        ? `You can re-join the hub by running \`/connect hub:${hub?.data.name}\`.`
         : '';
 
     // TODO: localize

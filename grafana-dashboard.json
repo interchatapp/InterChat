@@ -1,0 +1,52 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "panels": [
+    {
+      "title": "Commands Executed",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(interchat_commands_total[5m])",
+          "legendFormat": "{{command}}"
+        }
+      ]
+    },
+    {
+      "title": "Messages Processed",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(interchat_messages_total[5m])",
+          "legendFormat": "{{hub_id}}"
+        }
+      ]
+    },
+    {
+      "title": "Guilds per Cluster",
+      "type": "gauge",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "interchat_guilds_total",
+          "legendFormat": "Cluster {{cluster}}"
+        }
+      ]
+    },
+    {
+      "title": "Shard Status",
+      "type": "heatmap",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "interchat_shards_status",
+          "legendFormat": "Cluster {{cluster}} Shard {{shard}}"
+        }
+      ]
+    }
+  ]
+}

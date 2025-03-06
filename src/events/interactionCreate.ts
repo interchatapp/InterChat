@@ -108,17 +108,17 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
       | ContextMenuCommandInteraction
       | AutocompleteInteraction,
   ) {
-    const { command } = resolveCommand(interaction);
-    if (!command) return;
+    const resolved = resolveCommand(interaction);
+    if (!resolved.command) return;
 
-    if (command.staffOnly && !checkIfStaff(interaction.user.id)) return;
+    if (resolved.command.staffOnly && !checkIfStaff(interaction.user.id)) return;
 
     if (interaction.isAutocomplete()) {
-      await this.handleAutocomplete(command, interaction);
+      await this.handleAutocomplete(resolved.command, interaction);
       return;
     }
 
-    await executeCommand(interaction, command);
+    await executeCommand(interaction, resolved);
   }
 
   private async handleAutocomplete(

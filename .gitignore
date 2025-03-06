@@ -32,3 +32,5 @@ dump.rdb
 dev/docker/db*
 
 emojis/
+
+prometheus.yml

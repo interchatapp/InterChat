@@ -47,5 +47,8 @@ export default class Ready extends BaseEventListener<'ready'> {
       name: `/setup | Cluster ${client.cluster.id}`,
       type: ActivityType.Watching,
     });
+
+    client.shardMetrics.updateGuildCount(client.guilds.cache.size);
+    client.ws.shards.forEach((shard) => client.shardMetrics.updateShardStatus(shard.id, true));
   }
 }

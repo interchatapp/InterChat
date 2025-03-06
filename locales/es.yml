@@ -137,10 +137,10 @@ hub:
   invalidImgurUrl: '{emoji} URL de imagen no válida para icono o banner. Asegúrese de haber ingresado una URL de imagen de Imgur válida que no es una galería o álbum.'
   join:
     success: |
-      ¡Hub **{hub}** de {channel}! Dé alrededor de **5 minutos** para que los mensajes comiencen a aparecer. Mientras tanto, puede usar `/Connection` para explorar varias personalizaciones para esta conexión. Use `/Hub Leave` para dejar el centro.
+      ¡Hub **{hub}** de {channel}! Dé alrededor de **5 minutos** para que los mensajes comiencen a aparecer. Mientras tanto, puede usar `/Connection` para explorar varias personalizaciones para esta conexión. Use `/disconnect` para dejar el centro.
   servers:
     total: 'Servidores conectados actuales: {from}-{to} / **{total}**'
-    noConnections: '{emoji} Ningún servidor se ha unido a este centro todavía. Use `/Hub Join` para unirse a este centro.'
+    noConnections: '{emoji} Ningún servidor se ha unido a este centro todavía. Use `/connect` para unirse a este centro.'
     notConnected: "{emoji} Ese servidor no es parte de **{hub}**."
     connectionInfo: |
       ServerID: {serverId}
@@ -198,12 +198,12 @@ hub:
     nameTaken: '{emoji} Este nombre del centro ya está tomado. Elija otro nombre.'
     success: |
       ### Your __private__ hub, **{name}**, has been successfully created.
-      To join, create an invite using `/hub invite create` and share the generated code. Then join using `/hub join`.
+      To join, create an invite using `/hub invite create` and share the generated code. Then join using `/connect`.
 
       - **Edit hub:** `/hub edit`
       - **Generate invite:** `/hub invite create`
       - **Make public:** `/hub visibility`
-      - **Join hub:** `/hub join`
+      - **Join hub:** `/connect`
       - **Edit hub:** `/hub edit`
       - **Set report channel:** `/hub logging set_channe;`
       - **Add moderators:** `/hub moderator add`
@@ -229,9 +229,9 @@ hub:
       success: |
         ### Invite Created!
 
-        Your invite has been successfully created. Others can now join this hub by using the `/hub join` command.
+        Your invite has been successfully created. Others can now join this hub by using the `/connect` command.
 
-        - **Join using:** `/hub join invite:{inviteCode}`
+        - **Join using:** `/connect invite:{inviteCode}`
         - **View invites:** `/hub invite list`
         - **Expiry:** {expiry}
         - **Uses**: ∞
@@ -246,12 +246,12 @@ hub:
       notPrivate: '{emoji} Solo los centros privados pueden tener invitaciones. Use `/Hub Management` para que este centro sea privado.'
   joined:
     noJoinedHubs: '{emoji} Este servidor aún no se ha unido a ningún centro. Use `/Hub Browse` para ver una lista de centros.'
-    joinedHubs: Este servidor es parte de **{total}** Hub(s). Use `/Hub Leave` para dejar un centro.
+    joinedHubs: Este servidor es parte de **{total}** Hub(s). Use `/disconnect` para dejar un centro.
   leave:
     noHub: '{emoji} ese canal no es válido o no ha unido ningún centro.'
     confirm: '¿Estás seguro de que deseas dejar **{hub}** de {channel}? No se enviarán más mensajes a este servidor desde este centro.'
     confirmFooter: Confirme usando el botón a continuación en 10 segundos.
-    success: '{emoji} dejó el concentrador de {channel}. No se enviarán más mensajes a este servidor desde este centro. Puede reunirse usando `/Hub Join`.'
+    success: '{emoji} dejó el concentrador de {channel}. No se enviarán más mensajes a este servidor desde este centro. Puede reunirse usando `/connect`.'
   moderator:
     noModerators: '{emoji} Este centro todavía no tiene moderadores. Use el moderador `/Hub Add` para agregar uno.'
     add:

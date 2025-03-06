@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+remote_write:
+  - url: ${GRAFANA_CLOUD_URL}
+    basic_auth:
+      username: "${GRAFANA_CLOUD_USERNAME}"
+      password: ${GRAFANA_CLOUD_API_KEY}
+
+scrape_configs:
+  - job_name: 'interchat'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    metrics_path: '/metrics'
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

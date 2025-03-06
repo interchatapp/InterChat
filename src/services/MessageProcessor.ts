@@ -82,6 +82,7 @@ export class MessageProcessor {
 
     updateLeaderboards('user', message.author.id);
     updateLeaderboards('server', message.guildId);
+    message.client.shardMetrics.incrementMessage(hub.data.name);
 
     return { handled: true };
   }

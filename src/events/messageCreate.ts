@@ -71,10 +71,10 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
       return;
     }
 
-    const { command, prefixArgs } = resolveCommand(message);
-    if (!command) return;
+    const resolved = resolveCommand(message);
+    if (!resolved.command) return;
 
-    await executeCommand(message, command, prefixArgs);
+    await executeCommand(message, resolved);
     await this.showDevAlertsIfAny(message);
   }
 

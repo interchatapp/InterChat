@@ -190,12 +190,8 @@ export default abstract class Context<T extends ContextT = ContextT> {
       edit?: boolean;
     },
   ): Promise<InteractionResponse | Message | null> {
-    let description = desc as string;
-
-    if (t(desc as K, 'en')) {
-      const locale = await this.getLocale();
-      description = t(desc as K, locale, opts?.t);
-    }
+    const locale = await this.getLocale();
+    const description = t(desc as K, locale, opts?.t) || desc;
 
     const embed = new InfoEmbed().setDescription(description).setTitle(opts?.title);
     const message = { content: opts?.content, embeds: [embed], components: opts?.components };

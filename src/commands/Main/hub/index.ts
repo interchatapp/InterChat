@@ -28,8 +28,6 @@ import HubInfractionsSubcommand from '#src/commands/Main/hub/infractions.js';
 import HubInviteCreateSubcommand from '#src/commands/Main/hub/invite/create.js';
 import HubInviteListSubcommand from '#src/commands/Main/hub/invite/list.js';
 import HubInviteRevokeSubcommand from '#src/commands/Main/hub/invite/revoke.js';
-import HubJoinSubcommand from '#src/commands/Main/hub/join.js';
-import HubLeaveSubcommand from '#src/commands/Main/hub/leave.js';
 import HubModeratorAddSubcommand from '#src/commands/Main/hub/moderator/add.js';
 import HubModeratorEditSubcommand from '#src/commands/Main/hub/moderator/edit.js';
 import HubModeratorListSubcommand from '#src/commands/Main/hub/moderator/list.js';
@@ -87,8 +85,6 @@ export default class HubCommand extends BaseCommand {
         delete: new HubDeleteSubcommand(),
         edit: new HubEditSubcommand(),
         infractions: new HubInfractionsSubcommand(),
-        join: new HubJoinSubcommand(),
-        leave: new HubLeaveSubcommand(),
         servers: new HubServersSubcommand(),
         visibility: new HubVisibilitySubcommnd(),
       },

@@ -139,11 +139,11 @@ hub:
     success: |
       Successfully joined hub **{hub}** from {channel}! You can now chat with members from other servers from this channel.
       - Use `/connection` to explore various customizations for this connection.
-      - Use `/hub leave` to stop receiving messages from this hub.
+      - Use `/disconnect` to stop receiving messages from this hub.
       - Use **`/connection edit`** to change channels.
   servers:
     total: 'Current connected servers: {from}-{to} / **{total}**'
-    noConnections: '{emoji} No server has joined this hub yet. Use `/hub join` to join this hub.'
+    noConnections: '{emoji} No server has joined this hub yet. Use `/connect` to join this hub.'
     notConnected: "{emoji} That server isn't a part of **{hub}**."
     connectionInfo: |
       ServerID: {serverId}
@@ -201,12 +201,12 @@ hub:
     nameTaken: '{emoji} This hub name is already taken. Please choose another name.'
     success: |
       ### Your __private__ hub, **{name}**, has been successfully created.
-      To join, create an invite using `/hub invite create` and share the generated code. Then join using `/hub join`.
+      To join, create an invite using `/hub invite create` and share the generated code. Then join using `/connect`.
 
       - **Edit hub:** `/hub edit`
       - **Generate invite:** `/hub invite create`
       - **Make public:** `/hub visibility`
-      - **Join hub:** `/hub join`
+      - **Join hub:** `/connect`
       - **Edit hub:** `/hub edit`
       - **Set report channel:** `/hub logging set_channe;`
       - **Add moderators:** `/hub moderator add`
@@ -232,9 +232,9 @@ hub:
       success: |
         ### Invite Created!
 
-        Your invite has been successfully created. Others can now join this hub by using the `/hub join` command.
+        Your invite has been successfully created. Others can now join this hub by using the `/connect` command.
 
-        - **Join using:** `/hub join invite:{inviteCode}`
+        - **Join using:** `/connect invite:{inviteCode}`
         - **View invites:** `/hub invite list`
         - **Expiry:** {expiry}
         - **Uses**: ∞
@@ -249,12 +249,12 @@ hub:
       notPrivate: '{emoji} Only private hubs can have invites. Use `/hub edit` to make this hub private.'
   joined:
     noJoinedHubs: '{emoji} This server has not joined any hubs yet. Use `/hub browse` to view a list of hubs.'
-    joinedHubs: This server is a part of **{total}** hub(s). Use `/hub leave` to leave a hub.
+    joinedHubs: This server is a part of **{total}** hub(s). Use `/disconnect` to leave a hub.
   leave:
     noHub: '{emoji} That channel is invalid or has not joined any hubs.'
     confirm: Are you sure you wish to leave **{hub}** from {channel}? No more messages will be sent to this server from this hub.
     confirmFooter: Confirm using the button below within 10 seconds.
-    success: '{emoji} Left the hub from {channel}. No more messages will be sent to this server from this hub. You can rejoin using `/hub join`.'
+    success: '{emoji} Left the hub from {channel}. No more messages will be sent to this server from this hub. You can rejoin using `/connect`.'
   moderator:
     noModerators: '{emoji} This hub has no moderators yet. Use `/hub moderator add` to add one.'
     add:

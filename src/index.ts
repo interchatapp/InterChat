@@ -17,9 +17,11 @@
 
 import '#src/instrument.js';
 import { ClusterManager, HeartbeatManager, ReClusterManager } from 'discord-hybrid-sharding';
+import MainMetricsService from '#src/services/MainMetricsService.js';
 import startTasks from '#src/scheduled/startTasks.js';
 import Logger from '#utils/Logger.js';
 import 'dotenv/config';
+import { startApi } from '#src/api/index.js';
 
 const shardsPerClusters = 6;
 const clusterManager = new ClusterManager('build/client.js', {
@@ -28,6 +30,10 @@ const clusterManager = new ClusterManager('build/client.js', {
   totalClusters: 'auto',
   shardsPerClusters,
 });
+
+// Set up metrics service with cluster manager
+const metrics = new MainMetricsService(clusterManager);
+startApi(metrics);
 
 clusterManager.extend(new HeartbeatManager({ interval: 10 * 1000, maxMissedHeartbeats: 2 }));
 clusterManager.extend(new ReClusterManager());

@@ -226,7 +226,7 @@ export default class SetupCommand extends BaseCommand {
       if (i.customId === 'invite_or_name') {
         await i.reply({
           content:
-            'Use the invite code/hub name with </hub join:1107639810014847049> to join the hub.',
+            'Use the invite code/hub name with </connect:1107639810014847049> to join the hub.',
           flags: ['Ephemeral'],
         });
       }

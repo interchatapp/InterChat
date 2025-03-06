@@ -16,6 +16,7 @@
  */
 
 import { VoteManager } from '#src/managers/VoteManager.js';
+import MainMetricsService from '#src/services/MainMetricsService.js';
 import Constants from '#src/utils/Constants.js';
 import { handleError } from '#src/utils/Utils.js';
 import Logger from '#utils/Logger.js';
@@ -25,7 +26,7 @@ import { Hono } from 'hono';
 
 export const webhookMap = new Collection<string, WebhookClient>();
 
-export const startApi = () => {
+export const startApi = (metrics: MainMetricsService) => {
   const app = new Hono({});
   const voteManager = new VoteManager();
 
@@ -75,6 +76,8 @@ export const startApi = () => {
       return c.json({ data: null, error: err.message }, 500);
     }
   });
+
+  metrics.setupMetricsEndpoint(app);
 
   app.all('*', (c) => c.redirect(Constants.Links.Website));
 

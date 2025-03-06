@@ -79,7 +79,7 @@ export default class ConnectionPauseSubcommand extends BaseCommand {
     const unpause_cmd = connectionCmd
       ? slashCmdMention('connection', 'unpause', connectionCmd.id)
       : '`/connection unpause`';
-    const leave_cmd = hubCmd ? slashCmdMention('hub', 'leave', hubCmd.id) : '`/hub leave`';
+    const leave_cmd = hubCmd ? slashCmdMention('hub', 'leave', hubCmd.id) : '`/disconnect`';
 
     const successEmbed = new InfoEmbed().removeTitle().setDescription(
       t('connection.paused.desc', locale, {

@@ -16,7 +16,6 @@
  */
 
 import type { ClusterManager } from 'discord-hybrid-sharding';
-import { startApi } from '#src/api/index.js';
 import deleteExpiredInvites from '#src/scheduled/tasks/deleteExpiredInvites.js';
 // import pauseIdleConnections from '#src/scheduled/tasks/pauseIdleConnections.js';
 import storeMsgTimestamps from '#src/scheduled/tasks/storeMsgTimestamps.js';
@@ -26,8 +25,6 @@ import Constants from '#src/utils/Constants.js';
 import Logger from '#src/utils/Logger.js';
 
 export default function startTasks(clusterManager: ClusterManager) {
-  startApi();
-
   // pauseIdleConnections().catch(Logger.error);
   deleteExpiredInvites().catch(Logger.error);
 

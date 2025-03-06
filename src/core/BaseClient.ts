@@ -21,6 +21,7 @@ import AntiSpamManager from '#src/managers/AntiSpamManager.js';
 import EventLoader from '#src/modules/Loaders/EventLoader.js';
 import CooldownService from '#src/services/CooldownService.js';
 import Scheduler from '#src/services/SchedulerService.js';
+import { ShardMetricsService } from '#src/services/ShardMetricsService.js';
 import { loadInteractions } from '#src/utils/CommandUtils.js';
 import { loadCommands } from '#src/utils/Loaders.js';
 import Logger from '#src/utils/Logger.js';
@@ -57,6 +58,8 @@ export default class InterChatClient extends Client {
     timeWindow: 3000,
     spamCountExpirySecs: 60,
   });
+
+  public readonly shardMetrics: ShardMetricsService;
 
   constructor() {
     super({
@@ -103,6 +106,8 @@ export default class InterChatClient extends Client {
       ],
       allowedMentions: { repliedUser: false },
     });
+
+    this.shardMetrics = ShardMetricsService.init(this);
   }
 
   async start() {

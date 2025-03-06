@@ -32,32 +32,26 @@ import {
   Message,
 } from 'discord.js';
 
-export type CmdInteraction =
-	| ChatInputCommandInteraction
-	| ContextMenuCommandInteraction;
+export type CmdInteraction = ChatInputCommandInteraction | ContextMenuCommandInteraction;
 
-export const loadInteractions = async (
-  map: Collection<string, InteractionFunction>,
-) => {
+export const loadInteractions = async (map: Collection<string, InteractionFunction>) => {
   const loader = new InteractionLoader(map);
   await loader.load();
 };
 
-export const fetchCommands = async (client: Client) =>
-  await client.application?.commands.fetch();
+export const fetchCommands = async (client: Client) => await client.application?.commands.fetch();
 
 export const findCommand = (
   name: string,
   commands:
-		| Collection<
-		  string,
-		  ApplicationCommand<{
-		    guild: GuildResolvable;
-		  }>
-		>
-		| undefined,
+    | Collection<
+      string,
+      ApplicationCommand<{
+        guild: GuildResolvable;
+      }>
+    >
+    | undefined,
 ) => commands?.find((command) => command.name === name);
-
 
 function parseArgs(input: string): string[] {
   // Regex to match key-value pairs with optional quotes or standalone arguments
@@ -85,11 +79,11 @@ function parseArgs(input: string): string[] {
 
 export function resolveCommand(
   interactionOrMessage:
-		| ChatInputCommandInteraction
-		| AutocompleteInteraction
-		| ContextMenuCommandInteraction
-		| Message,
-): { command: BaseCommand | null; prefixArgs: string[] } {
+    | ChatInputCommandInteraction
+    | AutocompleteInteraction
+    | ContextMenuCommandInteraction
+    | Message,
+): { command: BaseCommand | null; prefixArgs: string[]; commandNameFull: string | null } {
   const { commands } = interactionOrMessage.client;
   let commandName: string;
   let prefixArgs: string[] = [];
@@ -98,7 +92,7 @@ export function resolveCommand(
     prefixArgs = parseArgs(interactionOrMessage.content.slice('c!'.length));
 
     const name = prefixArgs.shift()?.toLowerCase();
-    if (!name) return { command: null, prefixArgs };
+    if (!name) return { command: null, prefixArgs, commandNameFull: null };
 
     commandName = name;
   }
@@ -106,25 +100,28 @@ export function resolveCommand(
     const command = commands.find(
       (cmd) => cmd.types.contextMenu?.name === interactionOrMessage.commandName,
     );
-    if (!command) return { command: null, prefixArgs };
-    return { command, prefixArgs };
+    if (!command) return { command: null, prefixArgs, commandNameFull: null };
+    return { command, prefixArgs, commandNameFull: command.name };
   }
   else {
     commandName = interactionOrMessage.commandName;
   }
 
   let command = commands.get(commandName);
-  if (!command) return { command: null, prefixArgs };
+  if (!command) return { command: null, prefixArgs, commandNameFull: null };
+
+  let secondSubcommandName: string | undefined;
+  let thirdSubcommandName: string | undefined;
 
   if (command.subcommands) {
     /** Slash command visualization: `/<command>` ***`<subcommand2>`*** `<subcommand3>` */
-    const secondSubcommandName =
-			interactionOrMessage instanceof Message
-			  ? prefixArgs.shift()?.toLowerCase()
-			  : (interactionOrMessage.options.getSubcommandGroup() ??
-					interactionOrMessage.options.getSubcommand());
+    secondSubcommandName =
+      interactionOrMessage instanceof Message
+        ? prefixArgs.shift()?.toLowerCase()
+        : (interactionOrMessage.options.getSubcommandGroup() ??
+          interactionOrMessage.options.getSubcommand());
 
-    if (!secondSubcommandName) return { command: null, prefixArgs };
+    if (!secondSubcommandName) return { command: null, prefixArgs, commandNameFull: null };
 
     const subcommand = command.subcommands[secondSubcommandName];
     if (subcommand instanceof BaseCommand) {
@@ -132,27 +129,25 @@ export function resolveCommand(
     }
     else if (typeof subcommand === 'object') {
       /** Slash command visualization: `/<command>` `<subcommand2>` ***`<subcommand3>`*** */
-      const thirdSubcommandName =
-				interactionOrMessage instanceof Message
-				  ? prefixArgs.shift()?.toLowerCase()
-				  : (
-				    interactionOrMessage as ChatInputCommandInteraction
-				  ).options.getSubcommand();
+      thirdSubcommandName =
+        interactionOrMessage instanceof Message
+          ? prefixArgs.shift()?.toLowerCase()
+          : (interactionOrMessage as ChatInputCommandInteraction).options.getSubcommand();
 
-      if (!thirdSubcommandName) return { command: null, prefixArgs };
+      if (!thirdSubcommandName) return { command: null, prefixArgs, commandNameFull: null };
 
       command = subcommand[thirdSubcommandName];
     }
   }
 
-  return { command, prefixArgs };
+  return {
+    command,
+    prefixArgs,
+    commandNameFull: `${commandName}${secondSubcommandName ? ` ${secondSubcommandName}` : ''}${thirdSubcommandName ? ` ${thirdSubcommandName}` : ''}`,
+  };
 }
 
-async function validatePrefixCommand(
-  ctx: PrefixContext,
-  command: BaseCommand,
-  message: Message,
-) {
+async function validatePrefixCommand(ctx: PrefixContext, command: BaseCommand, message: Message) {
   if (!ctx.isValid) {
     await ctx.reply(
       `${ctx.getEmoji('x_icon')} Invalid arguments provided. Use \`help\` command to see the command usage.`,
@@ -173,18 +168,18 @@ async function validatePrefixCommand(
 }
 
 export async function executeCommand(
-  interactionOrMessage:
-		| Message
-		| ChatInputCommandInteraction
-		| ContextMenuCommandInteraction,
-  command: BaseCommand | undefined,
-  prefixArgs: string[] = [],
+  interactionOrMessage: Message | ChatInputCommandInteraction | ContextMenuCommandInteraction,
+  { command, ...opts }: {
+    command: BaseCommand | null;
+    prefixArgs?: string[];
+    commandNameFull?: string | null;
+  },
 ) {
   if (!command) return;
 
   let ctx: PrefixContext | InteractionContext;
   if (interactionOrMessage instanceof Message) {
-    ctx = new PrefixContext(interactionOrMessage, command, prefixArgs);
+    ctx = new PrefixContext(interactionOrMessage, command, opts.prefixArgs ?? []);
     if (!(await validatePrefixCommand(ctx, command, interactionOrMessage))) return;
   }
   else {
@@ -194,7 +189,10 @@ export async function executeCommand(
   try {
     if (command.execute) await command.execute(ctx);
   }
-  catch (e) {
-    handleError(e, { repliable: interactionOrMessage });
+  catch (error) {
+    handleError(error, { repliable: interactionOrMessage });
   }
+
+  // Send metrics to cluster manager
+  ctx.client.shardMetrics.incrementCommand(opts.commandNameFull ?? command.name);
 }
