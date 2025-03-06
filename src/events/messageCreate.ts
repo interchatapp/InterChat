@@ -18,7 +18,6 @@
 import BaseEventListener from '#src/core/BaseEventListener.js';
 import { showRulesScreening } from '#src/interactions/RulesScreening.js';
 import { MessageProcessor } from '#src/services/MessageProcessor.js';
-import UserDbService from '#src/services/UserDbService.js';
 import { executeCommand, resolveCommand } from '#src/utils/CommandUtils.js';
 import Constants, { RedisKeys } from '#src/utils/Constants.js';
 import getRedis from '#src/utils/Redis.js';
@@ -35,7 +34,6 @@ import type { Message } from 'discord.js';
 export default class MessageCreate extends BaseEventListener<'messageCreate'> {
   readonly name = 'messageCreate';
   private readonly messageProcessor = new MessageProcessor();
-  private readonly userDbService = new UserDbService();
 
   async execute(message: Message) {
     if (!message.inGuild() || !isHumanMessage(message)) return;
@@ -100,11 +98,8 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
     const shouldShow = await hasUnreadDevAlert(userData);
     if (!shouldShow) return;
 
-    await message
-      .reply({
-        embeds: [createUnreadDevAlertEmbed(this.getEmoji('info_icon'))],
-        allowedMentions: { repliedUser: true },
-      })
+    await message.author
+      .send({ embeds: [createUnreadDevAlertEmbed(this.getEmoji('info_icon'))] })
       .catch(() => null);
 
     await redis.set(key, Date.now().toString(), 'EX', 600);

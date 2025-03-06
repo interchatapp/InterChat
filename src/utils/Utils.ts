@@ -294,5 +294,5 @@ export const createUnreadDevAlertEmbed = (emoji: string) =>
     .setTitle(`${emoji} You have a new message from the developers!`)
     .setColor(Constants.Colors.invisible)
     .setDescription(
-      'Use `/inbox` or `c!inbox` to read the latest announcement and dismiss this message.',
+      'Use </inbox:1342837854933618822> or `c!inbox` to read the latest alert and dismiss this message.',
     );
