@@ -97,7 +97,7 @@ connection:
   switchSuccess: '{emoji} Canal trocado. Agora você está conectado de **{channel}**.'
   inviteRemoved: '{emoji} Convite do servidor removido para este hub.'
   setInviteError: '{emoji} Unable to create invite. Please grant me  the `Create Invite` permission for the connected channel.'
-  inviteAdded: '{emoji} Invite Added. Others can now join this server by using `Apps > Message Info/Report` command and `/joinserver` command.'
+  inviteAdded: '{emoji} Invite Added. Others can now join this server by using `Apps > Message Info/Report` command and `/joinrequest` command.'
   emColorInvalid: '{emoji} Cor inválida. Certifique-se de ter inserido um código de cor hexadecimal válido.'
   emColorChange: '{emoji} Incorporar cor com sucesso {action}'
   embed:
@@ -131,17 +131,17 @@ hub:
   notModerator: '{emoji} Você deve ser um gerente de hub para executar esta ação.'
   notPrivate: '{emoji} Este hub não é privado.'
   notOwner: '{emoji} Somente o proprietário deste hub pode executar esta ação.'
-  alreadyJoined: '{emoji} You have already joined another hub **{hub}** from {channel}! Use `/hub leave` on it and then try again using `/hub join`.'
+  alreadyJoined: '{emoji} Você já entrou no **{hub}** do {channel}!'
   invalidChannel: '{emoji} Canal inválido. Somente canais de texto e thread são suportados!'
   invalidImgurUrl: '{emoji} URL de imagem inválida para ícone ou banner. Certifique -se de que você inseriu um URL de imagem imgur válido que não é uma galeria ou álbum.'
   join:
     success: |
       . Entrou com sucesso no hub **{hub}** de {channel}! Agora você pode bater papo com membros de outros servidores deste canal. - Use `/connection` para explorar várias personalizações para esta conexão. -
-      - Use `/hub leave` para parar de receber mensagens deste hub.
+      - Use `/disconnect` para parar de receber mensagens deste hub.
       - Use **`/connection edit`** para mudar de canal.
   servers:
     total: 'Servidores conectados atualmente: {from}-{to} / **{total}**'
-    noConnections: '{emoji} Nenhum servidor se juntou a este hub ainda. Use `/hub join` para se juntar a este hub.'
+    noConnections: '{emoji} Nenhum servidor se juntou a este hub ainda. Use `/connect` para se juntar a este hub.'
     notConnected: "{emoji} Esse servidor não faz parte do **{hub}**."
     connectionInfo: |
       ServerID: {serverId}
@@ -199,12 +199,12 @@ hub:
     nameTaken: '{emoji} Este nome de hub já foi usado. Por favor, escolha outro nome.'
     success: |
       ### Your __private__ hub, **{name}**, has been successfully created.
-      To join, create an invite using `/hub invite create` and share the generated code. Then join using `/hub join`.
+      To join, create an invite using `/hub invite create` and share the generated code. Then join using `/connect`.
 
       - **Edit hub:** `/hub edit`
       - **Generate invite:** `/hub invite create`
       - **Make public:** `/hub visibility`
-      - **Join hub:** `/hub join`
+      - **Join hub:** `/connect`
       - **Edit hub:** `/hub edit`
       - **Set report channel:** `/hub logging set_channe;`
       - **Add moderators:** `/hub moderator add`
@@ -230,9 +230,9 @@ hub:
       success: |
         ### Convite criado!
 
-        Seu convite foi criado com sucesso. Outros agora podem participar deste hub usando o comando `/hub join`.
+        Seu convite foi criado com sucesso. Outros agora podem participar deste hub usando o comando `/connect`.
 
-        - **Participar usando:** `/hub join invite:{inviteCode}`
+        - **Participar usando:** `/connect invite:{inviteCode}`
         - **Visualizar convites:** `/`hub lista de convites`
         - **Expiração:** {expiração}
         - **Usos**: ∞.
@@ -245,12 +245,12 @@ hub:
       notPrivate: '{emoji} Somente hubs privados podem ter convites. Use `/hub edit` para tornar este hub privado.'
   joined:
     noJoinedHubs: '{emoji} Este servidor ainda não se juntou a nenhum hub. Use `/hub browse` para visualizar uma lista de hubs.'
-    joinedHubs: Este servidor faz parte de **{total}** hub(s). Use `/hub leave` para sair de um hub.
+    joinedHubs: Este servidor faz parte de **{total}** hub(s). Use `/disconnect` para sair de um hub.
   leave:
     noHub: '{emoji} Esse canal é inválido ou não se juntou a nenhum hub.'
     confirm: Tem certeza de que deseja sair de **{hub}** de {channel}? Nenhuma outra mensagem será enviada para este servidor deste hub.
     confirmFooter: Confirme usando o botão abaixo em até 10 segundos.
-    success: '{emoji} Saiu do hub de {channel}. Nenhuma outra mensagem será enviada para este servidor deste hub. Você pode entrar novamente usando `/hub join`.'
+    success: '{emoji} Saiu do hub de {channel}. Nenhuma outra mensagem será enviada para este servidor deste hub. Você pode entrar novamente usando `/connect`.'
   moderator:
     noModerators: '{emoji} Este hub ainda não tem moderadores. Use `/hub moderator add` para adicionar um.'
     add:
