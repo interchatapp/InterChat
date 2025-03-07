@@ -18,6 +18,7 @@
 import type BaseCommand from '#src/core/BaseCommand.js';
 import BaseEventListener from '#src/core/BaseEventListener.js';
 import { showRulesScreening } from '#src/interactions/RulesScreening.js';
+import { openInboxButton } from '#src/interactions/ShowInboxButton.js';
 import { executeCommand, resolveCommand } from '#src/utils/CommandUtils.js';
 import Constants from '#utils/Constants.js';
 import { CustomID, type ParsedCustomId } from '#utils/CustomID.js';
@@ -69,6 +70,7 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
     await interaction
       .followUp({
         embeds: [createUnreadDevAlertEmbed(this.getEmoji('info_icon'))],
+        components: [openInboxButton],
         flags: ['Ephemeral'],
       })
       .catch(() => null);

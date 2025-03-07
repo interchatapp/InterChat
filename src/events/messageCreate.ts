@@ -17,6 +17,7 @@
 
 import BaseEventListener from '#src/core/BaseEventListener.js';
 import { showRulesScreening } from '#src/interactions/RulesScreening.js';
+import { openInboxButton } from '#src/interactions/ShowInboxButton.js';
 import { MessageProcessor } from '#src/services/MessageProcessor.js';
 import { executeCommand, resolveCommand } from '#src/utils/CommandUtils.js';
 import Constants, { RedisKeys } from '#src/utils/Constants.js';
@@ -99,7 +100,10 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
     if (!shouldShow) return;
 
     await message.author
-      .send({ embeds: [createUnreadDevAlertEmbed(this.getEmoji('info_icon'))] })
+      .send({
+        embeds: [createUnreadDevAlertEmbed(this.getEmoji('info_icon'))],
+        components: [openInboxButton],
+      })
       .catch(() => null);
 
     await redis.set(key, Date.now().toString(), 'EX', 600);

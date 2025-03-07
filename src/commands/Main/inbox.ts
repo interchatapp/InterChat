@@ -21,20 +21,24 @@ export default class InboxCommand extends BaseCommand {
   }
 
   async execute(ctx: Context) {
-    await showInbox(ctx, this.userDbService);
+    await showInbox(ctx, { userDbService: this.userDbService });
   }
 
   @RegisterInteractionHandler('inbox', 'viewOlder')
   async handleViewOlder(interaction: RepliableInteraction) {
-    await showInbox(interaction, this.userDbService, { showOlder: true, ephemeral: true });
+    await showInbox(interaction, {
+      userDbService: this.userDbService,
+      showOlder: true,
+      ephemeral: true,
+    });
   }
 }
 
 export async function showInbox(
   interaction: Context | RepliableInteraction,
-  userDbService: UserDbService,
-  opts?: { showOlder?: boolean; ephemeral?: boolean },
+  opts?: { userDbService?: UserDbService; showOlder?: boolean; ephemeral?: boolean },
 ) {
+  const userDbService = opts?.userDbService ?? new UserDbService();
   const userData = await userDbService.getUser(interaction.user.id);
   const inboxLastRead = userData?.inboxLastReadDate || new Date();
 
