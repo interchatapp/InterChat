@@ -33,6 +33,7 @@ import HubModeratorEditSubcommand from '#src/commands/Main/hub/moderator/edit.js
 import HubModeratorListSubcommand from '#src/commands/Main/hub/moderator/list.js';
 import HubModeratorRemoveSubcommand from '#src/commands/Main/hub/moderator/remove.js';
 import HubServersSubcommand from '#src/commands/Main/hub/servers.js';
+import HubTransferSubcommand from '#src/commands/Main/hub/transfer.js';
 import HubVisibilitySubcommnd from '#src/commands/Main/hub/visibility.js';
 import BaseCommand from '#src/core/BaseCommand.js';
 import HubManager from '#src/managers/HubManager.js';
@@ -86,6 +87,7 @@ export default class HubCommand extends BaseCommand {
         edit: new HubEditSubcommand(),
         infractions: new HubInfractionsSubcommand(),
         servers: new HubServersSubcommand(),
+        transfer: new HubTransferSubcommand(),
         visibility: new HubVisibilitySubcommnd(),
       },
     });

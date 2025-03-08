@@ -103,6 +103,7 @@ export default class HubManager {
         | 'locked'
         | 'appealCooldownHours'
         | 'settings'
+        | 'ownerId'
       >
     >,
   ): Promise<void> {

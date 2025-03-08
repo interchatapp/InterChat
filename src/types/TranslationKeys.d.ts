@@ -206,6 +206,14 @@ export type TranslationKeys = {
   'hub.manage.logs.appeals.description': never;
   'hub.manage.logs.networkAlerts.label': never;
   'hub.manage.logs.networkAlerts.description': never;
+  'hub.transfer.invalidUser': 'emoji';
+  'hub.transfer.selfTransfer': 'emoji';
+  'hub.transfer.botUser': 'emoji';
+  'hub.transfer.confirm': 'hub' | 'newOwner';
+  'hub.transfer.cancelled': 'emoji';
+  'hub.transfer.error': 'emoji';
+  'hub.transfer.success': 'emoji' | 'hub' | 'newOwner';
+  'hub.transfer.timeout': 'emoji';
   'report.modal.title': never;
   'report.modal.other.label': never;
   'report.modal.other.placeholder': never;
