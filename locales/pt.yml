@@ -350,6 +350,15 @@ hub:
       networkAlerts:
         label: Alertas de rede
         description: Receba alertas sobre mensagens bloqueadas automaticamente.
+  transfer:
+    invalidUser: '{emoji} The specified user was not found.'
+    selfTransfer: '{emoji} You cannot transfer ownership to yourself.'
+    botUser: '{emoji} You cannot transfer ownership to a bot.'
+    confirm: 'Are you sure you want to transfer ownership of **{hub}** to {newOwner}? You will be demoted to manager role.'
+    cancelled: '{emoji} Hub transfer has been cancelled.'
+    error: '{emoji} An error occurred while transferring hub ownership.'
+    success: '{emoji} Successfully transferred ownership of **{hub}** to {newOwner}. You have been added as a manager.'
+    timeout: '{emoji} Hub transfer has timed out.'
 report:
   modal:
     title: Detalhes do relatório
