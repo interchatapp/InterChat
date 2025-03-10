@@ -213,8 +213,8 @@ hub:
 
       If you have any questions or need help, feel free to ask in the [support server]({support_invite}). Consider [donating]({donateLink}) to support the development costs.
   delete:
-    confirm: Are you sure you wish to delete **{hub}**? This action is irreversible. All connected servers, invites and message data will be removed from this hub.
-    ownerOnly: '{emoji} Only the owner of this hub can delete it.'
+    confirm: Вы уверены что вы хотите удалить **{hub}**? Это действие не обратимо. Все присоединённые сервера, приглашения и данные о сообщениях будут удалены из этого хаба.
+    ownerOnly: '{emoji} Только владелец этого хаба может его удалить.'
     success: '{emoji} Hub **{hub}** has been deleted.'
     cancelled: '{emoji} Hub deletion has been cancelled.'
   browse:
