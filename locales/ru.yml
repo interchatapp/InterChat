@@ -108,8 +108,8 @@ connection:
       invite: Invite
       connected: Connected
       emColor: Embed Color
-      compact: Compact Mode
-    footer: Use the dropdown menu below to manage your connection.
+      compact: Компактный режим
+    footer: Используйте меню ниже, чтобы управлять вашим соединением.
   selects:
     placeholder: '🛠️ Select an option to edit this connection'
   unpaused:
