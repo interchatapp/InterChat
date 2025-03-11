@@ -1,26 +1,26 @@
 rules:
   rules: |
-    ### {rules_emoji} Rules:
+    ### {emoji} Rules
     These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:
 
-    1. **No NSFW, NSFL, or Gore Content**
+    1. **Protect Your Privacy**
+      -# Never share personal information like passwords, financial details, or sensitive data. Once shared, there is no way to guarantee your privacy.
+    2. **No NSFL, or Gore Content**
       -# Applies to profile images, usernames, explicit images, videos, and text.
-    2. **No Racism or Discrimination**
-      -# Treat everyone respectfully and kindly. Hate speech and slurs are prohibited.
-    3. **No Sexual Content**
-      -# This includes suggestive jokes, gifs, and any other form of innuendo. Keep it friendly for everyone.
-    4. **No Advertising or Self-Promotion**
-      -# Avoid sharing links to personal servers, social media, or other bots on InterChat.
+    3. **Respect & Abide by Hub Rules**
+      -# You are responsible for following the specific rules of each hub you participate in. These rules are set and enforced by hub moderators to maintain a positive community environment.
+    4. **No Sexual Content**
+      -# No explicit or suggestive content, including nudity, sexual language, or inappropriate behavior in hubs that are not marked as NSFW.
     5. **No Harassment or Doxxing**
-      -# Respect everyone’s privacy and well-being. Harassment, doxxing, and encouraging self-harm are strictly forbidden.
+      -# Harassment, bullying, threats, and doxxing are strictly prohibited. If you feel unsafe or uncomfortable, please report the issue to the InterChat team.
     6. **No Spam or Flooding**
-      -# Don’t send repetitive messages or flood the chat. Excessive spamming may result in harsher penalties and impacts bot performance.
-    7. **No Controversial Discussions**
-      -# Maintain a friendly, welcoming environment for everyone. Avoid discussing politics, religion, or other controversial topics.
-    8. **Use Common Sense**
-      -# If you think something might not be appropriate, avoid it.
+      -# Avoid spamming, flooding, or posting repetitive messages. This slows down the bot and disrupts conversations.
+    7. **Use Common Sense**
+      -# If something feels wrong, it probably is. Trust your instincts and think twice before posting or sharing content.
+    8. **Do not trivialize self-harm**
+      -# We take mental health seriously. Content that promotes, trivializes, or jokes about self-harm, suicide, or mental health issues is strictly forbidden.
     9. **Report Violations**
-      -# Use the `Apps > Message Info/Report` command to notify moderators of any rule-breaking content.
+      -# If you see a violation of these rules, report it to the InterChat team immediately. Together, we can maintain a safe and welcoming environment for all users.
 
     And remember to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines).
   welcome: |
@@ -433,3 +433,23 @@ global:
   yes: 'Yes'
   no: 'No'
   cancelled: '{emoji} Cancelled. No changes were made.'
+warn:
+  modal:
+    title: Warn User
+    reason:
+      label: Reason
+      placeholder: Enter the reason for warning this user...
+  success: |
+    {emoji} Successfully warned **{name}**.
+
+    -# They will be notified of the most recent warning the next time they send a message in the hub. Avoid issuing multiple warnings at once.
+  dm:
+    title: '{emoji} Warning Notification'
+    description: 'You have been warned in hub **{hubName}**'
+  log:
+    title: '{emoji} User Warned'
+    description: |
+      {arrow} **User:** {user} ({userId})
+      {arrow} **Moderator:** {moderator} ({modId})
+      {arrow} **Reason:** {reason}
+    footer: 'Warned by: {moderator}'
