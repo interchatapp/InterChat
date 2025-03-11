@@ -1,28 +1,28 @@
 rules:
   rules: |
-    ### Regras:
-    Estas regras foram estabelecidas para proporcionar uma experiência segura e agradável para todos. Leia-as e siga-as cuidadosamente:
+    ### {emoji} Rules
+    These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:
 
-    1. **Não há conteúdo NSFW, NSFL ou Gore**
-      -# Aplica-se a imagens de perfil, nomes de usuário, imagens explícitas, vídeos e texto.
-    2. **Não há racismo ou discriminação**
-      -# Trate todos com respeito e gentileza. Discursos de ódio e calúnias são proibidos.
-    3. **Não há conteúdo sexual**
-      -# Isso inclui piadas sugestivas, gifs e qualquer outra forma de insinuação. Mantenha o ambiente amigável para todos.
-    4. **Não há publicidade ou autopromoção**
-      -# Evite compartilhar links para servidores pessoais, mídias sociais ou outros bots no InterChat.
-    5. **Não há assédio ou Doxxing**
-      -# Respeite a privacidade e o bem-estar de todos. O assédio, o doxxing e o incentivo à automutilação são estritamente proibidos.
-    6. **Não há spam ou flooding**
-      -# Não envie mensagens repetitivas nem inunde o bate-papo. O excesso de spam pode resultar em penalidades mais severas e afetar o desempenho do bot.
-    7. **Não há discussões polêmicas**
-      -# Mantenha um ambiente amigável e acolhedor para todos. Evite discutir política, religião ou outros tópicos polêmicos.
-    8. **Use o bom senso**
-      -# Se você acha que algo pode não ser apropriado, evite-o.
-    9. **Relatar violações**
-      -# Use o comando `Apps > Message Info/Report` para notificar os moderadores sobre qualquer conteúdo que viole as regras.
+    1. **Protect Your Privacy**
+      -# Never share personal information like passwords, financial details, or sensitive data. Once shared, there is no way to guarantee your privacy.
+    2. **No NSFL, or Gore Content**
+      -# Applies to profile images, usernames, explicit images, videos, and text.
+    3. **Respect & Abide by Hub Rules**
+      -# You are responsible for following the specific rules of each hub you participate in. These rules are set and enforced by hub moderators to maintain a positive community environment.
+    4. **No Sexual Content**
+      -# No explicit or suggestive content, including nudity, sexual language, or inappropriate behavior in hubs that are not marked as NSFW.
+    5. **No Harassment or Doxxing**
+      -# Harassment, bullying, threats, and doxxing are strictly prohibited. If you feel unsafe or uncomfortable, please report the issue to the InterChat team.
+    6. **No Spam or Flooding**
+      -# Avoid spamming, flooding, or posting repetitive messages. This slows down the bot and disrupts conversations.
+    7. **Use Common Sense**
+      -# If something feels wrong, it probably is. Trust your instincts and think twice before posting or sharing content.
+    8. **Do not trivialize self-harm**
+      -# We take mental health seriously. Content that promotes, trivializes, or jokes about self-harm, suicide, or mental health issues is strictly forbidden.
+    9. **Report Violations**
+      -# If you see a violation of these rules, report it to the InterChat team immediately. Together, we can maintain a safe and welcoming environment for all users.
 
-    E lembre-se de seguir os [Termos de Serviço do Discord] (https://discord.com/terms) e as [Diretrizes da Comunidade] (https://discord.com/guidelines)..
+    And remember to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines).
   welcome: |
     {emoji} Hey {user}, bem-vindo ao InterChat!
     Antes de começar a conversar com pessoas de outros servidores usando o InterChat, você precisa aceitar as regras. Use o botão abaixo para aceitá-las.
@@ -429,3 +429,23 @@ global:
   yes: 'Sim'
   no: 'Não'
   cancelled: '{emoji} Cancelled. No changes were made.'
+warn:
+  modal:
+    title: Warn User
+    reason:
+      label: Reason
+      placeholder: Enter the reason for warning this user...
+  success: |
+    {emoji} Successfully warned **{name}**.
+
+    -# They will be notified of the most recent warning the next time they send a message in the hub. Avoid issuing multiple warnings at once.
+  dm:
+    title: '{emoji} Warning Notification'
+    description: 'You have been warned in hub **{hubName}**'
+  log:
+    title: '{emoji} User Warned'
+    description: |
+      {arrow} **User:** {user} ({userId})
+      {arrow} **Moderator:** {moderator} ({modId})
+      {arrow} **Reason:** {reason}
+    footer: 'Warned by: {moderator}'
