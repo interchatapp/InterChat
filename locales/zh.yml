@@ -1,28 +1,28 @@
 rules:
   rules: |
-    ### 规则：
-    这些规则的制定是为了给每个人都带来安全且愉快的体验。请仔细阅读并遵守以下规则：
+    ### {emoji} Rules
+    These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:
 
-    1. **禁止出现成人、暴力及血腥内容**
-      包括头像、用户名、图片、视频和文字在内的所有内容。
-    2. **禁止种族偏见或歧视行为**
-      请以尊重友善的态度对待每个人。禁止仇恨言论和诋毁言辞。
-    3. **禁止出现性暗示内容**
-      包括带有暗示性的笑话、动图及其他任何形式的隐晦内容。请维护这里的友好氛围。
-    4. **禁止商业推广**
-      请勿在InterChat上分享个人服务器、社交媒体或其他程序的链接。
-    5. **禁止骚扰或人肉搜索行为**
-      请尊重每个人的隐私和身心健康。严禁骚扰、人肉搜索和煽动自残的行为。
-    6. **禁止发送垃圾信息或刷屏**
-      请勿发送重复的信息或在聊天中刷屏。过度发送垃圾信息可能导致更严厉的处罚，并且会影响程序的运行。
-    7. *禁止进行有争议性的讨论**
-      为每个人营造一个友好、包容的环境。请勿讨论政治、宗教或其他有争议的话题。
-    8. **运用常识**
-      如果您不确定行为是否合规，请勿尝试。
-    9. **举报违规行为**
-      使用“应用程序＞信息＞报告”指令，向监管员举报任何违规内容。
+    1. **Protect Your Privacy**
+      -# Never share personal information like passwords, financial details, or sensitive data. Once shared, there is no way to guarantee your privacy.
+    2. **No NSFL, or Gore Content**
+      -# Applies to profile images, usernames, explicit images, videos, and text.
+    3. **Respect & Abide by Hub Rules**
+      -# You are responsible for following the specific rules of each hub you participate in. These rules are set and enforced by hub moderators to maintain a positive community environment.
+    4. **No Sexual Content**
+      -# No explicit or suggestive content, including nudity, sexual language, or inappropriate behavior in hubs that are not marked as NSFW.
+    5. **No Harassment or Doxxing**
+      -# Harassment, bullying, threats, and doxxing are strictly prohibited. If you feel unsafe or uncomfortable, please report the issue to the InterChat team.
+    6. **No Spam or Flooding**
+      -# Avoid spamming, flooding, or posting repetitive messages. This slows down the bot and disrupts conversations.
+    7. **Use Common Sense**
+      -# If something feels wrong, it probably is. Trust your instincts and think twice before posting or sharing content.
+    8. **Do not trivialize self-harm**
+      -# We take mental health seriously. Content that promotes, trivializes, or jokes about self-harm, suicide, or mental health issues is strictly forbidden.
+    9. **Report Violations**
+      -# If you see a violation of these rules, report it to the InterChat team immediately. Together, we can maintain a safe and welcoming environment for all users.
 
-    请同时遵守 [Discord的服务条款](https://discord.com/terms) 以及 [社区准则](https://discord.com/guidelines)。
+    And remember to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines).
   welcome: |
     {emoji}{user}您好，欢迎来到InterChat！
     在您开始使用InterChat与其他服务器上的人聊天之前，您需要接受这些规则。请通过下方按钮接受规则。
@@ -437,3 +437,23 @@ global:
   yes: '是'
   no: '否'
   cancelled: '{emoji}已取消。未进行任何更改。'
+warn:
+  modal:
+    title: Warn User
+    reason:
+      label: Reason
+      placeholder: Enter the reason for warning this user...
+  success: |
+    {emoji} Successfully warned **{name}**.
+
+    -# They will be notified of the most recent warning the next time they send a message in the hub. Avoid issuing multiple warnings at once.
+  dm:
+    title: '{emoji} Warning Notification'
+    description: 'You have been warned in hub **{hubName}**'
+  log:
+    title: '{emoji} User Warned'
+    description: |
+      {arrow} **User:** {user} ({userId})
+      {arrow} **Moderator:** {moderator} ({modId})
+      {arrow} **Reason:** {reason}
+    footer: 'Warned by: {moderator}'
