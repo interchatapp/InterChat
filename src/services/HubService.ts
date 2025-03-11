@@ -153,7 +153,7 @@ export class HubService {
   }
 
   async fetchModeratedHubs(userId: string, roles?: Role[]) {
-    const user = await this.db.userData.findFirst({
+    const user = await this.db.user.findFirst({
       where: { id: userId },
       include: { modPositions: { include: { hub: true } }, ownedHubs: true },
     });

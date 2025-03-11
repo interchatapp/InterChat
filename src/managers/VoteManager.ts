@@ -47,7 +47,7 @@ export class VoteManager {
       'removeVoterRole',
       60 * 60 * 1_000,
       async () => {
-        const expiredVotes = await db.userData.findMany({
+        const expiredVotes = await db.user.findMany({
           where: { lastVoted: { lt: new Date() } },
         });
         for (const vote of expiredVotes) {

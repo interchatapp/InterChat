@@ -15,7 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { UserData } from '@prisma/client';
+import type { User as DbUser } from '@prisma/client';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -36,7 +36,7 @@ import { type supportedLocaleCodes, t } from '#utils/Locale.js';
 
 export const showRulesScreening = async (
   repliable: Interaction | Message,
-  userData?: UserData | null,
+  userData?: DbUser | null,
 ) => {
   try {
     const author = repliable instanceof Message ? repliable.author : repliable.user;
@@ -122,7 +122,7 @@ export default class RulesScreeningInteraction {
     }
   }
 
-  private async showRules(interaction: ButtonInteraction, userData: UserData | null) {
+  private async showRules(interaction: ButtonInteraction, userData: DbUser | null) {
     const locale = userData ? await fetchUserLocale(userData) : 'en';
     const rulesEmbed = new InfoEmbed()
       .setDescription(
@@ -166,7 +166,7 @@ export default class RulesScreeningInteraction {
     return { success: true };
   }
 
-  private hasAlreadyAccepted(interaction: ButtonInteraction, userData: UserData | null) {
+  private hasAlreadyAccepted(interaction: ButtonInteraction, userData: DbUser | null) {
     if (!userData?.acceptedRules) return false;
     const embed = new InfoEmbed().setDescription(
       t('rules.alreadyAccepted', userData.locale as supportedLocaleCodes, {

@@ -19,7 +19,7 @@ import BlacklistManager from '#src/managers/BlacklistManager.js';
 import type HubManager from '#src/managers/HubManager.js';
 import type HubSettingsManager from '#src/managers/HubSettingsManager.js';
 
-import type { UserData } from '@prisma/client';
+import type { User as DbUser } from '@prisma/client';
 import { stripIndents } from 'common-tags';
 import { type Awaitable, EmbedBuilder, type Message } from 'discord.js';
 import NSFWDetector from '#src/modules/NSFWDetection.js';
@@ -36,7 +36,7 @@ export interface CheckResult {
 }
 
 interface CheckFunctionOpts {
-  userData: UserData;
+  userData: DbUser;
   settings: HubSettingsManager;
   totalHubConnections: number;
   hub: HubManager;
@@ -80,7 +80,7 @@ export const runChecks = async (
   message: Message<true>,
   hub: HubManager,
   opts: {
-    userData: UserData;
+    userData: DbUser;
     settings: HubSettingsManager;
     totalHubConnections: number;
     attachmentURL?: string | null;

@@ -79,7 +79,7 @@
 //   public async getLeaderboard(type: LeaderboardType = 'xp', limit = 10): Promise<UserData[]> {
 //     const orderBy = this.getLeaderboardOrdering(type);
 
-//     return await this.db.userData.findMany({ orderBy, take: limit });
+//     return await this.db.user.findMany({ orderBy, take: limit });
 //   }
 
 //   private isValidMessage(message: Message<true>): boolean {
@@ -180,7 +180,7 @@
 //     value: number,
 //   ): Promise<number> {
 //     return (
-//       (await this.db.userData.count({
+//       (await this.db.user.count({
 //         where: {
 //           [field]: { gt: value },
 //         },

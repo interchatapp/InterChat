@@ -27,7 +27,7 @@ import type { RemoveMethods, ThreadParentChannel } from '#types/CustomClientProp
 import Constants from '#utils/Constants.js';
 import { ErrorEmbed } from '#utils/EmbedUtils.js';
 import Logger from '#utils/Logger.js';
-import type { UserData } from '@prisma/client';
+import type { User } from '@prisma/client';
 import { captureException } from '@sentry/node';
 import {
   type CommandInteraction,
@@ -231,7 +231,7 @@ export const fetchUserData = async (userId: Snowflake) => {
   return user;
 };
 
-export const fetchUserLocale = async (user: Snowflake | UserData) => {
+export const fetchUserLocale = async (user: Snowflake | User) => {
   const userData = typeof user === 'string' ? await fetchUserData(user) : user;
   return (userData?.locale ?? 'en') as supportedLocaleCodes;
 };
@@ -280,7 +280,7 @@ export const createServerInvite = async (
 export const getLatestDevAlert = async () =>
   await db.announcement.findFirst({ orderBy: { createdAt: 'desc' } });
 
-export const hasUnreadDevAlert = async (userData: UserData) => {
+export const hasUnreadDevAlert = async (userData: User) => {
   const latestDevAnnouncement = await getLatestDevAlert();
   return Boolean(
     userData?.inboxLastReadDate &&

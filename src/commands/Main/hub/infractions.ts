@@ -28,7 +28,7 @@ import Constants from '#utils/Constants.js';
 import db from '#utils/Db.js';
 import { t } from '#utils/Locale.js';
 import { buildInfractionListEmbeds } from '#utils/moderation/infractionUtils.js';
-import type { Infraction, UserData } from '@prisma/client';
+import type { Infraction, User } from '@prisma/client';
 import { stripIndents } from 'common-tags';
 import {
   ApplicationCommandOptionType,
@@ -38,12 +38,12 @@ import {
   Collection,
   EmbedBuilder,
   type Guild,
-  User,
+  User as DiscordUser,
   time,
 } from 'discord.js';
 
 type InfractionType = 'server' | 'user';
-type GroupedInfraction = Infraction & { user: UserData | null; count: number };
+type GroupedInfraction = Infraction & { user: User | null; count: number };
 
 interface TargetInfo {
   name: string;
@@ -278,7 +278,7 @@ export default class HubInfractionsSubcommand extends BaseCommand {
     targetIds: string[],
     type: InfractionType,
   ) {
-    const targets = new Collection<string, User | RemoveMethods<Guild>>();
+    const targets = new Collection<string, DiscordUser | RemoveMethods<Guild>>();
 
     if (type === 'user') {
       const users = await Promise.all(
@@ -301,7 +301,7 @@ export default class HubInfractionsSubcommand extends BaseCommand {
   }
 
   private async batchFetchModerators(client: Client, moderatorIds: string[]) {
-    const moderators = new Collection<string, User>();
+    const moderators = new Collection<string, DiscordUser>();
 
     const users = await Promise.all(
       moderatorIds.map((id) => client.users.fetch(id).catch(() => null)),
@@ -315,7 +315,7 @@ export default class HubInfractionsSubcommand extends BaseCommand {
   }
 
   private getTargetName(
-    target: User | RemoveMethods<Guild> | undefined,
+    target: DiscordUser | RemoveMethods<Guild> | undefined,
     infraction: GroupedInfraction,
   ): string {
     if (!target) {
@@ -323,7 +323,7 @@ export default class HubInfractionsSubcommand extends BaseCommand {
         ? (infraction.user?.username ?? 'Unknown User')
         : (infraction.serverName ?? 'Unknown Server');
     }
-    return target instanceof User ? target.username : target.name;
+    return target instanceof DiscordUser ? target.username : target.name;
   }
 
   private getTargetId(infraction: Infraction): string {
@@ -377,7 +377,7 @@ export default class HubInfractionsSubcommand extends BaseCommand {
 
   private formatInfractionDetails(
     infraction: GroupedInfraction,
-    moderator: User | null,
+    moderator: DiscordUser | null,
     expiresAt: string,
   ): string {
     return stripIndents`

@@ -32,7 +32,7 @@ import {
   handleError,
   hasUnreadDevAlert,
 } from '#utils/Utils.js';
-import type { UserData } from '@prisma/client';
+import type { User as DbUser } from '@prisma/client';
 import type {
   AutocompleteInteraction,
   CacheType,
@@ -61,7 +61,7 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
     }
   }
 
-  private async showDevAlertIfAny(interaction: Interaction, dbUser: UserData | null) {
+  private async showDevAlertIfAny(interaction: Interaction, dbUser: DbUser | null) {
     if (!interaction.isRepliable() || !interaction.replied || !dbUser) return;
 
     const shouldShow = await hasUnreadDevAlert(dbUser);
@@ -95,7 +95,7 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
     return { shouldContinue: true, dbUser };
   }
 
-  private async handleInteraction(interaction: Interaction, dbUser: UserData | null) {
+  private async handleInteraction(interaction: Interaction, dbUser: DbUser | null) {
     if (interaction.isMessageComponent() || interaction.isModalSubmit()) {
       await this.handleComponentOrModal(interaction, dbUser);
       return;
@@ -134,7 +134,7 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
 
   private async handleComponentOrModal(
     interaction: ModalSubmitInteraction | MessageComponentInteraction,
-    dbUser: UserData | null,
+    dbUser: DbUser | null,
   ) {
     const customId = CustomID.parseCustomId(interaction.customId);
     const handler = this.getInteractionHandler(interaction, customId);
@@ -160,7 +160,7 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
   private async isExpiredInteraction(
     interaction: MessageComponentInteraction | ModalSubmitInteraction,
     customId: ParsedCustomId,
-    dbUser: UserData | null,
+    dbUser: DbUser | null,
   ) {
     if (!customId.expiry || customId.expiry >= Date.now()) {
       return false;
@@ -177,7 +177,7 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
     return true;
   }
 
-  private shouldShowRules(interaction: Interaction, dbUser: UserData | null) {
+  private shouldShowRules(interaction: Interaction, dbUser: DbUser | null) {
     const isRulesScreenButton =
       interaction.isButton() &&
       CustomID.parseCustomId(interaction.customId).prefix === 'rulesScreen';
@@ -199,7 +199,7 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
     return true;
   }
 
-  private async isUserBanned(interaction: Interaction, dbUser: UserData | undefined | null) {
+  private async isUserBanned(interaction: Interaction, dbUser: DbUser | undefined | null) {
     if (!dbUser?.banReason) {
       return false;
     }

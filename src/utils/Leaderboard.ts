@@ -37,7 +37,7 @@ export async function updateLeaderboards(type: 'user' | 'server', targetId: stri
   } as const;
 
   // Update persistent user data in MongoDB
-  if (type === 'user') await db.userData.upsert(query);
+  if (type === 'user') await db.user.upsert(query);
   else await db.serverData.upsert(query);
 }
 
