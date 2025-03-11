@@ -76,7 +76,6 @@ export default {
     Donate: 'https://ko-fi.com/interchat',
     SupportInvite: 'https://discord.gg/8DhUA4HNpD',
     AppDirectory: 'https://discord.com/application-directory/769921109209907241',
-    RulesBanner: 'https://i.imgur.com/MBG0Rks.png',
     EasterAvatar: 'https://i.imgur.com/80nqtSg.png',
   },
 

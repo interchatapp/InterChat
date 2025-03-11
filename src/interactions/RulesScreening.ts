@@ -127,10 +127,9 @@ export default class RulesScreeningInteraction {
     const rulesEmbed = new InfoEmbed()
       .setDescription(
         t('rules.rules', locale, {
-          rules_emoji: getEmoji('rules_icon', interaction.client),
+          emoji: getEmoji('rules_icon', interaction.client),
         }),
       )
-      .setImage(Constants.Links.RulesBanner)
       .setColor(Constants.Colors.interchat);
 
     const components = new ActionRowBuilder<ButtonBuilder>().addComponents(

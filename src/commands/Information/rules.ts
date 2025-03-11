@@ -34,8 +34,7 @@ export default class Rules extends BaseCommand {
   async execute(ctx: Context) {
     const locale = await fetchUserLocale(ctx.user.id);
     const rulesEmbed = new EmbedBuilder()
-      .setDescription(t('rules.rules', locale, { rules_emoji: ctx.getEmoji('rules_icon') }))
-      .setImage(Constants.Links.RulesBanner)
+      .setDescription(t('rules.rules', locale, { emoji: ctx.getEmoji('rules_icon') }))
       .setColor(Constants.Colors.interchat);
 
     await ctx.reply({ embeds: [rulesEmbed] });
