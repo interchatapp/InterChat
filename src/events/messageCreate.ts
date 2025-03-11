@@ -18,19 +18,23 @@
 import BaseEventListener from '#src/core/BaseEventListener.js';
 import { showRulesScreening } from '#src/interactions/RulesScreening.js';
 import { openInboxButton } from '#src/interactions/ShowInboxButton.js';
+import HubManager from '#src/managers/HubManager.js';
+import InfractionManager from '#src/managers/InfractionManager.js';
 import { MessageProcessor } from '#src/services/MessageProcessor.js';
 import { executeCommand, resolveCommand } from '#src/utils/CommandUtils.js';
 import Constants, { RedisKeys } from '#src/utils/Constants.js';
+import { t } from '#src/utils/Locale.js';
 import getRedis from '#src/utils/Redis.js';
 import {
   createUnreadDevAlertEmbed,
   fetchUserData,
+  fetchUserLocale,
   handleError,
   hasUnreadDevAlert,
   isHumanMessage,
 } from '#utils/Utils.js';
 import { stripIndents } from 'common-tags';
-import type { Message } from 'discord.js';
+import { EmbedBuilder, type Message } from 'discord.js';
 
 export default class MessageCreate extends BaseEventListener<'messageCreate'> {
   readonly name = 'messageCreate';
@@ -78,11 +82,41 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
   }
 
   private async handleChatMessage(message: Message<true>) {
-    const { handled } = await this.messageProcessor.processHubMessage(message);
+    const result = await this.messageProcessor.processHubMessage(message);
 
-    if (handled === true) {
+    if (result.handled === true) {
       await this.showDevAlertsIfAny(message);
+      await this.notifyHubWarnsIfAny(message, result.hub);
     }
+  }
+
+  /**
+   * Check and notify about warnings after successful message broadcast
+   */
+  private async notifyHubWarnsIfAny(message: Message<true>, hub: HubManager) {
+    const locale = await fetchUserLocale(message.author.id);
+    const infractionManager = new InfractionManager('user', message.author.id);
+    const warnings = await infractionManager.getUnnotifiedInfractions('WARNING', hub.id);
+
+    if (warnings.length === 0) return;
+
+    const dmEmbed = new EmbedBuilder()
+      .setTitle(
+        t('warn.dm.title', locale, {
+          emoji: this.getEmoji('exclamation'),
+        }),
+      )
+      .setDescription(t('warn.dm.description', locale, { hubName: hub.data.name }))
+      .setColor('Yellow')
+      .addFields({
+        name: 'Reason',
+        value: warnings[0].reason || 'No reason provided',
+        inline: true,
+      });
+    await message.author.send({ embeds: [dmEmbed] }).catch(() => null);
+
+    // Mark warnings as notified
+    await infractionManager.markInfractionsAsNotified(warnings.map((w) => w.id));
   }
 
   private async showDevAlertsIfAny(message: Message) {

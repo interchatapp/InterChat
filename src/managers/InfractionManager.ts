@@ -62,6 +62,7 @@ export default class InfractionManager {
         serverId: this.targetType === 'server' ? this.targetId : undefined,
         serverName: opts.serverName,
         type,
+        notified: false, // Set default value
       },
     });
 
@@ -192,7 +193,7 @@ export default class InfractionManager {
     );
   }
 
-  protected updateInfractionDates(infractions: ConvertDatesToString<Infraction>[]) {
+  protected updateInfractionDates(infractions: ConvertDatesToString<Infraction>[]): Infraction[] {
     if (infractions.length === 0) {
       return [];
     }
@@ -217,5 +218,62 @@ export default class InfractionManager {
 
   public isExpiredInfraction(infraction: Infraction | null) {
     return !infraction?.expiresAt || infraction.expiresAt <= new Date();
+  }
+
+  /**
+   * Fetches unnotified infractions of a specific type for a hub
+   */
+  public async getUnnotifiedInfractions(
+    type: InfractionType,
+    hubId: string,
+  ): Promise<Infraction[]> {
+    const infractions = await db.infraction.findMany({
+      where: {
+        type,
+        hubId,
+        status: 'ACTIVE',
+        notified: false,
+        ...(this.targetType === 'user' ? { userId: this.targetId } : { serverId: this.targetId }),
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return infractions;
+  }
+
+  /**
+   * Marks multiple infractions as notified
+   */
+  public async markInfractionsAsNotified(infractionIds: string[]): Promise<void> {
+    await db.infraction.updateMany({
+      where: {
+        id: { in: infractionIds },
+      },
+      data: {
+        notified: true,
+      },
+    });
+
+    // Refresh cache for affected infractions
+    const infractions = await db.infraction.findMany({
+      where: { id: { in: infractionIds } },
+    });
+
+    // Group by hubId to minimize cache updates
+    const hubGroups = infractions.reduce(
+      (groups, infraction) => {
+        if (!groups[infraction.hubId]) {
+          groups[infraction.hubId] = [];
+        }
+        groups[infraction.hubId].push(infraction);
+        return groups;
+      },
+      {} as Record<string, Infraction[]>,
+    );
+
+    // Update cache for each hub
+    for (const [hubId] of Object.entries(hubGroups)) {
+      await this.refreshCache(hubId);
+    }
   }
 }

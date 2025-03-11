@@ -35,11 +35,6 @@ type LogChannel {
   roleId    String?
 }
 
-type RecentLobbyData {
-  lobbyId   String
-  timestamp Int
-}
-
 // Models
 model Hub {
   id                  String         @id @default(auto()) @map("_id") @db.ObjectId
@@ -55,6 +50,9 @@ model Hub {
   settings            Int
   moderators          HubModerator[]
   connections         Connection[]
+  tags                String[]
+  upvotes             HubUpvote[]
+  reviews             HubReview[]
   logConfig           HubLogConfig?
   blockWords          BlockWord[]
   infractions         Infraction[] // Combined user and server infractions
@@ -64,6 +62,40 @@ model Hub {
 
   @@unique([name])
   @@index([ownerId])
+}
+
+// model Tag {
+//   id     String @id @default(auto()) @map("_id") @db.ObjectId
+//   name   String
+//   count  Int    @default(0)
+//   hubIds Hub[]
+// }
+
+model HubUpvote {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  hubId     String   @db.ObjectId
+  userId    String   @db.String
+  createdAt DateTime @default(now())
+  hub       Hub      @relation(fields: [hubId], references: [id])
+  user      UserData @relation(fields: [userId], references: [id])
+
+  @@unique([hubId, userId])
+  @@index([hubId])
+}
+
+model HubReview {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  hubId     String   @db.ObjectId
+  userId    String   @db.String
+  rating    Int
+  text      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  hub       Hub      @relation(fields: [hubId], references: [id])
+  user      UserData @relation(fields: [userId], references: [id])
+
+  @@unique([hubId, userId])
+  @@index([hubId])
 }
 
 model HubModerator {
@@ -78,20 +110,21 @@ model HubModerator {
 }
 
 model Connection {
-  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
-  channelId            String   @unique
+  id                   String      @id @default(auto()) @map("_id") @db.ObjectId
+  channelId            String      @unique
   parentId             String? // Parent channel ID for threads
-  serverId             String
-  hubId                String   @db.ObjectId
-  connected            Boolean  @default(true)
-  compact              Boolean  @default(false)
+  serverId             String      @db.String
+  hubId                String      @db.ObjectId
+  connected            Boolean     @default(true)
+  compact              Boolean     @default(false)
   invite               String?
-  createdAt            DateTime @default(now())
+  createdAt            DateTime    @default(now())
   embedColor           String?
   webhookURL           String
-  lastActive           DateTime @default(now())
-  joinRequestsDisabled Boolean? @default(false)
-  hub                  Hub      @relation(fields: [hubId], references: [id])
+  lastActive           DateTime    @default(now())
+  joinRequestsDisabled Boolean?    @default(false)
+  hub                  Hub         @relation(fields: [hubId], references: [id])
+  server               ServerData? @relation(fields: [serverId], references: [id])
 
   @@unique([channelId, serverId])
   @@index([hubId, channelId])
@@ -108,6 +141,7 @@ model Infraction {
   expiresAt   DateTime?
   appealedAt  DateTime?
   appealedBy  String? // User ID
+  notified    Boolean          @default(false)
 
   // For user infractions
   user   UserData? @relation(name: "infractions", fields: [userId], references: [id])
@@ -162,6 +196,7 @@ model HubInvite {
 
 model UserData {
   id                String         @id @map("_id") @db.String
+  image             String?
   username          String?
   locale            String?
   voteCount         Int            @default(0)
@@ -174,7 +209,9 @@ model UserData {
   modPositions      HubModerator[]
   ownedHubs         Hub[]
   infractions       Infraction[]   @relation("infractions")
+  reviews           HubReview[]
   issuedInfractions Infraction[]   @relation("issuedInfractions")
+  upvotedHubs       HubUpvote[]
   inboxLastReadDate DateTime?      @default(now())
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
@@ -192,11 +229,13 @@ model Announcement {
 }
 
 model ServerData {
-  id            String   @id @map("_id") @db.String
-  premiumStatus Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id            String       @id @map("_id") @db.String
+  name          String?
+  premiumStatus Boolean      @default(false)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
   inviteCode    String?
-  messageCount  Int      @default(0)
-  lastMessageAt DateTime @default(now())
+  messageCount  Int          @default(0)
+  lastMessageAt DateTime     @default(now())
+  Connection    Connection[]
 }

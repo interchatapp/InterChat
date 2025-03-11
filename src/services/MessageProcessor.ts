@@ -23,6 +23,9 @@ import { runChecks } from '#src/utils/network/runChecks.js';
 import { fetchUserData } from '#src/utils/Utils.js';
 import type { Message } from 'discord.js';
 import { BroadcastService } from './BroadcastService.js';
+import HubManager from '#src/managers/HubManager.js';
+
+type messageProcessingResult = { handled: false; hub: null } | { handled: true; hub: HubManager };
 
 export class MessageProcessor {
   private readonly broadcastService = new BroadcastService();
@@ -45,16 +48,16 @@ export class MessageProcessor {
     return { hub, hubConnections, connection };
   }
 
-  async processHubMessage(message: Message<true>): Promise<{ handled: boolean }> {
+  async processHubMessage(message: Message<true>): Promise<messageProcessingResult> {
     const hubData = await MessageProcessor.getHubAndConnections(message.channelId, this.hubService);
-    if (!hubData) return { handled: false };
+    if (!hubData) return { handled: false, hub: null };
 
     const { hub, hubConnections, connection } = hubData;
 
     const userData = await fetchUserData(message.author.id);
     if (!userData?.acceptedRules) {
       await showRulesScreening(message, userData);
-      return { handled: true };
+      return { handled: true, hub };
     }
 
     const attachmentURL = await this.broadcastService.resolveAttachmentURL(message);
@@ -67,7 +70,7 @@ export class MessageProcessor {
         totalHubConnections: hubConnections.length + 1,
       }))
     ) {
-      return { handled: false };
+      return { handled: false, hub: null };
     }
 
     message.channel.sendTyping().catch(() => null);
@@ -84,6 +87,6 @@ export class MessageProcessor {
     updateLeaderboards('server', message.guildId);
     message.client.shardMetrics.incrementMessage(hub.data.name);
 
-    return { handled: true };
+    return { handled: true, hub };
   }
 }

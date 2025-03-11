@@ -112,8 +112,18 @@ async function checkBanAndBlacklist(
   const blacklisted = await blacklistManager.fetchBlacklist(opts.hub.id);
 
   if (opts.userData?.banReason || blacklisted) {
+    // If blacklisted, send notification
+    if (blacklisted && !blacklisted.notified) {
+      await sendBlacklistNotif('user', message.client, {
+        target: message.author,
+        hubId: opts.hub.id,
+        expiresAt: blacklisted.expiresAt,
+        reason: blacklisted.reason,
+      }).catch(() => null);
+    }
     return { passed: false };
   }
+
   return { passed: true };
 }
 

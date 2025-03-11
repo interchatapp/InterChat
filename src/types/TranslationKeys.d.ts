@@ -263,6 +263,23 @@ export type TranslationKeys = {
   'global.yes': never;
   'global.no': never;
   'global.cancelled': 'emoji';
+  'warn.modal.title': never;
+  'warn.modal.reason.label': never;
+  'warn.modal.reason.placeholder': never;
+  'warn.success': 'emoji' | 'name';
+  'warn.dm.title': 'emoji';
+  'warn.dm.description': 'hubName';
+  'warn.log.title': 'emoji';
+  'warn.log.description':
+    | 'arrow'
+    | 'user'
+    | 'userId'
+    | 'arrow'
+    | 'moderator'
+    | 'modId'
+    | 'arrow'
+    | 'reason';
+  'warn.log.footer': 'moderator';
 };
 
 export type ErrorLocaleKeys = Extract<keyof TranslationKeys, `errors.${string}`>;

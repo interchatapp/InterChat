@@ -44,6 +44,7 @@ export default class BlacklistManager {
     reason: string;
     moderatorId: string;
     expiresAt: Date | null;
+    notified?: boolean,
     serverName?: string;
   }): Promise<Infraction> {
     const blacklisted = await this.fetchBlacklist(opts.hubId);

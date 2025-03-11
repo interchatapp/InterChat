@@ -102,13 +102,18 @@ export class HubJoinService {
 
     // Create the connection
     await createConnection({
-      serverId: channel.guildId,
       channelId: channel.id,
       parentId: channel.isThread() ? channel.parentId : undefined,
       webhookURL: webhook.url,
-      hub: { connect: { id: hub.id } },
       connected: true,
       compact: true,
+      hub: { connect: { id: hub.id } },
+      server: {
+        connectOrCreate: {
+          create: { id: channel.guildId, name: channel.guild.name },
+          where: { id: channel.guildId },
+        },
+      },
     });
 
     await this.sendSuccessMessages(hub, channel);
