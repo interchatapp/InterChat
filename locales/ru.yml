@@ -113,7 +113,7 @@ connection:
   switchSuccess: '{emoji} Канал переключён. Теперь вы присоединены из **{channel}**ю'
   inviteRemoved: '{emoji} Приглашение сервера было убрано из этого хаба.'
   setInviteError: '{emoji} Невозможно создать приглашение. Предоставьте мне разрешение на создание приглашений в выбранном канале.'
-  inviteAdded: '{emoji} Invite Added. Others can now join this server by using `Apps > Message Info/Report` command and `/joinserver` command.'
+  inviteAdded: '{emoji} Приглашение добавлено. Другие люди теперь могут присоединиться к вашему серверу используя команду `/joinserver`.'
   emColorInvalid: '{emoji} Некорректный цвет. Пожалуйста, убедитесь что вы ввели правильный HEX-Код цвета.'
   emColorChange: '{emoji} Цвет вставки {action}'
   embed:
@@ -134,7 +134,7 @@ connection:
 
       {channel} Был снят с паузы! Сообщения из хаба будут приходить сюда и вы сможете отправлять в него сообщения снова.
     tips: |
-      **💡 Tip:** Use {pause_cmd} to pause the connection or {edit_cmd} to set embed colors, invite to your server and more.
+      **💡 Примечание:**Используйте {pause_cmd} чтобы остановить соединение или {edit_cmd} чтобы изменить цвета сообщений, пригласить на ваш сервер и многое другое.
   paused:
     desc: |
       ### {clock_emoji} Соединение приостановлено
@@ -385,36 +385,36 @@ hub:
     success: '{emoji} Успешно переданы права владельца **{hub}** пользователю {newOwner}. Вы были добавлены как менеджер.'
     timeout: '{emoji} Вышло время на передачу хаба.'
   rules:
-    noRules: "{emoji} This hub has no rules configured yet. Let's add some!"
-    list: "### {emoji} Hub Rules\n{rules}"
-    maxRulesReached: "{emoji} Maximum number of rules ({max}) reached."
-    ruleExists: "{emoji} This rule already exists."
-    selectedRule: "Selected Rule {number}"
+    noRules: "{emoji} Этот хаб пока не имеет настроенных правил. Давайте добавим их!"
+    list: "### {emoji} Правила Хаба\n{rules}"
+    maxRulesReached: "{emoji} Достигнуто максимальное количество правил ({max})."
+    ruleExists: "{emoji} Это правило уже существует."
+    selectedRule: "Выбрано правило {number}"
     modal:
       add:
-        title: Add Hub Rule
-        label: Rule Text
-        placeholder: Enter the rule text (max 1000 characters)
+        title: Добавить Правило
+        label: Текст правил
+        placeholder: Введите текст правил (не более 1000 символов)
       edit:
-        title: Edit Hub Rule
-        label: Rule Text
-        placeholder: Enter the new rule text (max 1000 characters)
+        title: Изменить Правила Хаба
+        label: Текст правил
+        placeholder: Введите новый текст правил (не более 1000 символов)
     select:
-      placeholder: Select a rule to edit or remove
+      placeholder: Выберите правило для редактирования или удаления
       option:
-        label: Rule {number}
+        label: Правило {number}
     buttons:
-      add: Add Rule
-      edit: Edit Rule
-      delete: Delete Rule
-      back: Back
+      add: Добавить Правило
+      edit: Редактировать Правило
+      delete: Удалить Правило
+      back: Назад 
     success:
-      add: '{emoji} Rule added successfully!'
-      edit: '{emoji} Rule updated successfully!'
-      delete: '{emoji} Rule deleted successfully!'
+      add: '{emoji} Правило успешно добавлено!'
+      edit: 'Правило {emoji} успешно изменено!'
+      delete: '{emoji} Правило успешно удалено!'
     view:
-      title: 'Rule {number}'
-      select: Select an action for this rule
+      title: 'Правило {number}'
+      select: Выберите действие для этого правила
 report:
   modal:
     title: Подробности Жалобы
@@ -487,21 +487,21 @@ global:
   cancelled: '{emoji} Отменено. Изменения не были сделаны.'
 warn:
   modal:
-    title: Warn User
+    title: Выдать Предупреждение Пользователю
     reason:
-      label: Reason
-      placeholder: Enter the reason for warning this user...
+      label: Причина
+      placeholder: Введите причину предупреждения этого пользователя...
   success: |
-    {emoji} Successfully warned **{name}**.
+    {emoji} Успешно выдано предупреждение **{name}**.
 
-    -# They will be notified of the most recent warning the next time they send a message in the hub. Avoid issuing multiple warnings at once.
+    -# Пользователь будет уведомлен о последнем предупреждении при следующем отправке сообщения в хабе. Избегайте выдачи нескольких предупреждений сразу.
   dm:
-    title: '{emoji} Warning Notification'
-    description: 'You have been warned in hub **{hubName}**'
+    title: '{emoji} Уведомление о Предупреждении'
+    description: 'Вам выдано предупреждение в хабе **{hubName}**'
   log:
-    title: '{emoji} User Warned'
+    title: '{emoji} Пользователю Выдано Предупреждение'
     description: |
-      {arrow} **User:** {user} ({userId})
-      {arrow} **Moderator:** {moderator} ({modId})
-      {arrow} **Reason:** {reason}
-    footer: 'Warned by: {moderator}'
+      {arrow} **Пользователь:** {user} ({userId})
+      {arrow} **Модератор:** {moderator} ({modId})
+      {arrow} **Причина:** {reason}
+    footer: 'Предупреждение выдано модератором {moderator}'
