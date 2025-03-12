@@ -18,32 +18,33 @@ rules:
     7. **No Sharing Malicious Software**
     -# > **Includes:** Sharing malware, viruses, 'free nitro' links, harmful scripts [and more]({guidelines_link}).
 
-    By accepting these you also accept [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines). Check out the [full list of rules]({guidelines_link}).
+    You also agree to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines). Check out the [full list of rules]({guidelines_link}).
   welcome: |
     {emoji} Hey {user}, welcome to InterChat!
-    Before you can start chatting, you need to accept some rules. Click continue to proceed.
+    Before you can start using me to chat with people from other servers, you need to accept some rules. Click continue to proceed.
   alreadyAccepted: '{emoji} Du hast die Regeln bereits akzeptiert. Du kannst nun InterChat im Ganzen Genießen.'
   continue: Continue
   accept: Accept
   decline: Decline
-  agreementNote: |
-
-    By accepting these rules, you agree to follow them while using InterChat. Breaking these rules may result in restrictions or bans.
+  agreementNote: By accepting these rules, you agree to follow them while using InterChat. Breaking these rules may result in restrictions or bans.
   hubAgreementNote: |
-
     By accepting these rules, you agree to follow them while chatting in this hub. Breaking these rules may result in removal from the hub.
+
+    ⚠️ **You cannot send messages in this hub until you accept these rules.**
   accepted: |
     {emoji} Welcome to InterChat! You have accepted the bot rules.
     You can now use InterChat to chat with members from other servers!
   declined: |
     {emoji} You have declined the InterChat rules.
-    You won't be able to send messages through InterChat until you accept the rules.
+    -# ⚠️ **You won't be able to use InterChat or chat with other servers until you accept the rules.**
+    -# To try again, send another message or use any InterChat command.
   hubAccepted: |
     {emoji} You have accepted the hub rules.
     You can now start chatting in this hub!
   hubDeclined: |
     {emoji} You have declined the rules for {hubName}.
-    You won't be able to send messages in this hub until you accept its rules.
+    -# ⚠️ **You won't be able to send messages in this hub until you accept its rules.**
+    -# To try again, send another message in this hub.
   noHubRules: This hub has not set any specific rules yet. However, the [general InterChat rules]({rules_link}) still apply.
   hubRules: Hub Rules
 vote:
