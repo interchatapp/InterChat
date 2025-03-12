@@ -25,12 +25,31 @@ rules:
     And remember to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines).
   welcome: |
     {emoji} Hey {user}, welcome to InterChat!
-    Before you can start chatting with people from other servers using InterChat, you need to accept the rules. Use the button below to accept them.
-  accepted: |
-    {emoji} Welcome to InterChat! You have accepted the rules and are now ready to chat with members from other servers!
-    If you are not already in a hub, use `/hub browse` to join one and start chatting. If you have any questions or need help, feel free to ask in the [support server]({support_invite}).
-    If you enjoy using InterChat, please consider [donating]({donateLink}) to support the development costs.
+    Before you can start chatting, you need to accept some rules. Click continue to proceed.
   alreadyAccepted: '{emoji} You have already accepted the rules. You can now use InterChat to its full extent.'
+  continue: Continue
+  accept: Accept
+  decline: Decline
+  agreementNote: |
+
+    By accepting these rules, you agree to follow them while using InterChat. Breaking these rules may result in restrictions or bans.
+  hubAgreementNote: |
+
+    By accepting these rules, you agree to follow them while chatting in this hub. Breaking these rules may result in removal from the hub.
+  accepted: |
+    {emoji} Welcome to InterChat! You have accepted the bot rules.
+    You can now use InterChat to chat with members from other servers!
+  declined: |
+    {emoji} You have declined the InterChat rules.
+    You won't be able to send messages through InterChat until you accept the rules.
+  hubAccepted: |
+    {emoji} You have accepted the hub rules.
+    You can now start chatting in this hub!
+  hubDeclined: |
+    {emoji} You have declined the rules for {hubName}.
+    You won't be able to send messages in this hub until you accept its rules.
+  noHubRules: This hub has not set any specific rules yet. However, the [general InterChat rules]({rules_link}) still apply.
+  hubRules: Hub Rules
 vote:
   description: "## Vote por Interchat\nAl votar, nos apoya ayudando a Interchat a clasificar más alto en las búsquedas. Solo toma un par de clics pero nos ayuda enormemente. ¡Apreciamos profundamente su voto, cada uno cuenta!"
   footer: '¡Gracias por apoyar!'
@@ -360,6 +379,37 @@ hub:
     error: '{emoji} An error occurred while transferring hub ownership.'
     success: '{emoji} Successfully transferred ownership of **{hub}** to {newOwner}. You have been added as a manager.'
     timeout: '{emoji} Hub transfer has timed out.'
+  rules:
+    noRules: "{emoji} This hub has no rules configured yet. Let's add some!"
+    list: "### {emoji} Hub Rules\n{rules}"
+    maxRulesReached: "{emoji} Maximum number of rules ({max}) reached."
+    ruleExists: "{emoji} This rule already exists."
+    selectedRule: "Selected Rule {number}"
+    modal:
+      add:
+        title: Add Hub Rule
+        label: Rule Text
+        placeholder: Enter the rule text (max 1000 characters)
+      edit:
+        title: Edit Hub Rule
+        label: Rule Text
+        placeholder: Enter the new rule text (max 1000 characters)
+    select:
+      placeholder: Select a rule to edit or remove
+      option:
+        label: Rule {number}
+    buttons:
+      add: Add Rule
+      edit: Edit Rule
+      delete: Delete Rule
+      back: Back
+    success:
+      add: '{emoji} Rule added successfully!'
+      edit: '{emoji} Rule updated successfully!'
+      delete: '{emoji} Rule deleted successfully!'
+    view:
+      title: 'Rule {number}'
+      select: Select an action for this rule
 report:
   modal:
     title: Detalles del reporte
