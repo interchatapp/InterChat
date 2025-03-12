@@ -16,6 +16,7 @@
  */
 
 import { ShardMetric } from '#src/services/ShardMetricsService.js';
+import type db from '#src/utils/Db.js';
 import Logger from '#utils/Logger.js';
 import type { Cluster, ClusterManager } from 'discord-hybrid-sharding';
 import type { Hono } from 'hono';
@@ -31,8 +32,9 @@ export default class MainMetricsService {
   public readonly hubGauge: Gauge;
   public readonly shardGauge: Gauge;
   public readonly clusterMemGauge: Gauge;
+  public readonly queryCounter: Counter;
 
-  constructor(clusterManager: ClusterManager) {
+  constructor(clusterManager: ClusterManager, database: typeof db) {
     this.registry = new Registry();
 
     // Enable default Node.js metrics
@@ -79,11 +81,22 @@ export default class MainMetricsService {
       registers: [this.registry],
     });
 
-    this.clusterManager = clusterManager;
+    this.queryCounter = new Counter({
+      name: 'interchat_db_queries_total',
+      help: 'Total number of database queries',
+      registers: [this.registry],
+    });
 
+    this.setupDatabaseListeners(database);
+
+    this.clusterManager = clusterManager;
     this.clusterManager.on('clusterReady', (c) => {
       this.setupClusterListeners(c);
     });
+  }
+
+  private setupDatabaseListeners(database: typeof db) {
+    database.$on('query', () => this.queryCounter.inc());
   }
 
   private setupClusterListeners(cluster: Cluster) {
