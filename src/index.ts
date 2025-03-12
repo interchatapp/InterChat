@@ -22,6 +22,7 @@ import startTasks from '#src/scheduled/startTasks.js';
 import Logger from '#utils/Logger.js';
 import 'dotenv/config';
 import { startApi } from '#src/api/index.js';
+import db from '#src/utils/Db.js';
 
 const shardsPerClusters = 6;
 const clusterManager = new ClusterManager('build/client.js', {
@@ -32,7 +33,7 @@ const clusterManager = new ClusterManager('build/client.js', {
 });
 
 // Set up metrics service with cluster manager
-const metrics = new MainMetricsService(clusterManager);
+const metrics = new MainMetricsService(clusterManager, db);
 startApi(metrics);
 
 clusterManager.extend(new HeartbeatManager({ interval: 10 * 1000, maxMissedHeartbeats: 2 }));
