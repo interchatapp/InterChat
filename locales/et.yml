@@ -108,7 +108,7 @@ connection:
   alreadyConnected: '{emoji} Channel {channel} is already connected to a hub.'
   switchChannel: '{emoji} Select a channel to switch to using the select menu below:'
   switchCalled: '{emoji} Channel switch called, use the command again to view new connection.'
-  switchSuccess: '{emoji} Channel switched. You are now connected from **{channel}**.'
+  switchSuccess: '{emoji} Kanal vahetatud. Te olete nüüd ühendatud **{channel}** kaudu.'
   inviteRemoved: '{emoji} Server Invite removed for this hub.'
   setInviteError: '{emoji} Unable to create invite. Please grant me  the `Create Invite` permission for the connected channel.'
   inviteAdded: '{emoji} Invite Added. Others can now join this server by using `Apps > Message Info/Report` command and `/joinserver` command.'
