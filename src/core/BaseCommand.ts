@@ -123,7 +123,6 @@ export default abstract class BaseCommand {
       }
 
       if (!isEmpty(this.subcommands)) {
-        // biome-ignore lint/complexity/noForEach: <explanation>
         Object.entries(this.subcommands).forEach(([name, data]) => {
           if (data instanceof BaseCommand) {
             slashCommand?.options?.push({
