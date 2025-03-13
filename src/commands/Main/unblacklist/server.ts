@@ -72,7 +72,7 @@ export default class UnblacklistserverSubcommand extends BaseCommand {
       return;
     }
 
-    await blacklistManager.removeBlacklist(blacklist.id);
+    await blacklistManager.removeBlacklist(hub.id);
     await logUserUnblacklist(ctx.client, hub, { id: serverId, mod: ctx.user });
 
     await ctx.replyEmbed('blacklist.removed', {
