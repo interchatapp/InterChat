@@ -48,8 +48,12 @@ rules:
   noHubRules: This hub has not set any specific rules yet. However, the [general InterChat rules]({rules_link}) still apply.
   hubRules: Hub Rules
 vote:
-  description: Голосуя, вы поддерживаете нас, поднимая Interchat выше в поиске topgg.
-  footer: Спасибо за поддержку!
+  description: "Support InterChat by voting on top.gg and unlock exclusive perks! Your vote helps us reach more users."
+  footer: "Vote resets every 12 hours • Thank you for supporting!"
+  button:
+    label: "Vote on top.gg"
+  perks:
+    moreComingSoon: "More perks coming soon! Suggest some in the [support server]({support_invite})."
 network:
   accountTooNew: '{emoji} {user} Ваш аккаунт слишком молодой для отправки сообщений в InterChat. Пожалуйста, попробуйте позже.'
   deleteSuccess: '{emoji} Сообщение {user} было удалено из __**{deleted}/{total}**__ серверов.'
@@ -195,8 +199,8 @@ hub:
       wordsPlaceholder: 'Слова через запятую (* = любой). Например: слово1, *слово2, *слово3, слово4*'
     validating: '{emoji} Проверка правила фильтра...'
     noRules: |
-      ### {emoji} Настроим несколько правил!
-      Используйте кнопку `Add Rule` чтобы создать одно.
+      ### {emoji} Let's set up some anti-swear rules!
+      Use the `Add Rule` button to create one.
   create:
     modal:
       title: Создать Хаб
@@ -212,7 +216,7 @@ hub:
       banner:
         label: URL Баннера
         placeholder: Введите URL Изображения из Imgur.
-    maxHubs: '{emoji} Вы достигли максимального кол-ва хабов(3) которы вы можете создать. Пожалуйста, удалите один из хабов чтобы создать новый.'
+    maxHubs: '{emoji} You have reached the maximum number of hubs ({maxHubs}) you can create. Please delete a hub before creating another one. [Vote for InterChat]({voteUrl}) to create more hubs.'
     invalidName: '{emoji} Некорректное название хаба. Оно не должно содержать `discord`, `clyde` или \`\`\`. Пожалуйста, выберите другое название.'
     nameTaken: '{emoji} Название этого хаба уже занято. Пожалуйста, выберите другое.'
     success: |
@@ -415,6 +419,13 @@ hub:
     view:
       title: 'Правило {number}'
       select: Выберите действие для этого правила
+  welcome:
+    set: '{emoji} Welcome message updated successfully!'
+    removed: '{emoji} Welcome message removed.'
+    voterOnly: '{emoji} Custom welcome messages are a voter-only perk! Vote to unlock this feature.'
+    placeholder: |
+      Welcome {user} to {hubName}! 🎉
+      Make yourself at home and enjoy chatting!'
 report:
   modal:
     title: Подробности Жалобы
