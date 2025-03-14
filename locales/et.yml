@@ -46,8 +46,12 @@ rules:
   noHubRules: This hub has not set any specific rules yet. However, the [general InterChat rules]({rules_link}) still apply.
   hubRules: Hub Rules
 vote:
-  description: By voting you support us by helping InterChat rank higher on topgg searches.
-  footer: Thank you for supporting!
+  description: "Support InterChat by voting on top.gg and unlock exclusive perks! Your vote helps us reach more users."
+  footer: "Vote resets every 12 hours • Thank you for supporting!"
+  button:
+    label: "Vote on top.gg"
+  perks:
+    moreComingSoon: "More perks coming soon! Suggest some in the [support server]({support_invite})."
 network:
   accountTooNew: '{emoji} {user} Your account is too new to send messages using InterChat. Please try again later.'
   deleteSuccess: '{emoji} Message by {user} has been deleted from __**{deleted}/{total}**__ servers.'
@@ -193,7 +197,7 @@ hub:
       wordsPlaceholder: 'Words seperated by comma. (Use * for wildcard). Eg. word1, *word2*, *word3, word4*'
     validating: '{emoji} Validating anti-swear rule...'
     noRules: |
-      ### {emoji} Let's set up some rules!
+      ### {emoji} Let's set up some anti-swear rules!
       Use the `Add Rule` button to create one.
   create:
     modal:
@@ -210,7 +214,7 @@ hub:
       banner:
         label: Banner URL
         placeholder: Enter an Imgur image URL.
-    maxHubs: '{emoji} You have reached the maximum number of hubs (3) you can create. Please delete a hub before creating another one.'
+    maxHubs: '{emoji} You have reached the maximum number of hubs ({maxHubs}) you can create. Please delete a hub before creating another one. [Vote for InterChat]({voteUrl}) to create more hubs.'
     invalidName: '{emoji} Invalid hub name. It must not contain `discord`, `clyde` or \`\`\` . Please choose another name.'
     nameTaken: '{emoji} This hub name is already taken. Please choose another name.'
     success: |
@@ -413,6 +417,13 @@ hub:
     view:
       title: 'Rule {number}'
       select: Select an action for this rule
+  welcome:
+    set: '{emoji} Welcome message updated successfully!'
+    removed: '{emoji} Welcome message removed.'
+    voterOnly: '{emoji} Custom welcome messages are a voter-only perk! Vote to unlock this feature.'
+    placeholder: |
+      Welcome {user} to {hubName}! 🎉
+      Make yourself at home and enjoy chatting!'
 report:
   modal:
     title: Report Details
