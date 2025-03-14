@@ -37,16 +37,18 @@ type LogChannel {
 
 // Models
 model Hub {
-  id                  String         @id @default(auto()) @map("_id") @db.ObjectId
+  id                  String               @id @default(auto()) @map("_id") @db.ObjectId
   name                String
   description         String
-  owner               User       @relation(fields: [ownerId], references: [id])
-  ownerId             String         @db.String
+  owner               User                 @relation(fields: [ownerId], references: [id])
+  ownerId             String               @db.String
   iconUrl             String
   bannerUrl           String?
-  private             Boolean        @default(true)
-  locked              Boolean        @default(false)
-  appealCooldownHours Int            @default(168)
+  welcomeMessage      String?
+  private             Boolean              @default(true)
+  locked              Boolean              @default(false)
+  appealCooldownHours Int                  @default(168)
+  lastActive          DateTime             @default(now())
   settings            Int
   moderators          HubModerator[]
   connections         Connection[]
@@ -57,8 +59,8 @@ model Hub {
   blockWords          BlockWord[]
   infractions         Infraction[] // Combined user and server infractions
   invites             HubInvite[]
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
 
   @@unique([name])
   @@index([ownerId])
@@ -77,7 +79,7 @@ model HubUpvote {
   userId    String   @db.String
   createdAt DateTime @default(now())
   hub       Hub      @relation(fields: [hubId], references: [id])
-  user      User @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 
   @@unique([hubId, userId])
   @@index([hubId])
@@ -92,19 +94,19 @@ model HubReview {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   hub       Hub      @relation(fields: [hubId], references: [id])
-  user      User @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 
   @@unique([hubId, userId])
   @@index([hubId])
 }
 
 model HubModerator {
-  id     String   @id @default(auto()) @map("_id") @db.ObjectId
-  hubId  String   @db.ObjectId
-  userId String   @db.String
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  hubId  String @db.ObjectId
+  userId String @db.String
   role   Role
-  hub    Hub      @relation(fields: [hubId], references: [id])
-  user   User @relation(fields: [userId], references: [id])
+  hub    Hub    @relation(fields: [hubId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 
   @@unique([hubId, userId])
 }
@@ -135,7 +137,7 @@ model Infraction {
   hubId       String           @db.ObjectId
   type        InfractionType   @default(BLACKLIST)
   status      InfractionStatus @default(ACTIVE)
-  moderator   User         @relation(name: "issuedInfractions", fields: [moderatorId], references: [id])
+  moderator   User             @relation(name: "issuedInfractions", fields: [moderatorId], references: [id])
   moderatorId String           @db.String
   reason      String
   expiresAt   DateTime?
@@ -144,8 +146,8 @@ model Infraction {
   notified    Boolean          @default(false)
 
   // For user infractions
-  user   User? @relation(name: "infractions", fields: [userId], references: [id])
-  userId String?   @db.String
+  user   User?   @relation(name: "infractions", fields: [userId], references: [id])
+  userId String? @db.String
 
   // For server infractions
   serverId   String?

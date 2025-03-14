@@ -35,20 +35,35 @@ export default class Ready extends BaseEventListener<'guildCreate'> {
     await logGuildJoin(guild);
 
     const { guildOwner, guildChannel } = await getGuildOwnerAndFirstChannel(guild);
+    const purpleDot = this.getEmoji('dot');
 
     const embed = new EmbedBuilder()
-      .setTitle('👋 Welcome to InterChat')
+      .setTitle('👋 Welcome to InterChat!')
       .setThumbnail(guild.client.user.displayAvatarURL())
       .setDescription(
         stripIndents`
-        Thanks for adding InterChat to your server! I am a discord bot that lets you chat with people from other servers in real-time. 🚀
-        ### Quick Start
-        1. Run \`/setup\` to quickly connect to your first hub!
-        2. Or browse & join hubs from [interchat.tech/hubs](${Constants.Links.Website}/hubs) like a pro 😎
-        3. Need help? Join our [support server](${Constants.Links.SupportInvite})!
+        Thanks for adding InterChat! Let's get you started with cross-server chatting in just a few steps:
 
-        🌟 If you liked InterChat, consider [donating](${Constants.Links.Donate}) to support the project!
-      `,
+        ### 🚀 Quick Setup
+        1. Run \`/setup\` to connect to your first hub
+        2. Choose from our curated list of active hubs
+        3. Start chatting across servers instantly!
+
+        ### 💡 Key Features
+        ${purpleDot} Real-time cross-server messaging
+        ${purpleDot} Custom moderation tools & filters
+        ${purpleDot} Message reactions & formatting
+        ${purpleDot} Server stats & analytics
+
+        ### 🔗 Useful Links
+        ${purpleDot} [Browse All Hubs](${Constants.Links.Website}/hubs)
+        ${purpleDot} [Support Server](${Constants.Links.SupportInvite})
+        ${purpleDot} [Documentation](${Constants.Links.Website}/docs)
+        ${purpleDot} [Vote for Us](${Constants.Links.Vote})
+
+        Need help? Join our [support server](${Constants.Links.SupportInvite}) - we're here to help! 
+        If you enjoy InterChat, consider [supporting us](${Constants.Links.Donate}) 💝
+        `,
       )
       .setColor(Constants.Colors.interchat)
       .setFooter({
@@ -58,14 +73,19 @@ export default class Ready extends BaseEventListener<'guildCreate'> {
 
     const buttonsRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
-        .setLabel('ToS & Privacy')
-        .setURL(`${Constants.Links.Website}/legal`)
-        .setEmoji(this.getEmoji('lock_icon'))
+        .setLabel('Setup Guide')
+        .setURL(`${Constants.Links.Website}/docs`)
+        .setEmoji(this.getEmoji('link_icon'))
         .setStyle(ButtonStyle.Link),
       new ButtonBuilder()
-        .setLabel('Discord')
+        .setLabel('Support Server')
         .setURL(Constants.Links.SupportInvite)
         .setEmoji(this.getEmoji('code_icon'))
+        .setStyle(ButtonStyle.Link),
+      new ButtonBuilder()
+        .setLabel('ToS & Privacy')
+        .setURL(`${Constants.Links.Website}/terms`)
+        .setEmoji(this.getEmoji('lock_icon'))
         .setStyle(ButtonStyle.Link),
       donateButton,
     );

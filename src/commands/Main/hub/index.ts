@@ -21,6 +21,7 @@ import HubConfigAntiSwearSubcommand from '#src/commands/Main/hub/config/anti-swe
 import HubConfigAppealCooldownSubcommand from '#src/commands/Main/hub/config/appealCooldown.js';
 import HubConfigLoggingSubcommand from '#src/commands/Main/hub/config/logging.js';
 import HubConfigSettingsSubcommand from '#src/commands/Main/hub/config/settings.js';
+import HubConfigWelcomeSubcommand from '#src/commands/Main/hub/config/welcome.js';
 import HubCreateSubCommand from '#src/commands/Main/hub/create.js';
 import HubDeleteSubcommand from '#src/commands/Main/hub/delete.js';
 import HubEditSubcommand from '#src/commands/Main/hub/edit.js';
@@ -65,6 +66,7 @@ export default class HubCommand extends BaseCommand {
       subcommands: {
         config: {
           logging: new HubConfigLoggingSubcommand(),
+          welcome: new HubConfigWelcomeSubcommand(),
           settings: new HubConfigSettingsSubcommand(),
           'anti-swear': new HubConfigAntiSwearSubcommand(),
           'set-appeal-cooldown': new HubConfigAppealCooldownSubcommand(),

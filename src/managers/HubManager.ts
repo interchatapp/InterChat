@@ -99,6 +99,7 @@ export default class HubManager {
         | 'description'
         | 'iconUrl'
         | 'bannerUrl'
+        | 'welcomeMessage'
         | 'private'
         | 'locked'
         | 'appealCooldownHours'

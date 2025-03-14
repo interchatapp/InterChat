@@ -74,7 +74,7 @@ export default class ConnectCommand extends BaseCommand {
     const hubJoinService = new HubJoinService(ctx, locale);
 
     if (hubInviteOrName) {
-      await hubJoinService.joinHub(channel, hubInviteOrName);
+      await hubJoinService.joinHub(channel, { hubInviteOrName });
     }
     else {
       const dot = ctx.getEmoji('dot');

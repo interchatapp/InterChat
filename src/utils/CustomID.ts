@@ -55,9 +55,11 @@ export class CustomID {
 
     const invalidChars = ['&'];
 
-    const isValid = values.every((value) => !invalidChars.some((char) => value.includes(char)));
+    const isValid = values.every(
+      (value) => !invalidChars.some((char) => value.includes(char)),
+    );
 
-    if (isValid) this.customId += `&${values.join('&')}`;
+    if (isValid) this.customId += `&${values.filter((v) => v.length > 0).join('&')}`;
     else throw new TypeError('CustomID argument cannot contain "&".');
 
     return this;

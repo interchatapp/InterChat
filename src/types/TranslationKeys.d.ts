@@ -4,12 +4,33 @@
 */
 
 export type TranslationKeys = {
-  'rules.rules': 'emoji';
+  'rules.rules':
+    | 'emoji'
+    | 'guidelines_link'
+    | 'guidelines_link'
+    | 'guidelines_link'
+    | 'guidelines_link'
+    | 'guidelines_link'
+    | 'guidelines_link'
+    | 'guidelines_link'
+    | 'guidelines_link';
   'rules.welcome': 'emoji' | 'user';
-  'rules.accepted': 'emoji' | 'support_invite' | 'donateLink';
   'rules.alreadyAccepted': 'emoji';
+  'rules.continue': never;
+  'rules.accept': never;
+  'rules.decline': never;
+  'rules.agreementNote': never;
+  'rules.hubAgreementNote': never;
+  'rules.accepted': 'emoji';
+  'rules.declined': 'emoji';
+  'rules.hubAccepted': 'emoji';
+  'rules.hubDeclined': 'emoji' | 'hubName';
+  'rules.noHubRules': 'rules_link';
+  'rules.hubRules': never;
   'vote.description': never;
   'vote.footer': never;
+  'vote.button.label': never;
+  'vote.perks.moreComingSoon': never;
   'network.accountTooNew': 'emoji' | 'user';
   'network.deleteSuccess': 'emoji' | 'user' | 'deleted' | 'total';
   'network.editSuccess': 'emoji' | 'user' | 'edited' | 'total';
@@ -112,7 +133,7 @@ export type TranslationKeys = {
   'hub.create.modal.icon.placeholder': never;
   'hub.create.modal.banner.label': never;
   'hub.create.modal.banner.placeholder': never;
-  'hub.create.maxHubs': 'emoji';
+  'hub.create.maxHubs': 'emoji' | 'maxHubs' | 'voteUrl';
   'hub.create.invalidName': 'emoji';
   'hub.create.nameTaken': 'emoji';
   'hub.create.success': 'name' | 'support_invite' | 'donateLink';
@@ -214,6 +235,32 @@ export type TranslationKeys = {
   'hub.transfer.error': 'emoji';
   'hub.transfer.success': 'emoji' | 'hub' | 'newOwner';
   'hub.transfer.timeout': 'emoji';
+  'hub.rules.noRules': 'emoji';
+  'hub.rules.list': 'emoji' | 'rules';
+  'hub.rules.maxRulesReached': 'emoji' | 'max';
+  'hub.rules.ruleExists': 'emoji';
+  'hub.rules.selectedRule': 'number';
+  'hub.rules.modal.add.title': never;
+  'hub.rules.modal.add.label': never;
+  'hub.rules.modal.add.placeholder': never;
+  'hub.rules.modal.edit.title': never;
+  'hub.rules.modal.edit.label': never;
+  'hub.rules.modal.edit.placeholder': never;
+  'hub.rules.select.placeholder': never;
+  'hub.rules.select.option.label': 'number';
+  'hub.rules.buttons.add': never;
+  'hub.rules.buttons.edit': never;
+  'hub.rules.buttons.delete': never;
+  'hub.rules.buttons.back': never;
+  'hub.rules.success.add': 'emoji';
+  'hub.rules.success.edit': 'emoji';
+  'hub.rules.success.delete': 'emoji';
+  'hub.rules.view.title': 'number';
+  'hub.rules.view.select': never;
+  'hub.welcome.set': 'emoji';
+  'hub.welcome.removed': 'emoji';
+  'hub.welcome.voterOnly': 'emoji';
+  'hub.welcome.placeholder': 'user' | 'hubName';
   'report.modal.title': never;
   'report.modal.other.label': never;
   'report.modal.other.placeholder': never;

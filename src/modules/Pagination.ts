@@ -324,7 +324,7 @@ export class Pagination {
         await interaction.deleteReply();
       }
       else if (ackd === false) {
-        await interaction.message.edit({ components: [] });
+        await interaction.message.edit({ components: [] }).catch(() => null);
       }
     });
   }

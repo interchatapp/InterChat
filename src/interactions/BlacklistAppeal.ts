@@ -180,7 +180,7 @@ export default class AppealInteraction {
       Logger.error(`Failed to fetch appealer for blacklist appeal review: ${targetId}`);
       await interaction.followUp({
         content: 'I couldn\'t DM appeal approval to appealer.',
-        ephemeral: true,
+        flags: ['Ephemeral'],
       });
       return;
     }

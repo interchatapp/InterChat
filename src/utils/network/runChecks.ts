@@ -19,16 +19,17 @@ import BlacklistManager from '#src/managers/BlacklistManager.js';
 import type HubManager from '#src/managers/HubManager.js';
 import type HubSettingsManager from '#src/managers/HubSettingsManager.js';
 
-import type { User as DbUser } from '@prisma/client';
-import { stripIndents } from 'common-tags';
-import { type Awaitable, EmbedBuilder, type Message } from 'discord.js';
 import NSFWDetector from '#src/modules/NSFWDetection.js';
+import UserDbService from '#src/services/UserDbService.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { sendBlacklistNotif } from '#src/utils/moderation/blacklistUtils.js';
+import { checkBlockedWords } from '#src/utils/network/antiSwearChecks.js';
 import Constants from '#utils/Constants.js';
 import { t } from '#utils/Locale.js';
 import { containsInviteLinks, fetchUserLocale, replaceLinks } from '#utils/Utils.js';
-import { checkBlockedWords } from '#src/utils/network/antiSwearChecks.js';
+import type { User as DbUser } from '@prisma/client';
+import { stripIndents } from 'common-tags';
+import { type Awaitable, EmbedBuilder, type Message } from 'discord.js';
 
 export interface CheckResult {
   passed: boolean;
@@ -209,11 +210,22 @@ async function checkNewUser(message: Message<true>, opts: CheckFunctionOpts): Pr
   return { passed: true };
 }
 
-function checkMessageLength(message: Message<true>): CheckResult {
-  if (message.content.length > 1000) {
+const MAX_MESSAGE_LENGTH = {
+  DEFAULT: 800,
+  VOTER: 2000,
+};
+
+async function checkMessageLength(
+  message: Message<true>,
+  { userData }: CheckFunctionOpts,
+): Promise<CheckResult> {
+  const isVoter = await new UserDbService().userVotedToday(message.author.id, userData);
+  const maxLength = isVoter ? MAX_MESSAGE_LENGTH.VOTER : MAX_MESSAGE_LENGTH.DEFAULT;
+
+  if (message.content.length > maxLength) {
     return {
       passed: false,
-      reason: 'Your message is too long! Please keep it under 1000 characters.',
+      reason: `${getEmoji('x_icon', message.client)} Messages cannot exceed ${maxLength} characters. ${!isVoter ? `Vote for InterChat to send longer messages (up to ${MAX_MESSAGE_LENGTH.VOTER} characters)!` : ''}`,
     };
   }
   return { passed: true };

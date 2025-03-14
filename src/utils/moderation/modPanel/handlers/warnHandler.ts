@@ -101,11 +101,11 @@ export default class WarnHandler implements ModAction {
     }
 
     await interaction.followUp({
-      ephemeral: true,
       content: t('warn.success', interaction.locale as supportedLocaleCodes, {
         emoji: getEmoji('tick_icon', interaction.client),
         name: (await interaction.client.users.fetch(userId)).username,
       }),
+      flags: ['Ephemeral'],
     });
 
     const { embed, buttons } = await buildModPanel(interaction, originalMsg);

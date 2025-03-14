@@ -76,8 +76,8 @@ export default class UserDbService {
     return user;
   }
 
-  public async userVotedToday(id: Snowflake): Promise<boolean> {
-    const user = await this.getUser(id);
+  public async userVotedToday(id: Snowflake, userData?: User): Promise<boolean> {
+    const user = userData ?? (await this.getUser(id));
     if (!user?.lastVoted) return false;
 
     const lastVoteTime = new Date(user.lastVoted).getTime();

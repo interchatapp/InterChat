@@ -17,6 +17,7 @@
 
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
+import UserDbService from '#src/services/UserDbService.js';
 import { fetchUserData, fetchUserLocale } from '#src/utils/Utils.js';
 import Constants from '#utils/Constants.js';
 import { t } from '#utils/Locale.js';
@@ -43,13 +44,13 @@ export default class Vote extends BaseCommand {
     const userData = await fetchUserData(id);
     const voteCount = String(userData?.voteCount ?? 0);
     const locale = userData ? await fetchUserLocale(userData) : 'en';
+    const hasVoted = await new UserDbService().userVotedToday(id, userData ?? undefined);
 
-    const embed = new EmbedBuilder()
+    const voteStatusEmoji = ctx.getEmoji(hasVoted ? 'tick_icon' : 'x_icon');
+
+    const perksEmbed = new EmbedBuilder()
+      .setAuthor({ name: 'Vote for InterChat' })
       .setDescription(t('vote.description', locale))
-      .setFooter({
-        text: t('vote.footer', locale),
-        iconURL: 'https://i.imgur.com/NKKmav5.gif',
-      })
       .setFields(
         {
           name: `${ctx.getEmoji('topggSparkles')} Current Streak:`,
@@ -63,17 +64,42 @@ export default class Vote extends BaseCommand {
             : `[Vote Now](${Constants.Links.Vote})!`,
           inline: true,
         },
+        {
+          name: '\u200B',
+          value: '\u200B',
+        },
+        {
+          name: '🎁 Voter Perks',
+          value: [
+            '**📝 Message Features**',
+            `- ${voteStatusEmoji} Increased message length (2000 characters)`,
+            `- ${voteStatusEmoji} Send stickers in hubs`,
+            '',
+            '**🌟 Hub Features**',
+            `- ${voteStatusEmoji} Create up to 4 hubs`,
+            `- ${voteStatusEmoji} Custom welcome messages`,
+            '',
+            '**✨ Extra Features**',
+            `- ${voteStatusEmoji} Voter role in support server`,
+            `- ${voteStatusEmoji} Exclusive voter badge in /profile`,
+            `-# ${t('vote.perks.moreComingSoon', locale, { support_invite: Constants.Links.SupportInvite })}`,
+          ].join('\n'),
+        },
       )
-      .setColor(Constants.Colors.invisible);
+      .setColor(hasVoted ? 'Green' : Constants.Colors.invisible)
+      .setFooter({
+        text: t('vote.footer', locale),
+        iconURL: 'https://i.imgur.com/NKKmav5.gif',
+      });
 
     const button = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
         .setStyle(ButtonStyle.Link)
-        .setLabel('Vote')
+        .setLabel(t('vote.button.label', locale))
         .setEmoji(ctx.getEmoji('topggSparkles'))
         .setURL(Constants.Links.Vote),
     );
 
-    await ctx.reply({ embeds: [embed], components: [button] });
+    await ctx.reply({ embeds: [perksEmbed], components: [button] });
   }
 }
