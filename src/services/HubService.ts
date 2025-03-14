@@ -15,15 +15,15 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Hub, PrismaClient, Role } from '@prisma/client';
-import type { Redis } from 'ioredis';
 import HubManager from '#src/managers/HubManager.js';
 import { HubSettingsBits } from '#src/modules/BitFields.js';
-import type { ConvertDatesToString } from '#types/Utils.d.ts';
 import { deleteConnections } from '#src/utils/ConnectedListUtils.js';
 import Constants, { RedisKeys } from '#src/utils/Constants.js';
 import db from '#src/utils/Db.js';
 import getRedis from '#src/utils/Redis.js';
+import type { ConvertDatesToString } from '#types/Utils.d.ts';
+import type { Hub, PrismaClient, Role } from '@prisma/client';
+import type { Redis } from 'ioredis';
 
 export interface HubCreationData {
   name: string;
@@ -48,6 +48,7 @@ export class HubService {
 
     return {
       ...parsedHub,
+      lastActive: new Date(parsedHub.lastActive),
       createdAt: new Date(parsedHub.createdAt),
       updatedAt: new Date(parsedHub.updatedAt),
     };
@@ -167,5 +168,27 @@ export class HubService {
       .map((mod) => this.createHubManager(mod.hub));
 
     return [...ownedHubs, ...modHubs];
+  }
+
+  /**
+   * Fetches the most popular hubs based on member count and activity
+   * @param limit Maximum number of hubs to return (default: 5)
+   * @returns Array of HubManager instances for the most popular hubs
+   */
+  async getPopularHubs(limit: number = 5) {
+    const hubs = await this.db.hub.findMany({
+      where: { private: false, locked: false },
+      orderBy: [
+        { lastActive: 'desc' },
+        { connections: { _count: 'desc' } },
+      ],
+      include: { _count: { select: { connections: true } } },
+      take: limit,
+    });
+
+    return hubs.map((hub) => ({
+      totalConnections: hub._count.connections,
+      hub: this.createHubManager(hub),
+    }));
   }
 }

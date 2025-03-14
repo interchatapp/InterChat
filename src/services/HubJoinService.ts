@@ -24,7 +24,7 @@ import type { TranslationKeys } from '#types/TranslationKeys.d.ts';
 import { createConnection } from '#utils/ConnectedListUtils.js';
 import db from '#utils/Db.js';
 import { type supportedLocaleCodes, t } from '#utils/Locale.js';
-import { getOrCreateWebhook, getReplyMethod } from '#utils/Utils.js';
+import { fetchUserData, getOrCreateWebhook, getReplyMethod } from '#utils/Utils.js';
 import { logJoinToHub } from '#utils/hub/logger/JoinLeave.js';
 import { sendToHub } from '#utils/hub/utils.js';
 import { stripIndents } from 'common-tags';
@@ -36,6 +36,7 @@ import type {
 // eslint-disable-next-line no-duplicate-imports
 import type { CacheContext } from '#src/core/CommandContext/Context.js';
 import { checkRule } from '#src/utils/network/antiSwearChecks.js';
+import { showRulesScreening } from '#src/interactions/RulesScreening.js';
 
 export class HubJoinService {
   private readonly interaction:
@@ -70,17 +71,29 @@ export class HubJoinService {
     });
 
     const randomHub = hub[Math.floor(Math.random() * hub.length)];
-    return await this.joinHub(channel, randomHub.name);
+    return await this.joinHub(channel, { hubInviteOrName: randomHub.name });
   }
 
-  async joinHub(channel: GuildTextBasedChannel, hubInviteOrName: string | undefined) {
-    if (!this.interaction.deferred) {
+  async joinHub(
+    channel: GuildTextBasedChannel,
+    {
+      hubInviteOrName,
+      hubId,
+    }: {
+      hubInviteOrName?: string;
+      hubId?: string;
+    },
+  ) {
+    if (!this.interaction.deferred && !this.interaction.replied) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
       await this.interaction.deferReply({ flags: ['Ephemeral'] });
     }
 
-    const hub = await this.fetchHub(hubInviteOrName);
+    const hub = hubId
+      ? await this.hubService.fetchHub(hubId)
+      : await this.fetchHub(hubInviteOrName);
+
     if (!hub) {
       await this.interaction.editReply({
         content: t('hub.notFound', this.locale, {
@@ -129,6 +142,18 @@ export class HubJoinService {
       return false;
     }
 
+    // Show hub rules before other checks
+    const hubRules = hub.getRules();
+    if (hubRules.length > 0) {
+      await showRulesScreening(
+        this.interaction,
+        await fetchUserData(this.interaction.user.id),
+        hub,
+      );
+      return false;
+    }
+
+    // Rest of the checks...
     for (const rule of await hub.fetchAntiSwearRules()) {
       const match = checkRule(channel.guild.name, rule);
       if (match) {
@@ -223,6 +248,10 @@ export class HubJoinService {
     const replyMethod = getReplyMethod(this.interaction);
     await this.interaction[replyMethod](replyData);
 
+    await this.announceJoin(hub);
+  }
+
+  private async announceJoin(hub: HubManager) {
     const totalConnections =
       (await hub.connections.fetch())?.reduce(
         (total, c) => total + (c.data.connected ? 1 : 0),
@@ -234,18 +263,24 @@ export class HubJoinService {
         ? 'There are no other servers connected to this hub yet. *cricket noises* 🦗'
         : `We now have ${totalConnections} servers in this hub! 🎉`;
 
-    // Announce to hub
-    await sendToHub(hub.id, {
-      username: `InterChat | ${hub.data.name}`,
-      avatarURL: hub.data.iconUrl,
-      content: stripIndents`
+    // Custom welcome message if set
+    const welcomeMessage = hub.data.welcomeMessage
+      ?.replace('{user}', `<@${this.interaction.user.id}>`)
+      ?.replace('{hubName}', hub.data.name)
+      ?? stripIndents`
         A new server has joined the hub! ${this.getEmoji('clipart')}
 
         **Server Name:** __${this.interaction.guild.name}__
         **Member Count:** __${this.interaction.guild.memberCount}__
 
         ${serverCountMessage}
-      `,
+      `;
+
+    // Announce to hub
+    await sendToHub(hub.id, {
+      username: `InterChat | ${hub.data.name}`,
+      avatarURL: hub.data.iconUrl,
+      content: welcomeMessage,
     });
 
     // Send log

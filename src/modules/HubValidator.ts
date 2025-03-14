@@ -21,6 +21,7 @@ import { type HubCreationData, HubService } from '#src/services/HubService.js';
 import Constants from '#src/utils/Constants.js';
 import { type EmojiKeys, getEmoji } from '#src/utils/EmojiUtils.js';
 import { type supportedLocaleCodes, t } from '#src/utils/Locale.js';
+import UserDbService from '#src/services/UserDbService.js';
 
 export interface ValidationResult {
   isValid: boolean;
@@ -53,7 +54,7 @@ export class HubValidator {
     const uniqueNameValidation = await this.validateUniqueName(data.name);
     if (!uniqueNameValidation.isValid) return uniqueNameValidation;
 
-    const hubLimitValidation = this.validateHubLimit(data.ownerId, existingHubs);
+    const hubLimitValidation = await this.validateHubLimit(data.ownerId, existingHubs);
     if (!hubLimitValidation.isValid) return hubLimitValidation;
 
     const imageValidation = this.validateImages(data.iconUrl, data.bannerUrl);
@@ -87,17 +88,25 @@ export class HubValidator {
     return { isValid: true };
   }
 
-  private validateHubLimit(ownerId: string, existingHubs: HubManager[]): ValidationResult {
+  private async validateHubLimit(
+    ownerId: string,
+    existingHubs: HubManager[],
+  ): Promise<ValidationResult> {
     const userHubCount = existingHubs.reduce(
       (acc, hub) => (hub.isOwner(ownerId) ? acc + 1 : acc),
       0,
     );
 
-    if (userHubCount >= HubValidator.MAX_HUBS_PER_USER) {
+    const isVoter = await new UserDbService().userVotedToday(ownerId);
+    const maxHubs = isVoter ? 4 : 3;
+
+    if (userHubCount >= maxHubs) {
       return {
         isValid: false,
         error: t('hub.create.maxHubs', this.locale, {
           emoji: this.getEmoji('x_icon'),
+          maxHubs: String(maxHubs),
+          voteUrl: Constants.Links.Vote,
         }),
       };
     }
