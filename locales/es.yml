@@ -48,8 +48,12 @@ rules:
   noHubRules: This hub has not set any specific rules yet. However, the [general InterChat rules]({rules_link}) still apply.
   hubRules: Hub Rules
 vote:
-  description: "## Vote por Interchat\nAl votar, nos apoya ayudando a Interchat a clasificar más alto en las búsquedas. Solo toma un par de clics pero nos ayuda enormemente. ¡Apreciamos profundamente su voto, cada uno cuenta!"
-  footer: '¡Gracias por apoyar!'
+  description: "Support InterChat by voting on top.gg and unlock exclusive perks! Your vote helps us reach more users."
+  footer: "Vote resets every 12 hours • Thank you for supporting!"
+  button:
+    label: "Vote on top.gg"
+  perks:
+    moreComingSoon: "More perks coming soon! Suggest some in the [support server]({support_invite})."
 network:
   accountTooNew: '{emoji} {user} Su cuenta es demasiado nueva para enviar mensajes usando InterChat. Por favor, inténtelo de nuevo más tarde.'
   deleteSuccess: '{emoji} El mensaje de {user} se ha eliminado de __**{deleted} de {total}**__ servidores.'
@@ -192,7 +196,7 @@ hub:
       wordsPlaceholder: 'Words seperated by comma. (Use * for wildcard). Eg. word1, *word2*, *word3, word4*'
     validating: '{emoji} Validating anti-swear rule...'
     noRules: |
-      ### {emoji} Let's set up some rules!
+      ### {emoji} Let's set up some anti-swear rules!
       Use the `Add Rule` button to create one.
   create:
     modal:
@@ -209,7 +213,7 @@ hub:
       banner:
         label: URL de banner
         placeholder: Ingrese una URL de imagen Imgur.
-    maxHubs: '{emoji} Has alcanzado el número máximo de centros (3) que puedes crear. Elimine un centro antes de crear otro.'
+    maxHubs: '{emoji} You have reached the maximum number of hubs ({maxHubs}) you can create. Please delete a hub before creating another one. [Vote for InterChat]({voteUrl}) to create more hubs.'
     invalidName: '{emoji} Nombre de la concentración no válida. No debe contener `discord`,`clyde` o `/`. Elija otro nombre.'
     nameTaken: '{emoji} Este nombre del centro ya está tomado. Elija otro nombre.'
     success: |
@@ -407,6 +411,13 @@ hub:
     view:
       title: 'Rule {number}'
       select: Select an action for this rule
+  welcome:
+    set: '{emoji} Welcome message updated successfully!'
+    removed: '{emoji} Welcome message removed.'
+    voterOnly: '{emoji} Custom welcome messages are a voter-only perk! Vote to unlock this feature.'
+    placeholder: |
+      Welcome {user} to {hubName}! 🎉
+      Make yourself at home and enjoy chatting!'
 report:
   modal:
     title: Detalles del reporte
