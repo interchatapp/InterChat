@@ -77,7 +77,7 @@ export default class HubConfigWelcomeSubcommand extends BaseCommand {
             .setLabel('Welcome Message')
             .setStyle(TextInputStyle.Paragraph)
             .setPlaceholder(
-              'Welcome {user} to {hubName}! 🎉\nMake yourself at home and enjoy chatting!',
+              'Welcome {user} to {hubName}! 🎉\nMake yourself at home, we now have {totalConnections} servers!',
             )
             .setValue(hub.data.welcomeMessage ?? '')
             .setMaxLength(1000)

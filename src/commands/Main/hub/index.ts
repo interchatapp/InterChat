@@ -20,6 +20,7 @@ import BrowseCommand from '#src/commands/Main/hub/browse.js';
 import HubConfigAntiSwearSubcommand from '#src/commands/Main/hub/config/anti-swear.js';
 import HubConfigAppealCooldownSubcommand from '#src/commands/Main/hub/config/appealCooldown.js';
 import HubConfigLoggingSubcommand from '#src/commands/Main/hub/config/logging.js';
+import HubConfigRulesSubcommand from '#src/commands/Main/hub/config/rules.js';
 import HubConfigSettingsSubcommand from '#src/commands/Main/hub/config/settings.js';
 import HubConfigWelcomeSubcommand from '#src/commands/Main/hub/config/welcome.js';
 import HubCreateSubCommand from '#src/commands/Main/hub/create.js';
@@ -65,6 +66,7 @@ export default class HubCommand extends BaseCommand {
       types: { slash: true, prefix: true },
       subcommands: {
         config: {
+          rules: new HubConfigRulesSubcommand(),
           logging: new HubConfigLoggingSubcommand(),
           welcome: new HubConfigWelcomeSubcommand(),
           settings: new HubConfigSettingsSubcommand(),

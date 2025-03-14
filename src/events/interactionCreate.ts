@@ -87,7 +87,7 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
       return { shouldContinue: false, dbUser: null };
     }
 
-    if (this.shouldShowRules(interaction, dbUser)) {
+    if (this.shouldShowRules(interaction, dbUser) && interaction.isRepliable()) {
       await showRulesScreening(interaction, dbUser);
       return { shouldContinue: false, dbUser: null };
     }
@@ -182,7 +182,7 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
       interaction.isButton() &&
       CustomID.parseCustomId(interaction.customId).prefix === 'rulesScreen';
 
-    return dbUser?.acceptedRules === false && !isRulesScreenButton;
+    return !dbUser?.acceptedRules && !isRulesScreenButton;
   }
 
   private isInMaintenance(interaction: Interaction) {

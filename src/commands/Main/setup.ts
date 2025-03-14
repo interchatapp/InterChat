@@ -260,7 +260,7 @@ export default class SetupCommand extends BaseCommand {
           )
           .join('\n')}
         
-        **Tip:** You can always join more hubs later using \`/hub join\`
+        **Tip:** You can always join more hubs later using \`/connect\` and [the hub list](https://interchat.app/hubs)].
         `,
       )
       .setColor(Constants.Colors.interchat)
@@ -565,6 +565,19 @@ export default class SetupCommand extends BaseCommand {
       });
       return;
     }
+
+    // Replace the finish button row with a new one
+    const newFinishButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      this.createFinishButton(hubId, channelId)
+        .setDisabled(true)
+        .setEmoji('🎉')
+        .setLabel('Setup Complete!'),
+    );
+
+    // Update the message with the modified components
+    await interaction.update({
+      components: [interaction.message.components[0], newFinishButtonRow],
+    });
 
     // Join the hub using HubJoinService
     const hubJoinService = new HubJoinService(

@@ -16,48 +16,77 @@
  */
 
 import { showRulesScreening } from '#src/interactions/RulesScreening.js';
-import { HubService } from '#src/services/HubService.js';
+import ConnectionManager from '#src/managers/ConnectionManager.js';
+import HubManager from '#src/managers/HubManager.js';
 import { getConnectionHubId } from '#src/utils/ConnectedListUtils.js';
+import db from '#src/utils/Db.js';
 import { updateLeaderboards } from '#src/utils/Leaderboard.js';
 import { runChecks } from '#src/utils/network/runChecks.js';
 import { fetchUserData } from '#src/utils/Utils.js';
 import type { Message } from 'discord.js';
 import { BroadcastService } from './BroadcastService.js';
-import HubManager from '#src/managers/HubManager.js';
+import { getRedis } from '#src/utils/Redis.js';
+import { RedisKeys } from '#src/utils/Constants.js';
 
 type messageProcessingResult = { handled: false; hub: null } | { handled: true; hub: HubManager };
 
 export class MessageProcessor {
   private readonly broadcastService = new BroadcastService();
-  private readonly hubService = new HubService();
 
-  static async getHubAndConnections(channelId: string, hubService: HubService) {
+  static async getHubAndConnections(channelId: string, userId: string) {
     const connectionHubId = await getConnectionHubId(channelId);
     if (!connectionHubId) return null;
 
-    const hub = await hubService.fetchHub(connectionHubId);
+    const hub = await db.hub.findFirst({
+      where: { id: connectionHubId },
+      include: {
+        connections: { where: { connected: true } },
+        rulesAcceptances: { where: { userId }, take: 1 },
+      },
+    });
     if (!hub) return null;
 
-    const allConnections = await hub.connections.fetch();
-    const hubConnections = allConnections.filter(
-      (c) => c.data.connected && c.data.channelId !== channelId,
-    );
-    const connection = allConnections.find((c) => c.data.channelId === channelId);
-    if (!connection?.data.connected) return null;
+    const connectionIndex = hub.connections.findIndex((c) => c.channelId === channelId);
+    const connection = hub.connections.splice(connectionIndex, 1)[0];
+    if (!connection) return null;
 
-    return { hub, hubConnections, connection };
+    return {
+      hub: new HubManager(hub),
+      hubRaw: hub,
+      connection: new ConnectionManager(connection),
+      hubConnections: hub.connections.map((c) => new ConnectionManager(c)),
+    };
   }
 
   async processHubMessage(message: Message<true>): Promise<messageProcessingResult> {
-    const hubData = await MessageProcessor.getHubAndConnections(message.channelId, this.hubService);
-    if (!hubData) return { handled: false, hub: null };
+    const hubAndConnections = await MessageProcessor.getHubAndConnections(
+      message.channelId,
+      message.author.id,
+    );
 
-    const { hub, hubConnections, connection } = hubData;
+    if (!hubAndConnections) return { handled: false, hub: null };
+    const { hub, hubRaw, hubConnections, connection } = hubAndConnections;
 
     const userData = await fetchUserData(message.author.id);
+
+    // First check if user accepted bot rules
     if (!userData?.acceptedRules) {
       await showRulesScreening(message, userData);
-      return { handled: true, hub };
+      return { handled: false, hub: null };
+    }
+
+    // Add a cooldown check for hub rules
+    const rulesShownKey = `${RedisKeys.RulesShown}:${message.author.id}:${hub.id}`;
+    const redis = getRedis();
+    const rulesShown = await redis.get(rulesShownKey);
+
+    if (!hubRaw.rulesAcceptances.length && hub.getRules().length > 0) {
+      if (rulesShown) return { handled: false, hub: null };
+
+      // Set a cooldown of 5 minutes to prevent spam
+      await redis.set(rulesShownKey, '1', 'EX', 300);
+      await showRulesScreening(message, userData, hub);
+      return { handled: false, hub: null };
     }
 
     const attachmentURL = await this.broadcastService.resolveAttachmentURL(message);

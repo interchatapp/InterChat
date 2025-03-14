@@ -240,14 +240,16 @@ export class HubJoinService {
       embeds: [],
       components: [],
     } as const;
+
     if (this.interaction instanceof Context) {
       await this.interaction.reply(replyData);
-      return;
+    }
+    else {
+      const replyMethod = getReplyMethod(this.interaction);
+      await this.interaction[replyMethod](replyData);
     }
 
-    const replyMethod = getReplyMethod(this.interaction);
-    await this.interaction[replyMethod](replyData);
-
+    // Announce join with custom welcome message
     await this.announceJoin(hub);
   }
 
@@ -264,10 +266,12 @@ export class HubJoinService {
         : `We now have ${totalConnections} servers in this hub! 🎉`;
 
     // Custom welcome message if set
-    const welcomeMessage = hub.data.welcomeMessage
-      ?.replace('{user}', `<@${this.interaction.user.id}>`)
-      ?.replace('{hubName}', hub.data.name)
-      ?? stripIndents`
+    const welcomeMessage =
+      hub.data.welcomeMessage
+        ?.replace('{user}', `<@${this.interaction.user.id}>`)
+        ?.replace('{hubName}', hub.data.name)
+        ?.replace('{totalConnections}', totalConnections.toString()) ??
+      stripIndents`
         A new server has joined the hub! ${this.getEmoji('clipart')}
 
         **Server Name:** __${this.interaction.guild.name}__

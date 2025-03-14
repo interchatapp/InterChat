@@ -50,6 +50,8 @@ model Hub {
   appealCooldownHours Int                  @default(168)
   lastActive          DateTime             @default(now())
   settings            Int
+  rules               String[]             @default([])
+  rulesAcceptances    HubRulesAcceptance[]
   moderators          HubModerator[]
   connections         Connection[]
   tags                String[]
@@ -193,6 +195,18 @@ model HubInvite {
   expires DateTime
   hub     Hub      @relation(fields: [hubId], references: [id])
 
+  @@index([hubId])
+}
+
+model HubRulesAcceptance {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String
+  acceptedAt DateTime @default(now())
+  hub        Hub      @relation(fields: [hubId], references: [id])
+  hubId      String   @db.ObjectId
+
+  @@unique([userId, hubId])
+  @@index([userId])
   @@index([hubId])
 }
 

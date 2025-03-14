@@ -160,4 +160,16 @@ export default class HubManager {
   public async isMod(userId: string): Promise<boolean> {
     return await this.components.moderators.checkStatus(userId);
   }
+
+  public async updateRules(rules: string[]): Promise<void> {
+    this.hub = await db.hub.update({
+      where: { id: this.hub.id },
+      data: { rules },
+    });
+    await this.initializeCache();
+  }
+
+  public getRules(): string[] {
+    return this.hub.rules;
+  }
 }

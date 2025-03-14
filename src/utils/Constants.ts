@@ -22,6 +22,7 @@ export const enum RedisKeys {
   Hub = 'hub',
   Spam = 'spam',
   DevAnnouncement = 'DevAnnouncement',
+  RulesShown = 'rulesShown',
 }
 
 export const enum ConnectionMode {
