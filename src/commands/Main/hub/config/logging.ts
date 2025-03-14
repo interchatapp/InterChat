@@ -17,7 +17,6 @@ import {
   type AnySelectMenuInteraction,
   type ChannelSelectMenuInteraction,
   type Client,
-  InteractionResponse,
   SelectMenuComponentOptionData,
 } from 'discord.js';
 import { HubService } from '#src/services/HubService.js';
@@ -36,7 +35,6 @@ import HubLogManager, {
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 
 const CUSTOM_ID_PREFIX = 'hubConfig' as const;
-const COLLECTOR_IDLE_TIME = 60000;
 const ALLOWED_CHANNEL_TYPES = [
   ChannelType.GuildText,
   ChannelType.PublicThread,
@@ -115,8 +113,7 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
       interaction.client,
     );
 
-    const reply = await interaction.update({ embeds: [embed], components });
-    this.setupLogConfigCollector(reply, userId, type, logConfig);
+    await interaction.update({ embeds: [embed], components });
   }
 
   private createLogConfigEmbed(type: LogConfigTypes, logConfig: HubLogManager): InfoEmbed {
@@ -146,11 +143,11 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
     client: Client,
   ): ActionRowBuilder<MessageActionRowComponentBuilder>[] {
     const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [
-      this.createChannelSelectRow(logConfig, type),
+      this.createChannelSelectRow(userId, logConfig, type),
     ];
 
     if (logConfig.logsWithRoleId.includes(type)) {
-      components.push(this.createRoleSelectRow(logConfig, type as RoleIdLogConfigs));
+      components.push(this.createRoleSelectRow(userId, logConfig, type as RoleIdLogConfigs));
     }
 
     components.push(
@@ -163,12 +160,15 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
   }
 
   private createChannelSelectRow(
+    userId: string,
     logConfig: HubLogManager,
     type: LogConfigTypes,
   ): ActionRowBuilder<ChannelSelectMenuBuilder> {
     return new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(
       new ChannelSelectMenuBuilder()
-        .setCustomId('hubConfig:logsChannel')
+        .setCustomId(
+          new CustomID('hubConfig:logsChannel').setArgs(userId, logConfig.hubId, type).toString(),
+        )
         .setPlaceholder('Select a channel to send logs to')
         .addChannelTypes(...ALLOWED_CHANNEL_TYPES)
         .setDefaultChannels(
@@ -179,6 +179,7 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
   }
 
   private createRoleSelectRow(
+    userId: string,
     logConfig: HubLogManager,
     type: RoleIdLogConfigs,
   ): ActionRowBuilder<RoleSelectMenuBuilder> {
@@ -186,45 +187,29 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
 
     return new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(
       new RoleSelectMenuBuilder()
-        .setCustomId('hubConfig:logsRole')
+        .setCustomId(
+          new CustomID('hubConfig:logsRole').setArgs(userId, logConfig.hubId, type).toString(),
+        )
         .setPlaceholder('Select a role to ping when logs are sent')
         .setDefaultRoles(existingRole ? [existingRole] : [])
         .setMinValues(0),
     );
   }
 
-  private setupLogConfigCollector(
-    reply: InteractionResponse,
-    userId: string,
-    type: LogConfigTypes,
-    logConfig: HubLogManager,
-  ): void {
-    const collector = reply.createMessageComponentCollector({
-      filter: (i) => i.user.id === userId && i.customId.startsWith('hubConfig:logs'),
-      idle: COLLECTOR_IDLE_TIME,
-    });
-
-    collector.on('collect', async (interaction: AnySelectMenuInteraction) => {
-      const locale = await fetchUserLocale(interaction.user.id);
-
-      if (interaction.customId === 'hubConfig:logsChannel' && interaction.isChannelSelectMenu()) {
-        await this.handleChannelSelect(interaction, type, logConfig, locale);
-      }
-      else if (interaction.customId === 'hubConfig:logsRole' && interaction.isRoleSelectMenu()) {
-        await this.handleRoleSelect(interaction, type as RoleIdLogConfigs, logConfig, locale);
-      }
-    });
-  }
-
-  private async handleChannelSelect(
-    interaction: ChannelSelectMenuInteraction,
-    selectedType: LogConfigTypes,
-    logManager: HubLogManager,
-    locale: supportedLocaleCodes,
-  ): Promise<void> {
+  @RegisterInteractionHandler(CUSTOM_ID_PREFIX, 'logsChannel')
+  async handleChannelSelect(interaction: ChannelSelectMenuInteraction): Promise<void> {
     await interaction.deferUpdate();
 
+    const { args } = CustomID.parseCustomId(interaction.customId);
+    const [userId, hubId] = args;
+    const selectedType = args[2] as LogConfigTypes;
+
+    if (interaction.user.id !== userId) return;
+
     const [channelId] = interaction.values;
+    const locale = await fetchUserLocale(interaction.user.id);
+
+    const logManager = await HubLogManager.create(hubId);
 
     if (!channelId) {
       await logManager.resetLog(selectedType);
@@ -236,13 +221,18 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
     await this.sendSuccessResponse(interaction, 'channelSuccess', locale, selectedType, channelId);
   }
 
-  private async handleRoleSelect(
-    interaction: RoleSelectMenuInteraction,
-    selectedType: RoleIdLogConfigs,
-    logConfig: HubLogManager,
-    locale: supportedLocaleCodes,
-  ): Promise<void> {
+  @RegisterInteractionHandler(CUSTOM_ID_PREFIX, 'logsRole')
+  async handleRoleSelect(interaction: RoleSelectMenuInteraction): Promise<void> {
     await interaction.deferUpdate();
+
+    const { args } = CustomID.parseCustomId(interaction.customId);
+    const [userId, hubId] = args;
+    const selectedType = args[2] as RoleIdLogConfigs;
+
+    if (interaction.user.id !== userId) return;
+
+    const logConfig = await HubLogManager.create(hubId);
+    const locale = await fetchUserLocale(interaction.user.id);
 
     const [roleId] = interaction.values;
 
