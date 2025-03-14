@@ -48,8 +48,12 @@ rules:
   noHubRules: This hub has not set any specific rules yet. However, the [general InterChat rules]({rules_link}) still apply.
   hubRules: Hub Rules
 vote:
-  description: 通过投票，您可以帮助InterChat在topgg搜索中排名更高来表示对我们的支持。
-  footer: 感谢您的支持！
+  description: "Support InterChat by voting on top.gg and unlock exclusive perks! Your vote helps us reach more users."
+  footer: "Vote resets every 12 hours • Thank you for supporting!"
+  button:
+    label: "Vote on top.gg"
+  perks:
+    moreComingSoon: "More perks coming soon! Suggest some in the [support server]({support_invite})."
 network:
   accountTooNew: '{emoji}{user}您的账号注册时间不足，无法在InterChat发送消息。请稍后再试。'
   deleteSuccess: '{emoji}{user}发送的消息已从 __**{deleted}/{total}**__ 服务器中删除。'
@@ -194,8 +198,8 @@ hub:
       wordsPlaceholder: '用逗号分隔关键词。(使用 * 作为通配符)。例如：关键词一，*关键词二*，*关键词三，关键词四*'
     validating: '{emoji}正在校验过滤规则……'
     noRules: |
-      {emoji}让我们制定一些规则吧！
-      通过“添加规则”按钮创建一条规则。
+      ### {emoji} Let's set up some anti-swear rules!
+      Use the `Add Rule` button to create one.
   create:
     modal:
       title: 创建中心
@@ -211,7 +215,7 @@ hub:
       banner:
         label: 标语网址
         placeholder: 输入一个Imgur图片网址。
-    maxHubs: '{emoji}已达到可以创建的最大中心数量(3)。请删除旧中心后新建。'
+    maxHubs: '{emoji} You have reached the maximum number of hubs ({maxHubs}) you can create. Please delete a hub before creating another one. [Vote for InterChat]({voteUrl}) to create more hubs.'
     invalidName: '{emoji}中心名称无效。名称不能包含“discord”、“clyde”或“＼”。请另选名称。'
     nameTaken: '{emoji}此中心名称已被占用。请另选名称。'
     success: |
@@ -414,6 +418,13 @@ hub:
     view:
       title: 'Rule {number}'
       select: Select an action for this rule
+  welcome:
+    set: '{emoji} Welcome message updated successfully!'
+    removed: '{emoji} Welcome message removed.'
+    voterOnly: '{emoji} Custom welcome messages are a voter-only perk! Vote to unlock this feature.'
+    placeholder: |
+      Welcome {user} to {hubName}! 🎉
+      Make yourself at home and enjoy chatting!'
 report:
   modal:
     title: 报告详情
