@@ -536,13 +536,10 @@ export default class SetupCommand extends BaseCommand {
       this.createFinishButton(hubId, selectedChannelId),
     );
 
-    const toReply = {
+    await interaction.editReply({
       embeds: [embed],
       components: [finalRow, finishButton],
-    };
-
-    if (interaction.isMessageComponent()) await interaction.update(toReply);
-    else interaction.editReply(toReply);
+    });
   }
 
   private createFinishButton(hubId: string, channelId: string): ButtonBuilder {

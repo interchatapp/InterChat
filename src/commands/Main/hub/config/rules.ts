@@ -29,12 +29,13 @@ import {
   Client,
   resolveColor,
   EmbedBuilder,
+  AutocompleteInteraction,
 } from 'discord.js';
 import BaseCommand from '#src/core/BaseCommand.js';
 import Context from '#src/core/CommandContext/Context.js';
 import { HubService } from '#src/services/HubService.js';
 import { executeHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
-import { hubOption } from '../index.js';
+import HubCommand, { hubOption } from '../index.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
@@ -87,6 +88,10 @@ export default class HubConfigRulesSubcommand extends BaseCommand {
       },
       components,
     });
+  }
+
+  public async autocomplete(interaction: AutocompleteInteraction) {
+    return await HubCommand.handleManagerCmdAutocomplete(interaction, this.hubService);
   }
 
   private buildComponents(rules: string[], hubId: string, client: Client) {
