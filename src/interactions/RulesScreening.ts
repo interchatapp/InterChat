@@ -151,7 +151,7 @@ export default class RulesScreeningInteraction {
     const locale = await fetchUserLocale(interaction.user.id);
 
     if (interaction.user.id !== userId) {
-      await interaction.reply({
+      await interaction.followUp({
         content: `${getEmoji('x_icon', interaction.client)} These rules are not for you!`,
         flags: ['Ephemeral'],
       });
