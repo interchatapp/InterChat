@@ -33,6 +33,16 @@ export function getBadges(userId: string, client: Client): Badge[] {
     });
   }
 
+  // Translator Badge
+  if (Constants.TranslatorIds.includes(userId)) {
+    badges.push({
+      id: 'translator',
+      emoji: getEmoji('translator_badge', client),
+      name: 'Translator',
+      description: 'Translator of InterChat',
+    });
+  }
+
   return badges;
 }
 

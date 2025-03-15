@@ -39,7 +39,7 @@ export default {
   StaffIds: ['1160735837940617336', '982656475979710524', '597265261665714186'] as Snowflake[],
   DeveloperIds: ['701727675311587358'] as Snowflake[],
   SupporterIds: ['880978672037802014', '786348225341947986'] as Snowflake[],
-
+  TranslatorIds: ['845357241132384286', '1289961731115847803', '827745783964499978'] as Snowflake[],
   ProjectVersion: packageJson.version ?? 'Unknown',
   SupportServerId: '770256165300338709',
   VoterRoleId: '985153241727770655',

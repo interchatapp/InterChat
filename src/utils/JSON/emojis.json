@@ -542,5 +542,9 @@
   "developer_badge": {
     "url": "https://cdn.discordapp.com/emojis/1350290872369025076.png",
     "updatedAt": "2025-03-15T02:13:51.164Z"
+  },
+  "translator_badge": {
+    "url": "https://cdn.discordapp.com/emojis/1350399261556215871.png",
+    "updatedAt": "2025-03-15T09:24:33.160Z"
   }
 }
