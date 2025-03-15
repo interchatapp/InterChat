@@ -20,10 +20,13 @@ import { showRulesScreening } from '#src/interactions/RulesScreening.js';
 import { openInboxButton } from '#src/interactions/ShowInboxButton.js';
 import HubManager from '#src/managers/HubManager.js';
 import InfractionManager from '#src/managers/InfractionManager.js';
+import { BroadcastService } from '#src/services/BroadcastService.js';
+import { CallService } from '#src/services/CallService.js';
 import { MessageProcessor } from '#src/services/MessageProcessor.js';
 import { executeCommand, resolveCommand } from '#src/utils/CommandUtils.js';
 import Constants, { RedisKeys } from '#src/utils/Constants.js';
 import { t } from '#src/utils/Locale.js';
+import Logger from '#src/utils/Logger.js';
 import getRedis from '#src/utils/Redis.js';
 import {
   createUnreadDevAlertEmbed,
@@ -64,7 +67,7 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
         .catch(() => null);
     }
 
-    await this.handleChatMessage(message).catch(handleError);
+    Promise.all([this.handleChatMessage(message), this.handleCall(message)]).catch(handleError);
   }
 
   private async handlePrefixCommand(message: Message): Promise<void> {
@@ -141,5 +144,32 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
       .catch(() => null);
 
     await redis.set(key, Date.now().toString(), 'EX', 600);
+  }
+
+  private async handleCall(message: Message<true>) {
+    const callService = new CallService(message.client);
+    const activeCall = await callService.getActiveCallData(message.channelId);
+
+    if (activeCall) {
+      // Track this user as a participant
+      await callService.addParticipant(message.channelId, message.author.id);
+
+      // Find the other participant's webhook URL
+      const otherParticipant = activeCall.participants.find(
+        (p) => p.channelId !== message.channelId,
+      );
+      if (!otherParticipant) return;
+
+      try {
+        await BroadcastService.sendMessage(otherParticipant.webhookUrl, {
+          content: message.content,
+          username: message.author.username,
+          avatarURL: message.author.displayAvatarURL(),
+        });
+      }
+      catch (error) {
+        Logger.error('Failed to send call message:', error);
+      }
+    }
   }
 }

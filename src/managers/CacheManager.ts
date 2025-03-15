@@ -278,4 +278,17 @@ export class CacheManager {
       await this.redis.del(...keys);
     }
   }
+
+  /**
+   * Gets the remaining time to live in milliseconds for a key
+   * @param key The cache key
+   * @returns The remaining TTL in milliseconds, or null if key doesn't exist
+   */
+  public async getTTL(key: string): Promise<number | null> {
+    const fullKey = this.getFullKey(key);
+    const ttl = await this.redis.pttl(fullKey);
+
+    // Redis returns -2 if the key doesn't exist, and -1 if the key exists but has no expiry
+    return ttl < 0 ? null : ttl;
+  }
 }

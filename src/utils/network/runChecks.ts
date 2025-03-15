@@ -58,6 +58,7 @@ const checks: CheckFunction[] = [
   checkAttachments,
   checkNSFW,
   checkLinks,
+  checkStickers,
 ];
 
 const replyToMsg = async (
@@ -286,6 +287,22 @@ async function checkNSFW(message: Message<true>, opts: CheckFunctionOpts): Promi
 
       await replyToMsg(message, { embed: nsfwEmbed });
       return { passed: false };
+    }
+  }
+  return { passed: true };
+}
+
+async function checkStickers(
+  message: Message<true>,
+  { userData }: CheckFunctionOpts,
+): Promise<CheckResult> {
+  if (message.stickers.size > 0) {
+    const isVoter = await new UserDbService().userVotedToday(message.author.id, userData);
+    if (!isVoter) {
+      return {
+        passed: false,
+        reason: `${getEmoji('x_icon', message.client)} Sending stickers is a voter-only perk! Vote at ${Constants.Links.Vote} to unlock this feature.`,
+      };
     }
   }
   return { passed: true };

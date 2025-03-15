@@ -211,26 +211,28 @@ model HubRulesAcceptance {
 }
 
 model User {
-  id                String         @id @map("_id") @db.String
+  id                String          @id @map("_id") @db.String
   image             String?
   username          String?
   locale            String?
-  voteCount         Int            @default(0)
-  lastVoted         DateTime?
+  voteCount         Int             @default(0)
+  reputation        Int             @default(0)
+  lastVoted         DateTime?       @default(now())
   banReason         String?
-  mentionOnReply    Boolean        @default(true)
-  acceptedRules     Boolean        @default(false)
-  messageCount      Int            @default(0)
-  lastMessageAt     DateTime       @default(now())
+  mentionOnReply    Boolean         @default(true)
+  acceptedRules     Boolean         @default(false)
+  messageCount      Int             @default(0)
+  lastMessageAt     DateTime        @default(now())
   modPositions      HubModerator[]
   ownedHubs         Hub[]
-  infractions       Infraction[]   @relation("infractions")
+  infractions       Infraction[]    @relation("infractions")
   reviews           HubReview[]
-  issuedInfractions Infraction[]   @relation("issuedInfractions")
+  issuedInfractions Infraction[]    @relation("issuedInfractions")
   upvotedHubs       HubUpvote[]
-  inboxLastReadDate DateTime?      @default(now())
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  inboxLastReadDate DateTime?       @default(now())
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  ReputationLog     ReputationLog[]
 
   @@index([messageCount])
 }
@@ -254,4 +256,28 @@ model ServerData {
   messageCount  Int          @default(0)
   lastMessageAt DateTime     @default(now())
   Connection    Connection[]
+}
+
+enum CallRatingStatus {
+  like
+  dislike
+}
+
+model CallRating {
+  id        String           @id @default(auto()) @map("_id") @db.ObjectId
+  callId    String
+  targetId  String
+  raterId   String
+  rating    CallRatingStatus
+  timestamp DateTime         @default(now())
+}
+
+model ReputationLog {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  giverId    String
+  receiver   User     @relation(fields: [receiverId], references: [id])
+  receiverId String   @db.String
+  timestamp  DateTime @default(now())
+  reason     String
+  automatic  Boolean  @default(false)
 }

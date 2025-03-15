@@ -23,6 +23,7 @@ export const enum RedisKeys {
   Spam = 'spam',
   DevAnnouncement = 'DevAnnouncement',
   RulesShown = 'rulesShown',
+  Call = 'call', // Base prefix for all call-related keys
 }
 
 export const enum ConnectionMode {

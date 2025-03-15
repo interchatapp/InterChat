@@ -15,6 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import CallsLeaderboardCommand from '#src/commands/Main/hub/leaderboard/calls.js';
 import ServerLeaderboardCommand from '#src/commands/Main/leaderboard/server.js';
 import UserLeaderboardCommand from '#src/commands/Main/leaderboard/user.js';
 import BaseCommand from '#src/core/BaseCommand.js';
@@ -27,6 +28,7 @@ export default class LeaderboardCommand extends BaseCommand {
       subcommands: {
         user: new UserLeaderboardCommand(),
         server: new ServerLeaderboardCommand(),
+        calls: new CallsLeaderboardCommand(),
       },
     });
   }

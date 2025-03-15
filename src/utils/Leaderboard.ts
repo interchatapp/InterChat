@@ -10,7 +10,7 @@ import { Client } from 'discord.js';
  * @param prefix - The leaderboard prefix (e.g., 'leaderboard:messages:users').
  * @returns A string key that includes the current year and month.
  */
-export function getLeaderboardKey(prefix: `leaderboard:messages:${'users' | 'servers'}`): string {
+export function getLeaderboardKey(prefix: `leaderboard:${'messages:users' | 'messages:servers' | 'calls:users' | 'calls:servers'}`): string {
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -84,8 +84,8 @@ function getRankDisplay(rank: number, dotEmoji: string): string {
 export async function formatUserLeaderboard(
   leaderboardData: string[],
   client: Client,
+  type: 'messages' | 'calls' = 'messages',
 ): Promise<string> {
-  // Build header
   let output = '';
   // Iterate through pairs: [userId, score, ...]
   for (let i = 0; i < leaderboardData.length; i += 2) {
@@ -101,7 +101,7 @@ export async function formatUserLeaderboard(
     const rankDisplay = getRankDisplay(rank, getEmoji('dot', client));
 
     // Pad each column for alignment.
-    output += `${rankDisplay} ${`\` ${score} msgs \``} ${user.username}\n`;
+    output += `${rankDisplay} ${`\` ${score} ${type === 'calls' ? 'calls' : 'msgs'} \``} ${user.username}\n`;
   }
 
   return output;
@@ -114,8 +114,8 @@ export async function formatUserLeaderboard(
 export async function formatServerLeaderboard(
   leaderboardData: string[],
   client: Client,
+  type: 'messages' | 'calls' = 'messages',
 ): Promise<string> {
-  // Build header with adjusted column widths
   let output = '';
   const inviteLinks = await db.serverData.findMany({
     where: { id: { in: leaderboardData.filter((_, i) => i % 2 === 0) } },
@@ -130,7 +130,6 @@ export async function formatServerLeaderboard(
 
     const guild = (await client.fetchGuild(serverId).catch(() => null)) ?? { name: 'Unknown' };
 
-    // Limit the server name length for table formatting.
     const serverData = inviteLinks.find((link) => link.id === serverId && Boolean(link.inviteCode));
     const inviteCode =
       serverData?.inviteCode ?? ('vanityURLCode' in guild ? guild.vanityURLCode : null);
@@ -140,8 +139,23 @@ export async function formatServerLeaderboard(
     const rankDisplay = getRankDisplay(rank, getEmoji('dot', client));
 
     // Pad each column for alignment.
-    output += `${rankDisplay} \` ${score.toString()} msgs \` - ${guild.name} ${invite}\n`;
+    output += `${rankDisplay} \` ${score} ${type === 'calls' ? 'calls' : 'msgs'} \` - ${guild.name} ${invite}\n`;
   }
 
   return output;
+}
+
+export async function updateCallLeaderboards(type: 'user' | 'server', targetId: string): Promise<void> {
+  const redis = getRedis();
+  const key = getLeaderboardKey(`leaderboard:calls:${type}s`);
+
+  await redis.zincrby(key, 1, targetId);
+  await redis.expire(key, 30 * 24 * 60 * 60); // 30 days
+}
+
+export async function getCallLeaderboard(type: 'user' | 'server', limit = 10): Promise<string[]> {
+  const leaderboardKey = getLeaderboardKey(`leaderboard:calls:${type}s`);
+  const redis = getRedis();
+  const results = await redis.zrevrange(leaderboardKey, 0, limit - 1, 'WITHSCORES');
+  return results;
 }

@@ -24,6 +24,7 @@ import { getUserLeaderboardRank } from '#src/utils/Leaderboard.js';
 import { fetchUserData } from '#src/utils/Utils.js';
 import { formatBadges, getBadges, getVoterBadge } from '#utils/BadgeUtils.js';
 import { ApplicationCommandOptionType, EmbedBuilder, time } from 'discord.js';
+import { ReputationService } from '#src/services/ReputationService.js';
 
 export default class ProfileCommand extends BaseCommand {
   constructor() {
@@ -54,6 +55,10 @@ export default class ProfileCommand extends BaseCommand {
     const hasVoted = await new UserDbService().userVotedToday(user.id, userData);
     if (hasVoted) badges.push(getVoterBadge(ctx.client));
 
+    // Get reputation
+    const reputationService = new ReputationService();
+    const reputation = await reputationService.getReputation(user.id, userData);
+
     const embed = new EmbedBuilder()
       .setDescription(`### @${user.username} ${formatBadges(badges)}`)
       .addFields([
@@ -63,8 +68,13 @@ export default class ProfileCommand extends BaseCommand {
           inline: false,
         },
         {
+          name: 'Reputation',
+          value: `${reputation >= 0 ? '👍' : '👎'} ${reputation}`,
+          inline: true,
+        },
+        {
           name: 'Leaderboard Rank',
-          value: `#${(await getUserLeaderboardRank(user.id)) ?? 'Unranked.'}`,
+          value: `#${(await getUserLeaderboardRank(user.id)) ?? 'Unranked'}`,
           inline: true,
         },
         {
