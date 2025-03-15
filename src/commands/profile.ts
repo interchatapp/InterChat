@@ -17,11 +17,14 @@
 
 import BaseCommand from '#src/core/BaseCommand.js';
 import Context from '#src/core/CommandContext/Context.js';
+import UserDbService from '#src/services/UserDbService.js';
 import Constants from '#src/utils/Constants.js';
 import db from '#src/utils/Db.js';
 import { getUserLeaderboardRank } from '#src/utils/Leaderboard.js';
-import { checkIfStaff, fetchUserData } from '#src/utils/Utils.js';
+import { fetchUserData } from '#src/utils/Utils.js';
+import { formatBadges, getBadges, getVoterBadge } from '#utils/BadgeUtils.js';
 import { ApplicationCommandOptionType, EmbedBuilder, time } from 'discord.js';
+
 export default class ProfileCommand extends BaseCommand {
   constructor() {
     super({
@@ -47,9 +50,18 @@ export default class ProfileCommand extends BaseCommand {
       return;
     }
 
+    const badges = getBadges(user.id, ctx.client);
+    const hasVoted = await new UserDbService().userVotedToday(user.id, userData);
+    if (hasVoted) badges.push(getVoterBadge(ctx.client));
+
     const embed = new EmbedBuilder()
-      .setDescription(`### @${user.username} ${checkIfStaff(user.id) ? ctx.getEmoji('staff_badge') : ''}`)
+      .setDescription(`### @${user.username} ${formatBadges(badges)}`)
       .addFields([
+        {
+          name: 'Badges',
+          value: badges.map((b) => `${b.emoji} ${b.name} - ${b.description}`).join('\n') || 'No badges',
+          inline: false,
+        },
         {
           name: 'Leaderboard Rank',
           value: `#${(await getUserLeaderboardRank(user.id)) ?? 'Unranked.'}`,

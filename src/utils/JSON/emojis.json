@@ -534,5 +534,13 @@
   "staff_badge": {
     "url": "https://cdn.discordapp.com/emojis/1342718965817802764.png",
     "updatedAt": "2025-02-22T04:45:47.963Z"
+  },
+  "voter_badge": {
+    "url": "https://cdn.discordapp.com/emojis/1350288336710799452.png",
+    "updatedAt": "2025-03-15T02:03:46.616Z"
+  },
+  "developer_badge": {
+    "url": "https://cdn.discordapp.com/emojis/1350290872369025076.png",
+    "updatedAt": "2025-03-15T02:13:51.164Z"
   }
 }
