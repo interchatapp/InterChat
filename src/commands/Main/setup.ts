@@ -369,7 +369,7 @@ export default class SetupCommand extends BaseCommand {
     if (!validationResult.isValid) {
       await interaction.reply({
         content: validationResult.error,
-        ephemeral: true,
+        flags: ['Ephemeral'],
       });
       return;
     }
@@ -381,7 +381,7 @@ export default class SetupCommand extends BaseCommand {
     catch {
       await interaction.reply({
         content: 'Failed to create hub. Please try again.',
-        ephemeral: true,
+        flags: ['Ephemeral'],
       });
     }
   }
@@ -494,7 +494,7 @@ export default class SetupCommand extends BaseCommand {
         if (i.user.id !== interaction.user.id) return;
         await i.reply({
           content: `\`/hub invite create hub:${hubName}\`\n✨ Command copied! Run this to create an invite link.`,
-          ephemeral: true,
+          flags: ['Ephemeral'],
         });
       });
     }

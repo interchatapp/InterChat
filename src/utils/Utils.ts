@@ -102,7 +102,7 @@ export const createWebhook = async (
 
 export const getOrCreateWebhook = async (
   channel: GuildTextBasedChannel,
-  avatar = Constants.Links.EasterAvatar,
+  avatar: string = Constants.Links.EasterAvatar,
   name = 'InterChat Network',
 ) => {
   const channelOrParent = channel.isThread() ? channel.parent : channel;

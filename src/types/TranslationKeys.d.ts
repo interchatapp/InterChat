@@ -30,7 +30,7 @@ export type TranslationKeys = {
   'vote.description': never;
   'vote.footer': never;
   'vote.button.label': never;
-  'vote.perks.moreComingSoon': never;
+  'vote.perks.moreComingSoon': 'support_invite';
   'network.accountTooNew': 'emoji' | 'user';
   'network.deleteSuccess': 'emoji' | 'user' | 'deleted' | 'total';
   'network.editSuccess': 'emoji' | 'user' | 'edited' | 'total';

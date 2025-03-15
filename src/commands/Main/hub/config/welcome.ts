@@ -45,7 +45,7 @@ export default class HubConfigWelcomeSubcommand extends BaseCommand {
     if (!hub) {
       await ctx.reply({
         content: `${ctx.getEmoji('x_icon')} Hub not found.`,
-        ephemeral: true,
+        flags: ['Ephemeral'],
       });
       return;
     }
@@ -53,7 +53,7 @@ export default class HubConfigWelcomeSubcommand extends BaseCommand {
     if (!(await hub.isMod(ctx.user.id))) {
       await ctx.reply({
         content: `${ctx.getEmoji('x_icon')} You need to be a hub moderator to configure welcome messages.`,
-        ephemeral: true,
+        flags: ['Ephemeral'],
       });
       return;
     }
@@ -62,7 +62,7 @@ export default class HubConfigWelcomeSubcommand extends BaseCommand {
     if (!hasVoted) {
       await ctx.reply({
         content: `${ctx.getEmoji('x_icon')} Custom welcome messages are a voter-only perk! Vote at ${Constants.Links.Vote} to unlock this feature.`,
-        ephemeral: true,
+        flags: ['Ephemeral'],
       });
       return;
     }
@@ -97,7 +97,7 @@ export default class HubConfigWelcomeSubcommand extends BaseCommand {
     if (!hub) {
       await interaction.reply({
         content: `${getEmoji('x_icon', interaction.client)} Hub not found.`,
-        ephemeral: true,
+        flags: ['Ephemeral'],
       });
       return;
     }
@@ -108,7 +108,7 @@ export default class HubConfigWelcomeSubcommand extends BaseCommand {
       content: welcomeMessage
         ? `${getEmoji('tick_icon', interaction.client)} Welcome message updated successfully!`
         : `${getEmoji('tick_icon', interaction.client)} Welcome message removed.`,
-      ephemeral: true,
+      flags: ['Ephemeral'],
     });
   }
 
