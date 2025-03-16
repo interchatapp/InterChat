@@ -1,6 +1,8 @@
 import BaseCommand from '#src/core/BaseCommand.js';
 import Context from '#src/core/CommandContext/Context.js';
 import { CallService } from '#src/services/CallService.js';
+import { InfoEmbed } from '#src/utils/EmbedUtils.js';
+import { stripIndents } from 'common-tags';
 import { GuildTextBasedChannel } from 'discord.js';
 
 export default class CallCommand extends BaseCommand {
@@ -22,6 +24,13 @@ export default class CallCommand extends BaseCommand {
       ctx.user.id,
     );
 
-    await ctx.editOrReply(result.message);
+    await ctx.editOrReply({
+      content: result.message,
+      embeds: [
+        new InfoEmbed().setDescription(stripIndents`
+          > This is a new feature! Your patience during these early days helps make calls better! The more you use it, the more active it becomes. Check out \`/leaderboard calls\` to see how you rank!
+        `),
+      ],
+    });
   }
 }

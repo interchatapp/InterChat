@@ -61,6 +61,31 @@ export class CallService {
     this.client = client;
   }
 
+  // Add method to store recent matches
+  private async addRecentMatch(userId1: string, userId2: string) {
+    const key1 = `${RedisKeys.CallRecentMatches}:${userId1}`;
+    const key2 = `${RedisKeys.CallRecentMatches}:${userId2}`;
+
+    // Store for both users
+    await Promise.all([
+      this.redis.lpush(key1, userId2),
+      this.redis.lpush(key2, userId1),
+      // Trim to keep only last 2 matches
+      this.redis.ltrim(key1, 0, 1),
+      this.redis.ltrim(key2, 0, 1),
+      // Set expiry (24 hours)
+      this.redis.expire(key1, 24 * 60 * 60),
+      this.redis.expire(key2, 24 * 60 * 60),
+    ]);
+  }
+
+  // Add method to check recent matches
+  private async hasRecentlyMatched(userId1: string, userId2: string): Promise<boolean> {
+    const key = `${RedisKeys.CallRecentMatches}:${userId1}`;
+    const recentMatches = await this.redis.lrange(key, 0, -1);
+    return recentMatches.includes(userId2);
+  }
+
   private getQueueKey() {
     return `${RedisKeys.Call}:queue`;
   }
@@ -196,8 +221,17 @@ export class CallService {
     for (const queuedCallStr of queue) {
       const queuedCall: CallData = JSON.parse(queuedCallStr);
 
-      // Don't match with self or same server
-      if (queuedCall.guildId === callData.guildId) continue;
+      // Don't match if:
+      // 1. Same server
+      // 2. Same initiator
+      // 3. Recently matched
+      if (
+        queuedCall.guildId === callData.guildId ||
+        queuedCall.initiatorId === callData.initiatorId ||
+        await this.hasRecentlyMatched(callData.initiatorId, queuedCall.initiatorId)
+      ) {
+        continue;
+      }
 
       // Found a match!
       await this.connectCall(callData, queuedCall);
@@ -214,6 +248,9 @@ export class CallService {
 
   private async connectCall(call1: CallData, call2: CallData) {
     const callId = this.generateCallId();
+
+    // Store recent match
+    await this.addRecentMatch(call1.initiatorId, call2.initiatorId);
 
     // Update leaderboards for both users and servers
     await Promise.all([

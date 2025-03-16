@@ -24,6 +24,7 @@ export const enum RedisKeys {
   DevAnnouncement = 'DevAnnouncement',
   RulesShown = 'rulesShown',
   Call = 'call', // Base prefix for all call-related keys
+  CallRecentMatches = 'call:recent_matches',
 }
 
 export const enum ConnectionMode {
