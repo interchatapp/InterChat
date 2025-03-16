@@ -24,7 +24,7 @@ import type { TranslationKeys } from '#types/TranslationKeys.d.ts';
 import { createConnection } from '#utils/ConnectedListUtils.js';
 import db from '#utils/Db.js';
 import { type supportedLocaleCodes, t } from '#utils/Locale.js';
-import { fetchUserData, getOrCreateWebhook, getReplyMethod } from '#utils/Utils.js';
+import { getOrCreateWebhook, getReplyMethod } from '#utils/Utils.js';
 import { logJoinToHub } from '#utils/hub/logger/JoinLeave.js';
 import { sendToHub } from '#utils/hub/utils.js';
 import { stripIndents } from 'common-tags';
@@ -36,7 +36,6 @@ import type {
 // eslint-disable-next-line no-duplicate-imports
 import type { CacheContext } from '#src/core/CommandContext/Context.js';
 import { checkRule } from '#src/utils/network/antiSwearChecks.js';
-import { showRulesScreening } from '#src/interactions/RulesScreening.js';
 
 export class HubJoinService {
   private readonly interaction:
@@ -139,17 +138,6 @@ export class HubJoinService {
         permissions: 'Manage Messages',
         emoji: this.getEmoji('x_icon'),
       });
-      return false;
-    }
-
-    // Show hub rules before other checks
-    const hubRules = hub.getRules();
-    if (hubRules.length > 0) {
-      await showRulesScreening(
-        this.interaction,
-        await fetchUserData(this.interaction.user.id),
-        hub,
-      );
       return false;
     }
 
