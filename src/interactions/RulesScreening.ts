@@ -222,7 +222,7 @@ export default class RulesScreeningInteraction {
       }),
     );
 
-    await interaction.followUp({ embeds: [embed], components: [] });
+    await interaction.followUp({ embeds: [embed], components: [], flags: ['Ephemeral'] });
   }
 
   @RegisterInteractionHandler('rulesScreen', 'acceptHub')
