@@ -36,15 +36,25 @@ export interface CheckResult {
   reason?: string;
 }
 
-interface CheckFunctionOpts {
+// Add new interface for call checks
+interface CallCheckFunctionOpts {
   userData: DbUser;
+  attachmentURL?: string | null;
+}
+
+interface HubCheckFunctionOpts extends CallCheckFunctionOpts {
   settings: HubSettingsManager;
   totalHubConnections: number;
   hub: HubManager;
   attachmentURL?: string | null;
 }
 
-type CheckFunction = (message: Message<true>, opts: CheckFunctionOpts) => Awaitable<CheckResult>;
+type CheckFunction = (message: Message<true>, opts: HubCheckFunctionOpts) => Awaitable<CheckResult>;
+
+type CallCheckFunction = (
+  message: Message<true>,
+  opts: CallCheckFunctionOpts,
+) => Awaitable<CheckResult>;
 
 // ordering is important - always check blacklists first (or they can bypass)
 const checks: CheckFunction[] = [
@@ -59,6 +69,14 @@ const checks: CheckFunction[] = [
   checkNSFW,
   checkLinks,
   checkStickers,
+];
+
+// Add new array for call-specific checks
+const callChecks: CallCheckFunction[] = [
+  checkSpamForCalls,
+  checkURLsForCalls,
+  checkNSFW,
+  checkGifsForCalls,
 ];
 
 const replyToMsg = async (
@@ -99,16 +117,33 @@ export const runChecks = async (
   return true;
 };
 
+export const runCallChecks = async (
+  message: Message<true>,
+  opts: {
+    userData: DbUser;
+    attachmentURL?: string | null;
+  },
+): Promise<boolean> => {
+  for (const check of callChecks) {
+    const result = await check(message, opts);
+    if (!result.passed) {
+      if (result.reason) await replyToMsg(message, { content: result.reason });
+      return false;
+    }
+  }
+  return true;
+};
+
 async function checkAntiSwear(
   message: Message<true>,
-  { hub }: CheckFunctionOpts,
+  { hub }: HubCheckFunctionOpts,
 ): Promise<CheckResult> {
   return await checkBlockedWords(message, await hub.fetchAntiSwearRules());
 }
 
 async function checkBanAndBlacklist(
   message: Message<true>,
-  opts: CheckFunctionOpts,
+  opts: HubCheckFunctionOpts,
 ): Promise<CheckResult> {
   const blacklistManager = new BlacklistManager('user', message.author.id);
   const blacklisted = await blacklistManager.fetchBlacklist(opts.hub.id);
@@ -131,7 +166,7 @@ async function checkBanAndBlacklist(
 
 async function checkHubLock(
   message: Message<true>,
-  { hub }: CheckFunctionOpts,
+  { hub }: HubCheckFunctionOpts,
 ): Promise<CheckResult> {
   if (hub.data.locked && !(await hub.isMod(message.author.id))) {
     return {
@@ -148,7 +183,7 @@ const containsLinks = (message: Message, settings: HubSettingsManager) =>
   !Constants.Regex.StaticImageUrl.test(message.content) &&
   Constants.Regex.Links.test(message.content);
 
-function checkLinks(message: Message<true>, opts: CheckFunctionOpts): CheckResult {
+function checkLinks(message: Message<true>, opts: HubCheckFunctionOpts): CheckResult {
   const { settings } = opts;
   if (containsLinks(message, settings)) {
     message.content = replaceLinks(message.content);
@@ -156,7 +191,7 @@ function checkLinks(message: Message<true>, opts: CheckFunctionOpts): CheckResul
   return { passed: true };
 }
 
-async function checkSpam(message: Message<true>, opts: CheckFunctionOpts): Promise<CheckResult> {
+async function checkSpam(message: Message<true>, opts: HubCheckFunctionOpts): Promise<CheckResult> {
   const { settings, hub } = opts;
   const result = await message.client.antiSpamManager.handleMessage(message);
 
@@ -194,7 +229,10 @@ async function checkSpam(message: Message<true>, opts: CheckFunctionOpts): Promi
   return { passed: true };
 }
 
-async function checkNewUser(message: Message<true>, opts: CheckFunctionOpts): Promise<CheckResult> {
+async function checkNewUser(
+  message: Message<true>,
+  opts: HubCheckFunctionOpts,
+): Promise<CheckResult> {
   const sevenDaysAgo = Date.now() - 1000 * 60 * 60 * 24 * 7;
 
   if (message.author.createdTimestamp > sevenDaysAgo) {
@@ -218,7 +256,7 @@ const MAX_MESSAGE_LENGTH = {
 
 async function checkMessageLength(
   message: Message<true>,
-  { userData }: CheckFunctionOpts,
+  { userData }: HubCheckFunctionOpts,
 ): Promise<CheckResult> {
   const isVoter = await new UserDbService().userVotedToday(message.author.id, userData);
   const maxLength = isVoter ? MAX_MESSAGE_LENGTH.VOTER : MAX_MESSAGE_LENGTH.DEFAULT;
@@ -234,7 +272,7 @@ async function checkMessageLength(
 
 async function checkInviteLinks(
   message: Message<true>,
-  opts: CheckFunctionOpts,
+  opts: HubCheckFunctionOpts,
 ): Promise<CheckResult> {
   const { settings, userData } = opts;
 
@@ -267,8 +305,10 @@ function checkAttachments(message: Message<true>): CheckResult {
   return { passed: true };
 }
 
-async function checkNSFW(message: Message<true>, opts: CheckFunctionOpts): Promise<CheckResult> {
-  const { attachmentURL } = opts;
+async function checkNSFW(
+  message: Message<true>,
+  { attachmentURL }: { attachmentURL?: string | null },
+): Promise<CheckResult> {
   if (attachmentURL && Constants.Regex.StaticImageUrl.test(attachmentURL)) {
     const predictions = await new NSFWDetector(attachmentURL).analyze();
     if (predictions.isNSFW && predictions.exceedsSafeThresh()) {
@@ -294,7 +334,7 @@ async function checkNSFW(message: Message<true>, opts: CheckFunctionOpts): Promi
 
 async function checkStickers(
   message: Message<true>,
-  { userData }: CheckFunctionOpts,
+  { userData }: HubCheckFunctionOpts,
 ): Promise<CheckResult> {
   if (message.stickers.size > 0) {
     const isVoter = await new UserDbService().userVotedToday(message.author.id, userData);
@@ -305,5 +345,51 @@ async function checkStickers(
       };
     }
   }
+  return { passed: true };
+}
+
+// Modified spam check for calls
+async function checkSpamForCalls(message: Message<true>): Promise<CheckResult> {
+  const result = await message.client.antiSpamManager.handleMessage(message);
+
+  if (result) {
+    await message.react(getEmoji('timeout', message.client)).catch(() => null);
+    return { passed: false };
+  }
+
+  return { passed: true };
+}
+
+// New function to check URLs in calls (blocks all except Tenor)
+function checkURLsForCalls(message: Message<true>): CheckResult {
+  // Allow Tenor URLs
+  if (Constants.Regex.TenorLinks.test(message.content)) {
+    return { passed: true };
+  }
+
+  // Block all other URLs
+  if (Constants.Regex.Links.test(message.content)) {
+    return {
+      passed: false,
+      reason:
+        'Links are not allowed during calls for security reasons. Only Tenor GIFs are permitted.',
+    };
+  }
+
+  return { passed: true };
+}
+
+// New function to check GIFs in calls
+function checkGifsForCalls(message: Message<true>): CheckResult {
+  const attachment = message.attachments.first();
+
+  // Block non-Tenor GIFs
+  if (attachment?.contentType?.includes('gif') && !message.content.includes('tenor.com')) {
+    return {
+      passed: false,
+      reason: 'Only Tenor GIFs are allowed during calls. Please use Tenor for sharing GIFs.',
+    };
+  }
+
   return { passed: true };
 }

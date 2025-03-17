@@ -17,14 +17,8 @@
 
 import BaseCommand from '#src/core/BaseCommand.js';
 import Context from '#src/core/CommandContext/Context.js';
-import UserDbService from '#src/services/UserDbService.js';
-import Constants from '#src/utils/Constants.js';
-import db from '#src/utils/Db.js';
-import { getUserLeaderboardRank } from '#src/utils/Leaderboard.js';
-import { fetchUserData } from '#src/utils/Utils.js';
-import { formatBadges, getBadges, getVoterBadge } from '#utils/BadgeUtils.js';
-import { ApplicationCommandOptionType, EmbedBuilder, time } from 'discord.js';
-import { ReputationService } from '#src/services/ReputationService.js';
+import { buildProfileEmbed } from '#src/utils/ProfileUtils.js';
+import { ApplicationCommandOptionType } from 'discord.js';
 
 export default class ProfileCommand extends BaseCommand {
   constructor() {
@@ -44,63 +38,13 @@ export default class ProfileCommand extends BaseCommand {
   }
   async execute(ctx: Context) {
     const user = (await ctx.options.getUser('user')) ?? ctx.user;
-    const userData = await fetchUserData(user.id);
 
-    if (!userData) {
+    const profileEmbed = await buildProfileEmbed(user, ctx.client);
+    if (!profileEmbed) {
       await ctx.reply('User not found.');
       return;
     }
 
-    const badges = getBadges(user.id, ctx.client);
-    const hasVoted = await new UserDbService().userVotedToday(user.id, userData);
-    if (hasVoted) badges.push(getVoterBadge(ctx.client));
-
-    // Get reputation
-    const reputationService = new ReputationService();
-    const reputation = await reputationService.getReputation(user.id, userData);
-
-    const embed = new EmbedBuilder()
-      .setDescription(`### @${user.username} ${formatBadges(badges)}`)
-      .addFields([
-        {
-          name: 'Badges',
-          value: badges.map((b) => `${b.emoji} ${b.name} - ${b.description}`).join('\n') || 'No badges',
-          inline: false,
-        },
-        {
-          name: 'Reputation',
-          value: `${reputation >= 0 ? '👍' : '👎'} ${reputation}`,
-          inline: true,
-        },
-        {
-          name: 'Leaderboard Rank',
-          value: `#${(await getUserLeaderboardRank(user.id)) ?? 'Unranked'}`,
-          inline: true,
-        },
-        {
-          name: 'Total Messages',
-          value: `${userData.messageCount}`,
-          inline: true,
-        },
-        {
-          name: 'User Since',
-          value: `${time(Math.round(userData.createdAt.getTime() / 1000), 'D')}`,
-          inline: true,
-        },
-        {
-          name: 'Hubs Owned',
-          value: `${(await db.hub.findMany({ where: { ownerId: user.id, private: false } })).map((h) => h.name).join(', ')}`,
-          inline: true,
-        },
-        {
-          name: 'User ID',
-          value: user.id,
-          inline: true,
-        },
-      ])
-      .setColor(Constants.Colors.invisible)
-      .setThumbnail(user.displayAvatarURL());
-
-    await ctx.reply({ embeds: [embed] });
+    await ctx.reply({ embeds: [profileEmbed] });
   }
 }

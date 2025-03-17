@@ -38,7 +38,7 @@ export class HubValidator {
     this.client = client;
   }
 
-  private static readonly MAX_HUBS_PER_USER = 3;
+  private static readonly MAX_HUBS_PER_USER = 1;
 
   private getEmoji(name: EmojiKeys): string {
     return getEmoji(name, this.client);
@@ -98,7 +98,7 @@ export class HubValidator {
     );
 
     const isVoter = await new UserDbService().userVotedToday(ownerId);
-    const maxHubs = isVoter ? 4 : 3;
+    const maxHubs = isVoter ? 4 : HubValidator.MAX_HUBS_PER_USER;
 
     if (userHubCount >= maxHubs) {
       return {

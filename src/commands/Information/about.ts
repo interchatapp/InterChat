@@ -37,7 +37,7 @@ export default class About extends BaseCommand {
   constructor() {
     super({
       name: 'about',
-      description: '🚀 Learn more about the InterChat team and project.',
+      description: '🚀 Learn how InterChat helps grow Discord communities',
       types: { slash: true, prefix: true },
     });
   }
@@ -47,16 +47,14 @@ export default class About extends BaseCommand {
       .setDescription(
         stripIndents`
         ### ${ctx.getEmoji('wand_icon')} About InterChat
-        InterChat is a bot which provides cross-server chats that allows users to talk across different servers. Using webhooks, InterChat broadcasts messages to all connected channels in real time, making server connections seamless.
-        ### Features:
-        - Cross-server messaging
-        - Customizable block words and filters
-        - Advanced hub moderation tools
-        - Webhook management for smoother message handling
-        - [And more](${Constants.Links.Website}/#features)! 🚀
-        ### Quick Links:
-       [Donate](${Constants.Links.Donate}) • [Invite](https://discord.com/application-directory/769921109209907241) • [Support Server](${Constants.Links.SupportInvite}) • [Vote](https://top.gg/bot/769921109209907241/vote) • [Privacy](${Constants.Links.Website}/privacy) • [Terms](${Constants.Links.Website}/terms)
-      `,
+        InterChat connects Discord communities through active cross-server discussions. Messages flow naturally between servers in real-time, helping you build engaged topic-focused communities.
+
+        ### What makes InterChat different:
+        - Built for real communities - Designed with Discord server owners' needs in mind
+        - Active hubs - Find and join thriving communities around shared interests
+        - Privacy first - Full control over your hub's connections and settings
+        - Smart moderation - AI-powered image filtering and advanced content filtering keeps discussions healthy
+        `,
       )
       .setFooter({
         text: ` InterChat v${ctx.client.version} • Made with ❤️ by the InterChat Team`,

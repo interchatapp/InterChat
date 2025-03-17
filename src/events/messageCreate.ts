@@ -27,6 +27,7 @@ import { executeCommand, resolveCommand } from '#src/utils/CommandUtils.js';
 import Constants, { RedisKeys } from '#src/utils/Constants.js';
 import { t } from '#src/utils/Locale.js';
 import Logger from '#src/utils/Logger.js';
+import { runCallChecks } from '#src/utils/network/runChecks.js';
 import getRedis from '#src/utils/Redis.js';
 import {
   createUnreadDevAlertEmbed,
@@ -149,8 +150,9 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
   private async handleCall(message: Message<true>) {
     const callService = new CallService(message.client);
     const activeCall = await callService.getActiveCallData(message.channelId);
+    const userData = await fetchUserData(message.author.id);
 
-    if (activeCall) {
+    if (activeCall && userData) {
       // Track this user as a participant
       await callService.addParticipant(message.channelId, message.author.id);
 
@@ -160,11 +162,19 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
       );
       if (!otherParticipant) return;
 
+      const checksPassed = await runCallChecks(message, {
+        userData,
+        attachmentURL: message.attachments.first()?.url,
+      });
+
+      if (!checksPassed) return;
+
       try {
         await BroadcastService.sendMessage(otherParticipant.webhookUrl, {
           content: message.content,
           username: message.author.username,
           avatarURL: message.author.displayAvatarURL(),
+          allowedMentions: { parse: [] },
         });
       }
       catch (error) {

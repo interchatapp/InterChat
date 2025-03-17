@@ -24,6 +24,7 @@ import HubLogManager from '#src/managers/HubLogManager.js';
 import type HubManager from '#src/managers/HubManager.js';
 import { HubService } from '#src/services/HubService.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
+import { buildProfileEmbed } from '#src/utils/ProfileUtils.js';
 import { fetchUserLocale } from '#src/utils/Utils.js';
 import { replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
 import { findOriginalMessage } from '#src/utils/network/messageUtils.js';
@@ -103,17 +104,12 @@ export default class MessageInfo extends BaseCommand {
     const author = await ctx.client.users.fetch(originalMsg.authorId);
     const server = await ctx.client.fetchGuild(originalMsg.guildId);
 
-    const embed = new InfoEmbed()
-      .setDescription(`### ${ctx.getEmoji('info_icon')} Message Info`)
-      .addFields([
-        { name: 'Sender', value: codeBlock(author.username), inline: true },
-        { name: 'From Server', value: codeBlock(`${server?.name}`), inline: true },
-        { name: 'Which Hub?', value: codeBlock(hub.data.name), inline: true },
-        { name: 'Message ID', value: codeBlock(originalMsg.messageId), inline: true },
-        { name: 'Sent At', value: time(new Date(originalMsg.timestamp), 't'), inline: true },
-      ])
-      .setThumbnail(author.displayAvatarURL())
-      .setColor(Constants.Colors.interchat);
+    // Get the profile embed first
+    const profileEmbed = await buildProfileEmbed(author, ctx.client);
+    if (!profileEmbed) {
+      await replyWithUnknownMessage(ctx, { edit: true });
+      return;
+    }
 
     const connection = (await hub.connections.fetch())?.find(
       (c) => c.data.connected && c.data.serverId === originalMsg.guildId,
@@ -123,7 +119,7 @@ export default class MessageInfo extends BaseCommand {
       inviteButtonUrl: connection?.data.invite,
     });
 
-    const reply = await ctx.editOrReply({ embeds: [embed], components }, ['Ephemeral']);
+    const reply = await ctx.editOrReply({ embeds: [profileEmbed], components }, ['Ephemeral']);
 
     const collector = reply?.createMessageComponentCollector({
       idle: 60_000,
@@ -273,29 +269,24 @@ export default class MessageInfo extends BaseCommand {
     { author }: UserInfoOpts,
   ) {
     await interaction.deferUpdate();
-    const createdAt = Math.round(author.createdTimestamp / 1000);
-    const hubsOwned = await db.hub.count({ where: { ownerId: author.id } });
-    const displayName = author.globalName ?? 'Not Set.';
 
-    const userEmbed = new InfoEmbed()
-      .setDescription(`### ${getEmoji('info_icon', interaction.client)} ${author.username}`)
-      .addFields([
-        { name: 'Display Name', value: codeBlock(displayName), inline: true },
-        { name: 'User ID', value: codeBlock(author.id), inline: true },
-        { name: 'Hubs Owned', value: codeBlock(`${hubsOwned}`), inline: true },
-        {
-          name: 'Created At',
-          value: `${time(createdAt, 'd')} (${time(createdAt, 'R')})`,
-          inline: true,
-        },
-      ])
-      .setThumbnail(author.displayAvatarURL())
-      .setImage(author.bannerURL() ?? null);
+    const profileEmbed = await buildProfileEmbed(author, interaction.client);
+    if (!profileEmbed) {
+      await interaction.editReply({
+        content: 'Failed to fetch user profile.',
+        embeds: [],
+        components: [],
+      });
+      return;
+    }
 
     // disable the user info button
-    greyOutButton(components[0], 2);
+    greyOutButton(components[0], 1);
 
-    await interaction.editReply({ embeds: [userEmbed], components });
+    await interaction.editReply({
+      embeds: [profileEmbed],
+      components,
+    });
   }
 
   private async handleMsgInfoButton(
@@ -328,7 +319,7 @@ export default class MessageInfo extends BaseCommand {
       .setThumbnail(author.displayAvatarURL())
       .setColor(Constants.Colors.invisible);
 
-    greyOutButton(components[0], 0);
+    greyOutButton(components[0], 3);
 
     await interaction.update({ embeds: [embed], components, files: [] });
   }
@@ -424,18 +415,18 @@ export default class MessageInfo extends BaseCommand {
     return [
       new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
-          .setLabel(t('msgInfo.buttons.message', locale))
+          .setLabel(t('msgInfo.buttons.user', locale))
           .setStyle(ButtonStyle.Secondary)
-          .setDisabled(true)
-          .setCustomId(new CustomID().setIdentifier('msgInfo', 'msgInfo').toString()),
+          .setDisabled(true) // Initially disabled since we show user info first
+          .setCustomId(new CustomID().setIdentifier('msgInfo', 'userInfo').toString()),
         new ButtonBuilder()
           .setLabel(t('msgInfo.buttons.server', locale))
           .setStyle(ButtonStyle.Secondary)
           .setCustomId(new CustomID().setIdentifier('msgInfo', 'serverInfo').toString()),
         new ButtonBuilder()
-          .setLabel(t('msgInfo.buttons.user', locale))
+          .setLabel(t('msgInfo.buttons.message', locale))
           .setStyle(ButtonStyle.Secondary)
-          .setCustomId(new CustomID().setIdentifier('msgInfo', 'userInfo').toString()),
+          .setCustomId(new CustomID().setIdentifier('msgInfo', 'msgInfo').toString()),
       ),
       new ActionRowBuilder<ButtonBuilder>({ components: extras }),
     ];
