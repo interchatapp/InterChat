@@ -246,7 +246,7 @@ hub:
 
       **Note:** You can always change this later using `/connection`.
     joinFooter: Want to use a different channel? Use the dropdown below.
-    noHubs: '{emoji} There are no hubs listed here at the moment. Please try again later!'
+    noHubs: '{emoji} Loendis pole ühtegi keskust. Proovige hiljem uuesti!'
     rating:
       invalid: Invalid rating. You must enter a number between 1 and 5.
       success: Rating submitted! Thank you for your feedback.
