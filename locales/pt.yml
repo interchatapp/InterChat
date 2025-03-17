@@ -20,8 +20,8 @@ rules:
 
     You also agree to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines). Check out the [full list of rules]({guidelines_link}).
   welcome: |
-    {emoji} Hey {user}, welcome to InterChat!
-    Before you can start using me to chat with people from other servers, you need to accept some rules. Click continue to proceed.
+    {emoji} Hi {user}! Ready to connect with other communities?
+    Before you start chatting across servers, let's quickly review our community guidelines. These help keep InterChat a great place for everyone.
   alreadyAccepted: '{emoji} Você já aceitou as regras. Agora você pode usar o InterChat em toda sua danelização.'
   continue: Continue
   accept: Accept
@@ -32,8 +32,16 @@ rules:
 
     ⚠️ **You cannot send messages in this hub until you accept these rules.**
   accepted: |
-    {emoji} Welcome to InterChat! You have accepted the bot rules.
-    You can now use InterChat to chat with members from other servers!
+    {emoji} You're all set! Welcome to the InterChat community.
+
+    Quick tips to get started:
+    - Use `/hub browse` to find active communities
+    - Join discussions that interest you
+    - Use our new `/call` command to connect with single servers
+
+    Need help? Join our [community]({support_invite}) - we're happy to help!
+
+    Love what we're building? Consider [supporting us]({donateLink}) to help keep InterChat running.
   declined: |
     {emoji} You have declined the InterChat rules.
     -# ⚠️ **You won't be able to use InterChat or chat with other servers until you accept the rules.**
@@ -48,8 +56,12 @@ rules:
   noHubRules: This hub has not set any specific rules yet. However, the [general InterChat rules]({rules_link}) still apply.
   hubRules: Hub Rules
 vote:
-  description: "Support InterChat by voting on top.gg and unlock exclusive perks! Your vote helps us reach more users."
-  footer: "Vote resets every 12 hours • Thank you for supporting!"
+  description: |
+    Help more communities discover InterChat! Your vote on top.gg:
+    • Helps others find active communities
+    • Unlocks special features for you
+    • Supports our independent development
+  footer: "Votes refresh every 12 hours • Thanks for supporting InterChat!"
   button:
     label: "Vote on top.gg"
   perks:
@@ -60,9 +72,9 @@ network:
   editSuccess: '{emoji} A mensagem de {user} foi editada em __**{edited}/{total}**__ servidores.'
   onboarding:
     embed:
-      title: 'Olá, bem-vindo ao {hubName}!'
+      title: '👋 Welcome to {hubName}!'
       description: |
-        Olá! Você está tentando entrar em um hub chamado **{hubName}**. Para conversar com membros de outros servidores, você precisa aceitar as diretrizes do InterChat. Use o botão abaixo para continuar.
+        You've found an active community hub! Before joining the discussion, take a quick look at our guidelines to keep conversations engaging and friendly for everyone.
       footer: Rede InterChat | Versão {version}
     inProgress: '{emoji} {channel} já está em processo de configuração para se juntar a um hub. Aguarde a conclusão da configuração ou cancele-a se você foi quem a iniciou.'
 blacklist:
