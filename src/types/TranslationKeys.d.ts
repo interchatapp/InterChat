@@ -21,7 +21,7 @@ export type TranslationKeys = {
   'rules.decline': never;
   'rules.agreementNote': never;
   'rules.hubAgreementNote': never;
-  'rules.accepted': 'emoji';
+  'rules.accepted': 'emoji' | 'support_invite' | 'donateLink';
   'rules.declined': 'emoji';
   'rules.hubAccepted': 'emoji';
   'rules.hubDeclined': 'emoji' | 'hubName';
@@ -35,7 +35,7 @@ export type TranslationKeys = {
   'network.deleteSuccess': 'emoji' | 'user' | 'deleted' | 'total';
   'network.editSuccess': 'emoji' | 'user' | 'edited' | 'total';
   'network.onboarding.embed.title': 'hubName';
-  'network.onboarding.embed.description': 'hubName';
+  'network.onboarding.embed.description': never;
   'network.onboarding.embed.footer': 'version';
   'network.onboarding.inProgress': 'emoji' | 'channel';
   'blacklist.success': 'emoji' | 'name';
@@ -299,6 +299,15 @@ export type TranslationKeys = {
   'config.setInvite.removed': 'emoji';
   'config.setInvite.invalid': 'emoji';
   'config.setInvite.notFromServer': 'emoji';
+  'badges.shown': 'emoji';
+  'badges.hidden': 'emoji';
+  'badges.command.description': never;
+  'badges.command.options.show.name': never;
+  'badges.command.options.show.description': never;
+  'badges.list.developer': never;
+  'badges.list.staff': never;
+  'badges.list.translator': never;
+  'badges.list.voter': never;
   'global.webhookNoLongerExists': 'emoji';
   'global.noReason': never;
   'global.noDesc': never;

@@ -86,17 +86,17 @@ export default class UserDbService {
   }
 
   // Moderation methods
-  public async ban(id: string, reason: string, username?: string): Promise<void> {
+  public async ban(id: string, reason: string, name?: string): Promise<void> {
     await this.upsertUser(id, {
-      username,
+      name,
       voteCount: 0,
       banReason: reason,
     });
   }
 
-  public async unban(id: string, username?: string): Promise<void> {
+  public async unban(id: string, name?: string): Promise<void> {
     await this.upsertUser(id, {
-      username,
+      name,
       voteCount: 0,
       banReason: null,
     });

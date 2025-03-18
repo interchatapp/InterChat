@@ -30,6 +30,7 @@ export class EmbedMessageFormatter implements MessageFormatterStrategy {
       attachmentURL: opts.attachmentURL,
       referredContent: opts.referredContent,
       embedCol: opts.embedColor,
+      badges: opts.badges,
     });
 
     return {

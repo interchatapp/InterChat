@@ -211,9 +211,10 @@ model HubRulesAcceptance {
 }
 
 model User {
-  id                String          @id @map("_id") @db.String
+  id                String          @id @map("_id")
+  name              String?
+  showBadges        Boolean         @default(true)
   image             String?
-  username          String?
   locale            String?
   voteCount         Int             @default(0)
   reputation        Int             @default(0)
@@ -276,7 +277,7 @@ model ReputationLog {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   giverId    String
   receiver   User     @relation(fields: [receiverId], references: [id])
-  receiverId String   @db.String
+  receiverId String
   timestamp  DateTime @default(now())
   reason     String
   automatic  Boolean  @default(false)

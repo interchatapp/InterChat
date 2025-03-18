@@ -46,7 +46,7 @@ export default class ReplyMention extends BaseCommand {
     if (!dbUser) {
       await userService.createUser({
         id: ctx.user.id,
-        username: ctx.user.username,
+        name: ctx.user.username,
         mentionOnReply,
       });
     }

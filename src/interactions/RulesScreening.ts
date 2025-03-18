@@ -218,6 +218,8 @@ export default class RulesScreeningInteraction {
     // If no hub rules to show, display success message
     const embed = new InfoEmbed().setDescription(
       t('rules.accepted', locale, {
+        support_invite: Constants.Links.SupportInvite,
+        donateLink: Constants.Links.Donate,
         emoji: getEmoji('tick_icon', interaction.client),
       }),
     );

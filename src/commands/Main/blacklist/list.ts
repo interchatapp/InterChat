@@ -82,7 +82,7 @@ export default class BlacklistListSubcommand extends BaseCommand {
     const list = await db.infraction.findMany({
       where: { hubId: hub.id, type: 'BLACKLIST', status: 'ACTIVE' },
       orderBy: { expiresAt: 'desc' },
-      include: { user: { select: { username: true } } },
+      include: { user: { select: { name: true } } },
     });
 
     const options = { LIMIT: 5, iconUrl: hub.data.iconUrl };
@@ -126,7 +126,7 @@ export default class BlacklistListSubcommand extends BaseCommand {
   }
 
   private createFieldData(
-    data: Infraction & { user: { username: string | null } | null },
+    data: Infraction & { user: { name: string | null } | null },
     type: 'user' | 'server',
     {
       moderator,
@@ -138,7 +138,7 @@ export default class BlacklistListSubcommand extends BaseCommand {
   ) {
     const name = isServerType(data)
       ? (data.serverName ?? 'Unknown Server.')
-      : (data.user?.username ?? 'Unknown User.');
+      : (data.user?.name ?? 'Unknown User.');
 
     return {
       name,

@@ -320,7 +320,7 @@ export default class HubInfractionsSubcommand extends BaseCommand {
   ): string {
     if (!target) {
       return infraction.userId
-        ? (infraction.user?.username ?? 'Unknown User')
+        ? (infraction.user?.name ?? 'Unknown User')
         : (infraction.serverName ?? 'Unknown Server');
     }
     return target instanceof DiscordUser ? target.username : target.name;

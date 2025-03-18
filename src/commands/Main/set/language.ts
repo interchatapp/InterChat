@@ -70,7 +70,7 @@ export default class SetLanguage extends BaseCommand {
 
     const { id, username } = ctx.user;
     const userService = new UserDbService();
-    await userService.upsertUser(id, { locale, username });
+    await userService.upsertUser(id, { locale, name: username });
 
     const langInfo = supportedLocales[locale];
     const lang = `${langInfo.emoji} ${langInfo.name}`;

@@ -86,6 +86,7 @@ const createEmbed = (
   opts?: {
     attachmentURL?: string | null;
     embedCol?: HexColorString;
+    badges?: string;
   },
 ) =>
   new EmbedBuilder()
@@ -96,6 +97,7 @@ const createEmbed = (
       iconURL: message.author.displayAvatarURL(),
     })
     .setDescription(content || null)
+    .addFields(opts?.badges ? [{ name: 'Badges', value: opts.badges }] : [])
     .setFooter({
       text: `From: ${message.guild?.name}`,
       iconURL: message.guild?.iconURL() ?? undefined,
@@ -119,7 +121,12 @@ const addReplyField = (embed: EmbedBuilder, referredContent: string) => {
 export const buildNetworkEmbed = (
   message: Message,
   username: string,
-  opts?: { attachmentURL?: string | null; embedCol?: HexColorString; referredContent?: string },
+  opts?: {
+    attachmentURL?: string | null;
+    embedCol?: HexColorString;
+    referredContent?: string;
+    badges?: string;
+  },
 ) => {
   const msgContent = processContent(message.content, opts?.attachmentURL);
   const embed = createEmbed(message, username, msgContent, opts);

@@ -63,7 +63,7 @@ export class CompactMessageFormatter implements MessageFormatterStrategy {
       avatarURL: author.avatarURL,
       embeds: replyEmbed,
       components: jumpButton,
-      content: `${contents.normal} ${attachmentURL}`,
+      content: `${opts.badges}${contents.normal} ${attachmentURL}`,
       threadId: connection.parentId ? connection.channelId : undefined,
       allowedMentions: { parse: [] },
     };

@@ -85,7 +85,7 @@ export default class UnblacklistUserSubcommand extends BaseCommand {
     await ctx.replyEmbed('blacklist.removed', {
       t: {
         emoji: ctx.getEmoji('tick_icon'),
-        name: (await fetchUserData(userId))?.username ?? 'Unknown User',
+        name: (await fetchUserData(userId))?.name ?? 'Unknown User',
       },
       edit: true,
     });
@@ -106,7 +106,7 @@ export default class UnblacklistUserSubcommand extends BaseCommand {
           OR: [
             { userId: { mode: 'insensitive', contains: userValue } },
             {
-              user: { username: { mode: 'insensitive', contains: userValue } },
+              user: { name: { mode: 'insensitive', contains: userValue } },
             },
           ],
         },
@@ -116,7 +116,7 @@ export default class UnblacklistUserSubcommand extends BaseCommand {
 
       await interaction.respond(
         activeInfractions.map((user) => ({
-          name: `${user.user?.username ?? 'Unknown User'} (${user.userId})`,
+          name: `${user.user?.name ?? 'Unknown User'} (${user.userId})`,
           value: user.userId ?? 'Unknown UserId',
         })),
       );

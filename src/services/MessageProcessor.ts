@@ -110,6 +110,7 @@ export class MessageProcessor {
       hubConnections,
       connection,
       attachmentURL,
+      userData,
     );
 
     updateLeaderboards('user', message.author.id);

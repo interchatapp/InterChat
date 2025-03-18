@@ -56,11 +56,11 @@ export class VoteManager {
     return user?.voteCount ?? 0;
   }
 
-  async incrementUserVote(userId: string, username?: string) {
+  async incrementUserVote(userId: string, name?: string) {
     const lastVoted = new Date();
     const user = await this.userDbManager.getUser(userId);
     return await this.userDbManager.upsertUser(userId, {
-      username,
+      name,
       lastVoted,
       voteCount: user?.voteCount ? user.voteCount + 1 : 1,
     });
@@ -73,7 +73,7 @@ export class VoteManager {
 
   async getUsername(userId: string) {
     const user = (await this.getAPIUser(userId)) ?? (await this.userDbManager.getUser(userId));
-    return user?.username ?? 'Unknown User';
+    return user && 'username' in user ? user.username : user?.name ?? 'Unknown User';
   }
 
   async announceVote(vote: WebhookPayload) {

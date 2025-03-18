@@ -45,6 +45,7 @@ export type DefaultFormaterOpts = BroadcastOpts & {
   };
   hub: Hub;
   jumpButton?: ActionRowBuilder<ButtonBuilder>[];
+  badges?: string;
 };
 
 export default class MessageFormattingService {

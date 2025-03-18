@@ -19,6 +19,7 @@ import type ConnectionManager from '#src/managers/ConnectionManager.js';
 import type HubManager from '#src/managers/HubManager.js';
 import type HubSettingsManager from '#src/managers/HubSettingsManager.js';
 import MessageFormattingService from '#src/services/MessageFormattingService.js';
+import { getVisibleBadges } from '#src/utils/BadgeUtils.js';
 import Logger from '#src/utils/Logger.js';
 import type {
   BroadcastOpts,
@@ -35,7 +36,7 @@ import {
   getReferredContent,
   getReferredMsgData,
 } from '#utils/network/utils.js';
-import type { Connection } from '@prisma/client';
+import type { Connection, User } from '@prisma/client';
 import type {
   APIMessage,
   Client,
@@ -51,6 +52,7 @@ export class BroadcastService {
     hubConnections: ConnectionManager[],
     connection: ConnectionManager,
     attachmentURL: string | undefined,
+    userData: User | null,
   ) {
     const username = this.getUsername(hub.settings, message);
     const referredMessage = await this.fetchReferredMessage(message);
@@ -72,6 +74,7 @@ export class BroadcastService {
           referredMsgData,
           embedColor: connection.data.embedColor as HexColorString,
           username,
+          userData,
         }),
       ),
     );
@@ -119,15 +122,16 @@ export class BroadcastService {
     connection: ConnectionManager,
     opts: BroadcastOpts & {
       username: string;
+      userData: User | null;
       referredMsgData: ReferredMsgData;
     },
   ): Promise<NetworkWebhookSendResult> {
     try {
       const { webhookURL } = connection.data;
-      const messageFormat = this.getMessageFormat(
+      const messageFormat = await this.formatMessage(
         message,
-        connection,
         hub,
+        connection,
         opts,
       );
       const { error, message: messageRes } = await BroadcastService.sendMessage(
@@ -151,18 +155,20 @@ export class BroadcastService {
     }
   }
 
-  private getMessageFormat(
+  private async formatMessage(
     message: Message<true>,
-    connection: ConnectionManager,
     hub: HubManager,
+    connection: ConnectionManager,
     opts: BroadcastOpts & {
       username: string;
+      userData: User | null;
       referredMsgData: ReferredMsgData;
     },
-  ): WebhookMessageCreateOptions {
+  ) {
     const { dbReferrence, referredAuthor } = opts.referredMsgData;
+
     const author = {
-      username: opts.username,
+      username: this.getUsername(hub.settings, message),
       avatarURL: message.author.displayAvatarURL(),
     };
     const jumpButton = this.getJumpButton(
@@ -173,6 +179,10 @@ export class BroadcastService {
     );
     const servername = trimAndCensorBannedWebhookWords(message.guild.name);
 
+    // Use the new utility function
+    const badges = await getVisibleBadges(message.author.id, message.client, opts.userData);
+    const badgeText = badges ? `-# ${badges}\n` : '';
+
     const messageFormatter = new MessageFormattingService(connection.data);
     return messageFormatter.format(message, {
       ...opts,
@@ -180,6 +190,7 @@ export class BroadcastService {
       servername,
       jumpButton,
       hub: hub.data,
+      badges: badgeText,
       referredContent: dbReferrence
         ? getReferredContent(dbReferrence)
         : undefined,
