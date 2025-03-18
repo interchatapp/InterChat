@@ -186,7 +186,7 @@ export class BroadcastService {
       hub.id,
       opts.userData,
     );
-    const badgeText = badges ? `-# > ${badges}\n` : '';
+    const badgeText = badges ? `-# ${badges}\n` : '';
 
     const messageFormatter = new MessageFormattingService(connection.data);
     return messageFormatter.format(message, {
