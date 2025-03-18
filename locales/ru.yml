@@ -496,6 +496,20 @@ config:
     removed: '{emoji} Приглашение успешно убрано!'
     invalid: '{emoji} Некорректное приглашение. Пожалуйста, убедитесь что вы ввели правильную ссылку. Например, `https://discord.gg/discord`'
     notFromServer: '{emoji} Это приглашение не из этого сервера.'
+badges:
+  shown: '{emoji} Your badges will now be shown in messages.'
+  hidden: '{emoji} Your badges will now be hidden in messages.'
+  command:
+    description: '🏅 Configure your badge display preferences'
+    options:
+      show:
+        name: 'show'
+        description: 'Whether to show or hide your badges in messages'
+  list:
+    developer: 'Core developer of InterChat'
+    staff: 'InterChat staff member'
+    translator: 'Translator of InterChat'
+    voter: 'Voted for InterChat in the last 12 hours'
 global:
   webhookNoLongerExists: '{emoji} Вебхук для этого канала более не существует. Чтобы продолжить использовать InterChat, пожалуйста создайте вебхук заново используя `/connection unpause`.'
   noReason: Причина не указана.
