@@ -1,7 +1,7 @@
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
+import UserDbService from '#src/services/UserDbService.js';
 import { ApplicationCommandOptionType } from 'discord.js';
-import db from '#src/utils/Db.js';
 
 export default class BadgesCommand extends BaseCommand {
   constructor() {
@@ -24,16 +24,7 @@ export default class BadgesCommand extends BaseCommand {
     await ctx.deferReply({ flags: ['Ephemeral'] });
 
     const showBadges = ctx.options.getBoolean('show', true);
-
-    await db.user.upsert({
-      where: { id: ctx.user.id },
-      update: { showBadges },
-      create: {
-        id: ctx.user.id,
-        name: ctx.user.username,
-        showBadges,
-      },
-    });
+    await new UserDbService().upsertUser(ctx.user.id, { showBadges, name: ctx.user.username });
 
     await ctx.replyEmbed(showBadges ? 'badges.shown' : 'badges.hidden', {
       t: { emoji: ctx.getEmoji('tick_icon') },

@@ -1,9 +1,10 @@
 import type { Client } from 'discord.js';
 import { getEmoji } from '#utils/EmojiUtils.js';
 import { checkIfStaff } from '#utils/Utils.js';
-import Constants from '#utils/Constants.js';
+import Constants, { RedisKeys } from '#utils/Constants.js';
 import db from '#src/utils/Db.js';
 import { User } from '@prisma/client';
+import { getRedis } from '#src/utils/Redis.js';
 
 export interface Badge {
   id: string;
@@ -83,13 +84,36 @@ export async function shouldShowBadges(userId: string, userData?: User | null): 
   return user?.showBadges ?? true;
 }
 
+
+export async function shouldShowBadgesForMessage(
+  userId: string,
+  hubId: string,
+  userData?: User | null,
+): Promise<boolean> {
+  // First check if user wants to show badges at all
+  const showBadges = await shouldShowBadges(userId, userData);
+  if (!showBadges) return false;
+
+  const redis = getRedis();
+  const key = `${RedisKeys.LastHubMessageUser}:${hubId}`;
+
+  const lastUserId = await redis.get(key);
+
+  // Store current user as the last message sender (expire after 1 hour to clean up)
+  await redis.set(key, userId, 'EX', 3600);
+
+  // Show badges only if this is a different user than the last message
+  return lastUserId !== userId;
+}
+
 export async function getVisibleBadges(
   userId: string,
   client: Client,
+  hubId: string,
   userData?: User | null,
 ): Promise<string> {
-  const shouldShow = await shouldShowBadges(userId, userData);
-  if (shouldShow === false) return '';
+  const shouldShow = await shouldShowBadgesForMessage(userId, hubId, userData);
+  if (!shouldShow) return '';
 
   return [...getBadges(userId, client), ...getExtraBadges(userId, client, { userData })]
     .map((badge) => badge.emoji)
