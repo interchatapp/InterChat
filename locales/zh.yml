@@ -495,6 +495,20 @@ config:
     removed: '{emoji}邀请已成功移除！'
     invalid: '{emoji}邀请无效。请确保您输入了有效的邀请链接。例如：“https://discord.gg/discord”'
     notFromServer: '{emoji}此邀请不是来自此服务器。'
+badges:
+  shown: '{emoji} Your badges will now be shown in messages.'
+  hidden: '{emoji} Your badges will now be hidden in messages.'
+  command:
+    description: '🏅 Configure your badge display preferences'
+    options:
+      show:
+        name: 'show'
+        description: 'Whether to show or hide your badges in messages'
+  list:
+    developer: 'Core developer of InterChat'
+    staff: 'InterChat staff member'
+    translator: 'Translator of InterChat'
+    voter: 'Voted for InterChat in the last 12 hours'
 global:
   webhookNoLongerExists: '{emoji}此频道的网络回调已不存在。若要继续使用 InterChat，请使用“／恢复连接”指令重新创建网络回调。'
   noReason: 未提供原因。
