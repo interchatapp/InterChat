@@ -189,12 +189,23 @@ export default class RulesScreeningInteraction {
   @RegisterInteractionHandler('rulesScreen', 'accept')
   async handleBotRulesAccept(interaction: ButtonInteraction): Promise<void> {
     await interaction.deferUpdate();
+
+    const customId = CustomID.parseCustomId(interaction.customId);
+    const [userId] = customId.args;
+
+    // Add security check
+    if (interaction.user.id !== userId) {
+      await interaction.followUp({
+        content: `${getEmoji('x_icon', interaction.client)} You cannot accept rules for other users!`,
+        flags: ['Ephemeral'],
+      });
+      return;
+    }
+
     const userService = new UserDbService();
     await userService.upsertUser(interaction.user.id, { acceptedRules: true });
 
     // Check if there's a pending hub rules acceptance needed
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [userId] = customId.args;
     const locale = await fetchUserLocale(interaction.user.id);
 
     // Try to get hub context from MessageProcessor
@@ -230,10 +241,19 @@ export default class RulesScreeningInteraction {
   @RegisterInteractionHandler('rulesScreen', 'acceptHub')
   async handleHubRulesAccept(interaction: ButtonInteraction): Promise<void> {
     await interaction.deferUpdate();
+
     const customId = CustomID.parseCustomId(interaction.customId);
     const [userId, hubId] = customId.args;
 
-    // Record hub rules acceptance
+    // Add security check
+    if (interaction.user.id !== userId) {
+      await interaction.followUp({
+        content: `${getEmoji('x_icon', interaction.client)} You cannot accept rules for other users!`,
+        flags: ['Ephemeral'],
+      });
+      return;
+    }
+
     await db.hubRulesAcceptance.create({
       data: {
         userId,
