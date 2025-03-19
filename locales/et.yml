@@ -1,131 +1,131 @@
 rules:
   rules: |
-    ### {emoji} Rules
-    These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:
+    ### {emoji} Reeglid
+    Need reeglid on paigas, et tagada nauditav ja turvaline kogemus kõigile. Loe need läbi ja järgi neid hoolega.
 
-    1. **No Hate Speech or Harassment**
-    -# > **Includes:** Using slurs or hate speech to attack others, [and more]({guidelines_link}).
-    2. **No Illegal Content**
-    -# > **Includes:** Sharing links to illegal content, Encouraging violence, [and more]({guidelines_link}).
-    3. **No Severe NSFW or Gore**
-    -# > **Includes:** Posting gore or extreme gore in InterChat, Posting sexual content in non-NSFW hubs, [and more]({guidelines_link}).
-    4. **No Spamming or Flooding**
-    -# > **Includes:** Mass spamming or bot floods, [and more]({guidelines_link})
-    5. **No Impersonation or Fraud**
-    -# > **Includes:** Impersonating InterChat staff or hub moderators, Running cryptocurrency or NFT scams, [and more]({guidelines_link}).
-    6. **No Exploitation or Abuse**
-    -# > **Includes:** Grooming or predatory behavior towards minors, Sharing, Requesting, Blackmailing or threatening to  Encouraging self-harm, [and more]({guidelines_link}).
-    7. **No Sharing Malicious Software**
-    -# > **Includes:** Sharing malware, viruses, 'free nitro' links, harmful scripts [and more]({guidelines_link}).
+    1. **Ei mingit vihakõne ega ahistamist**
+    -# > **Kaasaarvatud:** rassiliste laimusõnade või vihakõnega kellegi ründamine, [ja muud] ({guidelines_link}).
+    2. **Ei mingit illegaalset sisu**
+    -# > **Kaasaarvatud:** illegaalse sisuga linkide jagamine, vägivalla õhutamine, [ja muud]({guidelines_link}).
+    3. **Ei mingit tõsiselt ebasündsat sisu ega verist vägivalda**
+    -# > **Kaasaarvatud:** InterChat'is julma või väga julma vägivalla graafika postitamine, erootilise sisuga materjalide postitamine selleks mitte märgitud keskustes, [ja muud]({guidelines_link}).
+    4. **Ära üleujuta postitustega**
+    -# > **Kaasaarvatud:** massiliselt postitamine või robotitega üleujutamine, [ja muud]({guidelines_link})
+    5. **Ära teeskle teist ega soorita kelmust**
+    -# > **Kaasaarvatud:** InterChat'i meeskonna või modereerija teesklemine, krüptovaluuta või NFT kelmuse korraldamine, [ja muud]({guidelines_link}).
+    6. **Ei mingit ärakasutamist ega kuritarvitamist **
+    -# > **Kaasaarvatud:** alaealiste peibutamine või röövellik käitumine, jagamine, taotlemine, väljapressimine või nende ähvardamine, enesekahju julgustamine, [ja muud]({guidelines_link}).
+    7. **Ära jaga pahavara**
+    -# > **Kaasaarvatud:** pahaloomuliku tarkvara levitamine, viirused, 'tasuta nitro' lingid, pahaloomulised skriptid, [ja muud]({guidelines_link}).
 
-    You also agree to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines). Check out the [full list of rules]({guidelines_link}).
+    Te nõustute ka järgima [Discord'i teenusetingimusi](https://discord.com/terms) ja [kogukonna juhiseid](https://discord.com/guidelines). Vaadake ka [täielikku reeglite nimekirja]({guidelines_link}).
   welcome: |
-    {emoji} Hi {user}! Ready to connect with other communities?
-    Before you start chatting across servers, let's quickly review our community guidelines. These help keep InterChat a great place for everyone.
-  alreadyAccepted: '{emoji} You have already accepted the rules. You can now use InterChat to its full extent.'
-  continue: Continue
-  accept: Accept
-  decline: Decline
-  agreementNote: By accepting these rules, you agree to follow them while using InterChat. Breaking these rules may result in restrictions or bans.
+    {emoji} Tere, {user}! Kas olete valmis teiste serveritega ühendust võtma?
+    Enne serveritevahelise vestluse alustamist vaatame kiiresti üle meie keskkonna juhised. Need aitavad hoida InterChat'i suurepärase kohana kõigi jaoks.
+  alreadyAccepted: '{emoji} Sa oled juba reeglitega nõustunud. Sa saad nüüd InterChat''i kasutada täie mahuni.'
+  continue: Edasi
+  accept: Nõustu
+  decline: Keeldu
+  agreementNote: Nende reeglitega nõustudes nõustute neid InterChati kasutades järgima. Nende reeglite rikkumine võib kaasa tuua piiranguid või keelde.
   hubAgreementNote: |
-    By accepting these rules, you agree to follow them while chatting in this hub. Breaking these rules may result in removal from the hub.
+    Nende reeglitega nõustudes nõustute neid selles keskuses järgima. Reeglite rikkumine võib kaasa tuua sellest keskusest eemaldamine.
 
-    ⚠️ **You cannot send messages in this hub until you accept these rules.**
+    ⚠️ **Te ei saa selles keskuses sõnumeid saata enne, kui nõustute nende reeglitega.**
   accepted: |
-    {emoji} You're all set! Welcome to the InterChat community.
+    {emoji} Kõik on valmis! Tere tulemast InterChat'i.
 
-    Quick tips to get started:
-    - Use `/hub browse` to find active communities
-    - Join discussions that interest you
-    - Use our new `/call` command to connect with single servers
+    Kiired näpunäited alustamiseks:
+    - Aktiivsete keskuste leidmiseks kasutage käsku `/hub browse`.
+    - Liituge teid huvitavate aruteludega
+    - Kasutage üksikute serveritega ühenduse loomiseks meie uut käsku `/call`.
 
-    Need help? Join our [community]({support_invite}) - we're happy to help!
+    Vajad abi? Liituge meie [tugiserveriga]({support_invite}) – aitame hea meelega!
 
-    Love what we're building? Consider [supporting us]({donateLink}) to help keep InterChat running.
+    Meeldib mis me loome? Kaaluge [meie toetamist]({donateLink}), et aidata InterChat'i töös hoida.
   declined: |
-    {emoji} You have declined the InterChat rules.
-    -# ⚠️ **You won't be able to use InterChat or chat with other servers until you accept the rules.**
-    -# To try again, send another message or use any InterChat command.
+    {emoji} Te keeldusite InterChat'i reeglitest.
+    -# ⚠️ **Te ei saa InterChat'i kasutada ega teiste serveritega vestelda enne, kui nõustute reeglitega.**
+    -# Uuesti proovimiseks saatke uus sõnum või kasutage ükskõik millist InterChat'i käsklust.
   hubAccepted: |
     {emoji} Olete nõustunud keskuse reeglitega.
     Nüüd saate selles keskuses vestelda!
   hubDeclined: |
     .....
-  noHubRules: This hub has not set any specific rules yet. However, the [general InterChat rules]({rules_link}) still apply.
-  hubRules: Hub Rules
+  noHubRules: See keskus ei ole veel konkreetseid reegleid kehtestanud. Siiski kehtivad [InterChat'i üldreeglid]({rules_link}).
+  hubRules: Keskuse reeglid
 vote:
   description: |
-    Help more communities discover InterChat! Your vote on top.gg:
-    • Helps others find active communities
-    • Unlocks special features for you
-    • Supports our independent development
-  footer: "Votes refresh every 12 hours • Thanks for supporting InterChat!"
+    Aidake rohkematel kogukondadel avastada InterChat! Sinu hääl saidil top.gg:
+    • Aitab teistel leida aktiivseid kogukondi
+    • Avab teie jaoks erilised funktsioonid
+    • Toetab meie iseseisvat arengut
+  footer: "Hääl taastub iga 12 tunni järel • Täname InterChat'i toetamise eest!"
   button:
-    label: "Vote on top.gg"
+    label: "Hääletage saidil top.gg"
   perks:
-    moreComingSoon: "More perks coming soon! Suggest some in the [support server]({support_invite})."
+    moreComingSoon: "Rohkem preemiaid peagi tulemas! Soovitage mõnda [tugiserveris]({support_invite})."
 network:
-  accountTooNew: '{emoji} {user} Your account is too new to send messages using InterChat. Please try again later.'
-  deleteSuccess: '{emoji} Message by {user} has been deleted from __**{deleted}/{total}**__ servers.'
-  editSuccess: '{emoji} Message by {user} has been edited in __**{edited}/{total}**__ servers.'
+  accountTooNew: '{emoji} {user} Teie konto on InterChati kaudu sõnumite saatmiseks liiga uus. Proovige hiljem uuesti.'
+  deleteSuccess: '{emoji} Sõnum kasutajalt {user} on kustutatud __**{deleted}/{total}**__ serveritest.'
+  editSuccess: '{emoji} Sõnum kasutajalt {user} on muudetud __**{edited}/{total}**__ serveritest.'
   onboarding:
     embed:
-      title: '👋 Welcome to {hubName}!'
+      title: '👋 Tere tulemast {hubName}!'
       description: |
-        You've found an active community hub! Before joining the discussion, take a quick look at our guidelines to keep conversations engaging and friendly for everyone.
-      footer: InterChat Network | Version {version}
-    inProgress: '{emoji} {channel} is already in the process of being setup to join a hub. Please wait for the setup to complete or cancel it if you were the one who initiated it.'
+        Olete leidnud aktiivse kogukonna keskuse! Enne aruteluga liitumist vaadake meie juhiseid, et vestlused oleksid kõigi jaoks kaasahaaravad ja sõbralikud.
+      footer: InterChat Veebivõrk | Versioon {version}
+    inProgress: '{emoji} {channel} on juba ühe keskusega liitumas. Oodake, kuni ühendus on lõpule viidud, või tühistage see, kui selle algatasite teie.'
 blacklist:
-  success: '{emoji} **{name}** has been successfully blacklisted!'
-  removed: '{emoji} **{name}** has been removed from the blacklist!'
+  success: '{emoji} **{name}** on nüüd mustas nimekirjas!'
+  removed: '{emoji} **{name}** ei ole enam mustas nimekirjas!'
   modal:
     reason:
-      label: Reason
-      placeholder: Reason for blacklisting
+      label: Põhjus
+      placeholder: Musta nimekirja paneku põhjus
     duration:
-      label: Duration
-      placeholder: 'Duration of blacklist. Eg: 1d, 1w, 1m, 1y. Leave blank for permanent.'
+      label: Kestus
+      placeholder: 'Musta nimekirja kestus. Nt. 1d, 1w, 1m, 1y (vastavalt üks päev, nädal, kuu, aasta). Püsivuse jaoks jätke tühjaks.'
   user:
-    cannotBlacklistMod: '{emoji} You cannot blacklist a moderator. Please remove their moderator role first.'
-    alreadyBlacklisted: '{emoji} This user is already blacklisted.'
+    cannotBlacklistMod: '{emoji} Moderaatorit ei saa musta nimekirja lisada. Palun eemaldage esmalt nende roll.'
+    alreadyBlacklisted: '{emoji} See kasutaja on juba mustas nimekirjas.'
     easterEggs:
-      blacklistBot: You can't blacklist me wtf.
+      blacklistBot: käi perse
   server:
-    alreadyBlacklisted: '{emoji} This server is already blacklisted.'
-    unknownError: Failed to blacklist **{server}**. Enquire with the developers for more information.
+    alreadyBlacklisted: '{emoji} See server on juba mustas nimekirjas.'
+    unknownError: ' **{server}**''i musta nimekirja kandmine ebaõnnestus. Rohkemaks teabeks uuri arendajatelt.'
   list:
     user: |
-      **UserID:** {id}
-      **Moderator:** {moderator}
-      **Reason:** {reason}
-      **Expires:** {expires}
+      **Kasutaja ID:** {id}
+      **Moderaator:** {moderator}
+      **Põhjus:** {reason}
+      **Aegub:** {expires}
     server: |
-      **ServerId:** {id}
-      **Moderator:** {moderator}
-      **Reason:** {reason}
-      **Expires:** {expires}
+      **Serveri ID:** {id}
+      **Moderaator:** {moderator}
+      **Põhjus:** {reason}
+      **Aegub:** {expires}
 msgInfo:
   buttons:
-    message: Message Info
-    server: Server Info
-    user: User Info
-    report: Report
+    message: Sõnumi teave
+    server: Serveri teave
+    user: Kasutaja teave
+    report: Raporteeri
   report:
-    notEnabled: '{emoji} Reporting is not enabled for this hub.'
-    success: '{emoji} Report submitted successfully. Thank you!'
+    notEnabled: '{emoji} Raporteerimine ei ole selles keskuses võimaldatud'
+    success: '{emoji} Raport edukalt edastatud. Aitäh!'
 invite: |
-  Thank you for choosing to invite InterChat! If you have any questions or need help, we are always here to help you in the support server!
+  Täname, et valisite InterChat'i! Kui teil on küsimusi või vajate abi, oleme alati valmis teid tugiserveris aitama!
 
-  **[{invite_emoji} `Invite Link`]( {invite} ) [{support_emoji} `Support Server`]( {support} )**
+  **[{invite_emoji} `Kutse link`]( {invite} ) [{support_emoji} `Tugiserver`]( {support} )**
 connection:
-  joinRequestsDisabled: '{emoji} Join requests are disabled for this hub.'
-  notFound: '{emoji} Invalid connection. Verify the channel ID or select from displayed options.'
-  channelNotFound: '{emoji} Unable to find connected channel. To talk again choose a new channel.'
-  alreadyConnected: '{emoji} Channel {channel} is already connected to a hub.'
-  switchChannel: '{emoji} Select a channel to switch to using the select menu below:'
-  switchCalled: '{emoji} Channel switch called, use the command again to view new connection.'
+  joinRequestsDisabled: '{emoji} Selles keskuses on liitumistaotlused keelatud.'
+  notFound: '{emoji} Ühendus on kehtetu. Kinnitage kanali ID või valige kuvatud valikute hulgast.'
+  channelNotFound: '{emoji} Ühendatud kanalit ei leitud. Uuesti rääkimiseks valige uus kanal.'
+  alreadyConnected: '{emoji} Kanal {channel} on juba ühendatud ühe keskusega.'
+  switchChannel: '{emoji} Valige alloleva valikumenüü abil kanal millele ümberlülituda:'
+  switchCalled: '{emoji} Kanalivahetus kutsutud, uue ühenduse vaatamiseks kasutage käsku uuesti.'
   switchSuccess: '{emoji} Kanal vahetatud. Te olete nüüd ühendatud **{channel}** kaudu.'
-  inviteRemoved: '{emoji} Server Invite removed for this hub.'
+  inviteRemoved: '{emoji} Serveri kutse on sellest keskusest eemaldatud.'
   setInviteError: '{emoji} Unable to create invite. Please grant me  the `Create Invite` permission for the connected channel.'
   inviteAdded: '{emoji} Invite Added. Others can now join this server by using `Apps > Message Info/Report` command and `/joinserver` command.'
   emColorInvalid: '{emoji} Invalid color. Please make sure you have entered a valid hex color code.'
@@ -207,182 +207,181 @@ hub:
       ruleNameLabel: Rule Name
       wordsLabel: 'Words'
       wordsPlaceholder: 'Words seperated by comma. (Use * for wildcard). Eg. word1, *word2*, *word3, word4*'
-    validating: '{emoji} Validating anti-swear rule...'
+    validating: '{emoji} Roppusevastase reegli valideerimine...'
     noRules: |
-      ### {emoji} Let's set up some anti-swear rules!
-      Use the `Add Rule` button to create one.
+      ### {emoji} Seadistame mõned roppusevastased reeglid!
+      Kasutage mõne loomiseks nuppu "Lisa reegel".
   create:
     modal:
-      title: Create Hub
+      title: Loo keskus
       name:
-        label: Hub Name
-        placeholder: Enter a name for your hub.
+        label: Keskuse nimi
+        placeholder: Sisesta nimi oma keskusele.
       description:
-        label: Description
-        placeholder: Enter a description for your hub.
+        label: Kirjeldus
+        placeholder: Sisesta kirjeldus oma keskusele.
       icon:
-        label: Icon URL
-        placeholder: Enter an Imgur image URL.
+        label: Ikooni URL
+        placeholder: Sisesta Imgur'i pildi URL.
       banner:
-        label: Banner URL
-        placeholder: Enter an Imgur image URL.
-    maxHubs: '{emoji} You have reached the maximum number of hubs ({maxHubs}) you can create. Please delete a hub before creating another one. [Vote for InterChat]({voteUrl}) to create more hubs.'
-    invalidName: '{emoji} Invalid hub name. It must not contain `discord`, `clyde` or \`\`\` . Please choose another name.'
-    nameTaken: '{emoji} This hub name is already taken. Please choose another name.'
+        label: Plakati URL
+        placeholder: Sisesta Imgur'i pildi URL.
+    maxHubs: '{emoji} Olete saavutanud maksimaalse arvu keskuseid ({maxHubs}), mida saate luua. Uue keskuse loomiseks kustutage mõni olemasolev. [Hääletage InterChat''i poolt]({voteUrl}), et luua rohkem keskusi.'
+    invalidName: '{emoji} Keskuse nimi ei sobi. Nimi ei tohi sisaldada sõnu "discord", "clyde" ega \`\`\` . Valige mõni muu nimi.'
+    nameTaken: '{emoji} Keskuse nimi on juba võetud. Valige mõni muu nimi.'
     success: |
-      ## Hub Created! It is __private__ by default.
-      Use `/hub edit hub:{name}` to customize your hub. Please follow the steps below to get started:
-      ### Next Steps:
-      1. **Create an Invite:**
-      > Use `/hub invite create` to create an invite for others to join.
-      2. **Link a Channel:**
-      > Use `/connect` **with the invite link previously generated** to link a channel to the hub and start chatting.
-      3. **Configure Hub:** (Recommended)
-      > Use `/hub config settings`, `/hub config logging` & `/hub config anti-swear` to configure the hub.
-      4. **Add Moderators:**
-      > Use `/hub moderator add` to add moderators to the hub.
-      5. **Customize Hub:**
-      > Use `/hub edit` to change the hub icon, banner, and description.
-      6. **Go Public:**
-      > Use `/hub visibility` to make the hub public and allow others to browse and join it without using invites. (Optional)
+      ## Ja keskus olgu olla! Vaikimisi on __private__
+      Kasuta `/hub edit hub:{name}`, et oma keskust kohandada. Alustamiseks järgige allolevaid samme.
+      1. **Loo kutse:**
+      > Kasuta `/hub invite create`, et teistele kutse luua.
+      2. **Ühenda kanal:**
+      > Kasuta `/connect` **eelnevalt loodud kutsega**, et ühendada kanal keskusega ja hakka vestlema!
+      3. **Seadista keskust:** (Soovitatud)
+      > Kasuta `/hub configure settings`, `/hub config logging` ning `/hub config anti-swear` et kohandada keskust.
+      4. **Määra moderaatorid:**
+      > Kasuta `/hub moderator add`, et keskusele moderaatoreid seada.
+      5. **Kohanda keskust:**
+      > Kasuta `/hub edit` et muuta keskuse ikooni, plakatit, ja kirjeldust.
+      6. **Mine avalikuks!**
+      > Kasuta `/hub visibility` keskuse avaldamiseks, et teised saaksid keskust leida ja sellega liituda ilma kutseta. (valikuline)
 
-      If you have any questions or need help, feel free to ask in the [support server]({support_invite}). Consider [donating]({donateLink}) to support the development costs.
+      Kui teil on küsimusi või vajate abi, küsige julgelt [tugiserveris]({support_invite}). Kaaluge [annetamist]({donateLink}), et toetada arenduskulusid 🙏
   delete:
-    confirm: Are you sure you wish to delete **{hub}**? This action is irreversible. All connected servers, invites and message data will be removed from this hub.
-    ownerOnly: '{emoji} Only the owner of this hub can delete it.'
-    success: '{emoji} Hub **{hub}** has been deleted.'
-    cancelled: '{emoji} Hub deletion has been cancelled.'
+    confirm: Oled sa kindel, et tahad kustuda **{hub}**? See toiming on lõplik ja tagasivõetamatu. Kõik ühendatud serverid, kutsed, ja sõnumi andmed hävitatakse sellest keskusest.
+    ownerOnly: '{emoji} Ainult omanik võib kaika kodarasse visata.'
+    success: '{emoji} Keskus **{hub}** on kustutatud.'
+    cancelled: '{emoji} Keskus on hävingust pääsenud.'
   browse:
     joinConfirm: |
-      Are you sure you wish to join {hub} from {channel}?
+      Oled kindel, et soovid liituda keskusega {hub} kanalilt {channel}?
 
-      **Note:** You can always change this later using `/connection`.
-    joinFooter: Want to use a different channel? Use the dropdown below.
+      **Märkus:** Saate seda alati hiljem muuta, kasutades nuppu `/connection`.
+    joinFooter: Tahad kasutada mõnda teist kanalit? Kasuta allolevat rippmenüüd.
     noHubs: '{emoji} Loendis pole ühtegi keskust. Proovige hiljem uuesti!'
     rating:
-      invalid: Invalid rating. You must enter a number between 1 and 5.
-      success: Rating submitted! Thank you for your feedback.
+      invalid: Kehtetu hinnang. Peate sisestama numbri vahemikus 1 kuni 5.
+      success: Hinnang on esitatud! Täname teid tagasiside eest.
   invite:
     create:
       success: |
-        ### Invite Created!
+        ### Kutse loodud!
 
-        Your invite has been successfully created. Others can now join this hub by using the `/connect` command.
+        Sinu kutse on edukalt loodud. Teised saavad nüüd selle keskusega liituda kasutades käsklust `/connect`.
 
-        - **Join using:** `/connect invite:{inviteCode}`
-        - **View invites:** `/hub invite list`
-        - **Expiry:** {expiry}
-        - **Uses**: ∞
+        - **Liitu, kasutades:** `/connect invite:{inviteCode}`
+        - **Sirvi kutseid:** `/hub invite list`
+        - **Parim enne:** {expiry}
+        - **Kasutuseid**: ∞
 
-        **Note:** You can revoke this invite anytime using `/hub invite revoke {inviteCode}`.
+        **Märkus:** sa saad selle kutse iga kell tühistada, kasutades käsklust `/hub invite revoke {inviteCode}`.
     revoke:
-      invalidCode: '{emoji} Invalid invite code. Please make sure you have entered a valid invite code.'
-      success: '{emoji} Invite {inviteCode} revoked.'
+      invalidCode: '{emoji} Kehtetu kutse. Veenduge, et oleksite sisestanud kehtiva koodi.'
+      success: '{emoji} Kutse {inviteCode} tühistatud.'
     list:
-      title: '**Invite Codes:**'
-      noInvites: '{emoji} This hub has no invites yet. Use `/hub invite create` to create one.'
-      notPrivate: '{emoji} Only private hubs can have invites. Use `/hub edit` to make this hub private.'
+      title: '**Kutse koodid:**'
+      noInvites: '{emoji} Sellel keskusel pole veel kutseid. Kasutage käsku `/hub`, et luua kutse.'
+      notPrivate: '{emoji} Ainult privaatsetel keskustel võivad olla kutsed. Kasuta `/hub edit`, et seada keskus privaatseks.'
   joined:
     noJoinedHubs: '{emoji} This server has not joined any hubs yet. Use `/hub browse` to view a list of hubs.'
-    joinedHubs: This server is a part of **{total}** hub(s). Use `/disconnect` to leave a hub.
+    joinedHubs: See server on osa **{total}** keskustest. Keskusest lahkumiseks kasutage käsku `/disconnect`.
   leave:
-    noHub: '{emoji} That channel is invalid or has not joined any hubs.'
-    confirm: Are you sure you wish to leave **{hub}** from {channel}? No more messages will be sent to this server from this hub.
-    confirmFooter: Confirm using the button below within 10 seconds.
-    success: '{emoji} Left the hub from {channel}. No more messages will be sent to this server from this hub. You can rejoin using `/connect`.'
+    noHub: '{emoji} See kanal ei sobi või pole liitunud ühegi keskusega.'
+    confirm: Kas oled kindel, et soovid keskusest **{hub}** kanalilt {channel} lahkuda? Sellest keskusest rohkem sõnumeid ei saabu.
+    confirmFooter: Kinnitage 10 sekundi jooksul alloleva nupuga.
+    success: '{emoji} Lahkuti keskusest kanalis {channel}. Sellest keskusest sellesse serverisse rohkem sõnumeid ei saadeta. Saate uuesti liituda, kasutades `/connect`.'
   moderator:
-    noModerators: '{emoji} This hub has no moderators yet. Use `/hub moderator add` to add one.'
+    noModerators: '{emoji} Sellel keskusel pole veel moderaatoreid. Seadmiseks kasuta käsku `/hub moderator add''.'
     add:
-      success: '{emoji} **{user}** has been added as a moderator of position **{position}**.'
-      alreadyModerator: '{emoji} **{user}** is already a moderator.'
+      success: '{emoji} **{user}** on lisatud positsiooni **{position}** moderaatoriks.'
+      alreadyModerator: '{emoji} **{user}** on juba moderaator.'
     remove:
-      success: '{emoji} **{user}** has been removed as a moderator.'
-      notModerator: '{emoji} **{user}** is not a moderator.'
-      notOwner: '{emoji} Only the owner of this hub can remove a manager.'
+      success: '{emoji} **{user}** eemaldati moderaatori rollist.'
+      notModerator: '{emoji} **{user}** ei ole moderaator.'
+      notOwner: '{emoji} Ainult keskuse omanik saab halduri eemaldada.'
     update:
-      success: "{emoji} **{user}**'s position has been updated to **{position}**."
-      notModerator: "{emoji} **{user}** is not a moderator."
-      notAllowed: "{emoji} Only hub managers can update a moderator's position."
-      notOwner: "{emoji} Only the owner of this hub can update a manager's position."
+      success: "{emoji} **{user}** roll on nüüd **{position}**."
+      notModerator: "{emoji} **{user}** ei ole moderaator."
+      notAllowed: "{emoji} Ainult keskuse haldurid saavad moderaatori rolli muuta."
+      notOwner: "{emoji} Ainult selle keskuse omanik saab halduri rolli muuta."
   manage:
-    enterImgurUrl: Enter a valid Imgur image URL that is not a gallery or album.
+    enterImgurUrl: Sisestage kehtiv Imgur'i pildi URL, mis ei ole galerii ega album.
     icon:
-      changed: Hub icon successfully changed.
+      changed: Keskuse ikooni muutmine õnnestus.
       modal:
-        title: Edit Icon
-        label: Icon URL
+        title: Muuda ikooni
+        label: Ikooni URL
       selects:
-        label: Edit Icon
-        description: Change the icon of this hub.
+        label: Muuda ikooni
+        description: Muuda selle keskuse ikooni.
     description:
-      changed: Hub description successfully changed.
+      changed: Keskuse kirjeldus edukalt muudetud.
       modal:
-        title: Edit Description
-        label: Description
-        placeholder: Enter a description for this hub.
+        title: Muuda kirjeldust
+        label: Kirjeldus
+        placeholder: Sisestage keskuse kirjeldus.
       selects:
-        label: Change Description
-        description: Change the description of this hub.
+        label: Muuda kirjeldust
+        description: Muuda selle keskuse kirjeldust.
     banner:
-      changed: Hub banner successfully changed.
-      removed: Hub banner successfully removed.
+      changed: Keskuse plakat edukalt muudetud.
+      removed: keskuse plakat eemaldatud siit ilmast.
       modal:
-        title: Edit Banner
-        label: Banner URL
+        title: Muuda plakatit
+        label: Plakati URL
       selects:
-        label: Edit Banner
-        description: Change the banner of this hub.
+        label: Muuda plakatit
+        description: Muuda selle keskuse plakatit.
     visibility:
-      success: '{emoji} Hub visibility successfully changed to **{visibility}**.'
+      success: '{emoji} Keskuse nähtavus nüüd: **{visibility}**.'
       selects:
-        label: Change Visibility
-        description: Make this hub public or private.
+        label: Muuda nähtavust
+        description: Sea see keskus privaatseks või avalikuks.
     toggleLock:
       selects:
-        label: 'Lock/Unlock Hub'
-        description: 'Lock or unlock the hub chats'
-      confirmation: 'Hub chats are now {status}.'
-      announcementTitle: 'Hub chats are now {status}.'
+        label: 'Ava/sulge keskus'
+        description: 'Ava või sulge keskuse vestlused'
+      confirmation: 'Keskuse vestlused on nüüd: {status}.'
+      announcementTitle: 'Keskuse vestlused on nüüd: {status}.'
       announcementDescription:
-        locked: 'Only moderators can send messages.'
-        unlocked: 'Everyone can send messages.'
+        locked: 'Ainult moderaatorid saavad sõnumeid saata.'
+        unlocked: 'Kõik saavad sõnumeid saata.'
     embed:
-      visibility: 'Visibility'
-      connections: 'Connections'
-      chatsLocked: 'Chats Locked'
-      blacklists: 'Blacklists'
-      total: 'Total'
-      users: 'Users'
-      servers: 'Servers'
-      hubStats: 'Hub Stats'
-      moderators: 'Moderators'
-      owner: 'Owner'
+      visibility: 'Nähtavus'
+      connections: 'Ühendused'
+      chatsLocked: 'Vestlused suletud'
+      blacklists: 'Must nimekiri'
+      total: 'Kokku'
+      users: 'Kasutajad'
+      servers: 'Serverid'
+      hubStats: 'Keskuse statistika'
+      moderators: 'Moderaatorid'
+      owner: 'Omanik'
     logs:
-      title: Logs Configuration
-      reset: '{emoji} Successfully reset the logs configuration for `{type}` logs.'
-      roleSuccess: '{emoji} Logs of type `{type}` will now mention {role}!'
-      roleRemoved: '{emoji} Logs of type `{type}` will no longer mention a role.'
-      channelSuccess: '{emoji} Logs of type `{type}` will be sent to  {channel} from now!'
-      channelSelect: '#️⃣ Select a channel to send the logs'
-      roleSelect: '🏓 Select the role to mention when a log is triggered.'
-      reportChannelFirst: '{emoji} Please set a log channel first.'
+      title: Logi konfiguratsioon
+      reset: '{emoji} Edukalt lähtestatud `{type}` tüüpi logide konfiguratsioon.'
+      roleSuccess: '{emoji} `{type}` tüüpi logid nüüd teavitavad rolli {role}!'
+      roleRemoved: '{emoji} `{type}` tüüpi logid enam ei teavita kedagi.'
+      channelSuccess: '{emoji} `{type}` tüüpi logid saadetakse nüüd kanalisse {channel}!'
+      channelSelect: '#️⃣ Vali kanal kuhu logid saata'
+      roleSelect: '🏓 Valige roll keda logi käivitamisel teavitada.'
+      reportChannelFirst: '{emoji} Kõigepealt vali logidele kanal.'
       config:
-        title: Configure `{type}` Logs
+        title: Seadista `{type}` tüüpi logid
         description: |
-          {arrow} Select a log channel and/or role to be pinged from the dropdown below.
-          {arrow} You can also disable logging by using the button below.
+          {arrow} Valige allolevast rippmenüüst logikanal ja/või roll keda teavitada.
+          {arrow} Logimise saate keelata ka alloleva nupu abil.
         fields:
-          channel: Channel
-          role: Role Mention
+          channel: Kanal
+          role: Rolli teavitamine
       reports:
-        label: Reports
-        description: Receive reports from users.
+        label: Rapordid
+        description: Saa kasutajatelt raporte.
       modLogs:
-        label: Mod Logs
-        description: Log Moderation actions. (eg. blacklist, message deletes, etc.)
+        label: Moderaatorite logid
+        description: Logi moderaatorite tegusi. (nt. must nimekiri, kustutused, jne.)
       joinLeaves:
-        label: Join/Leave
-        description: Log when a server joins or leaves this hub.
+        label: Liitu/lahku
+        description: Logi kui mõni server liitub või lahkub keskusest.
       appeals:
         label: Appeals
         description: Recieve appeals from blacklisted users/servers.
