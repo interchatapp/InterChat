@@ -319,7 +319,7 @@ export default class MessageInfo extends BaseCommand {
       .setThumbnail(author.displayAvatarURL())
       .setColor(Constants.Colors.invisible);
 
-    greyOutButton(components[0], 3);
+    greyOutButton(components[0], 2);
 
     await interaction.update({ embeds: [embed], components, files: [] });
   }
