@@ -72,7 +72,7 @@ network:
     embed:
       title: '👋 欢迎来到 {hubName}！'
       description: |
-        You've found an active community hub! Before joining the discussion, take a quick look at our guidelines to keep conversations engaging and friendly for everyone.
+        您已找到一个活跃社区中心！为保证愉快友好的对话体验，请快速浏览准则后再加入讨论。
       footer: InterChat网络｜版本{version}
     inProgress: '{emoji}{channel}加入中心的流程正在进行中。您启动安装后，请等待安装完成或取消安装。'
 blacklist:
@@ -162,18 +162,18 @@ hub:
   notModerator: '{emoji}您需要成为中心监管员才能执行此操作。'
   notPrivate: '{emoji}此中心非私有。'
   notOwner: '{emoji}只有此中心的所有者可以执行此操作。'
-  alreadyJoined: '{emoji} You have already joined another hub **{hub}** from {channel}! Use `/disconnect` on it and then try again using `/connect`.'
+  alreadyJoined: '{emoji} 您已从 {channel}加入另一个中心**{hub}** ！使用“/断开连接”后再次尝试使用“/连接”。'
   invalidChannel: '{emoji}频道无效。仅支持文本频道和对话线程频道！'
   invalidImgurUrl: '{emoji}图标或标语的图片网址无效。请确保您输入了有效的Imgur图片网址且该网址不是图库或相册。'
   join:
     success: |
-      Successfully joined hub **{hub}** from {channel}! You can now chat with members from other servers from this channel.
-      - Use `/connection` to explore various customizations for this connection.
-      - Use `/disconnect` to stop receiving messages from this hub.
-      - Use **`/connection edit`** to change channels.
+      成功从{channel}加入了中心**{hub}**！您现在可以和此频道其他服务器上的成员聊天了。
+      - 使用“/连接”来探索此连接的各种自定义设置。
+      - 使用“/断开连接”来停收此中心的消息。
+      - 使用**“/编辑连接”**来切换频道。
   servers:
     total: '目前已连接的服务器：{from}-­­­­­­­­­­{to}­／{total}'
-    noConnections: '{emoji} No server has joined this hub yet. Use `/connect` to join this hub.'
+    noConnections: '{emoji}尚未有服务器加入此中心。使用“/连接”加入此中心。'
     notConnected: "{emoji}目标服务器未连接{hub}。"
     connectionInfo: |
       服务器名称：{serverId}
@@ -208,8 +208,8 @@ hub:
       wordsPlaceholder: '用逗号分隔关键词。(使用 * 作为通配符)。例如：关键词一，*关键词二*，*关键词三，关键词四*'
     validating: '{emoji}正在校验过滤规则……'
     noRules: |
-      ### {emoji} Let's set up some anti-swear rules!
-      Use the `Add Rule` button to create one.
+      ### {emoji} 让我们制定一些过滤规则吧！
+      通过“添加规则”按钮进行创建。
   create:
     modal:
       title: 创建中心
@@ -225,27 +225,27 @@ hub:
       banner:
         label: 标语网址
         placeholder: 输入一个Imgur图片网址。
-    maxHubs: '{emoji} You have reached the maximum number of hubs ({maxHubs}) you can create. Please delete a hub before creating another one. [Vote for InterChat]({voteUrl}) to create more hubs.'
+    maxHubs: '{emoji} 已达到可以创建中心的最大数量({maxHubs})。请删除旧中心后新建。[为InterChat投票]({voteUrl}) 可以创建更多中心。'
     invalidName: '{emoji}中心名称无效。名称不能包含“discord”、“clyde”或“＼”。请另选名称。'
     nameTaken: '{emoji}此中心名称已被占用。请另选名称。'
     success: |
-      ## Hub Created! It is __private__ by default.
-      Use `/hub edit hub:{name}` to customize your hub. Please follow the steps below to get started:
-      ### Next Steps:
-      1. **Create an Invite:**
-      > Use `/hub invite create` to create an invite for others to join.
-      2. **Link a Channel:**
-      > Use `/connect` **with the invite link previously generated** to link a channel to the hub and start chatting.
-      3. **Configure Hub:** (Recommended)
-      > Use `/hub config settings`, `/hub config logging` & `/hub config anti-swear` to configure the hub.
-      4. **Add Moderators:**
-      > Use `/hub moderator add` to add moderators to the hub.
-      5. **Customize Hub:**
-      > Use `/hub edit` to change the hub icon, banner, and description.
-      6. **Go Public:**
-      > Use `/hub visibility` to make the hub public and allow others to browse and join it without using invites. (Optional)
+      ## 中心已创建！默认情况为__private__。
+      使用“/编辑中心 中心：{name}”来自定义您的中心。请按照以下步骤开始操作：
+      ### 接下来的步骤：
+      1. **创建邀请：**
+      > 使用“/创建中心邀请”来创建让其他人加入的邀请。
+      2. **关联频道：**
+      > 使用“/连接”同时**附上之前生成的邀请链接**，将一个频道关联到此中心并开始聊天。
+      3. **设置中心：**（推荐）
+      > 使用“/中心配置设定”、“/中心配置记录”和“/中心过滤规则配置”来设置此中心。
+      4. **添加监管员：**
+      > 使用“/添加中心监管员”来为此中心添加监管员。
+      5. **自定义中心：**
+      > 使用“/编辑中心”来更改此中心的图标、标语和描述。
+      6. **公开中心：**
+      > 使用“/中心可见”将中心设为公开，让其他人不用邀请也可以浏览并加入。(可选)
 
-      If you have any questions or need help, feel free to ask in the [support server]({support_invite}). Consider [donating]({donateLink}) to support the development costs.
+      如果您有任何问题或需要帮助，请随时在 [支持服务器]({support_invite})中提问。请考虑一下 [捐赠]({donateLink})来支持开发成本。
   delete:
     confirm: 您确定要删除{hub}吗？该行动无法撤回。所有已连接的服务器、邀请和消息数据都将从此中心删除。
     ownerOnly: '{emoji}只有此中心的所有者可以删除它。'
@@ -264,16 +264,16 @@ hub:
   invite:
     create:
       success: |
-        ### Invite Created!
+        ### 邀请已创建！
 
-        Your invite has been successfully created. Others can now join this hub by using the `/connect` command.
+        您的邀请已成功创建。其他人现在可以通过使用“/连接”指令加入此中心。
 
-        - **Join using:** `/connect invite:{inviteCode}`
-        - **View invites:** `/hub invite list`
-        - **Expiry:** {expiry}
-        - **Uses**: ∞
+        - **加入方式：**“/连接邀请：{inviteCode}”
+        - **查看邀请：**“/中心邀请列表”
+        - **到期时间：**{expiry}
+        - **使用次数**：无限
 
-        **Note:** You can revoke this invite anytime using `/hub invite revoke {inviteCode}`.
+        **注意：**您可以随时使用“/中心邀请撤回{inviteCode}”来撤回此邀请。
     revoke:
       invalidCode: '{emoji}邀请码无效。请确保您输入了有效的邀请码。'
       success: '{emoji}邀请{inviteCode}撤回。'
@@ -283,12 +283,12 @@ hub:
       notPrivate: '{emoji}只有私人中心才能收到邀请。使用“／编辑编辑”将此中心设置为私有。'
   joined:
     noJoinedHubs: '{emoji}此服务器尚未加入如何中心。使用“／浏览中心”查看中心列表。'
-    joinedHubs: This server is a part of **{total}** hub(s). Use `/disconnect` to leave a hub.
+    joinedHubs: 此服务器已连接**{total}**中心(群)。使用“/断开连接”离开中心。
   leave:
     noHub: '{emoji}该频道无效或尚未加入任何中心。'
     confirm: 您确定想要从{channel}离开{hub}吗？此中心将不再向此服务器发送任何消息。
     confirmFooter: 请在10秒内使用下面的按钮进行确认。
-    success: '{emoji} Left the hub from {channel}. No more messages will be sent to this server from this hub. You can rejoin using `/connect`.'
+    success: '{emoji}从{channel}离开中心。此中心将不再向此服务器发送任何消息。您可以使用“/连接”重新加入。'
   moderator:
     noModerators: '{emoji}此中心尚未有监管员。使用“／添加中心监管员”添加监管员。'
     add:
@@ -389,49 +389,49 @@ hub:
         label: 网络警报
         description: 受理关于自动屏蔽信息的警报。
   transfer:
-    invalidUser: '{emoji} The specified user was not found.'
-    selfTransfer: '{emoji} You cannot transfer ownership to yourself.'
-    botUser: '{emoji} You cannot transfer ownership to a bot.'
-    confirm: 'Are you sure you want to transfer ownership of **{hub}** to {newOwner}? You will be demoted to manager role.'
-    cancelled: '{emoji} Hub transfer has been cancelled.'
-    error: '{emoji} An error occurred while transferring hub ownership.'
-    success: '{emoji} Successfully transferred ownership of **{hub}** to {newOwner}. You have been added as a manager.'
-    timeout: '{emoji} Hub transfer has timed out.'
+    invalidUser: '{emoji}未找到指定用户。'
+    selfTransfer: '{emoji}您不能把所有权转给自己。'
+    botUser: '{emoji}您不能把所有权转给机器人。'
+    confirm: '您确定要把**{hub}**的所有权转给{newOwner}吗？您将降为管理员身份。'
+    cancelled: '{emoji}转移中心已取消。'
+    error: '{emoji}转移中心所有权时发生了错误。'
+    success: '{emoji}成功把{hub}的所有权转给{newOwner}。您已被添加为管理员。'
+    timeout: '{emoji}转移中心已超时。'
   rules:
-    noRules: "{emoji} This hub has no rules configured yet. Let's add some!"
-    list: "### {emoji} Hub Rules\n{rules}"
-    maxRulesReached: "{emoji} Maximum number of rules ({max}) reached."
-    ruleExists: "{emoji} This rule already exists."
-    selectedRule: "Selected Rule {number}"
+    noRules: "{emoji} 此中心尚未配置规则。添加一些规则吧！"
+    list: "### {emoji} 中心规则\n{rules}"
+    maxRulesReached: "{emoji}已达到规则最大数量({max}) 。"
+    ruleExists: "{emoji}此规则已存在。"
+    selectedRule: "选择规则{number}"
     modal:
       add:
-        title: Add Hub Rule
-        label: Rule Text
-        placeholder: Enter the rule text (max 1000 characters)
+        title: 添加中心规则
+        label: 规则内容
+        placeholder: 输入规则内容（最多一千字）
       edit:
-        title: Edit Hub Rule
-        label: Rule Text
-        placeholder: Enter the new rule text (max 1000 characters)
+        title: 编辑中心规则
+        label: 规则内容
+        placeholder: 输入新规则内容（最多一千字）
     select:
-      placeholder: Select a rule to edit or remove
+      placeholder: 选择要编辑或删除的规则
       option:
-        label: Rule {number}
+        label: 规则{number}
     buttons:
-      add: Add Rule
-      edit: Edit Rule
-      delete: Delete Rule
-      back: Back
+      add: 添加规则
+      edit: 编辑规则
+      delete: 删除规则
+      back: 返回
     success:
-      add: '{emoji} Rule added successfully!'
-      edit: '{emoji} Rule updated successfully!'
-      delete: '{emoji} Rule deleted successfully!'
+      add: '{emoji}规则已成功添加！'
+      edit: '{emoji}规则已成功更新！'
+      delete: '{emoji}规则已成功删除！'
     view:
-      title: 'Rule {number}'
-      select: Select an action for this rule
+      title: '规则{number}'
+      select: 选择此规则的操作
   welcome:
-    set: '{emoji} Welcome message updated successfully!'
-    removed: '{emoji} Welcome message removed.'
-    voterOnly: '{emoji} Custom welcome messages are a voter-only perk! Vote to unlock this feature.'
+    set: '{emoji}欢迎信息已成功更新！'
+    removed: '{emoji}欢迎信息已移除。'
+    voterOnly: '{emoji}自定义欢迎信息是属于为我们投票的人独有的福利！去投票解锁此功能。'
     placeholder: |
       Welcome {user} to {hubName}! 🎉
       Make yourself at home and enjoy chatting!'
