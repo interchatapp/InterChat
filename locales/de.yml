@@ -1,48 +1,80 @@
 rules:
   rules: |
-    ### Rules:
+    ### {emoji} Rules
     These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:
 
-    1. **No NSFW, NSFL, or Gore Content**
-      -# Applies to profile images, usernames, explicit images, videos, and text.
-    2. **No Racism or Discrimination**
-      -# Treat everyone respectfully and kindly. Hate speech and slurs are prohibited.
-    3. **No Sexual Content**
-      -# This includes suggestive jokes, gifs, and any other form of innuendo. Keep it friendly for everyone.
-    4. **No Advertising or Self-Promotion**
-      -# Avoid sharing links to personal servers, social media, or other bots on InterChat.
-    5. **No Harassment or Doxxing**
-      -# Respect everyone’s privacy and well-being. Harassment, doxxing, and encouraging self-harm are strictly forbidden.
-    6. **No Spam or Flooding**
-      -# Don’t send repetitive messages or flood the chat. Excessive spamming may result in harsher penalties and impacts bot performance.
-    7. **No Controversial Discussions**
-      -# Maintain a friendly, welcoming environment for everyone. Avoid discussing politics, religion, or other controversial topics.
-    8. **Use Common Sense**
-      -# If you think something might not be appropriate, avoid it.
-    9. **Report Violations**
-      -# Use the `Apps > Message Info/Report` command to notify moderators of any rule-breaking content.
+    1. **No Hate Speech or Harassment**
+    -# > **Includes:** Using slurs or hate speech to attack others, [and more]({guidelines_link}).
+    2. **No Illegal Content**
+    -# > **Includes:** Sharing links to illegal content, Encouraging violence, [and more]({guidelines_link}).
+    3. **No Severe NSFW or Gore**
+    -# > **Includes:** Posting gore or extreme gore in InterChat, Posting sexual content in non-NSFW hubs, [and more]({guidelines_link}).
+    4. **No Spamming or Flooding**
+    -# > **Includes:** Mass spamming or bot floods, [and more]({guidelines_link})
+    5. **No Impersonation or Fraud**
+    -# > **Includes:** Impersonating InterChat staff or hub moderators, Running cryptocurrency or NFT scams, [and more]({guidelines_link}).
+    6. **No Exploitation or Abuse**
+    -# > **Includes:** Grooming or predatory behavior towards minors, Sharing, Requesting, Blackmailing or threatening to  Encouraging self-harm, [and more]({guidelines_link}).
+    7. **No Sharing Malicious Software**
+    -# > **Includes:** Sharing malware, viruses, 'free nitro' links, harmful scripts [and more]({guidelines_link}).
 
-    And remember to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines).
+    You also agree to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines). Check out the [full list of rules]({guidelines_link}).
   welcome: |
-    {emoji} Hey {user}, Willkommen bei InterChat!
-    Bevor du mit dem Chatten mit Leuten von anderen Server welche InterChat nutzen beginnen kannst, musst du zunächst die Regeln akzeptieren. Nutze den Button unterhalb, um diese zu akzeptieren.
-  accepted: |
-    {emoji} Willkommen bei InterChat! Du hast die Regeln akzeptiert und bist jetzt bereit mit Mitgliedern anderer Server zu Chatten!
-    Wenn noch nicht in einem Hub bist, nutze `/hub browse` um einem beizutreten und das Chatten zu beginnen. Wenn du Fragen hast oder Hilfe benötigst, scheue dich nicht davor auf unserem [Support Sserver]({support_invite}) nachzufragen.
-    Wenn dir InterChat gefällt, bitte ziehe eine [Spende]({donateLink}) in Betracht um uns bei den Entwicklungskosten zu unterstützen.
+    {emoji} Hi {user}! Ready to connect with other communities?
+    Before you start chatting across servers, let's quickly review our community guidelines. These help keep InterChat a great place for everyone.
   alreadyAccepted: '{emoji} Du hast die Regeln bereits akzeptiert. Du kannst nun InterChat im Ganzen Genießen.'
+  continue: Continue
+  accept: Accept
+  decline: Decline
+  agreementNote: By accepting these rules, you agree to follow them while using InterChat. Breaking these rules may result in restrictions or bans.
+  hubAgreementNote: |
+    By accepting these rules, you agree to follow them while chatting in this hub. Breaking these rules may result in removal from the hub.
+
+    ⚠️ **You cannot send messages in this hub until you accept these rules.**
+  accepted: |
+    {emoji} You're all set! Welcome to the InterChat community.
+
+    Quick tips to get started:
+    - Use `/hub browse` to find active communities
+    - Join discussions that interest you
+    - Use our new `/call` command to connect with single servers
+
+    Need help? Join our [community]({support_invite}) - we're happy to help!
+
+    Love what we're building? Consider [supporting us]({donateLink}) to help keep InterChat running.
+  declined: |
+    {emoji} You have declined the InterChat rules.
+    -# ⚠️ **You won't be able to use InterChat or chat with other servers until you accept the rules.**
+    -# To try again, send another message or use any InterChat command.
+  hubAccepted: |
+    {emoji} You have accepted the hub rules.
+    You can now start chatting in this hub!
+  hubDeclined: |
+    {emoji} You have declined the rules for {hubName}.
+    -# ⚠️ **You won't be able to send messages in this hub until you accept its rules.**
+    -# To try again, send another message in this hub.
+  noHubRules: This hub has not set any specific rules yet. However, the [general InterChat rules]({rules_link}) still apply.
+  hubRules: Hub Rules
 vote:
-  description: Indem du für uns votest, unterstützt du uns, indem InterChat bei topgg suchen höher gelistet wird.
-  footer: Vielen Dank für deine Unterstützung!
+  description: |
+    Help more communities discover InterChat! Your vote on top.gg:
+    • Helps others find active communities
+    • Unlocks special features for you
+    • Supports our independent development
+  footer: "Votes refresh every 12 hours • Thanks for supporting InterChat!"
+  button:
+    label: "Vote on top.gg"
+  perks:
+    moreComingSoon: "More perks coming soon! Suggest some in the [support server]({support_invite})."
 network:
   accountTooNew: '{emoji} {user} Dein Account ist zu neu um Nachrichten mittels InterChat zu senden. Bitte versuche es später erneut.'
   deleteSuccess: '{emoji} Nachricht von {user} wurde von __**{deleted}/{total}**__ Servern gelöscht.'
   editSuccess: '{emoji} Nachricht von {user} wurde auf__**{edited}/{total}**__ Servern bearbeitet.'
   onboarding:
     embed:
-      title: '👋 Hey und Willkommen bei {hubName}!'
+      title: '👋 Welcome to {hubName}!'
       description: |
-        Hey! Du versuchst einem Hub namens **{hubName}** beizutreten. Wenn du mit Mitgliedern anderer Server chatten möchtest, musst du InterChat's Richtlinien zustimmen. Nutze den Button unterhalb um fortzufahren.
+        You've found an active community hub! Before joining the discussion, take a quick look at our guidelines to keep conversations engaging and friendly for everyone.
       footer: InterChat Netzwerk | Version {version}
     inProgress: '{emoji} {channel} Befindet sich bereits im Aufbauprozess für den Beitritt zu einem Hub. Bitte warte, bis die Einrichtung abgeschlossen ist, oder brich diese ab, wenn du sie initiiert hast.'
 blacklist:
@@ -179,7 +211,7 @@ hub:
       wordsPlaceholder: 'Words seperated by comma. (Use * for wildcard). Eg. word1, *word2*, *word3, word4*'
     validating: '{emoji} Validating anti-swear rule...'
     noRules: |
-      ### {emoji} Let's set up some rules!
+      ### {emoji} Let's set up some anti-swear rules!
       Use the `Add Rule` button to create one.
   create:
     modal:
@@ -196,7 +228,7 @@ hub:
       banner:
         label: Banner URL
         placeholder: Gib eine Imgur Bild URL ein.
-    maxHubs: '{emoji} You have reached the maximum number of hubs (3) you can create. Please delete a hub before creating another one.'
+    maxHubs: '{emoji} You have reached the maximum number of hubs ({maxHubs}) you can create. Please delete a hub before creating another one. [Vote for InterChat]({voteUrl}) to create more hubs.'
     invalidName: '{emoji} Invalid hub name. It must not contain `discord`, `clyde` or \`\`\` . Please choose another name.'
     nameTaken: '{emoji} This hub name is already taken. Please choose another name.'
     success: |
@@ -354,6 +386,53 @@ hub:
       networkAlerts:
         label: Netzwerk Alarme
         description: Recieve alerts about automatically blocked messages.
+  transfer:
+    invalidUser: '{emoji} The specified user was not found.'
+    selfTransfer: '{emoji} You cannot transfer ownership to yourself.'
+    botUser: '{emoji} You cannot transfer ownership to a bot.'
+    confirm: 'Are you sure you want to transfer ownership of **{hub}** to {newOwner}? You will be demoted to manager role.'
+    cancelled: '{emoji} Hub transfer has been cancelled.'
+    error: '{emoji} An error occurred while transferring hub ownership.'
+    success: '{emoji} Successfully transferred ownership of **{hub}** to {newOwner}. You have been added as a manager.'
+    timeout: '{emoji} Hub transfer has timed out.'
+  rules:
+    noRules: "{emoji} This hub has no rules configured yet. Let's add some!"
+    list: "### {emoji} Hub Rules\n{rules}"
+    maxRulesReached: "{emoji} Maximum number of rules ({max}) reached."
+    ruleExists: "{emoji} This rule already exists."
+    selectedRule: "Selected Rule {number}"
+    modal:
+      add:
+        title: Add Hub Rule
+        label: Rule Text
+        placeholder: Enter the rule text (max 1000 characters)
+      edit:
+        title: Edit Hub Rule
+        label: Rule Text
+        placeholder: Enter the new rule text (max 1000 characters)
+    select:
+      placeholder: Select a rule to edit or remove
+      option:
+        label: Rule {number}
+    buttons:
+      add: Add Rule
+      edit: Edit Rule
+      delete: Delete Rule
+      back: Back
+    success:
+      add: '{emoji} Rule added successfully!'
+      edit: '{emoji} Rule updated successfully!'
+      delete: '{emoji} Rule deleted successfully!'
+    view:
+      title: 'Rule {number}'
+      select: Select an action for this rule
+  welcome:
+    set: '{emoji} Welcome message updated successfully!'
+    removed: '{emoji} Welcome message removed.'
+    voterOnly: '{emoji} Custom welcome messages are a voter-only perk! Vote to unlock this feature.'
+    placeholder: |
+      Welcome {user} to {hubName}! 🎉
+      Make yourself at home and enjoy chatting!'
 report:
   modal:
     title: Meldungs-Details
@@ -412,6 +491,20 @@ config:
     removed: '{emoji} Invite removed successfully!'
     invalid: '{emoji} Invalid invite. Please make sure you have entered a valid invite link. Eg. `https://discord.gg/discord`'
     notFromServer: '{emoji} This invite is not from this server.'
+badges:
+  shown: '{emoji} Your badges will now be shown in messages.'
+  hidden: '{emoji} Your badges will now be hidden in messages.'
+  command:
+    description: '🏅 Configure your badge display preferences'
+    options:
+      show:
+        name: 'show'
+        description: 'Whether to show or hide your badges in messages'
+  list:
+    developer: 'Core developer of InterChat'
+    staff: 'InterChat staff member'
+    translator: 'Translator of InterChat'
+    voter: 'Voted for InterChat in the last 12 hours'
 global:
   webhookNoLongerExists: '{emoji} The webhook for this channel no longer exists. To continue using InterChat, please re-create the webhook by using `/connection unpause`.'
   noReason: No reason provided.
@@ -424,3 +517,23 @@ global:
   yes: 'Yes'
   no: 'No'
   cancelled: '{emoji} Cancelled. No changes were made.'
+warn:
+  modal:
+    title: Warn User
+    reason:
+      label: Reason
+      placeholder: Enter the reason for warning this user...
+  success: |
+    {emoji} Successfully warned **{name}**.
+
+    -# They will be notified of the most recent warning the next time they send a message in the hub. Avoid issuing multiple warnings at once.
+  dm:
+    title: '{emoji} Warning Notification'
+    description: 'You have been warned in hub **{hubName}**'
+  log:
+    title: '{emoji} User Warned'
+    description: |
+      {arrow} **User:** {user} ({userId})
+      {arrow} **Moderator:** {moderator} ({modId})
+      {arrow} **Reason:** {reason}
+    footer: 'Warned by: {moderator}'
