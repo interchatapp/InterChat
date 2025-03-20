@@ -1,48 +1,78 @@
 rules:
   rules: |
-    ### 规则：
-    这些规则的制定是为了给每个人都带来安全且愉快的体验。请仔细阅读并遵守以下规则：
+    ### {emoji} 规则
+    这些规则的制定是为了给每个人带来安全且愉快的体验。请仔细阅读并遵守以下规则：
 
-    1. **禁止出现成人、暴力及血腥内容**
-      包括头像、用户名、图片、视频和文字在内的所有内容。
-    2. **禁止种族偏见或歧视行为**
-      请以尊重友善的态度对待每个人。禁止仇恨言论和诋毁言辞。
-    3. **禁止出现性暗示内容**
-      包括带有暗示性的笑话、动图及其他任何形式的隐晦内容。请维护这里的友好氛围。
-    4. **禁止商业推广**
-      请勿在InterChat上分享个人服务器、社交媒体或其他程序的链接。
-    5. **禁止骚扰或人肉搜索行为**
-      请尊重每个人的隐私和身心健康。严禁骚扰、人肉搜索和煽动自残的行为。
-    6. **禁止发送垃圾信息或刷屏**
-      请勿发送重复的信息或在聊天中刷屏。过度发送垃圾信息可能导致更严厉的处罚，并且会影响程序的运行。
-    7. *禁止进行有争议性的讨论**
-      为每个人营造一个友好、包容的环境。请勿讨论政治、宗教或其他有争议的话题。
-    8. **运用常识**
-      如果您不确定行为是否合规，请勿尝试。
-    9. **举报违规行为**
-      使用“应用程序＞信息＞报告”指令，向监管员举报任何违规内容。
+    1. **禁止仇恨言论或骚扰行为**
+    -# > **包括：** 使用侮辱性言论或仇恨言论攻击他人，[及其他行为]({guidelines_link})。
+    2. **禁止非法内容**
+    -# > **包括：** 分享非法内容的链接，煽动暴力，[及其他行为]({guidelines_link})。
+    3. **禁止重度成人或血腥暴力内容**
+    -# > **包括：** 在InterChat发布血腥暴力内容，在非成人内容中心发布成人内容，[及其他行为]({guidelines_link})。
+    4. **禁止发送垃圾信息或刷屏行为**
+    -# > **包括：** 大量发送垃圾信息或使用工具进行刷屏，[及其他行为]({guidelines_link})。
+    5. **禁止假冒或欺诈他人**
+    -# > **包括：** 假冒InterChat的工作人员或中心的监管员，进行虚拟货币或NFT诈骗活动，[及其他行为]({guidelines_link})。
+    6. **禁止剥削或虐待行为**
+    -# > **包括：** 对未成年人进行诱骗或性剥削行为，还有分享、索取、敲诈或威胁行为，或煽动自残，[及其他行为]({guidelines_link})。
+    7. **禁止分享恶意软件**
+    -# > **包括：** 分享恶意软件、病毒、“免费Nitro”链接或有害脚本，[及其他行为]({guidelines_link})。
 
-    请同时遵守 [Discord的服务条款](https://discord.com/terms) 以及 [社区准则](https://discord.com/guidelines)。
+    请同意遵守 [Discord的服务条款](https://discord.com/terms) 以及 [社区准则](https://discord.com/guidelines)。查看 [完整规则列表]({guidelines_link})。
   welcome: |
-    {emoji}{user}您好，欢迎来到InterChat！
-    在您开始使用InterChat与其他服务器上的人聊天之前，您需要接受这些规则。请通过下方按钮接受规则。
-  accepted: |
-    {emoji}欢迎来到InterChat！您已接受所有规则，现在可以与其他服务器上的成员聊天了！
-    如果您还没有加入中心，请在“浏览中心”加入并开始聊天。如果您有任何问题或需要帮助，请随时在[支持服务器]({support_invite})中提问。
-    如果您喜欢使用InterChat，请考虑一下[捐赠]({donateLink})来支持开发成本。
+    {emoji}您好，{user}！准备好和其他社区连接了吗？在开始跨服务器聊天之前，请快速回顾一下我们的社区准则。这些准则有助于InterChat为每个人维护良好环境。
   alreadyAccepted: '{emoji}您已接受所有规则。您现在可以尽情使用InterChat。'
+  continue: 继续
+  accept: 接受
+  decline: 拒绝
+  agreementNote: 接受这些规则，则表明您在使用InterChat期间同意遵守所有规则。若违反规则可能会产生限制或禁令。
+  hubAgreementNote: |
+    接受这些规则，则表明您在此中心聊天期间同意遵守所有规则。若违反规则您可能会被此中心移除。
+
+    ⚠️ **只有接受这些规则，您才能在此中心发送消息。**
+  accepted: |
+    {emoji} 准备完毕！欢迎来到InterChat社区。
+
+    快速入门提示：
+    - 使用“/浏览中心”查找活跃社区
+    - 加入您感兴趣的讨论
+    - 使用我们新的“/呼叫”指令以连接单个服务器
+
+    需要帮助吗？加入我们的 [社区]({support_invite}) - 我们很乐意提供帮助！
+
+    喜欢我们的平台吗？请考虑一下 [支持我们]({donateLink}) ，助力InterChat持续发展。
+  declined: |
+    {emoji} 您已拒绝InterChat的规则。
+    -# ⚠️ **只有接受规则后，您才能使用InterChat或者进行跨服务器聊天。**
+    -# 如重试，请另发送一条消息或使用任意InterChat的指令。
+  hubAccepted: |
+    {emoji}您已接受中心规则。现在可以在此中心开始聊天了！
+  hubDeclined: |
+    {emoji} 您已拒绝{hubName}的规则。
+    -# ⚠️ **只有接受中心规则后，您才能在此中心发送消息。**
+    -# 如重试，请在此中心另发送一条消息。
+  noHubRules: 此中心尚未设置任何细则。但是 [InterChat通用规则]({rules_link}) 仍然适用。
+  hubRules: 中心规则
 vote:
-  description: 通过投票，您可以帮助InterChat在topgg搜索中排名更高来表示对我们的支持。
-  footer: 感谢您的支持！
+  description: |
+    帮助更多社区发现InterChat！您在top.gg的投票将:
+    • 帮助其他人找到活跃社区
+    • 为您解锁特殊功能
+    • 支持我们的独立发展
+  footer: "每隔12小时刷新一轮投票 • 感谢您对InterChat的支持！"
+  button:
+    label: "在top.gg进行投票"
+  perks:
+    moreComingSoon: "更多福利即将推出！关于福利，有任何建议请在[支持服务器]({support_invite})提出。"
 network:
   accountTooNew: '{emoji}{user}您的账号注册时间不足，无法在InterChat发送消息。请稍后再试。'
   deleteSuccess: '{emoji}{user}发送的消息已从 __**{deleted}/{total}**__ 服务器中删除。'
   editSuccess: '{emoji}{user}发送的消息已在__**{edited}／{total}**__服务器中完成编辑。'
   onboarding:
     embed:
-      title: '👋 您好，欢迎来到{hubName}！'
+      title: '👋 欢迎来到 {hubName}！'
       description: |
-        您好！您正在申请加入{hubName}中心。您需要接受InterChat的准则，才能与其他服务器上的成员聊天。请通过下方按钮确认继续。
+        您已找到一个活跃社区中心！为保证愉快友好的对话体验，请快速浏览准则后再加入讨论。
       footer: InterChat网络｜版本{version}
     inProgress: '{emoji}{channel}加入中心的流程正在进行中。您启动安装后，请等待安装完成或取消安装。'
 blacklist:
@@ -97,7 +127,7 @@ connection:
   switchSuccess: '{emoji}频道已切换。您现在已从{channel}连接。'
   inviteRemoved: '{emoji}已移除此中心的服务器邀请。'
   setInviteError: '{emoji}无法创建邀请。请授予我在已连接频道的“创建邀请”权限。'
-  inviteAdded: '{emoji}邀请已添加。其他人现在可通过使用“应用程序＞信息／报告”指令和“／加入申请”指令来加入此服务器。'
+  inviteAdded: '{emoji}邀请已添加。其他人现在可通过使用“应用程序＞信息／报告”指令和“／加入服务器”指令来加入此服务器。'
   emColorInvalid: '{emoji}颜色无效。请确保您输入了有效的十六进制颜色代码。'
   emColorChange: '{emoji}嵌入颜色成功{action}'
   embed:
@@ -132,18 +162,18 @@ hub:
   notModerator: '{emoji}您需要成为中心监管员才能执行此操作。'
   notPrivate: '{emoji}此中心非私有。'
   notOwner: '{emoji}只有此中心的所有者可以执行此操作。'
-  alreadyJoined: '{emoji}您已从{channel}加入{hub}！'
+  alreadyJoined: '{emoji} 您已从 {channel}加入另一个中心**{hub}** ！使用“/断开连接”后再次尝试使用“/连接”。'
   invalidChannel: '{emoji}频道无效。仅支持文本频道和对话线程频道！'
   invalidImgurUrl: '{emoji}图标或标语的图片网址无效。请确保您输入了有效的Imgur图片网址且该网址不是图库或相册。'
   join:
     success: |
-      成功从{channel}加入了{hub}！您现在可以和此频道其他服务器上的成员聊天了。
-      使用“／连接”来探索此连接的各种自定义设置。
-      使用“／离开中心”来停收此中心的信息。
-      使用“／编辑连接”来切换频道。
+      成功从{channel}加入了中心**{hub}**！您现在可以和此频道其他服务器上的成员聊天了。
+      - 使用“/连接”来探索此连接的各种自定义设置。
+      - 使用“/断开连接”来停收此中心的消息。
+      - 使用**“/编辑连接”**来切换频道。
   servers:
     total: '目前已连接的服务器：{from}-­­­­­­­­­­{to}­／{total}'
-    noConnections: '{emoji}尚未有服务器加入此中心。使用“／加入中心”加入此中心。'
+    noConnections: '{emoji}尚未有服务器加入此中心。使用“/连接”加入此中心。'
     notConnected: "{emoji}目标服务器未连接{hub}。"
     connectionInfo: |
       服务器名称：{serverId}
@@ -178,8 +208,8 @@ hub:
       wordsPlaceholder: '用逗号分隔关键词。(使用 * 作为通配符)。例如：关键词一，*关键词二*，*关键词三，关键词四*'
     validating: '{emoji}正在校验过滤规则……'
     noRules: |
-      {emoji}让我们制定一些规则吧！
-      通过“添加规则”按钮创建一条规则。
+      ### {emoji} 让我们制定一些过滤规则吧！
+      通过“添加规则”按钮进行创建。
   create:
     modal:
       title: 创建中心
@@ -195,27 +225,27 @@ hub:
       banner:
         label: 标语网址
         placeholder: 输入一个Imgur图片网址。
-    maxHubs: '{emoji}已达到可以创建的最大中心数量(3)。请删除旧中心后新建。'
+    maxHubs: '{emoji} 已达到可以创建中心的最大数量({maxHubs})。请删除旧中心后新建。[为InterChat投票]({voteUrl}) 可以创建更多中心。'
     invalidName: '{emoji}中心名称无效。名称不能包含“discord”、“clyde”或“＼”。请另选名称。'
     nameTaken: '{emoji}此中心名称已被占用。请另选名称。'
     success: |
-      中心已创建！默认情况为__private__。
-      使用“／编辑中心 中心：{name}”来自定义您的中心。请按照以下步骤开始操作：
-      接下来的步骤：
-      1.创建邀请：
-      使用“／创建中心邀请”来创建让其他人加入的邀请。
-      2.关联频道：
-      使用“／加入中心”同时附上之前生成的邀请链接，将一个频道关联到此中心并开始聊天。
-      3.设置中心(推荐)：
-      使用“／中心配置设定”、“／中心配置记录”和“／中心过滤规则配置”来设置此中心。
-      4.添加监管员：
-      使用“／添加中心监管员”来为此中心添加监管员。
-      5.自定义中心：
-      使用“／编辑中心”来更改此中心的图标、标语和描述。
-      6.公开中心：
-      使用“／中心可见”将中心设为公开，让其他人不用邀请也可以浏览并加入。(可选)
+      ## 中心已创建！默认情况为__private__。
+      使用“/编辑中心 中心：{name}”来自定义您的中心。请按照以下步骤开始操作：
+      ### 接下来的步骤：
+      1. **创建邀请：**
+      > 使用“/创建中心邀请”来创建让其他人加入的邀请。
+      2. **关联频道：**
+      > 使用“/连接”同时**附上之前生成的邀请链接**，将一个频道关联到此中心并开始聊天。
+      3. **设置中心：**（推荐）
+      > 使用“/中心配置设定”、“/中心配置记录”和“/中心过滤规则配置”来设置此中心。
+      4. **添加监管员：**
+      > 使用“/添加中心监管员”来为此中心添加监管员。
+      5. **自定义中心：**
+      > 使用“/编辑中心”来更改此中心的图标、标语和描述。
+      6. **公开中心：**
+      > 使用“/中心可见”将中心设为公开，让其他人不用邀请也可以浏览并加入。(可选)
 
-      如果您有任何问题或需要帮助，请随时在[支持服务器]({support_invite})中提问。请考虑一下[捐赠]({donateLink})来支持开发成本。
+      如果您有任何问题或需要帮助，请随时在 [支持服务器]({support_invite})中提问。请考虑一下 [捐赠]({donateLink})来支持开发成本。
   delete:
     confirm: 您确定要删除{hub}吗？该行动无法撤回。所有已连接的服务器、邀请和消息数据都将从此中心删除。
     ownerOnly: '{emoji}只有此中心的所有者可以删除它。'
@@ -234,16 +264,16 @@ hub:
   invite:
     create:
       success: |
-        邀请已创建！
+        ### 邀请已创建！
 
-        您的邀请已成功创建。其他人现在可以通过使用“／加入中心”指令加入此中心。
+        您的邀请已成功创建。其他人现在可以通过使用“/连接”指令加入此中心。
 
-        加入方式：“／邀请加入中心：{inviteCode}”
-        查看邀请：“／中心邀请列表”
-        到期时间：{expiry}
-        使用次数：无限
+        - **加入方式：**“/连接邀请：{inviteCode}”
+        - **查看邀请：**“/中心邀请列表”
+        - **到期时间：**{expiry}
+        - **使用次数**：无限
 
-        注意：您可以随时使用“／中心邀请撤回{inviteCode}”来撤回此邀请。
+        **注意：**您可以随时使用“/中心邀请撤回{inviteCode}”来撤回此邀请。
     revoke:
       invalidCode: '{emoji}邀请码无效。请确保您输入了有效的邀请码。'
       success: '{emoji}邀请{inviteCode}撤回。'
@@ -253,12 +283,12 @@ hub:
       notPrivate: '{emoji}只有私人中心才能收到邀请。使用“／编辑编辑”将此中心设置为私有。'
   joined:
     noJoinedHubs: '{emoji}此服务器尚未加入如何中心。使用“／浏览中心”查看中心列表。'
-    joinedHubs: 此服务器已连接{total}中心(群)。使用“／离开中心”离开中心。
+    joinedHubs: 此服务器已连接**{total}**中心(群)。使用“/断开连接”离开中心。
   leave:
     noHub: '{emoji}该频道无效或尚未加入任何中心。'
     confirm: 您确定想要从{channel}离开{hub}吗？此中心将不再向此服务器发送任何消息。
     confirmFooter: 请在10秒内使用下面的按钮进行确认。
-    success: '{emoji}从{channel}离开中心。此中心将不再向此服务器发送任何消息。您可以使用“／加入中心”重新加入。'
+    success: '{emoji}从{channel}离开中心。此中心将不再向此服务器发送任何消息。您可以使用“/连接”重新加入。'
   moderator:
     noModerators: '{emoji}此中心尚未有监管员。使用“／添加中心监管员”添加监管员。'
     add:
@@ -358,6 +388,53 @@ hub:
       networkAlerts:
         label: 网络警报
         description: 受理关于自动屏蔽信息的警报。
+  transfer:
+    invalidUser: '{emoji}未找到指定用户。'
+    selfTransfer: '{emoji}您不能把所有权转给自己。'
+    botUser: '{emoji}您不能把所有权转给机器人。'
+    confirm: '您确定要把**{hub}**的所有权转给{newOwner}吗？您将降为管理员身份。'
+    cancelled: '{emoji}转移中心已取消。'
+    error: '{emoji}转移中心所有权时发生了错误。'
+    success: '{emoji}成功把{hub}的所有权转给{newOwner}。您已被添加为管理员。'
+    timeout: '{emoji}转移中心已超时。'
+  rules:
+    noRules: "{emoji} 此中心尚未配置规则。添加一些规则吧！"
+    list: "### {emoji} 中心规则\n{rules}"
+    maxRulesReached: "{emoji}已达到规则最大数量({max}) 。"
+    ruleExists: "{emoji}此规则已存在。"
+    selectedRule: "选择规则{number}"
+    modal:
+      add:
+        title: 添加中心规则
+        label: 规则内容
+        placeholder: 输入规则内容（最多一千字）
+      edit:
+        title: 编辑中心规则
+        label: 规则内容
+        placeholder: 输入新规则内容（最多一千字）
+    select:
+      placeholder: 选择要编辑或删除的规则
+      option:
+        label: 规则{number}
+    buttons:
+      add: 添加规则
+      edit: 编辑规则
+      delete: 删除规则
+      back: 返回
+    success:
+      add: '{emoji}规则已成功添加！'
+      edit: '{emoji}规则已成功更新！'
+      delete: '{emoji}规则已成功删除！'
+    view:
+      title: '规则{number}'
+      select: 选择此规则的操作
+  welcome:
+    set: '{emoji}欢迎信息已成功更新！'
+    removed: '{emoji}欢迎信息已移除。'
+    voterOnly: '{emoji}自定义欢迎信息是属于为我们投票的人独有的福利！去投票解锁此功能。'
+    placeholder: |
+      欢迎 {user} 来到{hubName}！🎉
+      放轻松，聊得开心！
 report:
   modal:
     title: 报告详情
@@ -410,12 +487,26 @@ errors:
 config:
   setInvite:
     success: |
-      ### {emoji} Invite Link Set
-      - Your server's invite will be used when people use `/joinserver`.
-      - It will be displayed in `/leaderboard server`.
-    removed: '{emoji} Invite removed successfully!'
-    invalid: '{emoji} Invalid invite. Please make sure you have entered a valid invite link. Eg. `https://discord.gg/discord`'
-    notFromServer: '{emoji} This invite is not from this server.'
+      ### {emoji} 邀请链接设置
+      - 当用户使用“／加入服务器”指令时，将自动使用您的服务器邀请链接。
+      - 该链接同时会在“／服务器排行榜”中显示。
+    removed: '{emoji}邀请已成功移除！'
+    invalid: '{emoji}邀请无效。请确保您输入了有效的邀请链接。例如：“https://discord.gg/discord”'
+    notFromServer: '{emoji}此邀请不是来自此服务器。'
+badges:
+  shown: '{emoji}现在您的徽章将在消息中显示。'
+  hidden: '{emoji}现在您的徽章将在消息中隐藏。'
+  command:
+    description: '🏅 配置您的首选显示徽章'
+    options:
+      show:
+        name: '显示'
+        description: '是否在消息中显示或隐藏您的徽章'
+  list:
+    developer: 'InterChat的核心开发者'
+    staff: 'InterChat的工作人员'
+    translator: 'InterChat的译者'
+    voter: '在过去 12 小时内投票给InterChat'
 global:
   webhookNoLongerExists: '{emoji}此频道的网络回调已不存在。若要继续使用 InterChat，请使用“／恢复连接”指令重新创建网络回调。'
   noReason: 未提供原因。
@@ -428,3 +519,23 @@ global:
   yes: '是'
   no: '否'
   cancelled: '{emoji}已取消。未进行任何更改。'
+warn:
+  modal:
+    title: 用户警告
+    reason:
+      label: 原因
+      placeholder: 输入警告此用户的原因……
+  success: |
+    {emoji} **{name}**警告成功。
+
+    -# 下次在中心发送消息时，他们将收到最新警告的通知。请勿同时发出多个警告。
+  dm:
+    title: '{emoji}警告通知'
+    description: '您在中心{hubName}已被警告'
+  log:
+    title: '{emoji}被警告用户'
+    description: |
+      {arrow} **用户：** {user} ({userId})
+      {arrow} **监管员：** {moderator} ({modId})
+      {arrow} **原因：** {reason}
+    footer: '警告来自：{moderator}'

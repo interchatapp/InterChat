@@ -1,426 +1,544 @@
 rules:
   rules: |
-    ### {rules_emoji} Rules:
+    ### {emoji} Rules
     These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:
 
-    1. **No NSFW, NSFL, or Gore Content**
-      -# Applies to profile images, usernames, explicit images, videos, and text.
-    2. **No Racism or Discrimination**
-      -# Treat everyone respectfully and kindly. Hate speech and slurs are prohibited.
-    3. **No Sexual Content**
-      -# This includes suggestive jokes, gifs, and any other form of innuendo. Keep it friendly for everyone.
-    4. **No Advertising or Self-Promotion**
-      -# Avoid sharing links to personal servers, social media, or other bots on InterChat.
-    5. **No Harassment or Doxxing**
-      -# Respect everyone’s privacy and well-being. Harassment, doxxing, and encouraging self-harm are strictly forbidden.
-    6. **No Spam or Flooding**
-      -# Don’t send repetitive messages or flood the chat. Excessive spamming may result in harsher penalties and impacts bot performance.
-    7. **No Controversial Discussions**
-      -# Maintain a friendly, welcoming environment for everyone. Avoid discussing politics, religion, or other controversial topics.
-    8. **Use Common Sense**
-      -# If you think something might not be appropriate, avoid it.
-    9. **Report Violations**
-      -# Use the `Apps > Message Info/Report` command to notify moderators of any rule-breaking content.
+    1. **No Hate Speech or Harassment**
+    -# > **Includes:** Using slurs or hate speech to attack others, [and more]({guidelines_link}).
+    2. **No Illegal Content**
+    -# > **Includes:** Sharing links to illegal content, Encouraging violence, [and more]({guidelines_link}).
+    3. **No Severe NSFW or Gore**
+    -# > **Includes:** Posting gore or extreme gore in InterChat, Posting sexual content in non-NSFW hubs, [and more]({guidelines_link}).
+    4. **No Spamming or Flooding**
+    -# > **Includes:** Mass spamming or bot floods, [and more]({guidelines_link})
+    5. **No Impersonation or Fraud**
+    -# > **Includes:** Impersonating InterChat staff or hub moderators, Running cryptocurrency or NFT scams, [and more]({guidelines_link}).
+    6. **No Exploitation or Abuse**
+    -# > **Includes:** Grooming or predatory behavior towards minors, Sharing, Requesting, Blackmailing or threatening to  Encouraging self-harm, [and more]({guidelines_link}).
+    7. **No Sharing Malicious Software**
+    -# > **Includes:** Sharing malware, viruses, 'free nitro' links, harmful scripts [and more]({guidelines_link}).
 
-    And remember to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines).
+    You also agree to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines). Check out the [full list of rules]({guidelines_link}).
   welcome: |
-    {emoji} Hey {user}, welcome to InterChat!
-    Before you can start chatting with people from other servers using InterChat, you need to accept the rules. Use the button below to accept them.
+    {emoji} Hi {user}! Ready to connect with other communities?
+    Before you start chatting across servers, let's quickly review our community guidelines. These help keep InterChat a great place for everyone.
+  alreadyAccepted: '{emoji} Вы уже приняли правила. Теперь вы можете в полной мере использовать InterChat.'
+  continue: Continue
+  accept: Accept
+  decline: Decline
+  agreementNote: By accepting these rules, you agree to follow them while using InterChat. Breaking these rules may result in restrictions or bans.
+  hubAgreementNote: |
+    By accepting these rules, you agree to follow them while chatting in this hub. Breaking these rules may result in removal from the hub.
+
+    ⚠️ **You cannot send messages in this hub until you accept these rules.**
   accepted: |
-    {emoji} Welcome to InterChat! You have accepted the rules and are now ready to chat with members from other servers!
-    If you are not already in a hub, use `/hub browse` to join one and start chatting. If you have any questions or need help, feel free to ask in the [support server]({support_invite}).
-    If you enjoy using InterChat, please consider [donating]({donateLink}) to support the development costs.
-  alreadyAccepted: '{emoji} You have already accepted the rules. You can now use InterChat to its full extent.'
+    {emoji} You're all set! Welcome to the InterChat community.
+
+    Quick tips to get started:
+    - Use `/hub browse` to find active communities
+    - Join discussions that interest you
+    - Use our new `/call` command to connect with single servers
+
+    Need help? Join our [community]({support_invite}) - we're happy to help!
+
+    Love what we're building? Consider [supporting us]({donateLink}) to help keep InterChat running.
+  declined: |
+    {emoji} You have declined the InterChat rules.
+    -# ⚠️ **You won't be able to use InterChat or chat with other servers until you accept the rules.**
+    -# To try again, send another message or use any InterChat command.
+  hubAccepted: |
+    {emoji} You have accepted the hub rules.
+    You can now start chatting in this hub!
+  hubDeclined: |
+    {emoji} You have declined the rules for {hubName}.
+    -# ⚠️ **You won't be able to send messages in this hub until you accept its rules.**
+    -# To try again, send another message in this hub.
+  noHubRules: This hub has not set any specific rules yet. However, the [general InterChat rules]({rules_link}) still apply.
+  hubRules: Hub Rules
 vote:
-  description: By voting you support us by helping InterChat rank higher on topgg searches.
-  footer: Thank you for supporting!
+  description: |
+    Help more communities discover InterChat! Your vote on top.gg:
+    • Helps others find active communities
+    • Unlocks special features for you
+    • Supports our independent development
+  footer: "Votes refresh every 12 hours • Thanks for supporting InterChat!"
+  button:
+    label: "Vote on top.gg"
+  perks:
+    moreComingSoon: "More perks coming soon! Suggest some in the [support server]({support_invite})."
 network:
-  accountTooNew: '{emoji} {user} Your account is too new to send messages using InterChat. Please try again later.'
-  deleteSuccess: '{emoji} Message by {user} has been deleted from __**{deleted}/{total}**__ servers.'
-  editSuccess: '{emoji} Message by {user} has been edited in __**{edited}/{total}**__ servers.'
+  accountTooNew: '{emoji} {user} Ваш аккаунт слишком молодой для отправки сообщений в InterChat. Пожалуйста, попробуйте позже.'
+  deleteSuccess: '{emoji} Сообщение {user} было удалено из __**{deleted}/{total}**__ серверов.'
+  editSuccess: '{emoji} Сообщение {user} было отредактировано на __**{edited}/{total}**__ серверах.'
   onboarding:
     embed:
-      title: '👋 Hey there, welcome to {hubName}!'
+      title: '👋 Welcome to {hubName}!'
       description: |
-        Hey there! You are trying to join a hub called **{hubName}**. In order to chat with members from other servers, you need to accept InterChat's guidelines. Use the button below to continue.
-      footer: InterChat Network | Version {version}
-    inProgress: '{emoji} {channel} is already in the process of being setup to join a hub. Please wait for the setup to complete or cancel it if you were the one who initiated it.'
+        You've found an active community hub! Before joining the discussion, take a quick look at our guidelines to keep conversations engaging and friendly for everyone.
+      footer: Сеть InterChat | Версия {version}
+    inProgress: '{emoji} {channel} уже в процессе подключения к хабу. Пожалуйста, подождите пока процесс завершится или отмените его если вы его начали.'
 blacklist:
-  success: '{emoji} **{name}** has been successfully blacklisted!'
-  removed: '{emoji} **{name}** has been removed from the blacklist!'
+  success: '{emoji} **{name}** был успешно добавлен в чёрный список!'
+  removed: '{emoji} **{name}** был успешно убран из чёрного списка!'
   modal:
     reason:
-      label: Reason
-      placeholder: Reason for blacklisting
+      label: Причина
+      placeholder: Причина для добавления в чёрный список
     duration:
-      label: Duration
-      placeholder: 'Duration of blacklist. Eg: 1d, 1w, 1m, 1y. Leave blank for permanent.'
+      label: Длительность
+      placeholder: 'Длительность нахождения в черном списке. Например: 1d, 1w, 1m, 1y. Оставьте поле пустым для бессрочного.'
   user:
-    cannotBlacklistMod: '{emoji} You cannot blacklist a moderator. Please remove their moderator role first.'
-    alreadyBlacklisted: '{emoji} This user is already blacklisted.'
+    cannotBlacklistMod: '{emoji} Вы не можете поместить модератора в чёрный список. Сначала снимите с них роль.'
+    alreadyBlacklisted: '{emoji} Этот пользователь уже в чёрном списке.'
     easterEggs:
-      blacklistBot: You can't blacklist me wtf.
+      blacklistBot: Вы не можете поместить меня в черный список чзх.
   server:
-    alreadyBlacklisted: '{emoji} This server is already blacklisted.'
-    unknownError: Failed to blacklist **{server}**. Enquire with the developers for more information.
+    alreadyBlacklisted: '{emoji} Этот сервер уже заблокирован.'
+    unknownError: Не удалось поместить **{server}** в чёрный список. Свяжитесь с разработчиками для получения дополнительной информации.
   list:
     user: |
-      **UserID:** {id}
-      **Moderator:** {moderator}
-      **Reason:** {reason}
-      **Expires:** {expires}
+      **ID Пользователя:** {id}
+      **Модератор:** {moderator}
+      **Причина:** {reason}
+      **Истекает:** {expires}
     server: |
-      **ServerId:** {id}
-      **Moderator:** {moderator}
-      **Reason:** {reason}
-      **Expires:** {expires}
+      **ID Сервера:** {id}
+      **Модератор** {moderator}
+      **Причина:** {reason}
+      **Истекает:**{expires}
 msgInfo:
   buttons:
-    message: Message Info
-    server: Server Info
-    user: User Info
-    report: Report
+    message: Информация о сообщении
+    server: Информация о сервере
+    user: Информация о пользователе
+    report: Пожаловаться
   report:
-    notEnabled: '{emoji} Reporting is not enabled for this hub.'
-    success: '{emoji} Report submitted successfully. Thank you!'
+    notEnabled: '{emoji} Система жалоб не включена в этом хабе.'
+    success: '{emoji} Жалоба успешно отправлена. Спасибо!'
 invite: |
-  Thank you for choosing to invite InterChat! If you have any questions or need help, we are always here to help you in the support server!
+  Спасибо за то что выбрали InterChat! Если у вас есть какие-либо вопросы или нужна помощь, мы всегда готовы помочь вам на сервере поддержки!
 
-  **[{invite_emoji} `Invite Link`]( {invite} ) [{support_emoji} `Support Server`]( {support} )**
+  **[{invite_emoji} `Ссылка Приглашения`] ( {invite} ) [{support_emoji} `Сервер Поддержки`] ( {support} )
 connection:
-  joinRequestsDisabled: '{emoji} Join requests are disabled for this hub.'
-  notFound: '{emoji} Invalid connection. Verify the channel ID or select from displayed options.'
-  channelNotFound: '{emoji} Unable to find connected channel. To talk again choose a new channel.'
-  alreadyConnected: '{emoji} Channel {channel} is already connected to a hub.'
-  switchChannel: '{emoji} Select a channel to switch to using the select menu below:'
-  switchCalled: '{emoji} Channel switch called, use the command again to view new connection.'
-  switchSuccess: '{emoji} Channel switched. You are now connected from **{channel}**.'
-  inviteRemoved: '{emoji} Server Invite removed for this hub.'
-  setInviteError: '{emoji} Unable to create invite. Please grant me  the `Create Invite` permission for the connected channel.'
-  inviteAdded: '{emoji} Invite Added. Others can now join this server by using `Apps > Message Info/Report` command and `/joinrequest` command.'
-  emColorInvalid: '{emoji} Invalid color. Please make sure you have entered a valid hex color code.'
-  emColorChange: '{emoji} Embed color successfully {action}'
+  joinRequestsDisabled: '{emoji} Запросы на вступление были выключены в этом хабе.'
+  notFound: '{emoji} Неверное соединение. Проверьте ID канала или выберите из представленных опций.'
+  channelNotFound: '{emoji} Не могу найти соединённый канал. Чтобы снова общаться выберите новый канал.'
+  alreadyConnected: '{emoji} Канал {channel} уже присоединён к этому хабу.'
+  switchChannel: '{emoji} Выберите канал для переключения с помощью меню выбора ниже:'
+  switchCalled: '{emoji} Совершено переключение канала, используйте команду снова, чтобы просмотреть новое соединение.'
+  switchSuccess: '{emoji} Канал переключён. Теперь вы присоединены из **{channel}**ю'
+  inviteRemoved: '{emoji} Приглашение сервера было убрано из этого хаба.'
+  setInviteError: '{emoji} Невозможно создать приглашение. Предоставьте мне разрешение на создание приглашений в выбранном канале.'
+  inviteAdded: '{emoji} Приглашение добавлено. Другие люди теперь могут присоединиться к вашему серверу используя команду `/joinserver`.'
+  emColorInvalid: '{emoji} Некорректный цвет. Пожалуйста, убедитесь что вы ввели правильный HEX-Код цвета.'
+  emColorChange: '{emoji} Цвет вставки {action}'
   embed:
-    title: Connection Details
+    title: Детали соединения
     fields:
-      hub: Hub
-      channel: Channel
-      invite: Invite
-      connected: Connected
-      emColor: Embed Color
-      compact: Compact Mode
-    footer: Use the dropdown menu below to manage your connection.
+      hub: Хаб
+      channel: Канал
+      invite: Приглашение
+      connected: Соединено
+      emColor: Цвет вставки
+      compact: Компактный режим
+    footer: Используйте меню ниже, чтобы управлять вашим соединением.
   selects:
-    placeholder: '🛠️ Select an option to edit this connection'
+    placeholder: '🛠️ Выберите опцию для этого соединения'
   unpaused:
     desc: |
-      ### {tick_emoji} Unpaused Connection
+      ### {tick_emoji} Соединение снято с паузы
 
-      Unpaused connection for {channel}! Messages from the hub will start coming into the channel and you can send messages to the hub again.
+      {channel} Был снят с паузы! Сообщения из хаба будут приходить сюда и вы сможете отправлять в него сообщения снова.
     tips: |
-      **💡 Tip:** Use {pause_cmd} to pause the connection or {edit_cmd} to set embed colors, toggle profanity filter, and more.
+      **💡 Примечание:**Используйте {pause_cmd} чтобы остановить соединение или {edit_cmd} чтобы изменить цвета сообщений, пригласить на ваш сервер и многое другое.
   paused:
     desc: |
-      ### {clock_emoji} Paused Connection
-      Paused connection for {channel}! Messages from the hub will no longer come into the channel and your messages won't be broadcasted to them.
+      ### {clock_emoji} Соединение приостановлено
+      Приостановлено соединение для {channel}! Сообщения из хаба больше не будут отправляться в канал и ваши сообщения не будут попадать туда.
     tips: |
-      **💡 Tip:** Use {unpause_cmd} to unpause the connection or {leave_cmd} to permanently stop recieving messages.
+      **💡 Совет:** Используйте {unpause_cmd} чтобы снять с паузы соединение или {leave_cmd} чтобы полностью отключить его.
 hub:
-  notFound: '{emoji} Unable to find hub. Please make sure you have entered the correct hub name.'
-  notFound_mod: '{emoji} Unable to find hub. Please make sure you have entered the correct hub name & that you are the owner or a moderator of the hub.'
-  notManager: '{emoji} You must be a hub manager to perform this action.'
-  notModerator: '{emoji} You need to be a hub moderator to perform this action.'
-  notPrivate: '{emoji} This hub is not private.'
-  notOwner: '{emoji} Only the owner of this hub can perform this action.'
-  alreadyJoined: '{emoji} You have already joined **{hub}** from {channel}!'
-  invalidChannel: '{emoji} Invalid channel. Only text and thread channels are supported!'
-  invalidImgurUrl: '{emoji} Invalid image URL for icon or banner. Please make sure you have entered a valid Imgur image URL that is not a gallery or album.'
+  notFound: '{emoji} Невозможно найти хаб. Убедитесь что вы ввели правильное название.'
+  notFound_mod: '{emoji} Невозможно найти хаб. Убедитесь что вы ввели правильное название и являетесь владельцем/модератором хаба.'
+  notManager: '{emoji} Вы должны быть менеджером хаба чтобы это сделать.'
+  notModerator: '{emoji} Вы должны быть модератором хаба чтобы это сделать.'
+  notPrivate: '{emoji} Этот хаб не приватный.'
+  notOwner: '{emoji} Только владелец хаба может это сделать.'
+  alreadyJoined: '{emoji} You have already joined **{hub}** from {channel}.'
+  invalidChannel: '{emoji} Некорректный канал. Только текстовые каналы и ветки поддерживаются!'
+  invalidImgurUrl: '{emoji} Некорректный URL изображения для иконки или баннера. Пожалуйста, убедитесь что вы ввели правильный URL изображения из Imgur, который не является галереей или альбомом.'
   join:
     success: |
-      Successfully joined hub **{hub}** from {channel}! You can now chat with members from other servers from this channel.
-      - Use `/connection` to explore various customizations for this connection.
-      - Use `/disconnect` to stop receiving messages from this hub.
-      - Use **`/connection edit`** to change channels.
+      Успешно присоединился к хабу **{hub}** из {channel}! Теперь вы можете общаться с людьми из других серверов в этом канале.
+      - Используйте `/connection` чтобы просмотреть различные опции кастомизации для этого соединения.
+      - Используйте `/disconnect` чтобы прекратить получать сообщения из этого хаба.
+      - Используйте **`/connection edit`** чтобы менять каналы.
   servers:
-    total: 'Current connected servers: {from}-{to} / **{total}**'
-    noConnections: '{emoji} No server has joined this hub yet. Use `/connect` to join this hub.'
-    notConnected: "{emoji} That server isn't a part of **{hub}**."
+    total: 'Текущие подключённые сервера: {from}-{to} / **{total}**'
+    noConnections: '{emoji} Еще ни один сервер не присоединился к этому хабу. Используйте `/connect` чтобы присоединиться к этому хабу.'
+    notConnected: "{emoji} Этот сервер не является частью **{hub}**."
     connectionInfo: |
-      ServerID: {serverId}
-      Channel: #{channelName} `({channelId})`
-      Joined At: {joinedAt}
-      Invite: {invite}
-      Connected: {connected}
+      ID Сервера: {serverId}
+      Канал: #{channelName} `({channelId})`
+      Когда Присоединились: {joinedAt}
+      Приглашение: {invite}
+      Соединено: {connected}
   blockwords:
-    deleted: '{emoji} Anti-Swear rule successfully deleted!'
-    notFound: '{emoji} Anti-Swear rule not found.'
-    maxRules: '{emoji} You have reached the maximum number of anti-swear rules (2) for this hub. Please delete a rule before adding another one.'
-    configure: 'Configure actions for rule: {rule}'
-    actionsUpdated: '{emoji} Updated the actions to be taken by the rule. **New Actions:** {actions}'
-    selectRuleToEdit: Select a rule to edit it's words/actions
+    deleted: '{emoji} Правило фильтра успешно удалено!'
+    notFound: '{emoji} Правило фильтра не найдено.'
+    maxRules: '{emoji} Вы достигли максимального кол-ва правил (2) для фильтра этого хаба. Пожалуйста, удалите правило перед тем как добавлять ещё одно.'
+    configure: 'Настройте действия для правила: {rule}'
+    actionsUpdated: '{emoji} Обновлены действия для правила. **Новые Действия:** {actions}'
+    selectRuleToEdit: Выберите правила, чтобы изменить его слова/действия
     listDescription: |
-      ### {emoji} Anti-Swear Rules
-      This hub has {totalRules}/2 anti-swear rules setup.
-    listFooter: Select a rule using the menu to view it's full details.
+      ### {emoji} Правила Фильтра
+      Этот хаб имеет {totalRules}/2 правил фильтра.
+    listFooter: Выберите правило используя меню, чтобы просмотреть его полную информацию.
     ruleDescription: |
-      ### {emoji} Editing Rule: {ruleName}
+      ### {emoji} Редактирование Правила: {ruleName}
       {words}
-    ruleFooter: 'Click the button below to edit the words or rule name!'
-    actionSelectPlaceholder: 'Select the actions this rule should perform.'
+    ruleFooter: 'Нажмите на кнопку ниже, чтобы изменить слова или названия правил!'
+    actionSelectPlaceholder: 'Выберите действия для правила.'
     embedFields:
-      noActions: '{emoji} **None!** Configure using the menu below.'
-      actionsName: 'Configured Actions:'
+      noActions: '{emoji} **Отсутствует!** Настройте используя меню ниже.'
+      actionsName: 'Настраиваемые Действия:'
       actionsValue: '{actions}'
     modal:
-      addRule: Add Anti-Swear Rule
-      editingRule: Editing Anti-Swear Rule
-      ruleNameLabel: Rule Name
-      wordsLabel: 'Words'
-      wordsPlaceholder: 'Words seperated by comma. (Use * for wildcard). Eg. word1, *word2*, *word3, word4*'
-    validating: '{emoji} Validating anti-swear rule...'
+      addRule: Добавить Правило Фильтра
+      editingRule: Редактирование Правила Фильтра
+      ruleNameLabel: Название Правила
+      wordsLabel: 'Слова'
+      wordsPlaceholder: 'Слова через запятую (* = любой). Например: слово1, *слово2, *слово3, слово4*'
+    validating: '{emoji} Проверка правила фильтра...'
     noRules: |
-      ### {emoji} Let's set up some rules!
+      ### {emoji} Let's set up some anti-swear rules!
       Use the `Add Rule` button to create one.
   create:
     modal:
-      title: Create Hub
+      title: Создать Хаб
       name:
-        label: Hub Name
-        placeholder: Enter a name for your hub.
+        label: Название Хаба
+        placeholder: Введите название Хаба.
       description:
-        label: Description
-        placeholder: Enter a description for your hub.
+        label: Описание
+        placeholder: Введите описание для вашего хаба.
       icon:
-        label: Icon URL
-        placeholder: Enter an Imgur image URL.
+        label: URL Иконки
+        placeholder: Введите URL Изображения из Imgur.
       banner:
-        label: Banner URL
-        placeholder: Enter an Imgur image URL.
-    maxHubs: '{emoji} You have reached the maximum number of hubs (3) you can create. Please delete a hub before creating another one.'
-    invalidName: '{emoji} Invalid hub name. It must not contain `discord`, `clyde` or \`\`\` . Please choose another name.'
-    nameTaken: '{emoji} This hub name is already taken. Please choose another name.'
+        label: URL Баннера
+        placeholder: Введите URL Изображения из Imgur.
+    maxHubs: '{emoji} You have reached the maximum number of hubs ({maxHubs}) you can create. Please delete a hub before creating another one. [Vote for InterChat]({voteUrl}) to create more hubs.'
+    invalidName: '{emoji} Некорректное название хаба. Оно не должно содержать `discord`, `clyde` или \`\`\`. Пожалуйста, выберите другое название.'
+    nameTaken: '{emoji} Название этого хаба уже занято. Пожалуйста, выберите другое.'
     success: |
-      ### Your __private__ hub, **{name}**, has been successfully created.
-      To join, create an invite using `/hub invite create` and share the generated code. Then join using `/connect`.
-
-      - **Edit hub:** `/hub edit`
-      - **Generate invite:** `/hub invite create`
-      - **Make public:** `/hub visibility`
-      - **Join hub:** `/connect`
-      - **Edit hub:** `/hub edit`
-      - **Set report channel:** `/hub logging set_channe;`
-      - **Add moderators:** `/hub moderator add`
+      ## Hub Created! It is __private__ by default.
+      Use `/hub edit hub:{name}` to customize your hub. Please follow the steps below to get started:
+      ### Next Steps:
+      1. **Create an Invite:**
+      > Use `/hub invite create` to create an invite for others to join.
+      2. **Link a Channel:**
+      > Use `/connect` **with the invite link previously generated** to link a channel to the hub and start chatting.
+      3. **Configure Hub:** (Recommended)
+      > Use `/hub config settings`, `/hub config logging` & `/hub config anti-swear` to configure the hub.
+      4. **Add Moderators:**
+      > Use `/hub moderator add` to add moderators to the hub.
+      5. **Customize Hub:**
+      > Use `/hub edit` to change the hub icon, banner, and description.
+      6. **Go Public:**
+      > Use `/hub visibility` to make the hub public and allow others to browse and join it without using invites. (Optional)
 
       If you have any questions or need help, feel free to ask in the [support server]({support_invite}). Consider [donating]({donateLink}) to support the development costs.
   delete:
-    confirm: Are you sure you wish to delete **{hub}**? This action is irreversible. All connected servers, invites and message data will be removed from this hub.
-    ownerOnly: '{emoji} Only the owner of this hub can delete it.'
-    success: '{emoji} Hub **{hub}** has been deleted.'
-    cancelled: '{emoji} Hub deletion has been cancelled.'
+    confirm: Вы уверены, что вы хотите удалить **{hub}**? Это действие не обратимо. Все присоединённые сервера, приглашения и данные о сообщениях будут удалены из этого хаба.
+    ownerOnly: '{emoji} Только владелец этого хаба может его удалить.'
+    success: '{emoji} Хаб **{hub}** был удалён.'
+    cancelled: '{emoji} Удаление хаба было отменено.'
   browse:
     joinConfirm: |
-      Are you sure you wish to join {hub} from {channel}?
+      Вы уверены, что хотите присоединиться к {hub} из {channel}?
 
-      **Note:** You can always change this later using `/connection`.
-    joinFooter: Want to use a different channel? Use the dropdown below.
-    noHubs: '{emoji} There are no hubs listed here at the moment. Please try again later!'
+      **Примечание:** Вы всегда можете это изменить с помощью `/connection`.
+    joinFooter: Хотите использовать другой канал? Используйте меню ниже.
+    noHubs: '{emoji} Тут нет хабов в списке в данный момент. Попробуйте ещё раз позже!'
     rating:
-      invalid: Invalid rating. You must enter a number between 1 and 5.
-      success: Rating submitted! Thank you for your feedback.
+      invalid: Некорректная оценка. Вы должны ввести число от 1 до 5.
+      success: Оценка отправлена! Спасибо за обратную связь.
   invite:
     create:
       success: |
-        ### Invite Created!
+        ###Приглашение создано!
 
-        Your invite has been successfully created. Others can now join this hub by using the `/connect` command.
+        Ваше приглашение было успешно создано. Другие сервера могут присоединиться к этому хабу используя команду `/connect`.
 
-        - **Join using:** `/connect invite:{inviteCode}`
-        - **View invites:** `/hub invite list`
-        - **Expiry:** {expiry}
-        - **Uses**: ∞
+        - **Присоединитесь с помощью:** `/connect invite:{inviteCode}`
+        - **Просмотрите приглашения:** `/hub invite list`
+        - **Истекает:** {expiry}
+        - **Использования**: ∞
 
-        **Note:** You can revoke this invite anytime using `/hub invite revoke {inviteCode}`.
+        **Примечание:** Вы можете отозвать это приглашение в любое время с помощью `/hub invite revoke {inviteCode}`.
     revoke:
-      invalidCode: '{emoji} Invalid invite code. Please make sure you have entered a valid invite code.'
-      success: '{emoji} Invite {inviteCode} revoked.'
+      invalidCode: '{emoji} Некорректный код приглашения. Пожалуйста, убедитесь что вы ввели правильный код приглашения.'
+      success: '{emoji} Приглашение {inviteCode} отозвано.'
     list:
-      title: '**Invite Codes:**'
-      noInvites: '{emoji} This hub has no invites yet. Use `/hub invite create` to create one.'
-      notPrivate: '{emoji} Only private hubs can have invites. Use `/hub edit` to make this hub private.'
+      title: '**Коды Приглашения:**'
+      noInvites: '{emoji} Этот хаб еще не имеет приглашений. Используйте `/hub invite create` чтобы создать одно.'
+      notPrivate: '{emoji} Только приватные хабы могут иметь приглашения. Используйте `/hub edit` чтобы сделать этот хаб приватным.'
   joined:
-    noJoinedHubs: '{emoji} This server has not joined any hubs yet. Use `/hub browse` to view a list of hubs.'
-    joinedHubs: This server is a part of **{total}** hub(s). Use `/disconnect` to leave a hub.
+    noJoinedHubs: '{emoji} Этот сервер еще не присоединился ни к одному хабу. Используйте `/hub browse` чтобы просмотреть список хабов.'
+    joinedHubs: Этот сервер является частью **{total}** хаба(-ов). Используйте `/disconnect` чтобы выйти из хаба.
   leave:
-    noHub: '{emoji} That channel is invalid or has not joined any hubs.'
-    confirm: Are you sure you wish to leave **{hub}** from {channel}? No more messages will be sent to this server from this hub.
-    confirmFooter: Confirm using the button below within 10 seconds.
-    success: '{emoji} Left the hub from {channel}. No more messages will be sent to this server from this hub. You can rejoin using `/connect`.'
+    noHub: '{emoji} Этот канал некорректный или не соединён ни с каким хабом.'
+    confirm: Вы уверены, что хотите покинуть **{hub}** из {channel}? Сообщения больше не будут отправляться на этот сервер из хаба.
+    confirmFooter: Подтвердите используя кнопку ниже в течение 10 секунд.
+    success: '{emoji} Покинут хаб из {channel}. Сообщения больше не будут отправляться на этот сервер из хаба. Вы можете перезайти используя `/connect`.'
   moderator:
-    noModerators: '{emoji} This hub has no moderators yet. Use `/hub moderator add` to add one.'
+    noModerators: '{emoji} У этого хаба еще нет модераторов. Используйте `/hub moderator add` чтобы добавить одного.'
     add:
-      success: '{emoji} **{user}** has been added as a moderator of position **{position}**.'
-      alreadyModerator: '{emoji} **{user}** is already a moderator.'
+      success: '{emoji} **{user}** был добавлен как модератор на позицию **{position}**.'
+      alreadyModerator: '{emoji} **{user}** уже модератор.'
     remove:
-      success: '{emoji} **{user}** has been removed as a moderator.'
-      notModerator: '{emoji} **{user}** is not a moderator.'
-      notOwner: '{emoji} Only the owner of this hub can remove a manager.'
+      success: '{emoji} **{user}** был удален в качестве модератора.'
+      notModerator: '{emoji} **{user}** не модератор.'
+      notOwner: '{emoji} Только владелец хаба может удалить менеджера.'
     update:
-      success: "{emoji} **{user}**'s position has been updated to **{position}**."
-      notModerator: "{emoji} **{user}** is not a moderator."
-      notAllowed: "{emoji} Only hub managers can update a moderator's position."
-      notOwner: "{emoji} Only the owner of this hub can update a manager's position."
+      success: "{emoji} Позиция **{user}** была обновлена до **{position}**."
+      notModerator: "{emoji} **{user}** не модератор."
+      notAllowed: "{emoji} Только менеджеры хаба могут обновлять позицию модератора."
+      notOwner: "{emoji} Только владелец этого хаба может обновлять позицию менеджера."
   manage:
-    enterImgurUrl: Enter a valid Imgur image URL that is not a gallery or album.
+    enterImgurUrl: Введите корректный URL изображения Imgur который не является галереей или альбомом.
     icon:
-      changed: Hub icon successfully changed.
+      changed: Иконка хаба успешно обновлена.
       modal:
-        title: Edit Icon
-        label: Icon URL
+        title: Редактировать Иконку
+        label: URL Иконки
       selects:
-        label: Edit Icon
-        description: Change the icon of this hub.
+        label: Редактировать Иконку
+        description: Изменить иконку этого хаба.
     description:
-      changed: Hub description successfully changed.
+      changed: Описание хаба успешно изменено.
       modal:
-        title: Edit Description
-        label: Description
-        placeholder: Enter a description for this hub.
+        title: Изменить Описание
+        label: Описание
+        placeholder: Введите описание этого хаба.
       selects:
-        label: Change Description
-        description: Change the description of this hub.
+        label: Измените Описание
+        description: Измените описание этого хаба.
     banner:
-      changed: Hub banner successfully changed.
-      removed: Hub banner successfully removed.
+      changed: Баннер хаба успешно изменён.
+      removed: Баннер хаба успешно удалён.
       modal:
-        title: Edit Banner
-        label: Banner URL
+        title: Редактировать Баннер
+        label: URL Баннера
       selects:
-        label: Edit Banner
-        description: Change the banner of this hub.
+        label: Редактировать Баннер
+        description: Изменить баннер этого хаба.
     visibility:
-      success: '{emoji} Hub visibility successfully changed to **{visibility}**.'
+      success: '{emoji} Видимость хаба успешно изменена на **{visibility}**.'
       selects:
-        label: Change Visibility
-        description: Make this hub public or private.
+        label: Изменить Видимость
+        description: Сделайте этот хаб публичным или приватным.
     toggleLock:
       selects:
-        label: 'Lock/Unlock Hub'
-        description: 'Lock or unlock the hub chats'
-      confirmation: 'Hub chats are now {status}.'
-      announcementTitle: 'Hub chats are now {status}.'
+        label: 'Заблокировать/Разблокировать Хаб'
+        description: 'Заблокируйте или разблокируйте чаты хаба'
+      confirmation: 'Чаты хаба теперь {status}.'
+      announcementTitle: 'Чаты хаба теперь {status}.'
       announcementDescription:
-        locked: 'Only moderators can send messages.'
-        unlocked: 'Everyone can send messages.'
+        locked: 'Только модераторы могут отправлять сообщения.'
+        unlocked: 'Все могут отправлять сообщения.'
     embed:
-      visibility: 'Visibility'
-      connections: 'Connections'
-      chatsLocked: 'Chats Locked'
-      blacklists: 'Blacklists'
-      total: 'Total'
-      users: 'Users'
-      servers: 'Servers'
-      hubStats: 'Hub Stats'
-      moderators: 'Moderators'
-      owner: 'Owner'
+      visibility: 'Видимость'
+      connections: 'Соединения'
+      chatsLocked: 'Чаты заблокированы'
+      blacklists: 'Чёрный список'
+      total: 'Всего'
+      users: 'Пользователи'
+      servers: 'Сервера'
+      hubStats: 'Статистика Хаба'
+      moderators: 'Модераторы'
+      owner: 'Владелец'
     logs:
-      title: Logs Configuration
-      reset: '{emoji} Successfully reset the logs configuration for `{type}` logs.'
-      roleSuccess: '{emoji} Logs of type `{type}` will now mention {role}!'
-      roleRemoved: '{emoji} Logs of type `{type}` will no longer mention a role.'
-      channelSuccess: '{emoji} Logs of type `{type}` will be sent to  {channel} from now!'
-      channelSelect: '#️⃣ Select a channel to send the logs'
-      roleSelect: '🏓 Select the role to mention when a log is triggered.'
-      reportChannelFirst: '{emoji} Please set a log channel first.'
+      title: Настройка логов
+      reset: '{emoji} Логи конфигурации успешно сброшены для `{type}`.'
+      roleSuccess: '{emoji} Логи `{type}` теперь будут упоминать {role}!'
+      roleRemoved: '{emoji} Логи `{type}` теперь не будут упоминать роль.'
+      channelSuccess: '{emoji} Логи `{type}` теперь будут отправляться в  {channel}!'
+      channelSelect: '#️⃣ Выберите канал для отправки логов'
+      roleSelect: '🏓 Выберите роль, которая будет упоминаться в логах.'
+      reportChannelFirst: '{emoji} Пожалуйста, сначала выберите канал для логов.'
       config:
-        title: Configure `{type}` Logs
+        title: Настройте  Логи `{type}`
         description: |
-          {arrow} Select a log channel and/or role to be pinged from the dropdown below.
-          {arrow} You can also disable logging by using the button below.
+          {arrow} Выберите канал логов и/или роль которая будет упоминаться в меню ниже
+          {arrow} Вы также можете отключить логи в меню ниже.
         fields:
-          channel: Channel
-          role: Role Mention
+          channel: Канал
+          role: Упоминание Роли
       reports:
-        label: Reports
-        description: Receive reports from users.
+        label: Жалобы
+        description: Получайте жалобы от пользователей.
       modLogs:
-        label: Mod Logs
-        description: Log Moderation actions. (eg. blacklist, message deletes, etc.)
+        label: Логи Модераторов
+        description: 'Записывать Действия Модераторов. (Например: добавление в чёрный список, удаление сообщений, и тд.)'
       joinLeaves:
-        label: Join/Leave
-        description: Log when a server joins or leaves this hub.
+        label: Вступления/Уходы
+        description: Записывать когда сервер заходит или уходит из этого хаба.
       appeals:
-        label: Appeals
-        description: Recieve appeals from blacklisted users/servers.
+        label: Обжалования
+        description: Получать обжалования от пользователей/серверов в чёрном списке.
       networkAlerts:
-        label: Network Alerts
-        description: Recieve alerts about automatically blocked messages.
+        label: Оповещения Сети
+        description: Получать оповещения об автоматически заблокированных сообщениях.
+  transfer:
+    invalidUser: '{emoji} Указанный пользователь не найден.'
+    selfTransfer: '{emoji} Вы не можете передать права владельца самому себе.'
+    botUser: '{emoji} Вы не можете передать права владельца боту.'
+    confirm: 'Вы уверены, что хотите передать права владельца **{hub}** пользователю {newOwner}? Вы будете понижены до роли менеджера.'
+    cancelled: '{emoji} Передача хаба отменена.'
+    error: '{emoji} Возникла ошибка при передаче хаба.'
+    success: '{emoji} Успешно переданы права владельца **{hub}** пользователю {newOwner}. Вы были добавлены как менеджер.'
+    timeout: '{emoji} Вышло время на передачу хаба.'
+  rules:
+    noRules: "{emoji} Этот хаб пока не имеет настроенных правил. Давайте добавим их!"
+    list: "### {emoji} Правила Хаба\n{rules}"
+    maxRulesReached: "{emoji} Достигнуто максимальное количество правил ({max})."
+    ruleExists: "{emoji} Это правило уже существует."
+    selectedRule: "Выбрано правило {number}"
+    modal:
+      add:
+        title: Добавить Правило
+        label: Текст правил
+        placeholder: Введите текст правил (не более 1000 символов)
+      edit:
+        title: Изменить Правила Хаба
+        label: Текст правил
+        placeholder: Введите новый текст правил (не более 1000 символов)
+    select:
+      placeholder: Выберите правило для редактирования или удаления
+      option:
+        label: Правило {number}
+    buttons:
+      add: Добавить Правило
+      edit: Редактировать Правило
+      delete: Удалить Правило
+      back: Назад 
+    success:
+      add: '{emoji} Правило успешно добавлено!'
+      edit: 'Правило {emoji} успешно изменено!'
+      delete: '{emoji} Правило успешно удалено!'
+    view:
+      title: 'Правило {number}'
+      select: Выберите действие для этого правила
+  welcome:
+    set: '{emoji} Welcome message updated successfully!'
+    removed: '{emoji} Welcome message removed.'
+    voterOnly: '{emoji} Custom welcome messages are a voter-only perk! Vote to unlock this feature.'
+    placeholder: |
+      Welcome {user} to {hubName}! 🎉
+      Make yourself at home and enjoy chatting!'
 report:
   modal:
-    title: Report Details
+    title: Подробности Жалобы
     other:
-      label: Report Details
-      placeholder: A detailed description of the report.
+      label: Подробности Жалобы
+      placeholder: Подробное описание жалобы.
     bug:
       input1:
-        label: Bug Details
-        placeholder: Eg. Frequent interaction failures for /help command...
+        label: Подробности Бага
+        placeholder: Например. Частые сбои взаимодействия команды /help...
       input2:
-        label: Detailed Description (Optional)
-        placeholder: Steps you took. Eg. 1. Run /help 2. Wait for 5 seconds...
-  submitted: '{emoji} Report submitted successfully. Join the {support_command} to get more details. Thank you!'
+        label: Подробное описание (необязательно)
+        placeholder: Шаги, которые вы сделали. Например, 1.Использовал /help 2.Подождал 5 секунд... 
+  submitted: '{emoji} Жалоба успешно отправлена. Присоединитесь к {support_command} чтобы получить больше подробностей. Спасибо!'
   bug:
-    title: Bug Report
-    affected: Affected Components
-    description: Please choose what component of the bot you are facing issues with.
+    title: Отчет об Ошибках
+    affected: Затронутые Компоненты
+    description: Пожалуйста, выберите компонент бота с которым у вас наблюдаются проблемы.
 language:
-  set: Language set! I will now respond to you in **{lang}**.
+  set: Язык выбран! Теперь я буду обращаться к вам на {lang}.
 errors:
-  messageNotSentOrExpired: '{emoji} This message was not sent in a hub, has expired, or you lack permissions to perform this action.'
-  notYourAction: "{emoji} Sorry, you can't perform this action. Please run the command yourself."
-  notMessageAuthor: '{emoji} You are not the author of this message.'
+  messageNotSentOrExpired: '{emoji} Это сообщение не было отправлено в хаб, оно истекло или вы обладаете недостаточными правами чтобы его отправить.'
+  notYourAction: "{emoji} Извините, вы не можете этого сделать. Запустите команду сами."
+  notMessageAuthor: '{emoji} Вы не автор этого сообщения.'
   commandError: |
-    {emoji} An error occurred while executing this command. It has been logged to our system. If this issue persists, please join our [support server]({support_invite}) and report the error ID!
+    {emoji} Произошла ошибка при выполнении команды. Она была записана в нашу систему. Если ошибка повторится то зайдите на наш [сервер поддержки]({support_invite}) и сообщите ID ошибки.
 
-    **Error ID:**
+    **ID Ошибки:**
     ```{errorId}```
-  mustVote: Please [vote](https://top.gg/bot/769921109209907241/vote) for InterChat to use this command, your support is very much appreciated!
-  inviteLinks: '{emoji} You may not send invite links to this hub. Set an invite in `/connection` instead! Hub mods can configure this using `/hub edit settings`'
-  invalidLangCode: '{emoji} Invalid language code. Please make sure you have entered a correct [language code](https://cloud.google.com/translate/docs/languages).'
-  unknownServer: '{emoji} Unknown server. Please make sure you have entered the correct **Server ID**.'
-  unknownNetworkMessage: '{emoji} Unknown Message. If it has been sent in the past minute, please wait few more seconds and try again.'
-  userNotFound: '{emoji} User not found. Try inputting their ID instead.'
-  blacklisted: '{emoji} You or this server is blacklisted from this hub called {hub}.'
-  userBlacklisted: '{emoji} You are blacklisted from this hub.'
-  serverBlacklisted: '{emoji} This server is blacklisted from this hub.'
-  serverNotBlacklisted: '{emoji} The inputted server is not blacklisted.'
-  userNotBlacklisted: '{emoji} The inputted user is not blacklisted.'
-  missingPermissions: '{emoji} You are missing the following permissions to perform this action: **{permissions}**'
-  botMissingPermissions: '{emoji} Please grant me the following permissions to continue: **{permissions}**'
-  unknown: '{emoji} An unknown error occurred. Please try again later or contact us by joining our [support server]({support_invite}).'
-  notUsable: '{emoji} This is no longer usable.'
-  cooldown: '{emoji} You are on cooldown. Please wait until **{time}** before attempting again.'
-  serverNameInappropriate: '{emoji} Your server name contains inappropriate words. Please change it before joining the hub.'
+  mustVote: Пожалуйста [проголосуйте](https://top.gg/bot/769921109209907241/vote) за InterChat, чтобы использовать эту команду, ваша поддержка очень ценится!
+  inviteLinks: '{emoji} Вы не можете отправлять ссылки приглашения в этот хаб. Установите приглашение используя `/connection` вместо этого! Модераторы хаба могут изменять это используя `/hub edit settings`'
+  invalidLangCode: '{emoji} Некорректный код языка. Убедитесь что вы ввели правильный [код языка](https://cloud.google.com/translate/docs/languages).'
+  unknownServer: '{emoji} Неизвестный сервер. Пожалуйста, убедитесь что вы ввели правильный **ID Сервера**.'
+  unknownNetworkMessage: '{emoji} Неизвестное сообщение. Если оно было отправлено минуту и менее назад попробуйте еще раз через несколько секунд.'
+  userNotFound: '{emoji} Пользователь не найден. Попробуйте ввести его ID.'
+  blacklisted: '{emoji} Вы или этот сервер были внесены в чёрный список в хабе {hub}.'
+  userBlacklisted: '{emoji} Вы были внесены в чёрный список этого хаба.'
+  serverBlacklisted: '{emoji} Этот сервер внесён в черный список этого хаба.'
+  serverNotBlacklisted: '{emoji} Введённый сервер не внесён в чёрный список.'
+  userNotBlacklisted: '{emoji} Введённый пользователь не внесён в чёрный список.'
+  missingPermissions: '{emoji} Вам не хватает следующих прав для совершения этого действия: **{permissions}**'
+  botMissingPermissions: '{emoji} Пожалуйста, дайте мне следующие права для продолжения: **{permissions}**'
+  unknown: '{emoji} Произошла неизвестная ошибка. Пожалуйста, попробуйте снова позже или свяжитесь с нами в [сервере поддержки]({support_invite}).'
+  notUsable: '{emoji} Это больше не используется.'
+  cooldown: '{emoji} Вы превысили лимит действий. Пожалуйста, подождите до **{time}** прежде чем попробовать снова.'
+  serverNameInappropriate: '{emoji} Имя вашего сервера содержит неуместные слова. Пожалуйста, измените его прежде чем как присоединиться к хабу.'
   banned: |
-    {emoji} You have been banned from using InterChat for violating our [guidelines](https://interchat.tech/guidelines).
-    If you think an appeal is applicable create a ticket in the [support server]( {support_invite} ).
+    {emoji} Вы были заблокированы от использования InterChat за нарушение наших [правил](https://interchat.tech/guidelines).
+    Если вы думаете что обжалование уместно то создайте запрос на нашем [сервере поддержки]( {support_invite} ).
 config:
   setInvite:
     success: |
-      ### {emoji} Invite Link Set
-      - Your server's invite will be used when people use `/joinserver`.
-      - It will be displayed in `/leaderboard server`.
-    removed: '{emoji} Invite removed successfully!'
-    invalid: '{emoji} Invalid invite. Please make sure you have entered a valid invite link. Eg. `https://discord.gg/discord`'
-    notFromServer: '{emoji} This invite is not from this server.'
+      ### {emoji} Сссылка Приглашения Установлена
+      - Приглашение на ваш сервер будет использовано когда пользователи будут использовать команду `/joinserver`.
+      - Оно будет отображено в `/leaderboard server`.
+    removed: '{emoji} Приглашение успешно убрано!'
+    invalid: '{emoji} Некорректное приглашение. Пожалуйста, убедитесь что вы ввели правильную ссылку. Например, `https://discord.gg/discord`'
+    notFromServer: '{emoji} Это приглашение не из этого сервера.'
+badges:
+  shown: '{emoji} Your badges will now be shown in messages.'
+  hidden: '{emoji} Your badges will now be hidden in messages.'
+  command:
+    description: '🏅 Configure your badge display preferences'
+    options:
+      show:
+        name: 'show'
+        description: 'Whether to show or hide your badges in messages'
+  list:
+    developer: 'Core developer of InterChat'
+    staff: 'InterChat staff member'
+    translator: 'Translator of InterChat'
+    voter: 'Voted for InterChat in the last 12 hours'
 global:
-  webhookNoLongerExists: '{emoji} The webhook for this channel no longer exists. To continue using InterChat, please re-create the webhook by using `/connection unpause`.'
-  noReason: No reason provided.
-  noDesc: No Description.
+  webhookNoLongerExists: '{emoji} Вебхук для этого канала более не существует. Чтобы продолжить использовать InterChat, пожалуйста создайте вебхук заново используя `/connection unpause`.'
+  noReason: Причина не указана.
+  noDesc: Нет описания.
   version: InterChat v{version}
-  loading: '{emoji} Please wait while I process your request...'
-  reportOptionMoved: '{emoji} This option has moved! To report a message to hub moderators, use the updated `Apps > Message Info/Report` command. For direct reporting to InterChat staff, just hop into the [support server]({support_invite}) and create a ticket with proof.'
-  private: 'Private'
-  public: 'Public'
-  yes: 'Yes'
-  no: 'No'
-  cancelled: '{emoji} Cancelled. No changes were made.'
+  loading: '{emoji} Пожалуйста, подождите пока я обрабатываю ваш запрос...'
+  reportOptionMoved: '{emoji} Эта опция была перемещена! Чтобы пожаловаться на сообщение модераторам хаба, используйте обновленную команду `Apps > Message Info/Report`. Чтобы пожаловаться на прямую сотрудникам InterChat, просто зайдите на наш [сервер поддержки]({support_invite}) и создайте запрос с доказательствами.'
+  private: 'Приватный'
+  public: 'Публичный'
+  yes: 'Да'
+  no: 'Нет'
+  cancelled: '{emoji} Отменено. Изменения не были сделаны.'
+warn:
+  modal:
+    title: Выдать Предупреждение Пользователю
+    reason:
+      label: Причина
+      placeholder: Введите причину предупреждения этого пользователя...
+  success: |
+    {emoji} Успешно выдано предупреждение **{name}**.
+
+    -# Пользователь будет уведомлен о последнем предупреждении при следующем отправке сообщения в хабе. Избегайте выдачи нескольких предупреждений сразу.
+  dm:
+    title: '{emoji} Уведомление о Предупреждении'
+    description: 'Вам выдано предупреждение в хабе **{hubName}**'
+  log:
+    title: '{emoji} Пользователю Выдано Предупреждение'
+    description: |
+      {arrow} **Пользователь:** {user} ({userId})
+      {arrow} **Модератор:** {moderator} ({modId})
+      {arrow} **Причина:** {reason}
+    footer: 'Предупреждение выдано модератором {moderator}'
