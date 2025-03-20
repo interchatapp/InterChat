@@ -33,16 +33,15 @@ rules:
     ⚠️ **You cannot send messages in this hub until you accept these rules.**
   accepted: |
     {emoji} You're all set! Welcome to the InterChat community.
-    
+
     Quick tips to get started:
     - Use `/hub browse` to find active communities
     - Join discussions that interest you
     - Use our new `/call` command to connect with single servers
 
     Need help? Join our [community]({support_invite}) - we're happy to help!
-    
+
     Love what we're building? Consider [supporting us]({donateLink}) to help keep InterChat running.
-  
   declined: |
     {emoji} You have declined the InterChat rules.
     -# ⚠️ **You won't be able to use InterChat or chat with other servers until you accept the rules.**
@@ -56,7 +55,6 @@ rules:
     -# To try again, send another message in this hub.
   noHubRules: This hub has not set any specific rules yet. However, the [general InterChat rules]({rules_link}) still apply.
   hubRules: Hub Rules
-
 vote:
   description: |
     Help more communities discover InterChat! Your vote on top.gg:
@@ -489,17 +487,15 @@ errors:
   banned: |
     {emoji} You have been banned from using InterChat for violating our [guidelines](https://interchat.tech/guidelines).
     If you think an appeal is applicable create a ticket in the [support server]( {support_invite} ).
-
 config:
   setInvite:
     success: |
-      ### {emoji} Invite Link Set 
+      ### {emoji} Invite Link Set
       - Your server's invite will be used when people use `/joinserver`.
       - It will be displayed in `/leaderboard server`.
     removed: '{emoji} Invite removed successfully!'
     invalid: '{emoji} Invalid invite. Please make sure you have entered a valid invite link. Eg. `https://discord.gg/discord`'
     notFromServer: '{emoji} This invite is not from this server.'
-
 badges:
   shown: '{emoji} Your badges will now be shown in messages.'
   hidden: '{emoji} Your badges will now be hidden in messages.'
@@ -514,8 +510,6 @@ badges:
     staff: 'InterChat staff member'
     translator: 'Translator of InterChat'
     voter: 'Voted for InterChat in the last 12 hours'
-
-
 global:
   webhookNoLongerExists: '{emoji} The webhook for this channel no longer exists. To continue using InterChat, please re-create the webhook by using `/connection unpause`.'
   noReason: No reason provided.
@@ -534,7 +528,7 @@ warn:
     reason:
       label: Reason
       placeholder: Enter the reason for warning this user...
-  success: | 
+  success: |
     {emoji} Successfully warned **{name}**.
 
     -# They will be notified of the most recent warning the next time they send a message in the hub. Avoid issuing multiple warnings at once.
