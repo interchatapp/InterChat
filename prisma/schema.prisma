@@ -218,7 +218,7 @@ model User {
   locale            String?
   voteCount         Int             @default(0)
   reputation        Int             @default(0)
-  lastVoted         DateTime?       @default(now())
+  lastVoted         DateTime?
   banReason         String?
   mentionOnReply    Boolean         @default(true)
   acceptedRules     Boolean         @default(false)
