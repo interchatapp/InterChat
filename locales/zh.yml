@@ -433,8 +433,8 @@ hub:
     removed: '{emoji}欢迎信息已移除。'
     voterOnly: '{emoji}自定义欢迎信息是属于为我们投票的人独有的福利！去投票解锁此功能。'
     placeholder: |
-      Welcome {user} to {hubName}! 🎉
-      Make yourself at home and enjoy chatting!'
+      欢迎 {user} 来到{hubName}！🎉
+      放轻松，聊得开心！
 report:
   modal:
     title: 报告详情
@@ -494,19 +494,19 @@ config:
     invalid: '{emoji}邀请无效。请确保您输入了有效的邀请链接。例如：“https://discord.gg/discord”'
     notFromServer: '{emoji}此邀请不是来自此服务器。'
 badges:
-  shown: '{emoji} Your badges will now be shown in messages.'
-  hidden: '{emoji} Your badges will now be hidden in messages.'
+  shown: '{emoji}现在您的徽章将在消息中显示。'
+  hidden: '{emoji}现在您的徽章将在消息中隐藏。'
   command:
-    description: '🏅 Configure your badge display preferences'
+    description: '🏅 配置您的首选显示徽章'
     options:
       show:
-        name: 'show'
-        description: 'Whether to show or hide your badges in messages'
+        name: '显示'
+        description: '是否在消息中显示或隐藏您的徽章'
   list:
-    developer: 'Core developer of InterChat'
-    staff: 'InterChat staff member'
-    translator: 'Translator of InterChat'
-    voter: 'Voted for InterChat in the last 12 hours'
+    developer: 'InterChat的核心开发者'
+    staff: 'InterChat的工作人员'
+    translator: 'InterChat的译者'
+    voter: '在过去 12 小时内投票给InterChat'
 global:
   webhookNoLongerExists: '{emoji}此频道的网络回调已不存在。若要继续使用 InterChat，请使用“／恢复连接”指令重新创建网络回调。'
   noReason: 未提供原因。
@@ -521,21 +521,21 @@ global:
   cancelled: '{emoji}已取消。未进行任何更改。'
 warn:
   modal:
-    title: Warn User
+    title: 用户警告
     reason:
-      label: Reason
-      placeholder: Enter the reason for warning this user...
+      label: 原因
+      placeholder: 输入警告此用户的原因……
   success: |
-    {emoji} Successfully warned **{name}**.
+    {emoji} **{name}**警告成功。
 
-    -# They will be notified of the most recent warning the next time they send a message in the hub. Avoid issuing multiple warnings at once.
+    -# 下次在中心发送消息时，他们将收到最新警告的通知。请勿同时发出多个警告。
   dm:
-    title: '{emoji} Warning Notification'
-    description: 'You have been warned in hub **{hubName}**'
+    title: '{emoji}警告通知'
+    description: '您在中心{hubName}已被警告'
   log:
-    title: '{emoji} User Warned'
+    title: '{emoji}被警告用户'
     description: |
-      {arrow} **User:** {user} ({userId})
-      {arrow} **Moderator:** {moderator} ({modId})
-      {arrow} **Reason:** {reason}
-    footer: 'Warned by: {moderator}'
+      {arrow} **用户：** {user} ({userId})
+      {arrow} **监管员：** {moderator} ({modId})
+      {arrow} **原因：** {reason}
+    footer: '警告来自：{moderator}'
