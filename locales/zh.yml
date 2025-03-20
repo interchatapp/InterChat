@@ -20,8 +20,7 @@ rules:
 
     You also agree to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines). Check out the [full list of rules]({guidelines_link}).
   welcome: |
-    {emoji} Hi {user}! Ready to connect with other communities?
-    Before you start chatting across servers, let's quickly review our community guidelines. These help keep InterChat a great place for everyone.
+    {emoji}您好，{user}！准备好和其他社区连接了吗？在开始跨服务器聊天之前，请快速回顾一下我们的社区准则。这些准则有助于InterChat为每个人维护良好环境。
   alreadyAccepted: '{emoji}您已接受所有规则。您现在可以尽情使用InterChat。'
   continue: Continue
   accept: Accept
