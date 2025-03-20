@@ -1,77 +1,76 @@
 rules:
   rules: |
-    ### {emoji} Rules
-    These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:
+    ### {emoji} 规则
+    这些规则的制定是为了给每个人带来安全且愉快的体验。请仔细阅读并遵守以下规则：
 
-    1. **No Hate Speech or Harassment**
-    -# > **Includes:** Using slurs or hate speech to attack others, [and more]({guidelines_link}).
-    2. **No Illegal Content**
-    -# > **Includes:** Sharing links to illegal content, Encouraging violence, [and more]({guidelines_link}).
-    3. **No Severe NSFW or Gore**
-    -# > **Includes:** Posting gore or extreme gore in InterChat, Posting sexual content in non-NSFW hubs, [and more]({guidelines_link}).
-    4. **No Spamming or Flooding**
-    -# > **Includes:** Mass spamming or bot floods, [and more]({guidelines_link})
-    5. **No Impersonation or Fraud**
-    -# > **Includes:** Impersonating InterChat staff or hub moderators, Running cryptocurrency or NFT scams, [and more]({guidelines_link}).
-    6. **No Exploitation or Abuse**
-    -# > **Includes:** Grooming or predatory behavior towards minors, Sharing, Requesting, Blackmailing or threatening to  Encouraging self-harm, [and more]({guidelines_link}).
-    7. **No Sharing Malicious Software**
-    -# > **Includes:** Sharing malware, viruses, 'free nitro' links, harmful scripts [and more]({guidelines_link}).
+    1. **禁止仇恨言论或骚扰行为**
+    -# > **包括：** 使用侮辱性言论或仇恨言论攻击他人，[及其他行为]({guidelines_link})。
+    2. **禁止非法内容**
+    -# > **包括：** 分享非法内容的链接，煽动暴力，[及其他行为]({guidelines_link})。
+    3. **禁止重度成人或血腥暴力内容**
+    -# > **包括：** 在InterChat发布血腥暴力内容，在非成人内容中心发布成人内容，[及其他行为]({guidelines_link})。
+    4. **禁止发送垃圾信息或刷屏行为**
+    -# > **包括：** 大量发送垃圾信息或使用工具进行刷屏，[及其他行为]({guidelines_link})。
+    5. **禁止假冒或欺诈他人**
+    -# > **包括：** 假冒InterChat的工作人员或中心的监管员，进行虚拟货币或NFT诈骗活动，[及其他行为]({guidelines_link})。
+    6. **禁止剥削或虐待行为**
+    -# > **包括：** 对未成年人进行诱骗或性剥削行为，还有分享、索取、敲诈或威胁行为，或煽动自残，[及其他行为]({guidelines_link})。
+    7. **禁止分享恶意软件**
+    -# > **包括：** 分享恶意软件、病毒、“免费Nitro”链接或有害脚本，[及其他行为]({guidelines_link})。
 
-    You also agree to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines). Check out the [full list of rules]({guidelines_link}).
+    请同意遵守 [Discord的服务条款](https://discord.com/terms) 以及 [社区准则](https://discord.com/guidelines)。查看 [完整规则列表]({guidelines_link})。
   welcome: |
     {emoji}您好，{user}！准备好和其他社区连接了吗？在开始跨服务器聊天之前，请快速回顾一下我们的社区准则。这些准则有助于InterChat为每个人维护良好环境。
   alreadyAccepted: '{emoji}您已接受所有规则。您现在可以尽情使用InterChat。'
-  continue: Continue
-  accept: Accept
-  decline: Decline
-  agreementNote: By accepting these rules, you agree to follow them while using InterChat. Breaking these rules may result in restrictions or bans.
+  continue: 继续
+  accept: 接受
+  decline: 拒绝
+  agreementNote: 接受这些规则，则表明您在使用InterChat期间同意遵守所有规则。若违反规则可能会产生限制或禁令。
   hubAgreementNote: |
-    By accepting these rules, you agree to follow them while chatting in this hub. Breaking these rules may result in removal from the hub.
+    接受这些规则，则表明您在此中心聊天期间同意遵守所有规则。若违反规则您可能会被此中心移除。
 
-    ⚠️ **You cannot send messages in this hub until you accept these rules.**
+    ⚠️ **只有接受这些规则，您才能在此中心发送消息。**
   accepted: |
-    {emoji} You're all set! Welcome to the InterChat community.
+    {emoji} 准备完毕！欢迎来到InterChat社区。
 
-    Quick tips to get started:
-    - Use `/hub browse` to find active communities
-    - Join discussions that interest you
-    - Use our new `/call` command to connect with single servers
+    快速入门提示：
+    - 使用“/浏览中心”查找活跃社区
+    - 加入您感兴趣的讨论
+    - 使用我们新的“/呼叫”指令以连接单个服务器
 
-    Need help? Join our [community]({support_invite}) - we're happy to help!
+    需要帮助吗？加入我们的 [社区]({support_invite}) - 我们很乐意提供帮助！
 
-    Love what we're building? Consider [supporting us]({donateLink}) to help keep InterChat running.
+    喜欢我们的平台吗？请考虑一下 [支持我们]({donateLink}) ，助力InterChat持续发展。
   declined: |
-    {emoji} You have declined the InterChat rules.
-    -# ⚠️ **You won't be able to use InterChat or chat with other servers until you accept the rules.**
-    -# To try again, send another message or use any InterChat command.
+    {emoji} 您已拒绝InterChat的规则。
+    -# ⚠️ **只有接受规则后，您才能使用InterChat或者进行跨服务器聊天。**
+    -# 如重试，请另发送一条消息或使用任意InterChat的指令。
   hubAccepted: |
-    {emoji} You have accepted the hub rules.
-    You can now start chatting in this hub!
+    {emoji}您已接受中心规则。现在可以在此中心开始聊天了！
   hubDeclined: |
-    {emoji} You have declined the rules for {hubName}.
-    -# ⚠️ **You won't be able to send messages in this hub until you accept its rules.**
-    -# To try again, send another message in this hub.
-  noHubRules: This hub has not set any specific rules yet. However, the [general InterChat rules]({rules_link}) still apply.
-  hubRules: Hub Rules
+    {emoji} 您已拒绝{hubName}的规则。
+    -# ⚠️ **只有接受中心规则后，您才能在此中心发送消息。**
+    -# 如重试，请在此中心另发送一条消息。
+  noHubRules: 此中心尚未设置任何细则。但是 [InterChat通用规则]({rules_link}) 仍然适用。
+  hubRules: 中心规则
 vote:
   description: |
-    Help more communities discover InterChat! Your vote on top.gg:
-    • Helps others find active communities
-    • Unlocks special features for you
-    • Supports our independent development
-  footer: "Votes refresh every 12 hours • Thanks for supporting InterChat!"
+    帮助更多社区发现InterChat！您在top.gg的投票将:
+    • 帮助其他人找到活跃社区
+    • 为您解锁特殊功能
+    • 支持我们的独立发展
+  footer: "每隔12小时刷新一轮投票 • 感谢您对InterChat的支持！"
   button:
-    label: "Vote on top.gg"
+    label: "在top.gg进行投票"
   perks:
-    moreComingSoon: "More perks coming soon! Suggest some in the [support server]({support_invite})."
+    moreComingSoon: "更多福利即将推出！关于福利，有任何建议请在[支持服务器]({support_invite})提出。"
 network:
   accountTooNew: '{emoji}{user}您的账号注册时间不足，无法在InterChat发送消息。请稍后再试。'
   deleteSuccess: '{emoji}{user}发送的消息已从 __**{deleted}/{total}**__ 服务器中删除。'
   editSuccess: '{emoji}{user}发送的消息已在__**{edited}／{total}**__服务器中完成编辑。'
   onboarding:
     embed:
-      title: '👋 Welcome to {hubName}!'
+      title: '👋 欢迎来到 {hubName}！'
       description: |
         You've found an active community hub! Before joining the discussion, take a quick look at our guidelines to keep conversations engaging and friendly for everyone.
       footer: InterChat网络｜版本{version}
