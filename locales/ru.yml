@@ -23,10 +23,10 @@ rules:
     {emoji} Hi {user}! Ready to connect with other communities?
     Before you start chatting across servers, let's quickly review our community guidelines. These help keep InterChat a great place for everyone.
   alreadyAccepted: '{emoji} Вы уже приняли правила. Теперь вы можете в полной мере использовать InterChat.'
-  continue: Continue
-  accept: Accept
-  decline: Decline
-  agreementNote: By accepting these rules, you agree to follow them while using InterChat. Breaking these rules may result in restrictions or bans.
+  continue: Продолжить
+  accept: Принять
+  decline: Отклонить
+  agreementNote: Принимая эти правила, вы соглашаетесь следовать им при использовании InterChat. Нарушение этих правил может привести к ограничениям или блокировке.
   hubAgreementNote: |
     By accepting these rules, you agree to follow them while chatting in this hub. Breaking these rules may result in removal from the hub.
 
