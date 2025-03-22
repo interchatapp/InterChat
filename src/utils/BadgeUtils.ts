@@ -58,14 +58,12 @@ export function getVoterBadge(client: Client): Badge {
   };
 }
 
-export function getExtraBadges(
-  userId: string,
-  client: Client,
-  opts: { userData?: User | null },
-): Badge[] {
+export function getExtraBadges(client: Client, opts: { userData?: User | null }): Badge[] {
   const badges: Badge[] = [];
 
-  const timeSinceVote = Date.now() - (opts.userData?.lastVoted?.getTime() ?? 0);
+  if (!opts.userData?.lastVoted) return badges;
+
+  const timeSinceVote = Date.now() - opts.userData.lastVoted.getTime();
   if (timeSinceVote < 12 * 60 * 60 * 1000) {
     badges.push(getVoterBadge(client));
   }
@@ -83,7 +81,6 @@ export async function shouldShowBadges(userId: string, userData?: User | null): 
 
   return user?.showBadges ?? true;
 }
-
 
 export async function shouldShowBadgesForMessage(
   userId: string,
@@ -115,7 +112,7 @@ export async function getVisibleBadges(
   const shouldShow = await shouldShowBadgesForMessage(userId, hubId, userData);
   if (!shouldShow) return '';
 
-  return [...getBadges(userId, client), ...getExtraBadges(userId, client, { userData })]
+  return [...getBadges(userId, client), ...getExtraBadges(client, { userData })]
     .map((badge) => badge.emoji)
     .join(' ');
 }

@@ -113,6 +113,7 @@ export class HubService {
     await this.db.$transaction([
       this.db.hubInvite.deleteMany({ where: { hubId } }),
       this.db.blockWord.deleteMany({ where: { hubId } }),
+      this.db.hubRulesAcceptance.deleteMany({ where: { hubId } }),
       // TODO: Redo the infraction manager, rename the key to be hub:<hubId>:infractions
       // and also make it possible to delete from cache too.
       this.db.infraction.deleteMany({ where: { hubId } }),
