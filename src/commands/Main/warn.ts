@@ -18,7 +18,7 @@
 import BaseCommand from '#src/core/BaseCommand.js';
 import Context from '#src/core/CommandContext/Context.js';
 import { HubService } from '#src/services/HubService.js';
-import { executeHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
+import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
 import { showModeratedHubsAutocomplete } from '#src/utils/moderation/blacklistUtils.js';
 import { warnUser } from '#utils/moderation/warnUtils.js';
 import { ApplicationCommandOptionType, type AutocompleteInteraction } from 'discord.js';
@@ -61,7 +61,7 @@ export default class WarnCommand extends BaseCommand {
       ? (await this.hubService.findHubsByName(hubName)).at(0)
       : undefined;
 
-    if (!hub || !(await executeHubRoleChecksAndReply(hub, ctx, { checkIfMod: true }))) {
+    if (!hub || !(await runHubRoleChecksAndReply(hub, ctx, { checkIfMod: true }))) {
       return;
     }
 

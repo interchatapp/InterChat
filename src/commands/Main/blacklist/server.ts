@@ -19,7 +19,7 @@ import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import BlacklistManager from '#src/managers/BlacklistManager.js';
 import { HubService } from '#src/services/HubService.js';
-import { executeHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
+import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
 import { sendBlacklistNotif, showModeratedHubsAutocomplete } from '#src/utils/moderation/blacklistUtils.js';
 import { ApplicationCommandOptionType, type AutocompleteInteraction } from 'discord.js';
 import ms from 'ms';
@@ -73,7 +73,7 @@ export default class BlacklistServerSubcommand extends BaseCommand {
     const hub = (await this.hubService.findHubsByName(hubName)).at(0);
     if (
       !hub ||
-			!(await executeHubRoleChecksAndReply(hub, ctx, {
+			!(await runHubRoleChecksAndReply(hub, ctx, {
 			  checkIfMod: true,
 			}))
     ) return;

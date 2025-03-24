@@ -19,7 +19,7 @@ import HubCommand, { hubOption } from '#src/commands/Main/hub/index.js';
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import { HubService } from '#src/services/HubService.js';
-import { executeHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
+import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
 import { ApplicationCommandOptionType, type AutocompleteInteraction } from 'discord.js';
 
 export default class HubModeratorRemoveSubcommand extends BaseCommand {
@@ -50,7 +50,7 @@ export default class HubModeratorRemoveSubcommand extends BaseCommand {
       : undefined;
     if (
       !hub ||
-			!(await executeHubRoleChecksAndReply(hub, ctx, {
+			!(await runHubRoleChecksAndReply(hub, ctx, {
 			  checkIfManager: true,
 			}))
     ) return;

@@ -25,7 +25,7 @@ import { CustomID } from '#src/utils/CustomID.js';
 import db from '#src/utils/Db.js';
 import { InfoEmbed } from '#src/utils/EmbedUtils.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
-import { executeHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
+import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
 import { supportedLocaleCodes, t } from '#src/utils/Locale.js';
 import {
   ACTION_LABELS,
@@ -69,7 +69,7 @@ export default class HubConfigAntiSwearSubcommand extends BaseCommand {
 
     const hubName = ctx.options.getString('hub') ?? undefined;
     const hub = await this.hubService.fetchHub({ name: hubName });
-    if (!hub || !(await executeHubRoleChecksAndReply(hub, ctx, { checkIfManager: true }))) {
+    if (!hub || !(await runHubRoleChecksAndReply(hub, ctx, { checkIfManager: true }))) {
       return;
     }
 
@@ -142,7 +142,7 @@ export default class HubConfigAntiSwearSubcommand extends BaseCommand {
     const [hubId] = customId.args;
 
     const hub = await this.hubService.fetchHub(hubId);
-    if (!hub || !(await executeHubRoleChecksAndReply(hub, interaction, { checkIfManager: true }))) {
+    if (!hub || !(await runHubRoleChecksAndReply(hub, interaction, { checkIfManager: true }))) {
       return;
     }
     const locale = await fetchUserLocale(interaction.user.id);
@@ -241,7 +241,7 @@ export default class HubConfigAntiSwearSubcommand extends BaseCommand {
     const selectedActions = interaction.values as BlockWordAction[];
 
     const hub = await this.hubService.fetchHub(hubId);
-    if (!hub || !(await executeHubRoleChecksAndReply(hub, interaction, { checkIfManager: true }))) {
+    if (!hub || !(await runHubRoleChecksAndReply(hub, interaction, { checkIfManager: true }))) {
       return;
     }
 
@@ -352,7 +352,7 @@ export default class HubConfigAntiSwearSubcommand extends BaseCommand {
     interaction: ButtonInteraction | StringSelectMenuInteraction,
   ) {
     const hub = await this.hubService.fetchHub(hubId);
-    if (!hub || !(await executeHubRoleChecksAndReply(hub, interaction, { checkIfManager: true }))) {
+    if (!hub || !(await runHubRoleChecksAndReply(hub, interaction, { checkIfManager: true }))) {
       return { hub: null, rule: null };
     }
 

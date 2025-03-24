@@ -15,21 +15,19 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { type ModAction, replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
+import { getOriginalMessage } from '#src/utils/network/messageUtils.js';
+import { checkIfStaff } from '#src/utils/Utils.js';
+import { CustomID } from '#utils/CustomID.js';
+import type { supportedLocaleCodes } from '#utils/Locale.js';
 import {
   ActionRowBuilder,
   type ButtonInteraction,
   ModalBuilder,
-  type ModalSubmitInteraction,
   type Snowflake,
   TextInputBuilder,
   TextInputStyle,
 } from 'discord.js';
-import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
-import { type ModAction, replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
-import { getOriginalMessage } from '#src/utils/network/messageUtils.js';
-import { handleBan } from '#utils/BanUtils.js';
-import { CustomID } from '#utils/CustomID.js';
-import type { supportedLocaleCodes } from '#utils/Locale.js';
 
 export default class UserBanHandler implements ModAction {
   async handle(
@@ -41,6 +39,22 @@ export default class UserBanHandler implements ModAction {
 
     if (!originalMsg) {
       await replyWithUnknownMessage(interaction, { locale });
+      return;
+    }
+
+    if (originalMsg.authorId === interaction.user.id) {
+      await interaction.reply({
+        content: 'Let\'s not go there. <:bruhcat:1256859727158050838>',
+        flags: ['Ephemeral'],
+      });
+      return;
+    }
+
+    if (!checkIfStaff(interaction.user.id)) {
+      await interaction.reply({
+        content: 'You do not have permission to ban users.',
+        flags: ['Ephemeral'],
+      });
       return;
     }
 
@@ -61,16 +75,6 @@ export default class UserBanHandler implements ModAction {
       );
 
     await interaction.showModal(modal);
-  }
-
-  @RegisterInteractionHandler('userBanModal')
-  async handleModal(interaction: ModalSubmitInteraction): Promise<void> {
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [userId] = customId.args;
-
-    const user = await interaction.client.users.fetch(userId).catch(() => null);
-    const reason = interaction.fields.getTextInputValue('reason');
-
-    await handleBan(interaction, userId, user, reason);
+    // modal will be handled by UserBanModalHandler in interactions/UserBanModal.ts
   }
 }

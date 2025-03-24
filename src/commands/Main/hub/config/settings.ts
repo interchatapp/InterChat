@@ -24,7 +24,7 @@ import { HubSettingsString } from '#src/modules/BitFields.js';
 import { HubService } from '#src/services/HubService.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
-import { executeHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
+import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
 import {
   ActionRowBuilder,
   Client,
@@ -53,7 +53,7 @@ export default class HubConfigSettingsSubcommand extends BaseCommand {
 
     if (
       !hub ||
-      !(await executeHubRoleChecksAndReply(hub, ctx, {
+      !(await runHubRoleChecksAndReply(hub, ctx, {
         checkIfManager: true,
       }))
     ) return;

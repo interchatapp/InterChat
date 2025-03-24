@@ -34,7 +34,7 @@ import {
 import BaseCommand from '#src/core/BaseCommand.js';
 import Context from '#src/core/CommandContext/Context.js';
 import { HubService } from '#src/services/HubService.js';
-import { executeHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
+import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
 import HubCommand, { hubOption } from '../index.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
@@ -64,7 +64,7 @@ export default class HubConfigRulesSubcommand extends BaseCommand {
 
     const hubName = ctx.options.getString('hub') ?? undefined;
     const hub = await this.hubService.fetchHub({ name: hubName });
-    if (!hub || !(await executeHubRoleChecksAndReply(hub, ctx, { checkIfManager: true }))) {
+    if (!hub || !(await runHubRoleChecksAndReply(hub, ctx, { checkIfManager: true }))) {
       return;
     }
 
@@ -151,7 +151,7 @@ export default class HubConfigRulesSubcommand extends BaseCommand {
     const [hubId] = customId.args;
 
     const hub = await this.hubService.fetchHub(hubId);
-    if (!hub || !(await executeHubRoleChecksAndReply(hub, interaction, { checkIfManager: true }))) {
+    if (!hub || !(await runHubRoleChecksAndReply(hub, interaction, { checkIfManager: true }))) {
       return;
     }
 
@@ -196,7 +196,7 @@ export default class HubConfigRulesSubcommand extends BaseCommand {
     const ruleIndex = parseInt(interaction.values[0]);
 
     const hub = await this.hubService.fetchHub(hubId);
-    if (!hub || !(await executeHubRoleChecksAndReply(hub, interaction, { checkIfManager: true }))) {
+    if (!hub || !(await runHubRoleChecksAndReply(hub, interaction, { checkIfManager: true }))) {
       return;
     }
 
@@ -297,7 +297,7 @@ export default class HubConfigRulesSubcommand extends BaseCommand {
     const ruleIndex = parseInt(indexStr);
 
     const hub = await this.hubService.fetchHub(hubId);
-    if (!hub || !(await executeHubRoleChecksAndReply(hub, interaction, { checkIfManager: true }))) {
+    if (!hub || !(await runHubRoleChecksAndReply(hub, interaction, { checkIfManager: true }))) {
       return;
     }
 
@@ -343,7 +343,7 @@ export default class HubConfigRulesSubcommand extends BaseCommand {
     const [hubId] = customId.args;
 
     const hub = await this.hubService.fetchHub(hubId);
-    if (!hub || !(await executeHubRoleChecksAndReply(hub, interaction, { checkIfManager: true }))) {
+    if (!hub || !(await runHubRoleChecksAndReply(hub, interaction, { checkIfManager: true }))) {
       return;
     }
 

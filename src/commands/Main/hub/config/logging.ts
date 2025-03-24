@@ -24,7 +24,7 @@ import type HubManager from '#src/managers/HubManager.js';
 import { type supportedLocaleCodes, t } from '#src/utils/Locale.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
-import { executeHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
+import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
 import { fetchUserLocale, getReplyMethod, toTitleCase } from '#src/utils/Utils.js';
 import { InfoEmbed } from '#src/utils/EmbedUtils.js';
 import { stripIndents } from 'common-tags';
@@ -99,7 +99,7 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
     const type = interaction.values[0] as LogConfigTypes;
 
     const hub = await this.hubService.fetchHub({ id: hubId });
-    if (!hub || !(await executeHubRoleChecksAndReply(hub, interaction, { checkIfManager: true }))) {
+    if (!hub || !(await runHubRoleChecksAndReply(hub, interaction, { checkIfManager: true }))) {
       return;
     }
 
@@ -317,7 +317,7 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
     const hubName = ctx.options.getString('hub', true);
     const [hub] = await this.hubService.findHubsByName(hubName, { insensitive: true });
 
-    if (!hub || !(await executeHubRoleChecksAndReply(hub, ctx, { checkIfManager: true }))) {
+    if (!hub || !(await runHubRoleChecksAndReply(hub, ctx, { checkIfManager: true }))) {
       return null;
     }
 

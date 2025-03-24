@@ -31,7 +31,7 @@ import { fetchUserLocale, toTitleCase } from '#utils/Utils.js';
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import { HubService } from '#src/services/HubService.js';
-import { executeHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
+import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
 import { showModeratedHubsAutocomplete } from '#src/utils/moderation/blacklistUtils.js';
 
 // Type guard
@@ -76,7 +76,7 @@ export default class BlacklistListSubcommand extends BaseCommand {
     const locale = await fetchUserLocale(ctx.user.id);
     if (
       !hub ||
-			!(await executeHubRoleChecksAndReply(hub, ctx, { checkIfMod: true }))
+			!(await runHubRoleChecksAndReply(hub, ctx, { checkIfMod: true }))
     ) return;
 
     const list = await db.infraction.findMany({

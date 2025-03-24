@@ -15,20 +15,16 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
-import { buildModPanel } from '#src/interactions/ModPanel.js';
 import { HubService } from '#src/services/HubService.js';
 import { InfoEmbed } from '#src/utils/EmbedUtils.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { t } from '#src/utils/Locale.js';
 import type { ModAction } from '#src/utils/moderation/modPanel/utils.js';
-import { findOriginalMessage, getOriginalMessage } from '#src/utils/network/messageUtils.js';
+import { getOriginalMessage } from '#src/utils/network/messageUtils.js';
 import { CustomID } from '#utils/CustomID.js';
 import type { supportedLocaleCodes } from '#utils/Locale.js';
-import { warnUser } from '#utils/moderation/warnUtils.js';
 import {
   type ButtonInteraction,
-  type ModalSubmitInteraction,
   ActionRowBuilder,
   ModalBuilder,
   TextInputBuilder,
@@ -77,38 +73,6 @@ export default class WarnHandler implements ModAction {
       );
 
     await interaction.showModal(modal);
-  }
-
-  @RegisterInteractionHandler('warnModal')
-  async handleModal(interaction: ModalSubmitInteraction) {
-    await interaction.deferUpdate();
-
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [userId, hubId] = customId.args;
-    const reason = interaction.fields.getTextInputValue('reason');
-
-    await warnUser({
-      userId,
-      hubId,
-      reason,
-      moderatorId: interaction.user.id,
-      client: interaction.client,
-    });
-
-    const originalMsg = await findOriginalMessage(userId);
-    if (!originalMsg) {
-      return;
-    }
-
-    await interaction.followUp({
-      content: t('warn.success', interaction.locale as supportedLocaleCodes, {
-        emoji: getEmoji('tick_icon', interaction.client),
-        name: (await interaction.client.users.fetch(userId)).username,
-      }),
-      flags: ['Ephemeral'],
-    });
-
-    const { embed, buttons } = await buildModPanel(interaction, originalMsg);
-    await interaction.editReply({ embeds: [embed], components: buttons });
+    // modal will be handled by WarnModalHandler in interactions/WarnModal.ts
   }
 }

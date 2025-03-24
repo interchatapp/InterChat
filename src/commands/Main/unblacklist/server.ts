@@ -20,7 +20,7 @@ import type Context from '#src/core/CommandContext/Context.js';
 import BlacklistManager from '#src/managers/BlacklistManager.js';
 import { HubService } from '#src/services/HubService.js';
 import { logUserUnblacklist } from '#src/utils/hub/logger/ModLogs.js';
-import { executeHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
+import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
 import { showModeratedHubsAutocomplete } from '#src/utils/moderation/blacklistUtils.js';
 import { ApplicationCommandOptionType, type AutocompleteInteraction } from 'discord.js';
 
@@ -59,7 +59,7 @@ export default class UnblacklistserverSubcommand extends BaseCommand {
     const hub = (await this.hubService.findHubsByName(hubName)).at(0);
     if (
       !hub ||
-			!(await executeHubRoleChecksAndReply(hub, ctx, { checkIfMod: true }))
+			!(await runHubRoleChecksAndReply(hub, ctx, { checkIfMod: true }))
     ) return;
 
     const blacklistManager = new BlacklistManager('server', serverId);

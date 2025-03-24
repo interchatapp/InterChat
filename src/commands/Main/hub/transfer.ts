@@ -1,7 +1,7 @@
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import { HubService } from '#src/services/HubService.js';
-import { executeHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
+import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
 import {
   ApplicationCommandOptionType,
   type AutocompleteInteraction,
@@ -45,7 +45,7 @@ export default class HubTransferSubcommand extends BaseCommand {
 
     if (
       !hub ||
-      !(await executeHubRoleChecksAndReply(hub, ctx, {
+      !(await runHubRoleChecksAndReply(hub, ctx, {
         checkIfOwner: true,
       }))
     ) {

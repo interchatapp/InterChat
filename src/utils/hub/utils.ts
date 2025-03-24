@@ -72,7 +72,7 @@ export const isHubMod = (userId: string, mods: HubModerator[], checkRoles?: Role
 export const isStaffOrHubMod = async (userId: string, hub: HubManager) =>
   checkIfStaff(userId) || (await hub.isMod(userId));
 
-export const executeHubRoleChecksAndReply = async (
+export const runHubRoleChecksAndReply = async (
   hub: HubManager,
   context: Context | RepliableInteraction,
   options: {

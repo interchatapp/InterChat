@@ -21,7 +21,7 @@ import { HubService } from '#src/services/HubService.js';
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
-import { executeHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
+import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
 import { escapeRegexChars, fetchUserLocale } from '#src/utils/Utils.js';
 import { CustomID } from '#utils/CustomID.js';
 import db from '#utils/Db.js';
@@ -58,7 +58,7 @@ export default class HubDeleteSubcommand extends BaseCommand {
     const locale = await ctx.getLocale();
     if (
       !hub ||
-			!(await executeHubRoleChecksAndReply(hub, ctx, { checkIfOwner: true }))
+			!(await runHubRoleChecksAndReply(hub, ctx, { checkIfOwner: true }))
     ) return;
 
     const confirmEmbed = new EmbedBuilder()

@@ -21,7 +21,7 @@ import BlacklistManager from '#src/managers/BlacklistManager.js';
 import { HubService } from '#src/services/HubService.js';
 import db from '#src/utils/Db.js';
 import { logUserUnblacklist } from '#src/utils/hub/logger/ModLogs.js';
-import { executeHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
+import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
 import { showModeratedHubsAutocomplete } from '#src/utils/moderation/blacklistUtils.js';
 import { fetchUserData } from '#src/utils/Utils.js';
 import {
@@ -65,7 +65,7 @@ export default class UnblacklistUserSubcommand extends BaseCommand {
     const hub = (await this.hubService.findHubsByName(hubName)).at(0);
     if (
       !hub ||
-			!(await executeHubRoleChecksAndReply(hub, ctx, { checkIfMod: true }))
+			!(await runHubRoleChecksAndReply(hub, ctx, { checkIfMod: true }))
     ) return;
 
     const blacklistManager = new BlacklistManager('user', userId);

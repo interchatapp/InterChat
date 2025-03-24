@@ -256,8 +256,10 @@ export class HubJoinService {
     // Custom welcome message if set
     const welcomeMessage =
       hub.data.welcomeMessage
-        ?.replace('{user}', `<@${this.interaction.user.id}>`)
+        ?.replace('{user}', this.interaction.user.username)
         ?.replace('{hubName}', hub.data.name)
+        ?.replace('{serverName}', this.interaction.guild.name)
+        ?.replace('{memberCount}', this.interaction.guild.memberCount.toString())
         ?.replace('{totalConnections}', totalConnections.toString()) ??
       stripIndents`
         A new server has joined the hub! ${this.getEmoji('clipart')}
