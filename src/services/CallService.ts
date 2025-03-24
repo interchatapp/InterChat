@@ -46,12 +46,16 @@ interface CallParticipants {
   guildId: string;
   webhookUrl: string;
   users: Set<string>;
+  messageCount: number;
+  leaderboardUpdated: boolean; // to track if we've already counted this call
 }
 
 interface ActiveCallData {
   callId: string;
   participants: CallParticipants[];
 }
+
+const MINIMUM_MESSAGES_FOR_CALL = 3;
 
 export class CallService {
   private readonly redis = getRedis();
@@ -61,7 +65,6 @@ export class CallService {
     this.client = client;
   }
 
-  // Add method to store recent matches
   private async addRecentMatch(userId1: string, userId2: string) {
     const key1 = `${RedisKeys.CallRecentMatches}:${userId1}`;
     const key2 = `${RedisKeys.CallRecentMatches}:${userId2}`;
@@ -70,19 +73,18 @@ export class CallService {
     await Promise.all([
       this.redis.lpush(key1, userId2),
       this.redis.lpush(key2, userId1),
-      // Trim to keep only last 2 matches
-      this.redis.ltrim(key1, 0, 1),
-      this.redis.ltrim(key2, 0, 1),
+      // Trim to keep only last 3 matches
+      this.redis.ltrim(key1, 0, 2),
+      this.redis.ltrim(key2, 0, 2),
       // Set expiry (24 hours)
       this.redis.expire(key1, 24 * 60 * 60),
       this.redis.expire(key2, 24 * 60 * 60),
     ]);
   }
 
-  // Add method to check recent matches
   private async hasRecentlyMatched(userId1: string, userId2: string): Promise<boolean> {
     const key = `${RedisKeys.CallRecentMatches}:${userId1}`;
-    const recentMatches = await this.redis.lrange(key, 0, -1);
+    const recentMatches = await this.redis.lrange(key, 0, 2); // Get last 3 matches
     return recentMatches.includes(userId2);
   }
 
@@ -252,14 +254,7 @@ export class CallService {
     // Store recent match
     await this.addRecentMatch(call1.initiatorId, call2.initiatorId);
 
-    // Update leaderboards for both users and servers
-    await Promise.all([
-      updateCallLeaderboards('user', call1.initiatorId),
-      updateCallLeaderboards('user', call2.initiatorId),
-      updateCallLeaderboards('server', call1.guildId),
-      updateCallLeaderboards('server', call2.guildId),
-    ]);
-
+    // Initialize call data without updating leaderboards yet
     const activeCallData: ActiveCallData = {
       callId,
       participants: [
@@ -268,33 +263,33 @@ export class CallService {
           guildId: call1.guildId,
           webhookUrl: call1.webhookUrl,
           users: new Set([call1.initiatorId]),
+          messageCount: 0,
+          leaderboardUpdated: false,
         },
         {
           channelId: call2.channelId,
           guildId: call2.guildId,
           webhookUrl: call2.webhookUrl,
           users: new Set([call2.initiatorId]),
+          messageCount: 0,
+          leaderboardUpdated: false,
         },
       ],
     };
 
-    // Store the same data for both channels
+    // Store active call data
     await Promise.all([
       this.redis.set(
         this.getActiveCallKey(call1.channelId),
         JSON.stringify(activeCallData, (_, value) =>
           value instanceof Set ? Array.from(value) : value,
         ),
-        'EX',
-        3600,
       ),
       this.redis.set(
         this.getActiveCallKey(call2.channelId),
         JSON.stringify(activeCallData, (_, value) =>
           value instanceof Set ? Array.from(value) : value,
         ),
-        'EX',
-        3600,
       ),
     ]);
 
@@ -398,5 +393,40 @@ export class CallService {
       avatarURL: this.client.user?.displayAvatarURL(),
       components: components.map((c) => c.toJSON()),
     });
+  }
+
+  // handle message counting and leaderboard updates
+  async updateCallParticipant(channelId: string, userId: string): Promise<void> {
+    const callData = await this.getActiveCallData(channelId);
+    if (!callData) return;
+
+    const participant = callData.participants.find((p) => p.channelId === channelId);
+    if (!participant) return;
+
+    // Increment message count
+    participant.messageCount++;
+
+    // Check if we should update leaderboards
+    if (!participant.leaderboardUpdated && participant.messageCount >= MINIMUM_MESSAGES_FOR_CALL) {
+      participant.leaderboardUpdated = true;
+
+      // Update leaderboards for both the user and the server
+      await Promise.all([
+        updateCallLeaderboards('user', userId),
+        updateCallLeaderboards('server', participant.guildId),
+      ]);
+    }
+
+    // Update the call data in Redis
+    await Promise.all(
+      callData.participants.map((p) =>
+        this.redis.set(
+          this.getActiveCallKey(p.channelId),
+          JSON.stringify(callData, (_, value) =>
+            value instanceof Set ? Array.from(value) : value,
+          ),
+        ),
+      ),
+    );
   }
 }

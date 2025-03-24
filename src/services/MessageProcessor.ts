@@ -18,20 +18,28 @@
 import { showRulesScreening } from '#src/interactions/RulesScreening.js';
 import ConnectionManager from '#src/managers/ConnectionManager.js';
 import HubManager from '#src/managers/HubManager.js';
+import { CallService } from '#src/services/CallService.js';
 import { getConnectionHubId } from '#src/utils/ConnectedListUtils.js';
+import { RedisKeys } from '#src/utils/Constants.js';
 import db from '#src/utils/Db.js';
 import { updateLeaderboards } from '#src/utils/Leaderboard.js';
-import { runChecks } from '#src/utils/network/runChecks.js';
-import { fetchUserData } from '#src/utils/Utils.js';
-import type { Message } from 'discord.js';
-import { BroadcastService } from './BroadcastService.js';
+import Logger from '#src/utils/Logger.js';
+import { runCallChecks, runChecks } from '#src/utils/network/runChecks.js';
 import { getRedis } from '#src/utils/Redis.js';
-import { RedisKeys } from '#src/utils/Constants.js';
+import { fetchUserData } from '#src/utils/Utils.js';
+import type { Client, Message } from 'discord.js';
+import { BroadcastService } from './BroadcastService.js';
 
 type messageProcessingResult = { handled: false; hub: null } | { handled: true; hub: HubManager };
 
 export class MessageProcessor {
-  private readonly broadcastService = new BroadcastService();
+  private readonly broadcastService: BroadcastService;
+  private readonly callService: CallService;
+
+  constructor(client: Client) {
+    this.broadcastService = new BroadcastService();
+    this.callService = new CallService(client);
+  }
 
   static async getHubAndConnections(channelId: string, userId: string) {
     const connectionHubId = await getConnectionHubId(channelId);
@@ -118,5 +126,45 @@ export class MessageProcessor {
     message.client.shardMetrics.incrementMessage(hub.data.name);
 
     return { handled: true, hub };
+  }
+
+  async processCallMessage(message: Message<true>): Promise<boolean> {
+    const activeCall = await this.callService.getActiveCallData(message.channelId);
+    const userData = await fetchUserData(message.author.id);
+
+    if (!activeCall || !userData) return false;
+
+    // Track this user as a participant
+    await this.callService.addParticipant(message.channelId, message.author.id);
+
+    // Find the other participant's webhook URL
+    const otherParticipant = activeCall.participants.find(
+      (p) => p.channelId !== message.channelId,
+    );
+    if (!otherParticipant) return false;
+
+    const checksPassed = await runCallChecks(message, {
+      userData,
+      attachmentURL: message.attachments.first()?.url,
+    });
+
+    if (!checksPassed) return false;
+
+    try {
+      await BroadcastService.sendMessage(otherParticipant.webhookUrl, {
+        content: message.content,
+        username: message.author.username,
+        avatarURL: message.author.displayAvatarURL(),
+        allowedMentions: { parse: [] },
+      });
+
+      // Update call participation after successful message send
+      await this.callService.updateCallParticipant(message.channelId, message.author.id);
+      return true;
+    }
+    catch (error) {
+      Logger.error('Failed to send call message:', error);
+      return false;
+    }
   }
 }

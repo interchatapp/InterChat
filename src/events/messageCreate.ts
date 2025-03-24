@@ -20,14 +20,10 @@ import { showRulesScreening } from '#src/interactions/RulesScreening.js';
 import { openInboxButton } from '#src/interactions/ShowInboxButton.js';
 import HubManager from '#src/managers/HubManager.js';
 import InfractionManager from '#src/managers/InfractionManager.js';
-import { BroadcastService } from '#src/services/BroadcastService.js';
-import { CallService } from '#src/services/CallService.js';
 import { MessageProcessor } from '#src/services/MessageProcessor.js';
 import { executeCommand, resolveCommand } from '#src/utils/CommandUtils.js';
 import Constants, { RedisKeys } from '#src/utils/Constants.js';
 import { t } from '#src/utils/Locale.js';
-import Logger from '#src/utils/Logger.js';
-import { runCallChecks } from '#src/utils/network/runChecks.js';
 import getRedis from '#src/utils/Redis.js';
 import {
   createUnreadDevAlertEmbed,
@@ -42,7 +38,6 @@ import { EmbedBuilder, type Message } from 'discord.js';
 
 export default class MessageCreate extends BaseEventListener<'messageCreate'> {
   readonly name = 'messageCreate';
-  private readonly messageProcessor = new MessageProcessor();
 
   async execute(message: Message) {
     if (!message.inGuild() || !isHumanMessage(message)) return;
@@ -68,7 +63,11 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
         .catch(() => null);
     }
 
-    Promise.all([this.handleChatMessage(message), this.handleCall(message)]).catch(handleError);
+    const processor = new MessageProcessor(message.client);
+    Promise.all([
+      this.handleChatMessage(message, processor),
+      processor.processCallMessage(message),
+    ]).catch(handleError);
   }
 
   private async handlePrefixCommand(message: Message): Promise<void> {
@@ -85,8 +84,8 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
     await this.showDevAlertsIfAny(message);
   }
 
-  private async handleChatMessage(message: Message<true>) {
-    const result = await this.messageProcessor.processHubMessage(message);
+  private async handleChatMessage(message: Message<true>, processor: MessageProcessor) {
+    const result = await processor.processHubMessage(message);
 
     if (result.handled === true) {
       await this.showDevAlertsIfAny(message);
@@ -147,39 +146,4 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
     await redis.set(key, Date.now().toString(), 'EX', 600);
   }
 
-  private async handleCall(message: Message<true>) {
-    const callService = new CallService(message.client);
-    const activeCall = await callService.getActiveCallData(message.channelId);
-    const userData = await fetchUserData(message.author.id);
-
-    if (activeCall && userData) {
-      // Track this user as a participant
-      await callService.addParticipant(message.channelId, message.author.id);
-
-      // Find the other participant's webhook URL
-      const otherParticipant = activeCall.participants.find(
-        (p) => p.channelId !== message.channelId,
-      );
-      if (!otherParticipant) return;
-
-      const checksPassed = await runCallChecks(message, {
-        userData,
-        attachmentURL: message.attachments.first()?.url,
-      });
-
-      if (!checksPassed) return;
-
-      try {
-        await BroadcastService.sendMessage(otherParticipant.webhookUrl, {
-          content: message.content,
-          username: message.author.username,
-          avatarURL: message.author.displayAvatarURL(),
-          allowedMentions: { parse: [] },
-        });
-      }
-      catch (error) {
-        Logger.error('Failed to send call message:', error);
-      }
-    }
-  }
 }
