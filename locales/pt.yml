@@ -427,8 +427,8 @@ hub:
     removed: '{emoji} Mensagem de boas-vindas removida.'
     voterOnly: '{emoji} Mensagens de boas-vindas personalizadas são um privilégio exclusivo para eleitores! Vote para desbloquear este recurso.'
     placeholder: |
-      Welcome {user} to {hubName}! 🎉
-      Make yourself at home and enjoy chatting!'
+      Welcome {user} from {serverName} to {hubName}! 🎉
+      Members: {memberCount}, Hub: {totalConnections}!
 report:
   modal:
     title: Detalhes do relatório
