@@ -433,8 +433,8 @@ hub:
     removed: '{emoji}欢迎信息已移除。'
     voterOnly: '{emoji}自定义欢迎信息是属于为我们投票的人独有的福利！去投票解锁此功能。'
     placeholder: |
-      Welcome {user} from {serverName} to {hubName}! 🎉
-      Members: {memberCount}, Hub: {totalConnections}!
+      欢迎 {user} 从 {serverName} 来到 {hubName}! 🎉
+      成员： {memberCount}，中心：{totalConnections}！
 report:
   modal:
     title: 报告详情
