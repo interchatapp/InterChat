@@ -428,8 +428,8 @@ hub:
     removed: '{emoji} Welcome message removed.'
     voterOnly: '{emoji} Custom welcome messages are a voter-only perk! Vote to unlock this feature.'
     placeholder: |
-      Welcome {user} to {hubName}! 🎉
-      Make yourself at home and enjoy chatting!'
+      Welcome {user} from {serverName} to {hubName}! 🎉
+      Members: {memberCount}, Hub: {totalConnections}!
 report:
   modal:
     title: Detalles del reporte

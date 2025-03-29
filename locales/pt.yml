@@ -1,80 +1,80 @@
 rules:
   rules: |
-    ### {emoji} Rules
-    These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:
+    ### {emoji} Regras
+    Estas regras existem para garantir uma experiência segura e agradável para todos. Leia e siga-as com atenção:
 
-    1. **No Hate Speech or Harassment**
-    -# > **Includes:** Using slurs or hate speech to attack others, [and more]({guidelines_link}).
-    2. **No Illegal Content**
-    -# > **Includes:** Sharing links to illegal content, Encouraging violence, [and more]({guidelines_link}).
-    3. **No Severe NSFW or Gore**
-    -# > **Includes:** Posting gore or extreme gore in InterChat, Posting sexual content in non-NSFW hubs, [and more]({guidelines_link}).
-    4. **No Spamming or Flooding**
-    -# > **Includes:** Mass spamming or bot floods, [and more]({guidelines_link})
-    5. **No Impersonation or Fraud**
-    -# > **Includes:** Impersonating InterChat staff or hub moderators, Running cryptocurrency or NFT scams, [and more]({guidelines_link}).
-    6. **No Exploitation or Abuse**
-    -# > **Includes:** Grooming or predatory behavior towards minors, Sharing, Requesting, Blackmailing or threatening to  Encouraging self-harm, [and more]({guidelines_link}).
-    7. **No Sharing Malicious Software**
-    -# > **Includes:** Sharing malware, viruses, 'free nitro' links, harmful scripts [and more]({guidelines_link}).
+    1. **Sem Discurso de Ódio ou Assédio**
+    -# > **Inclui:** Usar insultos ou discurso de ódio para atacar outros, [e mais]({guidelines_link}).
+    2. **Sem Conteúdo Ilegal**
+    -# > **Inclui:** Compartilhar links para conteúdo ilegal, Incentivar violência, [e mais]({guidelines_link}).
+    3. **Sem NSFW Grave ou Gore**
+    -# > **Inclui:** Postar gore ou gore extremo no InterChat, Postar conteúdo sexual em hubs não-NSFW, [e mais]({guidelines_link}).
+    4. **Sem Spamming ou Inundação**
+    -# > **Inclui:** Spam em massa ou inundações de bots, [e mais]({guidelines_link})
+    5. **Sem Falsificação ou Fraude**
+    -# > **Inclui:** Se passar por membros da equipe do InterChat ou moderadores de hubs, Executar golpes com criptomoedas ou NFTs, [e mais]({guidelines_link}).
+    6. **Sem Exploração ou Abuso**
+    -# > **Inclui:** Comportamento de aliciamento ou predatório com menores, Compartilhar, Solicitar, Chantagear ou ameaçar, Incentivar automutilação, [e mais]({guidelines_link}).
+    7. **Sem Compartilhar Software Malicioso**
+    -# > **Inclui:** Compartilhar malware, vírus, links de 'nitro grátis', scripts prejudiciais [e mais]({guidelines_link}).
 
-    You also agree to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines). Check out the [full list of rules]({guidelines_link}).
+    Você também concorda em seguir os [Termos de Serviço do Discord](https://discord.com/terms) e as [Diretrizes da Comunidade](https://discord.com/guidelines). Confira a [lista completa de regras]({guidelines_link}).
   welcome: |
-    {emoji} Hi {user}! Ready to connect with other communities?
-    Before you start chatting across servers, let's quickly review our community guidelines. These help keep InterChat a great place for everyone.
+    {emoji} Olá {user}! Pronto para se conectar com outras comunidades?
+    Antes de começar a bater papo entre servidores, vamos revisar rapidamente nossas diretrizes da comunidade. Elas ajudam a manter o InterChat um ótimo lugar para todos.
   alreadyAccepted: '{emoji} Você já aceitou as regras. Agora você pode usar o InterChat em toda sua danelização.'
-  continue: Continue
-  accept: Accept
-  decline: Decline
-  agreementNote: By accepting these rules, you agree to follow them while using InterChat. Breaking these rules may result in restrictions or bans.
+  continue: Continuar
+  accept: Aceitar
+  decline: Declínio
+  agreementNote: Ao aceitar essas regras, você concorda em segui-las enquanto usa o InterChat. Quebrar essas regras pode resultar em restrições ou banimentos.
   hubAgreementNote: |
-    By accepting these rules, you agree to follow them while chatting in this hub. Breaking these rules may result in removal from the hub.
+    Ao aceitar essas regras, você concorda em segui-las enquanto estiver conversando neste hub. Quebrar essas regras pode resultar na remoção do hub.
 
-    ⚠️ **You cannot send messages in this hub until you accept these rules.**
+    ⚠️ **Você não pode enviar mensagens neste hub até aceitar estas
   accepted: |
-    {emoji} You're all set! Welcome to the InterChat community.
+    {emoji} Você está pronto! Bem-vindo à comunidade InterChat.
 
-    Quick tips to get started:
-    - Use `/hub browse` to find active communities
-    - Join discussions that interest you
-    - Use our new `/call` command to connect with single servers
+    Dicas rápidas para começar:
+    - Use `/hub browse` para encontrar comunidades ativas
+    - Participe das discussões que te interessam
+    - Use nosso novo comando `/call` para se conectar com servidores individuais
 
-    Need help? Join our [community]({support_invite}) - we're happy to help!
+    Precisa de ajuda? Entre na nossa [comunidade]({support_invite}) - estamos felizes em ajudar!
 
-    Love what we're building? Consider [supporting us]({donateLink}) to help keep InterChat running.
+    Gostou do que estamos construindo? Considere [nos apoiar]({donateLink}) para ajudar a manter o InterChat funcionando.
   declined: |
-    {emoji} You have declined the InterChat rules.
-    -# ⚠️ **You won't be able to use InterChat or chat with other servers until you accept the rules.**
-    -# To try again, send another message or use any InterChat command.
+    {emoji} Você recusou as regras do InterChat.
+    -# ⚠️ **Você não poderá usar o InterChat ou bater papo com outros servidores até aceitar as regras.**
+    -# Para tentar novamente, envie outra mensagem ou use qualquer Inte.
   hubAccepted: |
-    {emoji} You have accepted the hub rules.
-    You can now start chatting in this hub!
+    {emoji} Você aceitou as regras do hub.
+    Agora você pode começar a bater papo neste hub!
   hubDeclined: |
-    {emoji} You have declined the rules for {hubName}.
-    -# ⚠️ **You won't be able to send messages in this hub until you accept its rules.**
-    -# To try again, send another message in this hub.
-  noHubRules: This hub has not set any specific rules yet. However, the [general InterChat rules]({rules_link}) still apply.
-  hubRules: Hub Rules
+    {emoji} Você recusou as regras para {hubName}.
+    -# ⚠️ **Você não poderá enviar mensagens neste hub até aceitar suas regras.**
+    -# Para tentar novamente, envie outra mensagem neste hub.
+  noHubRules: Este hub ainda não definiu nenhuma regra específica. No entanto, as [regras gerais do InterChat]({rules_link}) ainda se aplicam.
+  hubRules: Regras do Hub
 vote:
   description: |
-    Help more communities discover InterChat! Your vote on top.gg:
-    • Helps others find active communities
-    • Unlocks special features for you
-    • Supports our independent development
-  footer: "Votes refresh every 12 hours • Thanks for supporting InterChat!"
+    Ajude mais comunidades a descobrir o InterChat! Seu voto no top.gg:
+    • Ajuda outros a encontrar comunidades ativas
+    • Desbloqueia recursos especiais para você
+    • Apoia nosso desenvolvimento independente
+  footer: "Os votos são atualizados a cada 12 horas • Obrigado por apoiar o InterChat!"
   button:
-    label: "Vote on top.gg"
+    label: "Vote no top.gg"
   perks:
-    moreComingSoon: "More perks coming soon! Suggest some in the [support server]({support_invite})."
+    moreComingSoon: "Mais vantagens em breve! Sugira algumas no [servidor de suporte]({support_invite})."
 network:
   accountTooNew: '{emoji} {user} Sua conta é muito nova para enviar mensagens usando o InterChat. Tente novamente mais tarde.'
   deleteSuccess: '{emoji} A mensagem de {user} foi excluída de __**{deleted}/{total}**__ servidores.'
   editSuccess: '{emoji} A mensagem de {user} foi editada em __**{edited}/{total}**__ servidores.'
   onboarding:
     embed:
-      title: '👋 Welcome to {hubName}!'
+      title: 'Bem-vindo ao {hubName}!'
       description: |
-        You've found an active community hub! Before joining the discussion, take a quick look at our guidelines to keep conversations engaging and friendly for everyone.
+        Você encontrou um hub comunitário ativo! Antes de entrar na discussão, dê uma olhada rápida em nossas diretrizes para manter as conversas envolventes e amigáveis para todos.
       footer: Rede InterChat | Versão {version}
     inProgress: '{emoji} {channel} já está em processo de configuração para se juntar a um hub. Aguarde a conclusão da configuração ou cancele-a se você foi quem a iniciou.'
 blacklist:
@@ -128,7 +128,7 @@ connection:
   switchCalled: '{emoji} Troca de canal chamada, use o comando novamente para visualizar a nova conexão.'
   switchSuccess: '{emoji} Canal trocado. Agora você está conectado de **{channel}**.'
   inviteRemoved: '{emoji} Convite do servidor removido para este hub.'
-  setInviteError: '{emoji} Unable to create invite. Please grant me  the `Create Invite` permission for the connected channel.'
+  setInviteError: '{emoji} Não é possível criar convite. Por favor, conceda-me a permissão `Criar convite` para o canal conectado.'
   inviteAdded: '{emoji} Invite Added. Others can now join this server by using `Apps > Message Info/Report` command and `/joinrequest` command.'
   emColorInvalid: '{emoji} Cor inválida. Certifique-se de ter inserido um código de cor hexadecimal válido.'
   emColorChange: '{emoji} Incorporar cor com sucesso {action}'
@@ -141,7 +141,7 @@ connection:
       connected: Conectado
       emColor: Incorporar cor
       compact: Modo compacto
-    footer: Use the dropdown menu below to manage your connection.
+    footer: Use o menu suspenso abaixo para gerenciar sua conexão.
   selects:
     placeholder: '🛠️ Selecione uma opção para editar esta conexão'
   unpaused:
@@ -209,8 +209,8 @@ hub:
       wordsPlaceholder: 'Palavras separadas por vírgula (* = curinga). Ex: palavra1, *palavra2*, *palavra3, palavra4*'
     validating: '{emoji} Validando regra anti-palavrões...'
     noRules: |
-      ### {emoji} Let's set up some anti-swear rules!
-      Use the `Add Rule` button to create one.
+      ### {emoji} Vamos configurar algumas regras anti-palavrões!
+      Use o botão `Add Rule` para criar uma.
   create:
     modal:
       title: Criar Hub
@@ -226,7 +226,7 @@ hub:
       banner:
         label: URL do banner
         placeholder: Insira uma URL de imagem do Imgur.
-    maxHubs: '{emoji} You have reached the maximum number of hubs ({maxHubs}) you can create. Please delete a hub before creating another one. [Vote for InterChat]({voteUrl}) to create more hubs.'
+    maxHubs: 'emoji} Você atingiu o número máximo de hubs ({maxHubs}) que pode criar. Exclua um hub antes de criar outro. [Vote no InterChat]({voteUrl}) para criar mais hubs.'
     invalidName: '{emoji} Nome de hub inválido. Não deve conter `discord`, `clyde` ou \`\`\` . Escolha outro nome.'
     nameTaken: '{emoji} Este nome de hub já foi usado. Por favor, escolha outro nome.'
     success: |
@@ -383,52 +383,52 @@ hub:
         label: Alertas de rede
         description: Receba alertas sobre mensagens bloqueadas automaticamente.
   transfer:
-    invalidUser: '{emoji} The specified user was not found.'
-    selfTransfer: '{emoji} You cannot transfer ownership to yourself.'
-    botUser: '{emoji} You cannot transfer ownership to a bot.'
-    confirm: 'Are you sure you want to transfer ownership of **{hub}** to {newOwner}? You will be demoted to manager role.'
-    cancelled: '{emoji} Hub transfer has been cancelled.'
-    error: '{emoji} An error occurred while transferring hub ownership.'
-    success: '{emoji} Successfully transferred ownership of **{hub}** to {newOwner}. You have been added as a manager.'
+    invalidUser: '.{emoji} O usuário especificado não foi encontrado.'
+    selfTransfer: '{emoji} Você não pode transferir a propriedade para si mesmo.'
+    botUser: '{emoji} Você não pode transferir a propriedade para um bot.'
+    confirm: 'Tem certeza de que deseja transferir a propriedade de **{hub}** para {newOwner}? Você será rebaixado para a função de gerente.'
+    cancelled: '{emoji} A transferência do Hub foi cancelada.'
+    error: '{emoji} Ocorreu um erro ao transferir a propriedade do hub.'
+    success: '{emoji} Propriedade de **{hub}** transferida com sucesso para {newOwner}. Você foi adicionado como gerente.'
     timeout: '{emoji} Hub transfer has timed out.'
   rules:
     noRules: "{emoji} This hub has no rules configured yet. Let's add some!"
-    list: "### {emoji} Hub Rules\n{rules}"
-    maxRulesReached: "{emoji} Maximum number of rules ({max}) reached."
-    ruleExists: "{emoji} This rule already exists."
-    selectedRule: "Selected Rule {number}"
+    list: "### {emoji} Regras do Hub\n{regras"
+    maxRulesReached: "{emoji} Número máximo de regras ({max}) atingido."
+    ruleExists: "e{moji} Esta regra já existe."
+    selectedRule: "Regra selecionada {número}"
     modal:
       add:
-        title: Add Hub Rule
-        label: Rule Text
-        placeholder: Enter the rule text (max 1000 characters)
+        title: Adicionar Regra de Hub
+        label: Texto da regra
+        placeholder: Insira o texto da regra (máx. 1000 caracteres
       edit:
-        title: Edit Hub Rule
-        label: Rule Text
-        placeholder: Enter the new rule text (max 1000 characters)
+        title: Editar Regra do Hub
+        label: Texto da regra
+        placeholder: Insira o novo texto da regra (máx. 1000 caracteres)
     select:
-      placeholder: Select a rule to edit or remove
+      placeholder: Selecione uma regra para editar ou remover
       option:
-        label: Rule {number}
+        label: Regra {número}
     buttons:
-      add: Add Rule
-      edit: Edit Rule
-      delete: Delete Rule
-      back: Back
+      add: Adicionar regra
+      edit: Editar regra
+      delete: Excluir regra
+      back: Voltar
     success:
-      add: '{emoji} Rule added successfully!'
-      edit: '{emoji} Rule updated successfully!'
-      delete: '{emoji} Rule deleted successfully!'
+      add: '{emoji} Regra adicionada com sucesso!'
+      edit: '{emoji} Regra atualizada com sucesso!'
+      delete: '{emoji} Regra excluída com sucesso!'
     view:
-      title: 'Rule {number}'
-      select: Select an action for this rule
+      title: 'Regra {número}'
+      select: Selecione uma ação para esta regra
   welcome:
-    set: '{emoji} Welcome message updated successfully!'
-    removed: '{emoji} Welcome message removed.'
-    voterOnly: '{emoji} Custom welcome messages are a voter-only perk! Vote to unlock this feature.'
+    set: '{emoji} Mensagem de boas-vindas atualizada com sucesso{emoji} Mensagem de boas-vindas atualizada com sucesso!'
+    removed: '{emoji} Mensagem de boas-vindas removida.'
+    voterOnly: '{emoji} Mensagens de boas-vindas personalizadas são um privilégio exclusivo para eleitores! Vote para desbloquear este recurso.'
     placeholder: |
-      Welcome {user} to {hubName}! 🎉
-      Make yourself at home and enjoy chatting!'
+      Welcome {user} from {serverName} to {hubName}! 🎉
+      Members: {memberCount}, Hub: {totalConnections}!
 report:
   modal:
     title: Detalhes do relatório
