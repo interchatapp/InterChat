@@ -25,7 +25,6 @@ import { executeCommand, resolveCommand } from '#src/utils/CommandUtils.js';
 import Constants, { RedisKeys } from '#src/utils/Constants.js';
 import { t } from '#src/utils/Locale.js';
 import getRedis from '#src/utils/Redis.js';
-import Logger from '#src/utils/Logger.js';
 import {
   createUnreadDevAlertEmbed,
   fetchUserData,
@@ -64,19 +63,11 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
         .catch(() => null);
     }
 
-    Logger.debug(
-      `Processing message from ${message.author.username} (${message.author.id}) in channel ${message.channelId}`,
-    );
-
     const processor = new MessageProcessor(message.client);
-    Promise.all([this.handleChatMessage(message, processor), processor.processCallMessage(message)])
-      .then(([hubResult, callResult]) => {
-        Logger.debug(
-          // eslint-disable-next-line no-nested-ternary
-          `Successfully processed ${callResult ? 'call' : hubResult ? 'hub' : 'failed'} message from ${message.author.id}`,
-        );
-      })
-      .catch(handleError);
+    Promise.all([
+      this.handleChatMessage(message, processor),
+      processor.processCallMessage(message),
+    ]).catch(handleError);
   }
 
   private async handlePrefixCommand(message: Message): Promise<void> {
