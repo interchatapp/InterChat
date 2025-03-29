@@ -21,6 +21,7 @@ import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { getOrCreateWebhook } from '#src/utils/Utils.js';
 import Constants, { RedisKeys } from '#utils/Constants.js';
 import { getRedis } from '#utils/Redis.js';
+import Logger from '#src/utils/Logger.js';
 import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
@@ -302,13 +303,20 @@ export class CallService {
   // Add method to track new participants during the call
   async addParticipant(channelId: string, userId: string) {
     const callData = await this.getActiveCallData(channelId);
-    if (!callData) return false;
+    if (!callData) {
+      Logger.error(`No active call found for channel ${channelId}`);
+      return false;
+    }
 
     const participant = callData.participants.find((p) => p.channelId === channelId);
-    if (!participant) return false;
+    if (!participant) {
+      Logger.error(`No participant found for channel ${channelId} in call ${callData.callId}`);
+      return false;
+    }
 
     // Only update leaderboard if this is a new participant
     if (!participant.users.has(userId)) {
+      Logger.debug(`Adding new participant ${userId} to call in channel ${channelId}`);
       const guildId = participant.guildId;
       await Promise.all([
         updateCallLeaderboards('user', userId),
@@ -318,12 +326,26 @@ export class CallService {
 
     participant.users.add(userId);
 
-    // Update the stored call data
-    await this.redis.set(
-      this.getActiveCallKey(channelId),
-      JSON.stringify(callData, (_, value) => (value instanceof Set ? Array.from(value) : value)),
-      'EX',
-      3600,
+    // Log the current participants for debugging
+    Logger.debug(
+      `Call ${callData.callId} participants: ${callData.participants.map(
+        (p) => `${p.channelId}: [${Array.from(p.users).join(', ')}]`,
+      ).join(' | ')}`,
+    );
+
+    // Update the call data in Redis for ALL participants
+    // This ensures both channels have the updated participant information
+    await Promise.all(
+      callData.participants.map((p) =>
+        this.redis.set(
+          this.getActiveCallKey(p.channelId),
+          JSON.stringify(callData, (_, value) =>
+            value instanceof Set ? Array.from(value) : value,
+          ),
+          'EX',
+          3600,
+        ),
+      ),
     );
 
     return true;
@@ -398,16 +420,23 @@ export class CallService {
   // handle message counting and leaderboard updates
   async updateCallParticipant(channelId: string, userId: string): Promise<void> {
     const callData = await this.getActiveCallData(channelId);
-    if (!callData) return;
+    if (!callData) {
+      Logger.error(`No active call found for channel ${channelId} when updating participant`);
+      return;
+    }
 
     const participant = callData.participants.find((p) => p.channelId === channelId);
-    if (!participant) return;
+    if (!participant) {
+      Logger.error(`No participant found for channel ${channelId} in call ${callData.callId} when updating`);
+      return;
+    }
 
     // Increment message count
     participant.messageCount++;
 
     // Check if we should update leaderboards
     if (!participant.leaderboardUpdated && participant.messageCount >= MINIMUM_MESSAGES_FOR_CALL) {
+      Logger.debug(`Updating leaderboards for user ${userId} in call ${callData.callId}`);
       participant.leaderboardUpdated = true;
 
       // Update leaderboards for both the user and the server
@@ -417,6 +446,11 @@ export class CallService {
       ]);
     }
 
+    // Log message count for debugging
+    Logger.debug(
+      `Call ${callData.callId} message count: ${participant.channelId} has ${participant.messageCount} messages`,
+    );
+
     // Update the call data in Redis
     await Promise.all(
       callData.participants.map((p) =>
@@ -425,6 +459,8 @@ export class CallService {
           JSON.stringify(callData, (_, value) =>
             value instanceof Set ? Array.from(value) : value,
           ),
+          'EX',
+          3600,
         ),
       ),
     );

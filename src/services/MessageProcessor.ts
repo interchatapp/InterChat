@@ -134,23 +134,50 @@ export class MessageProcessor {
 
     if (!activeCall || !userData) return false;
 
+    Logger.debug(
+      `Processing call message from ${message.author.username} (${message.author.id}) in channel ${message.channelId}`,
+    );
+
+    // rules screenin'
+    if (!userData.acceptedRules) {
+      await showRulesScreening(message, userData);
+      return false;
+    }
+
     // Track this user as a participant
-    await this.callService.addParticipant(message.channelId, message.author.id);
+    const participantAdded = await this.callService.addParticipant(
+      message.channelId,
+      message.author.id,
+    );
+    if (!participantAdded) {
+      Logger.error(`Failed to add participant ${message.author.id} to call in channel ${message.channelId}`);
+      return false;
+    }
 
     // Find the other participant's webhook URL
     const otherParticipant = activeCall.participants.find(
       (p) => p.channelId !== message.channelId,
     );
-    if (!otherParticipant) return false;
+    if (!otherParticipant) {
+      Logger.error(`Could not find other participant for call in channel ${message.channelId}`);
+      return false;
+    }
 
     const checksPassed = await runCallChecks(message, {
       userData,
       attachmentURL: message.attachments.first()?.url,
     });
 
-    if (!checksPassed) return false;
+    if (!checksPassed) {
+      Logger.debug(`Call message from ${message.author.id} failed checks`);
+      return false;
+    }
 
     try {
+      Logger.debug(
+        `Sending call message from ${message.author.username} to channel ${otherParticipant.channelId}`,
+      );
+
       await BroadcastService.sendMessage(otherParticipant.webhookUrl, {
         content: message.content,
         username: message.author.username,
@@ -163,7 +190,7 @@ export class MessageProcessor {
       return true;
     }
     catch (error) {
-      Logger.error('Failed to send call message:', error);
+      Logger.error(`Failed to send call message from ${message.author.id}:`, error);
       return false;
     }
   }
