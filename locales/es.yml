@@ -443,6 +443,25 @@ report:
       input2:
         label: Descripción detallada (opcional)
         placeholder: Pasos que tomaste. P.ej. 1. Corre /ayuda 2. espera 5 segundos ...
+  reasons:
+    spam: Spam or excessive messages
+    advertising: Unwanted advertising or self-promotion
+    nsfw: NSFW or inappropriate content
+    harassment: Harassment or bullying
+    hate_speech: Hate speech or discrimination
+    scam: Scam, fraud, or phishing attempt
+    illegal: Illegal content or activities
+    personal_info: Sharing personal/private information
+    impersonation: Impersonating others
+    breaks_hub_rules: Violates hub rules
+    trolling: Trolling or intentional disruption
+    misinformation: False or misleading information
+    gore_violence: Gore or extreme violence
+    raid_organizing: Organizing raids or attacks
+    underage: Underage user or content
+    other: Other (Please Specify)
+  dropdown:
+    placeholder: Select a reason for your report
   submitted: 'Informe enviado. Únase al **[Servidor de soporte]({emoji})** para obtener actualizaciones en su informe.'
   bug:
     title: Informe de error
