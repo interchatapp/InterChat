@@ -26,6 +26,7 @@ export const enum RedisKeys {
   Call = 'call', // Base prefix for all call-related keys
   CallRecentMatches = 'call:recent_matches',
   LastHubMessageUser = 'lastHubMessageUser',
+  ReportReporter = 'report:reporter', // Stores reporter ID for report resolution notifications
 }
 
 export const enum ConnectionMode {

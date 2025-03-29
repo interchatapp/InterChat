@@ -28,6 +28,7 @@ import type {
  * Sends a log message to the specified channel with the provided embed.
  * @param channelId The ID of the channel to send the log message to.
  * @param embed The embed object containing the log message.
+ * @returns The sent message, if successful.
  */
 export const sendLog = async (
   cluster: ClusterClient<Client>,
@@ -38,15 +39,15 @@ export const sendLog = async (
     roleMentionIds?: readonly string[];
     components?: APIActionRowComponent<APIMessageActionRowComponent>[];
   },
-) => {
-  await cluster.broadcastEval(
+): Promise<{ id: string } | null> => {
+  const result = await cluster.broadcastEval(
     async (shardClient, ctx) => {
       const channel = (await shardClient.channels
         .fetch(ctx.channelId)
         .catch(() => null)) as Channel | null;
 
       if (channel?.isSendable()) {
-        await channel
+        const message = await channel
           .send({
             content: `${ctx.roleMentionIds?.map((id) => `<@&${id}>`).join(' ') ?? ''} ${ctx.content ?? ''}`,
             embeds: [ctx.embed],
@@ -54,7 +55,12 @@ export const sendLog = async (
             allowedMentions: { roles: ctx.roleMentionIds },
           })
           .catch(() => null);
+
+        if (message) {
+          return { id: message.id };
+        }
       }
+      return null;
     },
     {
       context: {
@@ -66,4 +72,7 @@ export const sendLog = async (
       },
     },
   );
+
+  // Find the first non-null result (the message that was actually sent)
+  return result.find((r) => r !== null) ?? null;
 };

@@ -17,8 +17,9 @@
 
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
-import { sendHubReport } from '#src/utils/hub/logger/Report.js';
+import { buildReportReasonDropdown } from '#src/interactions/ReportMessage.js';
 import { findOriginalMessage, getBroadcasts } from '#src/utils/network/messageUtils.js';
+import { fetchUserLocale } from '#src/utils/Utils.js';
 import { ApplicationCommandOptionType } from 'discord.js';
 
 export default class ReportPrefixCommand extends BaseCommand {
@@ -31,12 +32,6 @@ export default class ReportPrefixCommand extends BaseCommand {
         {
           name: 'message',
           description: 'The message to report',
-          type: ApplicationCommandOptionType.String,
-          required: true,
-        },
-        {
-          name: 'reason',
-          description: 'The reason for the report',
           type: ApplicationCommandOptionType.String,
           required: true,
         },
@@ -65,19 +60,13 @@ export default class ReportPrefixCommand extends BaseCommand {
       return;
     }
 
-    await sendHubReport(originalMsg.hubId, ctx.client, {
-      userId: originalMsg.authorId,
-      serverId: originalMsg.guildId,
-      reason: ctx.options.getString('reason') ?? 'No reason provided',
-      reportedBy: ctx.user,
-      evidence: {
-        messageId: reportedMsgId,
-        content: originalMsg.content,
-      },
-    });
+    const locale = await fetchUserLocale(ctx.user.id);
+    const selectMenu = buildReportReasonDropdown(reportedMsgId, locale);
 
-    await ctx.reply(
-      `${ctx.getEmoji('tick')} Sent the report to hub moderators. They will review it soon.`,
-    );
+    await ctx.reply({
+      content: `${ctx.getEmoji('info_icon')} Please select a reason for your report:`,
+      components: [selectMenu],
+      ephemeral: true,
+    });
   }
 }

@@ -228,7 +228,7 @@ hub:
       banner:
         label: Banner URL
         placeholder: Enter an Imgur image URL.
-    maxHubs: '{emoji} You have reached the maximum number of hubs ({maxHubs}) you can create. Please delete a hub before creating another one. [Vote for InterChat]({voteUrl}) to create more hubs.'
+    maxHubs: '{emoji} [Vote for InterChat]({voteUrl}) to create more hubs! You have reached the maximum number of hubs ({maxHubs}) you can create.'
     invalidName: '{emoji} Invalid hub name. It must not contain `discord`, `clyde` or \`\`\` . Please choose another name.'
     nameTaken: '{emoji} This hub name is already taken. Please choose another name.'
     success: |
@@ -436,7 +436,7 @@ hub:
     removed: '{emoji} Welcome message removed.'
     voterOnly: '{emoji} Custom welcome messages are a voter-only perk! Vote to unlock this feature.'
     placeholder: |
-      Welcome {user} from {serverName} to {hubName}! 🎉 
+      Welcome {user} from {serverName} to {hubName}! 🎉
       Members: {memberCount}, Hub: {totalConnections}!
 report:
   modal:
@@ -451,6 +451,25 @@ report:
       input2:
         label: Detailed Description (Optional)
         placeholder: Steps you took. Eg. 1. Run /help 2. Wait for 5 seconds...
+  reasons:
+    spam: Spam or excessive messages
+    advertising: Unwanted advertising or self-promotion
+    nsfw: NSFW or inappropriate content
+    harassment: Harassment or bullying
+    hate_speech: Hate speech or discrimination
+    scam: Scam, fraud, or phishing attempt
+    illegal: Illegal content or activities
+    personal_info: Sharing personal/private information
+    impersonation: Impersonating others
+    breaks_hub_rules: Violates hub rules
+    trolling: Trolling or intentional disruption
+    misinformation: False or misleading information
+    gore_violence: Gore or extreme violence
+    raid_organizing: Organizing raids or attacks
+    underage: Underage user or content
+    other: Other (Please Specify)
+  dropdown:
+    placeholder: Select a reason for your report
   submitted: '{emoji} Report submitted successfully. Join the {support_command} to get more details. Thank you!'
   bug:
     title: Bug Report

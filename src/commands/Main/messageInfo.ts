@@ -17,7 +17,7 @@
 
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
-import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
+import { buildReportReasonDropdown } from '#src/interactions/ReportMessage.js';
 import { modPanelButton } from '#src/interactions/ShowModPanel.js';
 import type ConnectionManager from '#src/managers/ConnectionManager.js';
 import HubLogManager from '#src/managers/HubLogManager.js';
@@ -35,7 +35,6 @@ import { CustomID } from '#utils/CustomID.js';
 import db from '#utils/Db.js';
 import { InfoEmbed } from '#utils/EmbedUtils.js';
 import { type supportedLocaleCodes, t } from '#utils/Locale.js';
-import { sendHubReport } from '#utils/hub/logger/Report.js';
 import { isStaffOrHubMod } from '#utils/hub/utils.js';
 import {
   type ActionRow,
@@ -46,14 +45,9 @@ import {
   type ButtonComponent,
   type ButtonInteraction,
   ButtonStyle,
-  type CacheType,
   type Client,
   ComponentType,
   type Guild,
-  ModalBuilder,
-  type ModalSubmitInteraction,
-  TextInputBuilder,
-  TextInputStyle,
   type User,
   codeBlock,
   time,
@@ -174,45 +168,6 @@ export default class MessageInfo extends BaseCommand {
       greyOutButtons(components);
       await i.first()?.editReply({ components });
     });
-  }
-
-  @RegisterInteractionHandler('msgInfoModal')
-  async handleModals(interaction: ModalSubmitInteraction<CacheType>) {
-    const { originalMsg, messageId, locale } = await this.getModalMessageInfo(interaction);
-
-    if (
-      !originalMsg?.hubId ||
-      !(await HubLogManager.create(originalMsg?.hubId)).config.reports?.channelId
-    ) {
-      const notEnabledEmbed = new InfoEmbed().setDescription(
-        t('msgInfo.report.notEnabled', locale, { emoji: getEmoji('x_icon', interaction.client) }),
-      );
-
-      await interaction.reply({ embeds: [notEnabledEmbed], flags: ['Ephemeral'] });
-      return;
-    }
-
-    const { authorId, guildId } = originalMsg;
-
-    const reason = interaction.fields.getTextInputValue('reason');
-    const message = await interaction.channel?.messages.fetch(messageId).catch(() => null);
-    const content = originalMsg.content;
-    const attachmentUrl =
-      content?.match(Constants.Regex.StaticImageUrl)?.at(0) ?? message?.embeds[0]?.image?.url;
-
-    await sendHubReport(originalMsg.hubId, interaction.client, {
-      userId: authorId,
-      serverId: guildId,
-      reason,
-      reportedBy: interaction.user,
-      evidence: { content, attachmentUrl, messageId },
-    });
-
-    const successEmbed = new InfoEmbed().setDescription(
-      t('msgInfo.report.success', locale, { emoji: getEmoji('tick_icon', interaction.client) }),
-    );
-
-    await interaction.reply({ embeds: [successEmbed], flags: ['Ephemeral'] });
   }
 
   private async handleServerInfoButton(
@@ -337,21 +292,12 @@ export default class MessageInfo extends BaseCommand {
       return;
     }
 
-    const modal = new ModalBuilder()
-      .setCustomId(new CustomID('msgInfoModal:report', [messageId]).toString())
-      .setTitle('Report Message')
-      .addComponents(
-        new ActionRowBuilder<TextInputBuilder>().addComponents(
-          new TextInputBuilder()
-            .setCustomId('reason')
-            .setLabel('Reason for report')
-            .setPlaceholder('Spamming text, sending NSFW content etc.')
-            .setStyle(TextInputStyle.Paragraph)
-            .setRequired(true),
-        ),
-      );
+    const selectMenu = buildReportReasonDropdown(messageId, locale);
 
-    await interaction.showModal(modal);
+    await interaction.reply({
+      components: [selectMenu],
+      flags: ['Ephemeral'],
+    });
   }
 
   // utils
@@ -369,16 +315,6 @@ export default class MessageInfo extends BaseCommand {
     const hub = await this.fetchHub(originalMsg?.hubId);
 
     return { targetId, locale, originalMsg, hub };
-  }
-
-  private async getModalMessageInfo(interaction: ModalSubmitInteraction<CacheType>) {
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [messageId] = customId.args;
-    const originalMsg = await findOriginalMessage(messageId);
-
-    const locale = (await fetchUserLocale(interaction.user.id)) ?? 'en';
-
-    return { originalMsg, locale, messageId };
   }
 
   private buildButtons(

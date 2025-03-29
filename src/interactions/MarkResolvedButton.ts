@@ -20,21 +20,29 @@ import {
   ButtonBuilder,
   type ButtonInteraction,
   ButtonStyle,
+  EmbedBuilder,
   type MessageActionRowComponentBuilder,
 } from 'discord.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import { CustomID } from '#src/utils/CustomID.js';
+import { RedisKeys } from '#src/utils/Constants.js';
+import getRedis from '#utils/Redis.js';
 import { handleError } from '#src/utils/Utils.js';
+import { HubService } from '#src/services/HubService.js';
+import HubManager from '#src/managers/HubManager.js';
 
-export const markResolvedButton = () =>
+export const markResolvedButton = (hubId: string) =>
   new ButtonBuilder()
-    .setCustomId(new CustomID().setIdentifier('markResolved').toString())
+    .setCustomId(new CustomID().setIdentifier('markResolved').setArgs(hubId).toString())
     .setStyle(ButtonStyle.Success)
     .setLabel('Mark Resolved');
 
 export default class MarkResolvedButton {
   @RegisterInteractionHandler('markResolved')
   async handler(interaction: ButtonInteraction): Promise<void> {
+    const customId = CustomID.parseCustomId(interaction.customId);
+    const [hubId] = customId.args;
+
     try {
       await interaction.deferUpdate();
       const components = interaction.message.components;
@@ -51,16 +59,68 @@ export default class MarkResolvedButton {
             component.data.style === ButtonStyle.Success &&
             component.data.custom_id === interaction.customId
           ) {
-            component.setLabel(`Resolved by @${interaction.user.username}`);
-            component.setDisabled(true);
+            component
+              .setLabel(`Resolved by @${interaction.user.username}`)
+              .setDisabled(true)
+              .setStyle(ButtonStyle.Secondary);
           }
         }
       }
 
       await interaction.editReply({ components: rows });
+
+      // Check if we need to send a DM to the reporter
+      const hub = await new HubService().fetchHub(hubId);
+      await this.notifyReporter(interaction, hub);
     }
     catch (e) {
       handleError(e, { repliable: interaction, comment: 'Failed to mark the message as resolved' });
+    }
+  }
+
+  /**
+   * Notifies the original reporter that their report has been resolved
+   * @param interaction The button interaction that triggered the resolution
+   */
+  private async notifyReporter(
+    interaction: ButtonInteraction,
+    hub: HubManager | null,
+  ): Promise<void> {
+    try {
+      const client = interaction.client;
+      const redis = getRedis();
+      const reportMessageId = interaction.message.id;
+      const redisKey = `${RedisKeys.ReportReporter}:${reportMessageId}`;
+
+      // Check if the reporter's ID is still in Redis (within 48 hours)
+      const reporterId = await redis.get(redisKey);
+      if (!reporterId) {
+        // If the key doesn't exist or has expired, don't send a DM
+        return;
+      }
+
+      // Fetch the reporter user
+      const reporter = await client.users.fetch(reporterId).catch(() => null);
+      if (!reporter) {
+        return;
+      }
+
+      // Create and send the DM
+      const embed = new EmbedBuilder()
+        .setTitle('Thank You for Reporting!')
+        .setColor('Green')
+        .setDescription(
+          `Your report to **${hub?.data.name ?? 'a hub'}** has been reviewed and a moderator has taken action. Thank you for helping us maintain a safe environment.`,
+        )
+        .setTimestamp();
+
+      await reporter.send({ embeds: [embed] }).catch(() => null);
+
+      // Delete the Redis key after sending the DM
+      await redis.del(redisKey);
+    }
+    catch (error) {
+      handleError(error, { comment: 'Failed to notify reporter about resolved report' });
     }
   }
 }

@@ -104,7 +104,7 @@ export class HubValidator {
       return {
         isValid: false,
         error: t('hub.create.maxHubs', this.locale, {
-          emoji: this.getEmoji('x_icon'),
+          emoji: this.getEmoji('topggSparkles'),
           maxHubs: String(maxHubs),
           voteUrl: Constants.Links.Vote,
         }),
