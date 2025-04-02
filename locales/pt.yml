@@ -458,7 +458,6 @@ report:
     gore_violence: Gore or extreme violence
     raid_organizing: Organizing raids or attacks
     underage: Underage user or content
-    other: Other (Please Specify)
   dropdown:
     placeholder: Select a reason for your report
   submitted: '{emoji} Relatório enviado com sucesso. Junte-se ao {support_command} para obter mais detalhes. Obrigado!'
