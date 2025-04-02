@@ -33,6 +33,7 @@ export const supportedLocales = {
   es: { name: 'Spanish', emoji: '🇪🇸' },
   fi: { name: 'Finnish', emoji: '🇫🇮' },
   fr: { name: 'French', emoji: '🇫🇷' },
+  et: { name: 'Estonian', emoji: '🇪🇪' },
   // hr: { name: 'Croatian', emoji: '🇭🇷' },
   hu: { name: 'Hungarian', emoji: '🇭🇺' },
   id: { name: 'Indonesian', emoji: '🇮🇩' },
