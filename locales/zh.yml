@@ -464,7 +464,6 @@ report:
     gore_violence: Gore or extreme violence
     raid_organizing: Organizing raids or attacks
     underage: Underage user or content
-    other: Other (Please Specify)
   dropdown:
     placeholder: Select a reason for your report
   submitted: '{emoji}报告已成功提交。加入{support_command}获取详情。谢谢！'
