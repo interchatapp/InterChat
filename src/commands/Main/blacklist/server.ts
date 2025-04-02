@@ -19,8 +19,12 @@ import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import BlacklistManager from '#src/managers/BlacklistManager.js';
 import { HubService } from '#src/services/HubService.js';
+import { deleteConnection } from '#src/utils/ConnectedListUtils.js';
 import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
-import { sendBlacklistNotif, showModeratedHubsAutocomplete } from '#src/utils/moderation/blacklistUtils.js';
+import {
+  sendBlacklistNotif,
+  showModeratedHubsAutocomplete,
+} from '#src/utils/moderation/blacklistUtils.js';
 import { ApplicationCommandOptionType, type AutocompleteInteraction } from 'discord.js';
 import ms from 'ms';
 
@@ -73,9 +77,9 @@ export default class BlacklistServerSubcommand extends BaseCommand {
     const hub = (await this.hubService.findHubsByName(hubName)).at(0);
     if (
       !hub ||
-			!(await runHubRoleChecksAndReply(hub, ctx, {
-			  checkIfMod: true,
-			}))
+      !(await runHubRoleChecksAndReply(hub, ctx, {
+        checkIfMod: true,
+      }))
     ) return;
 
     const server = await ctx.client.fetchGuild(serverId);
@@ -98,9 +102,9 @@ export default class BlacklistServerSubcommand extends BaseCommand {
     }
 
     const expiresAt =
-			duration && duration?.length > 1
-			  ? new Date(Date.now() + ms(duration as ms.StringValue))
-			  : null;
+      duration && duration?.length > 1
+        ? new Date(Date.now() + ms(duration as ms.StringValue))
+        : null;
 
     await blacklistManager.addBlacklist({
       hubId: hub.id,
@@ -115,6 +119,8 @@ export default class BlacklistServerSubcommand extends BaseCommand {
       reason,
       expiresAt,
     });
+
+    await deleteConnection({ hubId_serverId: { hubId: hub.id, serverId } }).catch(() => null);
 
     sendBlacklistNotif('server', ctx.client, {
       hubId: hub.id,

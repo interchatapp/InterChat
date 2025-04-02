@@ -15,6 +15,16 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { buildModPanel } from '#src/interactions/ModPanel.js';
+import BlacklistManager from '#src/managers/BlacklistManager.js';
+import { getEmoji } from '#src/utils/EmojiUtils.js';
+import type { ModAction } from '#src/utils/moderation/modPanel/utils.js';
+import type { OriginalMessage } from '#src/utils/network/messageUtils.js';
+import { deleteConnection } from '#utils/ConnectedListUtils.js';
+import { CustomID } from '#utils/CustomID.js';
+import { type supportedLocaleCodes, t } from '#utils/Locale.js';
+import Logger from '#utils/Logger.js';
+import { sendBlacklistNotif } from '#utils/moderation/blacklistUtils.js';
 import {
   ActionRowBuilder,
   type ButtonInteraction,
@@ -28,16 +38,6 @@ import {
   time,
 } from 'discord.js';
 import ms from 'ms';
-import { buildModPanel } from '#src/interactions/ModPanel.js';
-import BlacklistManager from '#src/managers/BlacklistManager.js';
-import { getEmoji } from '#src/utils/EmojiUtils.js';
-import type { ModAction } from '#src/utils/moderation/modPanel/utils.js';
-import type { OriginalMessage } from '#src/utils/network/messageUtils.js';
-import { deleteConnections } from '#utils/ConnectedListUtils.js';
-import { CustomID } from '#utils/CustomID.js';
-import { type supportedLocaleCodes, t } from '#utils/Locale.js';
-import Logger from '#utils/Logger.js';
-import { sendBlacklistNotif } from '#utils/moderation/blacklistUtils.js';
 
 abstract class BaseBlacklistHandler implements ModAction {
   abstract handle(
@@ -262,9 +262,8 @@ export class BlacklistServerHandler extends BaseBlacklistHandler {
       reason,
     });
 
-    await deleteConnections({
-      serverId: originalMsg.guildId,
-      hubId: originalMsg.hubId,
+    await deleteConnection({
+      hubId_serverId: { hubId: originalMsg.hubId, serverId: originalMsg.guildId },
     });
 
     if (server) {
