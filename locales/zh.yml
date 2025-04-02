@@ -449,23 +449,23 @@ report:
         label: 描述详情（可选）
         placeholder: 要做的步骤。例如：1.运行／帮助 2.等待5秒……
   reasons:
-    spam: Spam or excessive messages
-    advertising: Unwanted advertising or self-promotion
-    nsfw: NSFW or inappropriate content
-    harassment: Harassment or bullying
-    hate_speech: Hate speech or discrimination
-    scam: Scam, fraud, or phishing attempt
-    illegal: Illegal content or activities
-    personal_info: Sharing personal/private information
-    impersonation: Impersonating others
-    breaks_hub_rules: Violates hub rules
-    trolling: Trolling or intentional disruption
-    misinformation: False or misleading information
-    gore_violence: Gore or extreme violence
-    raid_organizing: Organizing raids or attacks
-    underage: Underage user or content
+    spam: 垃圾或过多消息
+    advertising: 垃圾推广
+    nsfw: 成人或不恰当内容
+    harassment: 骚扰或欺凌
+    hate_speech: 侮辱性或仇恨言论
+    scam: 诈骗、欺诈或网络钓鱼
+    illegal: 非法的内容或活动
+    personal_info: 泄露个人/私人信息
+    impersonation: 仿冒他人
+    breaks_hub_rules: 违反中心规则
+    trolling: 拖钓或扰乱
+    misinformation: 错误或误导性信息
+    gore_violence: 血腥或极端暴力
+    raid_organizing: 组织袭击
+    underage: 未达年龄限制的用户或内容
   dropdown:
-    placeholder: Select a reason for your report
+    placeholder: 选择您举报的原因
   submitted: '{emoji}报告已成功提交。加入{support_command}获取详情。谢谢！'
   bug:
     title: 故障报告
