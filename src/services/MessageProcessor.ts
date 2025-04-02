@@ -134,7 +134,7 @@ export class MessageProcessor {
 
     if (!activeCall || !userData) return false;
 
-    // rules screenin'
+    // rules screening
     if (!userData.acceptedRules) {
       await showRulesScreening(message, userData);
       return false;
