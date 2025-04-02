@@ -21,7 +21,6 @@ import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { getOrCreateWebhook } from '#src/utils/Utils.js';
 import Constants, { RedisKeys } from '#utils/Constants.js';
 import { getRedis } from '#utils/Redis.js';
-import Logger from '#src/utils/Logger.js';
 import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
@@ -207,15 +206,22 @@ export class CallService {
     };
   }
 
-  async skip(channelId: string): Promise<{ success: boolean; message: string }> {
-    const result = await this.hangup(channelId);
-    if (!result.success) {
-      return result;
+  /**
+   * Skip the current call and find a new match
+   * @param channelId The channel ID to skip the call in
+   * @param userId The user ID who initiated the skip
+   * @returns Result of the operation
+   */
+  async skip(channelId: string, userId: string): Promise<{ success: boolean; message: string }> {
+    // First hang up the current call
+    const hangupResult = await this.hangup(channelId);
+    if (!hangupResult.success) {
+      return hangupResult;
     }
 
-    // Initiate new call
+    // Then initiate a new call with the user who initiated the skip
     const channel = (await this.client.channels.fetch(channelId)) as TextChannel;
-    return this.initiateCall(channel, channel.guild.id);
+    return this.initiateCall(channel, userId);
   }
 
   private async tryMatch(callData: CallData): Promise<boolean> {
@@ -303,20 +309,13 @@ export class CallService {
   // Add method to track new participants during the call
   async addParticipant(channelId: string, userId: string) {
     const callData = await this.getActiveCallData(channelId);
-    if (!callData) {
-      Logger.error(`No active call found for channel ${channelId}`);
-      return false;
-    }
+    if (!callData) return false;
 
     const participant = callData.participants.find((p) => p.channelId === channelId);
-    if (!participant) {
-      Logger.error(`No participant found for channel ${channelId} in call ${callData.callId}`);
-      return false;
-    }
+    if (!participant) return false;
 
     // Only update leaderboard if this is a new participant
     if (!participant.users.has(userId)) {
-      Logger.debug(`Adding new participant ${userId} to call in channel ${channelId}`);
       const guildId = participant.guildId;
       await Promise.all([
         updateCallLeaderboards('user', userId),
@@ -326,26 +325,12 @@ export class CallService {
 
     participant.users.add(userId);
 
-    // Log the current participants for debugging
-    Logger.debug(
-      `Call ${callData.callId} participants: ${callData.participants.map(
-        (p) => `${p.channelId}: [${Array.from(p.users).join(', ')}]`,
-      ).join(' | ')}`,
-    );
-
-    // Update the call data in Redis for ALL participants
-    // This ensures both channels have the updated participant information
-    await Promise.all(
-      callData.participants.map((p) =>
-        this.redis.set(
-          this.getActiveCallKey(p.channelId),
-          JSON.stringify(callData, (_, value) =>
-            value instanceof Set ? Array.from(value) : value,
-          ),
-          'EX',
-          3600,
-        ),
-      ),
+    // Update the stored call data
+    await this.redis.set(
+      this.getActiveCallKey(channelId),
+      JSON.stringify(callData, (_, value) => (value instanceof Set ? Array.from(value) : value)),
+      'EX',
+      3600,
     );
 
     return true;
@@ -387,7 +372,7 @@ export class CallService {
   }
 
   private async getCallEndMessage(callId: string) {
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    const ratingRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
         .setCustomId(new CustomID('rate_call:like', [callId]).toString())
         .setLabel('👍 Like')
@@ -398,9 +383,16 @@ export class CallService {
         .setStyle(ButtonStyle.Danger),
     );
 
+    const reportRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId(new CustomID('report_call', [callId]).toString())
+        .setLabel('🚩 Report')
+        .setStyle(ButtonStyle.Secondary),
+    );
+
     return {
       content: '**Call ended!** How was your experience?',
-      components: [row],
+      components: [ratingRow, reportRow],
     };
   }
 
@@ -420,23 +412,16 @@ export class CallService {
   // handle message counting and leaderboard updates
   async updateCallParticipant(channelId: string, userId: string): Promise<void> {
     const callData = await this.getActiveCallData(channelId);
-    if (!callData) {
-      Logger.error(`No active call found for channel ${channelId} when updating participant`);
-      return;
-    }
+    if (!callData) return;
 
     const participant = callData.participants.find((p) => p.channelId === channelId);
-    if (!participant) {
-      Logger.error(`No participant found for channel ${channelId} in call ${callData.callId} when updating`);
-      return;
-    }
+    if (!participant) return;
 
     // Increment message count
     participant.messageCount++;
 
     // Check if we should update leaderboards
     if (!participant.leaderboardUpdated && participant.messageCount >= MINIMUM_MESSAGES_FOR_CALL) {
-      Logger.debug(`Updating leaderboards for user ${userId} in call ${callData.callId}`);
       participant.leaderboardUpdated = true;
 
       // Update leaderboards for both the user and the server
@@ -445,11 +430,6 @@ export class CallService {
         updateCallLeaderboards('server', participant.guildId),
       ]);
     }
-
-    // Log message count for debugging
-    Logger.debug(
-      `Call ${callData.callId} message count: ${participant.channelId} has ${participant.messageCount} messages`,
-    );
 
     // Update the call data in Redis
     await Promise.all(

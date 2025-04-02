@@ -91,8 +91,6 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
       await this.showDevAlertsIfAny(message);
       await this.notifyHubWarnsIfAny(message, result.hub);
     }
-
-    return result.handled;
   }
 
   /**
@@ -147,4 +145,5 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
 
     await redis.set(key, Date.now().toString(), 'EX', 600);
   }
+
 }

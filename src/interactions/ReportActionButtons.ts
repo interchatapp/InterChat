@@ -37,9 +37,16 @@ export const markResolvedButton = (hubId: string) =>
     .setStyle(ButtonStyle.Success)
     .setLabel('Mark Resolved');
 
+
+export const ignoreReportButton = (hubId: string) =>
+  new ButtonBuilder()
+    .setCustomId(new CustomID('ignoreReport').setArgs(hubId).toString())
+    .setStyle(ButtonStyle.Secondary)
+    .setLabel('Ignore');
+
 export default class MarkResolvedButton {
   @RegisterInteractionHandler('markResolved')
-  async handler(interaction: ButtonInteraction): Promise<void> {
+  async markResolvedHandler(interaction: ButtonInteraction): Promise<void> {
     const customId = CustomID.parseCustomId(interaction.customId);
     const [hubId] = customId.args;
 
@@ -77,6 +84,45 @@ export default class MarkResolvedButton {
       handleError(e, { repliable: interaction, comment: 'Failed to mark the message as resolved' });
     }
   }
+
+  @RegisterInteractionHandler('ignoreReport')
+  async markIgnoredHandler(interaction: ButtonInteraction): Promise<void> {
+    await interaction.deferUpdate();
+
+    const components = interaction.message.components;
+    if (!components) return;
+
+    const rows = components.map((row) =>
+      ActionRowBuilder.from(row),
+    ) as ActionRowBuilder<MessageActionRowComponentBuilder>[];
+
+    // Update the ignore button
+    for (const row of rows) {
+      for (const component of row.components) {
+        if (
+          component instanceof ButtonBuilder &&
+          component.data.style === ButtonStyle.Success &&
+          component.data.custom_id === interaction.customId
+        ) {
+          component
+            .setLabel(`Ignored by @${interaction.user.username}`)
+            .setDisabled(true)
+            .setStyle(ButtonStyle.Secondary);
+        }
+        // Make "Mark as Resolved" button secondary
+        else if (
+          component instanceof ButtonBuilder &&
+          component.data.style === ButtonStyle.Success &&
+          component.data.custom_id?.includes('markResolved')
+        ) {
+          component.setStyle(ButtonStyle.Secondary);
+        }
+      }
+    }
+
+    await interaction.editReply({ components: rows });
+  }
+
 
   /**
    * Notifies the original reporter that their report has been resolved

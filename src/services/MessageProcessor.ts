@@ -134,10 +134,6 @@ export class MessageProcessor {
 
     if (!activeCall || !userData) return false;
 
-    Logger.debug(
-      `Processing call message from ${message.author.username} (${message.author.id}) in channel ${message.channelId}`,
-    );
-
     // rules screenin'
     if (!userData.acceptedRules) {
       await showRulesScreening(message, userData);
@@ -145,39 +141,22 @@ export class MessageProcessor {
     }
 
     // Track this user as a participant
-    const participantAdded = await this.callService.addParticipant(
-      message.channelId,
-      message.author.id,
-    );
-    if (!participantAdded) {
-      Logger.error(`Failed to add participant ${message.author.id} to call in channel ${message.channelId}`);
-      return false;
-    }
+    await this.callService.addParticipant(message.channelId, message.author.id);
 
     // Find the other participant's webhook URL
     const otherParticipant = activeCall.participants.find(
       (p) => p.channelId !== message.channelId,
     );
-    if (!otherParticipant) {
-      Logger.error(`Could not find other participant for call in channel ${message.channelId}`);
-      return false;
-    }
+    if (!otherParticipant) return false;
 
     const checksPassed = await runCallChecks(message, {
       userData,
       attachmentURL: message.attachments.first()?.url,
     });
 
-    if (!checksPassed) {
-      Logger.debug(`Call message from ${message.author.id} failed checks`);
-      return false;
-    }
+    if (!checksPassed) return false;
 
     try {
-      Logger.debug(
-        `Sending call message from ${message.author.username} to channel ${otherParticipant.channelId}`,
-      );
-
       await BroadcastService.sendMessage(otherParticipant.webhookUrl, {
         content: message.content,
         username: message.author.username,
@@ -190,7 +169,7 @@ export class MessageProcessor {
       return true;
     }
     catch (error) {
-      Logger.error(`Failed to send call message from ${message.author.id}:`, error);
+      Logger.error('Failed to send call message:', error);
       return false;
     }
   }
