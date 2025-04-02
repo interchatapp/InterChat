@@ -40,8 +40,8 @@ export const numberEmojis = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️�
 export default {
   isDevBuild: process.env.NODE_ENV === 'development',
 
-  StaffIds: ['1160735837940617336', '982656475979710524', '597265261665714186'] as Snowflake[],
   DeveloperIds: ['701727675311587358'] as Snowflake[],
+  StaffIds: ['1160735837940617336', '982656475979710524', '853178500193583104'] as Snowflake[],
   SupporterIds: ['880978672037802014', '786348225341947986'] as Snowflake[],
   TranslatorIds: ['845357241132384286', '1289961731115847803', '827745783964499978'] as Snowflake[],
   ProjectVersion: packageJson.version ?? 'Unknown',
@@ -87,6 +87,7 @@ export default {
   Channels: {
     goal: '906460473065615403',
     inviteLogs: '1246117516099457146',
+    reports: '1347765409314766849',
   },
 
   Colors: {

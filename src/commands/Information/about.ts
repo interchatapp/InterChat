@@ -43,7 +43,7 @@ export default class About extends BaseCommand {
   }
 
   async execute(ctx: Context) {
-    const creditsEmbed = new InfoEmbed()
+    const aboutEmbed = new InfoEmbed()
       .setDescription(
         stripIndents`
         ### ${ctx.getEmoji('wand_icon')} About InterChat
@@ -88,7 +88,7 @@ export default class About extends BaseCommand {
     );
 
     await ctx.reply({
-      embeds: [creditsEmbed],
+      embeds: [aboutEmbed],
       components: [linkButtons, normalButtons],
     });
   }
@@ -106,17 +106,22 @@ export default class About extends BaseCommand {
         stripIndents`
       
         ${creditsDivider}
-        ${getEmoji('BadgeDeveloper', interaction.client)} **Developers:**
+        ${getEmoji('developer_badge', interaction.client)} **Developers:**
         ${dotBlue} @${usernames[0]}
 
-        ${getEmoji('BadgeStaff', interaction.client)} **Staff: ([Check Applications!](${Constants.Links.Website}/apply))**
+        ${getEmoji('staff_badge', interaction.client)} **Staff: ([Check Applications!](${Constants.Links.Website}/apply))**
         ${dotBlue} @${usernames[1]}
         ${dotBlue} @${usernames[2]}
         ${dotBlue} @${usernames[3]}
 
+        ${getEmoji('translator_badge', interaction.client)} **Translators:**
+        ${dotBlue} @${usernames[4]}
+        ${dotBlue} @${usernames[5]}
+        ${dotBlue} @${usernames[6]}
+
         ✨ **Deserving Mentions:**
-        ${dotBlue} @${usernames[4]} (maker of our cute mascot chipi ${getEmoji('chipi_smile', interaction.client)})
-        ${dotBlue} @${usernames[5]} ([top voter](${Constants.Links.Vote}) of all time ${getEmoji('topggSparkles', interaction.client)})
+        ${dotBlue} @${usernames[7]} (maker of our cute mascot chipi ${getEmoji('chipi_smile', interaction.client)})
+        ${dotBlue} @${usernames[8]} ([top voter](${Constants.Links.Vote}) of all time ${getEmoji('topggSparkles', interaction.client)})
         ${creditsDivider}
       `,
       )

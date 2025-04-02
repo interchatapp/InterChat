@@ -115,6 +115,7 @@ export const getOrCreateWebhook = async (
 export const getCredits = () => [
   ...Constants.DeveloperIds,
   ...Constants.StaffIds,
+  ...Constants.TranslatorIds,
   ...Constants.SupporterIds,
 ];
 
