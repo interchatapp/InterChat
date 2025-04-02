@@ -37,37 +37,59 @@ export const markResolvedButton = (hubId: string) =>
     .setStyle(ButtonStyle.Success)
     .setLabel('Mark Resolved');
 
+export const ignoreReportButton = (hubId: string) =>
+  new ButtonBuilder()
+    .setCustomId(new CustomID().setIdentifier('ignoreReport').setArgs(hubId).toString())
+    .setStyle(ButtonStyle.Secondary)
+    .setLabel('Ignore');
+
 export default class MarkResolvedButton {
+  /**
+   * Updates button components in a message
+   */
+  private async updateButtonComponents(
+    interaction: ButtonInteraction,
+    updateFn: (
+      component: ButtonBuilder,
+      row: ActionRowBuilder<MessageActionRowComponentBuilder>,
+      buttonCustomId: string
+    ) => void,
+  ): Promise<ActionRowBuilder<MessageActionRowComponentBuilder>[]> {
+    await interaction.deferUpdate();
+    const components = interaction.message.components;
+    if (!components) return [];
+
+    const rows = components.map((row) =>
+      ActionRowBuilder.from(row),
+    ) as ActionRowBuilder<MessageActionRowComponentBuilder>[];
+
+    for (const row of rows) {
+      for (const component of row.components) {
+        if (component instanceof ButtonBuilder && 'custom_id' in component.data) {
+          const buttonCustomId = String(component.data.custom_id);
+          updateFn(component, row, buttonCustomId);
+        }
+      }
+    }
+
+    await interaction.editReply({ components: rows });
+    return rows;
+  }
+
   @RegisterInteractionHandler('markResolved')
-  async handler(interaction: ButtonInteraction): Promise<void> {
+  async markResolvedHandler(interaction: ButtonInteraction): Promise<void> {
     const customId = CustomID.parseCustomId(interaction.customId);
     const [hubId] = customId.args;
 
     try {
-      await interaction.deferUpdate();
-      const components = interaction.message.components;
-      if (!components) return;
-
-      const rows = components.map((row) =>
-        ActionRowBuilder.from(row),
-      ) as ActionRowBuilder<MessageActionRowComponentBuilder>[];
-
-      for (const row of rows) {
-        for (const component of row.components) {
-          if (
-            component instanceof ButtonBuilder &&
-            component.data.style === ButtonStyle.Success &&
-            component.data.custom_id === interaction.customId
-          ) {
-            component
-              .setLabel(`Resolved by @${interaction.user.username}`)
-              .setDisabled(true)
-              .setStyle(ButtonStyle.Secondary);
-          }
+      await this.updateButtonComponents(interaction, (component, _, buttonCustomId) => {
+        if (buttonCustomId === interaction.customId) {
+          component
+            .setLabel(`Resolved by @${interaction.user.username}`)
+            .setDisabled(true)
+            .setStyle(ButtonStyle.Secondary);
         }
-      }
-
-      await interaction.editReply({ components: rows });
+      });
 
       // Check if we need to send a DM to the reporter
       const hub = await new HubService().fetchHub(hubId);
@@ -75,6 +97,27 @@ export default class MarkResolvedButton {
     }
     catch (e) {
       handleError(e, { repliable: interaction, comment: 'Failed to mark the message as resolved' });
+    }
+  }
+
+  @RegisterInteractionHandler('ignoreReport')
+  async markIgnoredHandler(interaction: ButtonInteraction): Promise<void> {
+    try {
+      await this.updateButtonComponents(interaction, (component, _, buttonCustomId) => {
+        if (buttonCustomId === interaction.customId) {
+          component
+            .setLabel(`Ignored by @${interaction.user.username}`)
+            .setDisabled(true)
+            .setStyle(ButtonStyle.Secondary);
+        }
+        // Make "Mark as Resolved" button primary
+        else if (buttonCustomId.includes('markResolved')) {
+          component.setStyle(ButtonStyle.Primary);
+        }
+      });
+    }
+    catch (e) {
+      handleError(e, { repliable: interaction, comment: 'Failed to ignore the report' });
     }
   }
 

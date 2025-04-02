@@ -41,7 +41,7 @@ model Hub {
   name                String
   description         String
   owner               User                 @relation(fields: [ownerId], references: [id])
-  ownerId             String               @db.String
+  ownerId             String
   iconUrl             String
   bannerUrl           String?
   welcomeMessage      String?
@@ -78,7 +78,7 @@ model Hub {
 model HubUpvote {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   hubId     String   @db.ObjectId
-  userId    String   @db.String
+  userId    String
   createdAt DateTime @default(now())
   hub       Hub      @relation(fields: [hubId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
@@ -90,7 +90,7 @@ model HubUpvote {
 model HubReview {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   hubId     String   @db.ObjectId
-  userId    String   @db.String
+  userId    String
   rating    Int
   text      String
   createdAt DateTime @default(now())
@@ -105,7 +105,7 @@ model HubReview {
 model HubModerator {
   id     String @id @default(auto()) @map("_id") @db.ObjectId
   hubId  String @db.ObjectId
-  userId String @db.String
+  userId String
   role   Role
   hub    Hub    @relation(fields: [hubId], references: [id])
   user   User   @relation(fields: [userId], references: [id])
@@ -117,7 +117,7 @@ model Connection {
   id                   String      @id @default(auto()) @map("_id") @db.ObjectId
   channelId            String      @unique
   parentId             String? // Parent channel ID for threads
-  serverId             String      @db.String
+  serverId             String
   hubId                String      @db.ObjectId
   connected            Boolean     @default(true)
   compact              Boolean     @default(false)
@@ -131,6 +131,7 @@ model Connection {
   server               ServerData? @relation(fields: [serverId], references: [id])
 
   @@unique([channelId, serverId])
+  @@unique([hubId, serverId])
   @@index([hubId, channelId])
 }
 
@@ -140,7 +141,7 @@ model Infraction {
   type        InfractionType   @default(BLACKLIST)
   status      InfractionStatus @default(ACTIVE)
   moderator   User             @relation(name: "issuedInfractions", fields: [moderatorId], references: [id])
-  moderatorId String           @db.String
+  moderatorId String
   reason      String
   expiresAt   DateTime?
   appealedAt  DateTime?
@@ -149,7 +150,7 @@ model Infraction {
 
   // For user infractions
   user   User?   @relation(name: "infractions", fields: [userId], references: [id])
-  userId String? @db.String
+  userId String?
 
   // For server infractions
   serverId   String?
@@ -248,7 +249,7 @@ model Announcement {
 }
 
 model ServerData {
-  id            String       @id @map("_id") @db.String
+  id            String       @id @map("_id")
   name          String?
   premiumStatus Boolean      @default(false)
   createdAt     DateTime     @default(now())

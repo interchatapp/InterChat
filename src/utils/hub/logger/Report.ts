@@ -17,7 +17,6 @@
 
 import { modPanelButton } from '#src/interactions/ShowModPanel.js';
 import { findOriginalMessage, getBroadcast } from '#src/utils/network/messageUtils.js';
-import { markResolvedButton } from '#src/interactions/MarkResolvedButton.js';
 import { HubService } from '#src/services/HubService.js';
 import { RedisKeys } from '#src/utils/Constants.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
@@ -37,6 +36,7 @@ import {
   messageLink,
 } from 'discord.js';
 import { sendLog } from './Default.js';
+import { ignoreReportButton, markResolvedButton } from '#src/interactions/ReportActionButtons.js';
 
 export type ReportEvidenceOpts = {
   // the message content
@@ -142,21 +142,28 @@ export const sendHubReport = async (
       iconURL: reportedBy.displayAvatarURL(),
     });
 
-  const button = modPanelButton(evidence.messageId, getEmoji('hammer_icon', client)).setLabel(
-    'Take Action',
-  );
-  const resolveButton = markResolvedButton(hubId); // anyone can use this button, it's on mods to set proper permissions for reports channel
-  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(button, resolveButton);
+  const modActionButton = modPanelButton(evidence.messageId, getEmoji('hammer_icon', client))
+    .setLabel('Take Action');
+  const resolveButton = markResolvedButton(hubId);
+  const ignoreButton = ignoreReportButton(hubId);
 
-  if (jumpLink) {
-    row.addComponents(
-      new ButtonBuilder().setURL(jumpLink).setLabel('Jump To Message').setStyle(ButtonStyle.Link),
-    );
-  }
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    modActionButton,
+    resolveButton,
+    ignoreButton,
+  );
+  const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setURL(jumpLink ?? 'https://discord.com')
+      .setDisabled(!jumpLink)
+      .setLabel('Jump To Message')
+      .setStyle(ButtonStyle.Link),
+  );
+
 
   const sentMessage = await sendLog(client.cluster, reportsChannelId, embed, {
     roleMentionIds: reportsRoleId ? [reportsRoleId] : undefined,
-    components: [row.toJSON()],
+    components: [row.toJSON(), row2.toJSON()],
   });
 
   // Store the reporter's ID in Redis with a 48-hour expiration

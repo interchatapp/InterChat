@@ -134,6 +134,12 @@ export class MessageProcessor {
 
     if (!activeCall || !userData) return false;
 
+    // rules screening
+    if (!userData.acceptedRules) {
+      await showRulesScreening(message, userData);
+      return false;
+    }
+
     // Track this user as a participant
     await this.callService.addParticipant(message.channelId, message.author.id);
 

@@ -206,15 +206,22 @@ export class CallService {
     };
   }
 
-  async skip(channelId: string): Promise<{ success: boolean; message: string }> {
-    const result = await this.hangup(channelId);
-    if (!result.success) {
-      return result;
+  /**
+   * Skip the current call and find a new match
+   * @param channelId The channel ID to skip the call in
+   * @param userId The user ID who initiated the skip
+   * @returns Result of the operation
+   */
+  async skip(channelId: string, userId: string): Promise<{ success: boolean; message: string }> {
+    // First hang up the current call
+    const hangupResult = await this.hangup(channelId);
+    if (!hangupResult.success) {
+      return hangupResult;
     }
 
-    // Initiate new call
+    // Then initiate a new call with the user who initiated the skip
     const channel = (await this.client.channels.fetch(channelId)) as TextChannel;
-    return this.initiateCall(channel, channel.guild.id);
+    return this.initiateCall(channel, userId);
   }
 
   private async tryMatch(callData: CallData): Promise<boolean> {
@@ -365,7 +372,7 @@ export class CallService {
   }
 
   private async getCallEndMessage(callId: string) {
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    const ratingRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
         .setCustomId(new CustomID('rate_call:like', [callId]).toString())
         .setLabel('👍 Like')
@@ -376,9 +383,16 @@ export class CallService {
         .setStyle(ButtonStyle.Danger),
     );
 
+    const reportRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId(new CustomID('report_call', [callId]).toString())
+        .setLabel('🚩 Report')
+        .setStyle(ButtonStyle.Secondary),
+    );
+
     return {
       content: '**Call ended!** How was your experience?',
-      components: [row],
+      components: [ratingRow, reportRow],
     };
   }
 
@@ -425,6 +439,8 @@ export class CallService {
           JSON.stringify(callData, (_, value) =>
             value instanceof Set ? Array.from(value) : value,
           ),
+          'EX',
+          3600,
         ),
       ),
     );
