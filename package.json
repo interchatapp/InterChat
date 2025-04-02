@@ -23,15 +23,15 @@
   },
   "type": "module",
   "dependencies": {
-    "@hono/node-server": "^1.13.8",
+    "@hono/node-server": "^1.14.0",
     "@prisma/client": "^6.5.0",
-    "@sentry/node": "^9.5.0",
+    "@sentry/node": "^9.10.1",
     "canvas": "^3.1.0",
     "common-tags": "^1.8.2",
-    "discord-hybrid-sharding": "^2.2.5",
+    "discord-hybrid-sharding": "^2.2.6",
     "discord.js": "^14.18.0",
     "dotenv": "^16.4.7",
-    "hono": "^4.7.4",
+    "hono": "^4.7.5",
     "husky": "^9.1.7",
     "ioredis": "^5.6.0",
     "js-yaml": "^4.1.0",
@@ -49,14 +49,14 @@
     "@types/lodash": "^4.17.16",
     "@types/ms": "^2.1.0",
     "cz-conventional-changelog": "^3.3.0",
-    "eslint": "^9.22.0",
+    "eslint": "^9.23.0",
     "lint-staged": "^15.5.0",
     "nodemon": "^3.1.9",
     "prettier": "^3.5.3",
     "prisma": "^6.5.0",
     "release-it": "^18.1.2",
     "typescript": "^5.8.2",
-    "typescript-eslint": "^8.26.1"
+    "typescript-eslint": "^8.29.0"
   },
   "config": {
     "commitizen": {
