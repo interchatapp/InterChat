@@ -37,7 +37,6 @@ export const markResolvedButton = (hubId: string) =>
     .setStyle(ButtonStyle.Success)
     .setLabel('Mark Resolved');
 
-
 export const ignoreReportButton = (hubId: string) =>
   new ButtonBuilder()
     .setCustomId(new CustomID('ignoreReport').setArgs(hubId).toString())
@@ -63,7 +62,7 @@ export default class MarkResolvedButton {
         for (const component of row.components) {
           if (
             component instanceof ButtonBuilder &&
-            component.data.style === ButtonStyle.Success &&
+            'custom_id' in component.data &&
             component.data.custom_id === interaction.customId
           ) {
             component
@@ -101,7 +100,7 @@ export default class MarkResolvedButton {
       for (const component of row.components) {
         if (
           component instanceof ButtonBuilder &&
-          component.data.style === ButtonStyle.Success &&
+          'custom_id' in component.data &&
           component.data.custom_id === interaction.customId
         ) {
           component
@@ -109,20 +108,19 @@ export default class MarkResolvedButton {
             .setDisabled(true)
             .setStyle(ButtonStyle.Secondary);
         }
-        // Make "Mark as Resolved" button secondary
+        // Make "Mark as Resolved" button primary
         else if (
           component instanceof ButtonBuilder &&
-          component.data.style === ButtonStyle.Success &&
+          'custom_id' in component.data &&
           component.data.custom_id?.includes('markResolved')
         ) {
-          component.setStyle(ButtonStyle.Secondary);
+          component.setStyle(ButtonStyle.Primary);
         }
       }
     }
 
     await interaction.editReply({ components: rows });
   }
-
 
   /**
    * Notifies the original reporter that their report has been resolved
