@@ -99,7 +99,7 @@ export class VoteManager {
         new EmbedBuilder()
           .setDescription(
             stripIndents`
-            <:topgg_ico_sparkles:1026877534563991562> ${username} just voted! Thank you for the support. Vote again on [top.gg](${Constants.Links.Vote}) ${timeUntilNextVote}!
+            <:topggSparkles:1359021457132355778> ${username} just voted! Thank you for the support. Vote again on [top.gg](${Constants.Links.Vote}) ${timeUntilNextVote}!
 
             -# ${isTestVote ? '⚠️ This is a test vote.' : `🎉 This is your **${voteCount}${ordinalSuffix}** time voting!`}
             `,
@@ -176,7 +176,7 @@ export class VoteManager {
       .setTitle('Thank You for Voting!')
       .setDescription(
         stripIndents`
-          <:topgg_ico_sparkles:1026877534563991562> Thank you for supporting InterChat by voting!
+          <:topggSparkles:1359021457132355778> Thank you for supporting InterChat by voting!
 
           ${vote.type === 'test' ? '⚠️ This is a test vote.' : `🎉 This is your **${voteCount}${ordinalSuffix}** time voting!`}
           You can vote again ${nextVoteTime}.
@@ -195,7 +195,7 @@ export class VoteManager {
       new ButtonBuilder()
         .setStyle(ButtonStyle.Link)
         .setLabel('Vote on top.gg')
-        .setEmoji('<:topgg_ico_sparkles:1026877534563991562>')
+        .setEmoji('<:topggSparkles:1359021457132355778> ')
         .setURL(Constants.Links.Vote),
     );
 
