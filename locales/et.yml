@@ -56,9 +56,9 @@ rules:
 vote:
   description: |
     Aidake rohkematel kogukondadel avastada InterChat! Sinu hääl saidil top.gg:
-    • Aitab teistel leida aktiivseid kogukondi
-    • Avab teie jaoks erilised funktsioonid
-    • Toetab meie iseseisvat arengut
+    - Aitab teistel leida aktiivseid kogukondi
+    - Avab teie jaoks erilised funktsioonid
+    - Toetab meie iseseisvat arengut
   footer: "Hääl taastub iga 12 tunni järel • Täname InterChat'i toetamise eest!"
   button:
     label: "Hääletage saidil top.gg"
