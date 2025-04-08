@@ -24,7 +24,6 @@ import { handleError } from '#src/utils/Utils.js';
 export default class FixServerCommand extends BaseCommand {
   constructor() {
     super({
-      staffOnly: true,
       name: 'fix-server',
       description: 'Fixes the server data in the database if it is invalid',
       types: { slash: true, prefix: true },
