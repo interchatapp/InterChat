@@ -56,9 +56,9 @@ rules:
 vote:
   description: |
     帮助更多社区发现InterChat！您在top.gg的投票将:
-    • 帮助其他人找到活跃社区
-    • 为您解锁特殊功能
-    • 支持我们的独立发展
+    - 帮助其他人找到活跃社区
+    - 为您解锁特殊功能
+    - 支持我们的独立发展
   footer: "每隔12小时刷新一轮投票 • 感谢您对InterChat的支持！"
   button:
     label: "在top.gg进行投票"
