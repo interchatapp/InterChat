@@ -22,13 +22,18 @@ import { handleError } from '#src/utils/Utils.js';
 import Logger from '#utils/Logger.js';
 import { serve } from '@hono/node-server';
 import { Collection, WebhookClient, type WebhookMessageCreateOptions } from 'discord.js';
+import { ClusterManager } from 'discord-hybrid-sharding';
 import { Hono } from 'hono';
 
 export const webhookMap = new Collection<string, WebhookClient>();
 
-export const startApi = (metrics: MainMetricsService) => {
+export const startApi = (metrics: MainMetricsService, clusterManager?: ClusterManager) => {
   const app = new Hono({});
   const voteManager = new VoteManager();
+
+  if (clusterManager) {
+    voteManager.setClusterManager(clusterManager);
+  }
 
   app.get('/', (c) => c.redirect(Constants.Links.Website));
 
@@ -51,6 +56,9 @@ export const startApi = (metrics: MainMetricsService) => {
     }
 
     await voteManager.announceVote(payload);
+
+    // Send DM to the user who voted
+    await voteManager.sendVoteDM(payload);
 
     return c.body(null, 204);
   });

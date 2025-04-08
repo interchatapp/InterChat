@@ -203,7 +203,11 @@ export default class RulesScreeningInteraction {
     }
 
     const userService = new UserDbService();
-    await userService.upsertUser(interaction.user.id, { acceptedRules: true });
+    await userService.upsertUser(interaction.user.id, {
+      acceptedRules: true,
+      name: interaction.user.username,
+      image: interaction.user.avatarURL(),
+    });
 
     // Check if there's a pending hub rules acceptance needed
     const locale = await fetchUserLocale(interaction.user.id);

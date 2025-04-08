@@ -34,3 +34,4 @@ dev/docker/db*
 emojis/
 
 prometheus.yml
+docs/

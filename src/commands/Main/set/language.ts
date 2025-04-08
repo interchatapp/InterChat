@@ -19,14 +19,8 @@ import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import UserDbService from '#src/services/UserDbService.js';
 import { fetchUserLocale } from '#src/utils/Utils.js';
-import {
-  type supportedLocaleCodes,
-  supportedLocales,
-  t,
-} from '#utils/Locale.js';
-import {
-  ApplicationCommandOptionType,
-} from 'discord.js';
+import { type supportedLocaleCodes, supportedLocales, t } from '#utils/Locale.js';
+import { ApplicationCommandOptionType } from 'discord.js';
 
 const currSupportedLangs = ['en', 'hi', 'es', 'pt', 'zh', 'ru', 'et'] as const;
 
@@ -56,13 +50,9 @@ export default class SetLanguage extends BaseCommand {
 
     if (!locale || !Object.keys(supportedLocales).includes(locale)) {
       await ctx.reply({
-        content: t(
-          'errors.invalidLangCode',
-          await fetchUserLocale(ctx.user.id),
-          {
-            emoji: ctx.getEmoji('info'),
-          },
-        ),
+        content: t('errors.invalidLangCode', await fetchUserLocale(ctx.user.id), {
+          emoji: ctx.getEmoji('info'),
+        }),
         flags: ['Ephemeral'],
       });
       return;
@@ -70,7 +60,7 @@ export default class SetLanguage extends BaseCommand {
 
     const { id, username } = ctx.user;
     const userService = new UserDbService();
-    await userService.upsertUser(id, { locale, name: username });
+    await userService.upsertUser(id, { locale, name: username, image: ctx.user.avatarURL() });
 
     const langInfo = supportedLocales[locale];
     const lang = `${langInfo.emoji} ${langInfo.name}`;

@@ -21,6 +21,7 @@ import UserDbService from '#src/services/UserDbService.js';
 import { fetchUserData, fetchUserLocale } from '#src/utils/Utils.js';
 import Constants from '#utils/Constants.js';
 import { t } from '#utils/Locale.js';
+import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -70,20 +71,15 @@ export default class Vote extends BaseCommand {
         },
         {
           name: '🎁 Voter Perks',
-          value: [
-            '**📝 Message Features**',
-            `- ${voteStatusEmoji} Increased message length (2000 characters)`,
-            `- ${voteStatusEmoji} Send stickers in hubs`,
-            '',
-            '**🌟 Hub Features**',
-            `- ${voteStatusEmoji} Create up to 4 hubs`,
-            `- ${voteStatusEmoji} Custom welcome messages`,
-            '',
-            '**✨ Extra Features**',
-            `- ${voteStatusEmoji} Voter role in support server`,
-            `- ${voteStatusEmoji} Exclusive voter badge in /profile`,
-            `-# ${t('vote.perks.moreComingSoon', locale, { support_invite: Constants.Links.SupportInvite })}`,
-          ].join('\n'),
+          value: stripIndents`
+            - ${voteStatusEmoji} Increased message length (2000 characters)
+            - ${voteStatusEmoji} Send stickers in hubs
+            - ${voteStatusEmoji} Create up to 4 hubs
+            - ${voteStatusEmoji} Custom welcome messages
+            - ${voteStatusEmoji} Voter role in support server
+            - ${voteStatusEmoji} Exclusive voter badge in /profile
+            -# ${t('vote.perks.moreComingSoon', locale, { support_invite: Constants.Links.SupportInvite })}
+            `,
         },
       )
       .setColor(hasVoted ? 'Green' : Constants.Colors.invisible)

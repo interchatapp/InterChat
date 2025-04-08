@@ -34,7 +34,7 @@ const clusterManager = new ClusterManager('build/client.js', {
 
 // Set up metrics service with cluster manager
 const metrics = new MainMetricsService(clusterManager, db);
-startApi(metrics);
+startApi(metrics, clusterManager);
 
 clusterManager.extend(new HeartbeatManager({ interval: 10 * 1000, maxMissedHeartbeats: 2 }));
 clusterManager.extend(new ReClusterManager());

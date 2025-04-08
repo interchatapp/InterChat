@@ -22,9 +22,13 @@ import Constants from '#utils/Constants.js';
 import db from '#utils/Db.js';
 import { getOrdinalSuffix } from '#utils/Utils.js';
 import { stripIndents } from 'common-tags';
+import { ClusterManager } from 'discord-hybrid-sharding';
 import {
   type APIGuildMember,
   type APIUser,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
   EmbedBuilder,
   REST,
   Routes,
@@ -38,6 +42,7 @@ export class VoteManager {
   private scheduler: Scheduler;
   private readonly userDbManager = new UserDbService();
   private readonly rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN as string);
+  private clusterManager: ClusterManager | null = null;
 
   constructor(scheduler = new Scheduler()) {
     this.scheduler = scheduler;
@@ -73,7 +78,7 @@ export class VoteManager {
 
   async getUsername(userId: string) {
     const user = (await this.getAPIUser(userId)) ?? (await this.userDbManager.getUser(userId));
-    return user && 'username' in user ? user.username : user?.name ?? 'Unknown User';
+    return user && 'username' in user ? user.username : (user?.name ?? 'Unknown User');
   }
 
   async announceVote(vote: WebhookPayload) {
@@ -93,7 +98,7 @@ export class VoteManager {
       embeds: [
         new EmbedBuilder()
           .setDescription(
-            stripIndents`              
+            stripIndents`
             <:topgg_ico_sparkles:1026877534563991562> ${username} just voted! Thank you for the support. Vote again on [top.gg](${Constants.Links.Vote}) ${timeUntilNextVote}!
 
             -# ${isTestVote ? '⚠️ This is a test vote.' : `🎉 This is your **${voteCount}${ordinalSuffix}** time voting!`}
@@ -140,5 +145,78 @@ export class VoteManager {
       typeof payload.isWeekend === 'boolean' || typeof payload.isWeekend === 'undefined';
 
     return isValidData && isValidWeekendType;
+  }
+
+  public setClusterManager(clusterManager: ClusterManager) {
+    this.clusterManager = clusterManager;
+  }
+
+  /**
+   * Get a compact list of voter perks
+   */
+  private getVoterPerksText(): string {
+    return stripIndents`
+      • Increased message length (2000 chars)
+      • Send stickers in hubs
+      • Create up to 4 hubs
+      • Custom welcome messages
+      • Voter role in support server
+      • Exclusive voter badge in \`/profile\`
+    `;
+  }
+
+  public async sendVoteDM(vote: WebhookPayload) {
+    if (!this.clusterManager) return;
+
+    const voteCount = (await this.getUserVoteCount(vote.user)) + 1;
+    const ordinalSuffix = getOrdinalSuffix(voteCount);
+    const nextVoteTime = time(new Date(Date.now() + (ms('12h') ?? 0)), 'R');
+
+    const voteEmbed = new EmbedBuilder()
+      .setTitle('Thank You for Voting!')
+      .setDescription(
+        stripIndents`
+          <:topgg_ico_sparkles:1026877534563991562> Thank you for supporting InterChat by voting!
+
+          ${vote.type === 'test' ? '⚠️ This is a test vote.' : `🎉 This is your **${voteCount}${ordinalSuffix}** time voting!`}
+          You can vote again ${nextVoteTime}.
+
+          **🎁 Voter Perks:**
+          ${this.getVoterPerksText()}
+        `,
+      )
+      .setColor('#FB3265')
+      .setFooter({
+        text: 'InterChat • Vote Notification',
+        iconURL: 'https://i.imgur.com/NKKmav5.gif',
+      });
+
+    const voteButton = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setStyle(ButtonStyle.Link)
+        .setLabel('Vote on top.gg')
+        .setEmoji('<:topgg_ico_sparkles:1026877534563991562>')
+        .setURL(Constants.Links.Vote),
+    );
+
+    // Try to send a DM to the user through one of the clusters
+    await this.clusterManager.broadcastEval(
+      async (client, ctx) => {
+        const user = await client.users.fetch(ctx.userId).catch(() => null);
+        if (!user) return false;
+
+        await user
+          .send({ embeds: [ctx.voteEmbed], components: [ctx.voteButton] })
+          .catch(() => null);
+        return true;
+      },
+      {
+        context: {
+          userId: vote.user,
+          voteEmbed: voteEmbed.toJSON(),
+          voteButton: voteButton.toJSON(),
+        },
+      },
+    );
   }
 }

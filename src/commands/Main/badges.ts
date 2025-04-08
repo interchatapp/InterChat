@@ -24,7 +24,11 @@ export default class BadgesCommand extends BaseCommand {
     await ctx.deferReply({ flags: ['Ephemeral'] });
 
     const showBadges = ctx.options.getBoolean('show', true);
-    await new UserDbService().upsertUser(ctx.user.id, { showBadges, name: ctx.user.username });
+    await new UserDbService().upsertUser(ctx.user.id, {
+      showBadges,
+      name: ctx.user.username,
+      image: ctx.user.displayAvatarURL(),
+    });
 
     await ctx.replyEmbed(showBadges ? 'badges.shown' : 'badges.hidden', {
       t: { emoji: ctx.getEmoji('tick_icon') },

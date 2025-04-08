@@ -91,5 +91,9 @@ export async function showInbox(
     )
     .run(interaction, { ephemeral: opts?.ephemeral });
 
-  await userDbService.updateUser(interaction.user.id, { inboxLastReadDate: new Date() });
+  await userDbService.updateUser(interaction.user.id, {
+    inboxLastReadDate: new Date(),
+    name: interaction.user.username,
+    image: interaction.user.avatarURL(),
+  });
 }
