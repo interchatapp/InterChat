@@ -58,9 +58,9 @@ rules:
 vote:
   description: |
     Ajude mais comunidades a descobrir o InterChat! Seu voto no top.gg:
-    • Ajuda outros a encontrar comunidades ativas
-    • Desbloqueia recursos especiais para você
-    • Apoia nosso desenvolvimento independente
+    - Ajuda outros a encontrar comunidades ativas
+    - Desbloqueia recursos especiais para você
+    - Apoia nosso desenvolvimento independente
   footer: "Os votos são atualizados a cada 12 horas • Obrigado por apoiar o InterChat!"
   button:
     label: "Vote no top.gg"

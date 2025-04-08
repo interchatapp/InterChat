@@ -156,12 +156,12 @@ export class VoteManager {
    */
   private getVoterPerksText(): string {
     return stripIndents`
-      • Increased message length (2000 chars)
-      • Send stickers in hubs
-      • Create up to 4 hubs
-      • Custom welcome messages
-      • Voter role in support server
-      • Exclusive voter badge in \`/profile\`
+      - Increased message length (2000 chars)
+      - Send stickers in hubs
+      - Create up to 4 hubs
+      - Custom welcome messages
+      - Voter role in support server
+      - Exclusive voter badge in \`/profile\`
     `;
   }
 
@@ -187,7 +187,7 @@ export class VoteManager {
       )
       .setColor('#FB3265')
       .setFooter({
-        text: 'InterChat • Vote Notification',
+        text: 'InterChat - Vote Notification',
         iconURL: 'https://i.imgur.com/NKKmav5.gif',
       });
 

@@ -58,9 +58,9 @@ rules:
 vote:
   description: |
     Help more communities discover InterChat! Your vote on top.gg:
-    • Helps others find active communities
-    • Unlocks special features for you
-    • Supports our independent development
+    - Helps others find active communities
+    - Unlocks special features for you
+    - Supports our independent development
   footer: "Votes refresh every 12 hours • Thanks for supporting InterChat!"
   button:
     label: "Vote on top.gg"

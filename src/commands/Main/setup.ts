@@ -93,10 +93,10 @@ export default class SetupCommand extends BaseCommand {
             .setDescription(
               stripIndents`
               I need the following permissions to work properly:
-              • Manage Webhooks
-              • Send Messages
-              • Manage Messages
-              • Embed Links
+              - Manage Webhooks
+              - Send Messages
+              - Manage Messages
+              - Embed Links
               
               Please give me these permissions and try again!
               Need help? [Join our support server](${Constants.Links.SupportInvite})
@@ -125,9 +125,9 @@ export default class SetupCommand extends BaseCommand {
         This can be any text channel in your server.
 
         **Tips:**
-        • Choose a channel that's easy to find
-        • Make sure members can see the channel
-        • You can create a new channel just for InterChat
+        - Choose a channel that's easy to find
+        - Make sure members can see the channel
+        - You can create a new channel just for InterChat
         `,
       )
       .setColor(Constants.Colors.interchat)
