@@ -26,6 +26,7 @@ import {
   type User,
 } from 'discord.js';
 import Constants from '#utils/Constants.js';
+import { handleError } from '#src/utils/Utils.js';
 
 /**
  * Retrieves the first channel in a guild or the inviter of the bot.
@@ -123,5 +124,5 @@ export const logGuildLeave = async (guild: Guild) => {
         }).toJSON(),
       },
     },
-  );
+  ).catch(handleError);
 };

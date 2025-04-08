@@ -25,6 +25,7 @@ import {
   logGuildJoin,
 } from '#utils/GuildUtils.js';
 import Logger from '#utils/Logger.js';
+import db from '#src/utils/Db.js';
 
 export default class Ready extends BaseEventListener<'guildCreate'> {
   readonly name = 'guildCreate';
@@ -93,5 +94,12 @@ export default class Ready extends BaseEventListener<'guildCreate'> {
     const welcomeMsg = { embeds: [embed], components: [buttonsRow] };
     guildOwner?.send(welcomeMsg).catch(() => null);
     guildChannel?.send(welcomeMsg).catch(() => null);
+
+    // store guild in database
+    await db.serverData.upsert({
+      where: { id: guild.id },
+      create: { id: guild.id, name: guild.name },
+      update: { name: guild.name },
+    });
   }
 }

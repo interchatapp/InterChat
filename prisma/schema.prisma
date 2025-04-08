@@ -35,6 +35,12 @@ type LogChannel {
   roleId    String?
 }
 
+enum AppealStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
 // Models
 model Hub {
   id                  String               @id @default(auto()) @map("_id") @db.ObjectId
@@ -159,6 +165,7 @@ model Infraction {
   hub       Hub      @relation(fields: [hubId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  appeals    Appeal[]
 
   @@index([status, hubId])
 }
@@ -235,8 +242,25 @@ model User {
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   ReputationLog     ReputationLog[]
+  Appeal            Appeal[]
 
   @@index([messageCount])
+}
+
+model Appeal {
+  id           String       @id @default(auto()) @map("_id") @db.ObjectId
+  infractionId String
+  userId       String
+  reason       String
+  status       AppealStatus @default(PENDING)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  infraction   Infraction   @relation(fields: [infractionId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@index([infractionId])
+  @@index([userId])
+  @@index([status])
 }
 
 model Announcement {

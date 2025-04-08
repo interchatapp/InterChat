@@ -21,6 +21,7 @@ import { deleteConnections } from '#utils/ConnectedListUtils.js';
 import { logGuildLeave } from '#utils/GuildUtils.js';
 import Logger from '#utils/Logger.js';
 import { logGuildLeaveToHub } from '#utils/hub/logger/JoinLeave.js';
+import db from '#src/utils/Db.js';
 
 export default class Ready extends BaseEventListener<'guildDelete'> {
   readonly name = 'guildDelete';
@@ -35,6 +36,9 @@ export default class Ready extends BaseEventListener<'guildDelete'> {
       if (connection) await logGuildLeaveToHub(connection.hubId, guild);
     });
 
-    await logGuildLeave(guild);
+    // delete guild from database
+    await db.serverData.delete({ where: { id: guild.id } });
+
+    logGuildLeave(guild);
   }
 }
