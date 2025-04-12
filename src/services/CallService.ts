@@ -100,6 +100,16 @@ export class CallService {
     return `call_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
   }
 
+  /**
+   * Check if a channel is already in the call queue
+   * @param channelId The channel ID to check
+   * @returns True if the channel is in the queue, false otherwise
+   */
+  private async isChannelInQueue(channelId: string): Promise<boolean> {
+    const queue = await this.redis.lrange(this.getQueueKey(), 0, -1);
+    return queue.some((item) => JSON.parse(item).channelId === channelId);
+  }
+
   async initiateCall(
     channel: GuildTextBasedChannel,
     initiatorId: string,
@@ -108,6 +118,12 @@ export class CallService {
     const activeCall = await this.redis.get(this.getActiveCallKey(channel.id));
     if (activeCall) {
       return { success: false, message: 'This channel is already in a call!' };
+    }
+
+    // Check if channel is already in the queue
+    const inQueue = await this.isChannelInQueue(channel.id);
+    if (inQueue) {
+      return { success: false, message: 'This channel is already in the call queue!' };
     }
 
     // Create webhook for the channel
@@ -155,10 +171,11 @@ export class CallService {
 
     if (!activeCall) {
       // Check if in queue
-      const queue = await this.redis.lrange(this.getQueueKey(), 0, -1);
-      const inQueue = queue.some((item) => JSON.parse(item).channelId === channelId);
+      const inQueue = await this.isChannelInQueue(channelId);
 
       if (inQueue) {
+        // Get the queue to find the exact item to remove
+        const queue = await this.redis.lrange(this.getQueueKey(), 0, -1);
         await this.redis.lrem(
           this.getQueueKey(),
           0,
@@ -237,7 +254,7 @@ export class CallService {
       if (
         queuedCall.guildId === callData.guildId ||
         queuedCall.initiatorId === callData.initiatorId ||
-        await this.hasRecentlyMatched(callData.initiatorId, queuedCall.initiatorId)
+        (await this.hasRecentlyMatched(callData.initiatorId, queuedCall.initiatorId))
       ) {
         continue;
       }
@@ -300,10 +317,10 @@ export class CallService {
       ),
     ]);
 
-    // Send connected messages to both channels
+    // Send connected messages to both channels with pings for the initiators
     const message = await this.getCallStartMessage();
-    await this.sendSystemMessage(call2.webhookUrl, message);
-    await this.sendSystemMessage(call1.webhookUrl, message);
+    await this.sendSystemMessage(call2.webhookUrl, `<@${call2.initiatorId}> ${message}`);
+    await this.sendSystemMessage(call1.webhookUrl, `<@${call1.initiatorId}> ${message}`);
   }
 
   // Add method to track new participants during the call
@@ -406,6 +423,7 @@ export class CallService {
       username: 'InterChat Calls',
       avatarURL: this.client.user?.displayAvatarURL(),
       components: components.map((c) => c.toJSON()),
+      allowedMentions: { parse: ['users'] },
     });
   }
 
