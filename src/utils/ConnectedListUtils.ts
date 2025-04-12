@@ -15,9 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import Context, {
-  CacheContext,
-} from '#src/core/CommandContext/Context.js';
+import Context, { CacheContext } from '#src/core/CommandContext/Context.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { supportedLocaleCodes, t } from '#src/utils/Locale.js';
 import Logger from '#src/utils/Logger.js';
@@ -26,7 +24,7 @@ import type { ConvertDatesToString } from '#types/Utils.d.ts';
 import { RedisKeys } from '#utils/Constants.js';
 import db from '#utils/Db.js';
 import getRedis from '#utils/Redis.js';
-import type { Connection, Prisma } from '@prisma/client';
+import type { Connection, Prisma } from '#src/generated/prisma/client/client.js';
 import { MessageComponentInteraction, RepliableInteraction } from 'discord.js';
 import isEmpty from 'lodash/isEmpty.js';
 

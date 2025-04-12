@@ -32,7 +32,7 @@ import {
   handleError,
   hasUnreadDevAlert,
 } from '#utils/Utils.js';
-import type { User as DbUser } from '@prisma/client';
+import type { User as DbUser } from '#src/generated/prisma/client/client.js';
 import type {
   AutocompleteInteraction,
   CacheType,

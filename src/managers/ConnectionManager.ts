@@ -15,7 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Connection, Prisma } from '@prisma/client';
+import type { Connection, Prisma } from '#src/generated/prisma/client/client.js';
 import type { HexColorString } from 'discord.js';
 import { HubService } from '#src/services/HubService.js';
 import { cacheHubConnection } from '#src/utils/ConnectedListUtils.js';

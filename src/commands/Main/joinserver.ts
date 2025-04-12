@@ -10,7 +10,7 @@ import { t } from '#src/utils/Locale.js';
 import { replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
 import { findOriginalMessage } from '#src/utils/network/messageUtils.js';
 import { fetchUserLocale, resolveEval } from '#src/utils/Utils.js';
-import type { Connection } from '@prisma/client';
+import type { Connection } from '#src/generated/prisma/client/client.js';
 import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,

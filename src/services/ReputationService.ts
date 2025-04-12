@@ -16,7 +16,7 @@
  */
 
 import db from '#src/utils/Db.js';
-import { User } from '@prisma/client';
+import { User } from '#src/generated/prisma/client/client.js';
 import type { Snowflake } from 'discord.js';
 
 export class ReputationService {

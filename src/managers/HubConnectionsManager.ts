@@ -15,7 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Connection, Prisma } from '@prisma/client';
+import type { Connection, Prisma } from '#src/generated/prisma/client/client.js';
 import type { Redis } from 'ioredis';
 import isEmpty from 'lodash/isEmpty.js';
 import ConnectionManager from '#src/managers/ConnectionManager.js';

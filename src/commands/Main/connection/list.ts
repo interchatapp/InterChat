@@ -15,7 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Connection, Hub } from '@prisma/client';
+import type { Connection, Hub } from '#src/generated/prisma/client/client.js';
 import { type AutocompleteInteraction, EmbedBuilder, type EmbedField } from 'discord.js';
 import { Pagination } from '#src/modules/Pagination.js';
 import Constants from '#utils/Constants.js';

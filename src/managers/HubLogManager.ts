@@ -22,7 +22,7 @@ import { RedisKeys } from '#utils/Constants.js';
 import db from '#utils/Db.js';
 import { InfoEmbed } from '#utils/EmbedUtils.js';
 import { type supportedLocaleCodes, t } from '#utils/Locale.js';
-import type { HubLogConfig, Prisma } from '@prisma/client';
+import type { HubLogConfig, Prisma } from '#src/generated/prisma/client/client.js';
 import { stripIndents } from 'common-tags';
 import {
   type Client,

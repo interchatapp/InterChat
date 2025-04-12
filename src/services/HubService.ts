@@ -22,7 +22,7 @@ import Constants, { RedisKeys } from '#src/utils/Constants.js';
 import db from '#src/utils/Db.js';
 import getRedis from '#src/utils/Redis.js';
 import type { ConvertDatesToString } from '#types/Utils.d.ts';
-import type { Hub, PrismaClient, Role } from '@prisma/client';
+import type { Hub, PrismaClient, Role } from '#src/generated/prisma/client/client.js';
 import type { Redis } from 'ioredis';
 
 export interface HubCreationData {

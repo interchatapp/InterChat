@@ -15,7 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { UserData } from '@prisma/client';
+import type { UserData } from '#src/generated/prisma/client/client.js';
 import type { Collection, HexColorString, Message, User } from 'discord.js';
 import type { Broadcast, OriginalMessage } from '#src/utils/network/messageUtils.js';
 

@@ -15,7 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Connection } from '@prisma/client';
+import type { Connection } from '#src/generated/prisma/client/client.js';
 import type { Message, WebhookMessageCreateOptions } from 'discord.js';
 import { buildNetworkEmbed } from '#src/utils/network/utils.js';
 import type { DefaultFormaterOpts, MessageFormatterStrategy } from '../MessageFormattingService.js';

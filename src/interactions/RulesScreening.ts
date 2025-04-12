@@ -29,7 +29,7 @@ import { CustomID } from '#utils/CustomID.js';
 import db from '#utils/Db.js';
 import { InfoEmbed } from '#utils/EmbedUtils.js';
 import { supportedLocaleCodes, t } from '#utils/Locale.js';
-import type { User as DbUser } from '@prisma/client';
+import type { User as DbUser } from '#src/generated/prisma/client/client.js';
 import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,

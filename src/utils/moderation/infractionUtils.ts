@@ -15,7 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Infraction } from '@prisma/client';
+import type { Infraction } from '#src/generated/prisma/client/client.js';
 import { stripIndents } from 'common-tags';
 import { type Client, EmbedBuilder, type User, time } from 'discord.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';

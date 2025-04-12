@@ -15,7 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '#src/generated/prisma/client/client.js';
 
 const db = new PrismaClient({ log: [{ emit: 'event', level: 'query' }] });
 

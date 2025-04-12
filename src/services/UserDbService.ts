@@ -20,7 +20,7 @@ import getRedis from '#src/utils/Redis.js';
 import type { ConvertDatesToString } from '#types/Utils.d.ts';
 import { RedisKeys } from '#utils/Constants.js';
 import db from '#utils/Db.js';
-import type { Prisma, User } from '@prisma/client';
+import type { Prisma, User } from '#src/generated/prisma/client/client.js';
 import type { Snowflake } from 'discord.js';
 
 export default class UserDbService {

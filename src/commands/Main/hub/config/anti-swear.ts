@@ -37,7 +37,7 @@ import {
   sanitizeWords,
 } from '#src/utils/moderation/antiSwear.js';
 import { fetchUserLocale, getReplyMethod } from '#src/utils/Utils.js';
-import { BlockWord, BlockWordAction } from '@prisma/client';
+import { BlockWord, BlockWordAction } from '#src/generated/prisma/client/client.js';
 import {
   ActionRowBuilder,
   ButtonBuilder,

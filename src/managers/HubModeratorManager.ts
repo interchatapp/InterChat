@@ -15,7 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { HubModerator, Role } from '@prisma/client';
+import type { HubModerator, Role } from '#src/generated/prisma/client/client.js';
 import { Collection } from 'discord.js';
 import type { Redis } from 'ioredis';
 import isEmpty from 'lodash/isEmpty.js';

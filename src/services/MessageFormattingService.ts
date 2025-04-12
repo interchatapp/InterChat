@@ -15,7 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Connection, Hub } from '@prisma/client';
+import type { Connection, Hub } from '#src/generated/prisma/client/client.js';
 import {
   type ActionRowBuilder,
   type ButtonBuilder,

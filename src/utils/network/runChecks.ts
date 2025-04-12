@@ -27,7 +27,7 @@ import { checkBlockedWords } from '#src/utils/network/antiSwearChecks.js';
 import Constants from '#utils/Constants.js';
 import { t } from '#utils/Locale.js';
 import { containsInviteLinks, fetchUserLocale, replaceLinks } from '#utils/Utils.js';
-import type { User as DbUser } from '@prisma/client';
+import type { User as DbUser } from '#src/generated/prisma/client/client.js';
 import { stripIndents } from 'common-tags';
 import { type Awaitable, EmbedBuilder, type Message } from 'discord.js';
 

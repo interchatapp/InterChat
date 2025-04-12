@@ -18,7 +18,7 @@
 // import UserDbService from '#src/services/UserDbService.js';
 // import db from '#src/utils/Db.js';
 // import { calculateRequiredXP } from '#src/utils/calculateLevel.js';
-// import type { PrismaClient, UserData } from '@prisma/client';
+// import type { PrismaClient, UserData } from '#src/generated/prisma/client/client.js';
 // import { Colors, type Message } from 'discord.js';
 
 // type LeaderboardType = 'xp' | 'level' | 'messages';

@@ -28,7 +28,7 @@ import Constants from '#utils/Constants.js';
 import db from '#utils/Db.js';
 import { t } from '#utils/Locale.js';
 import { buildInfractionListEmbeds } from '#utils/moderation/infractionUtils.js';
-import type { Infraction, User } from '@prisma/client';
+import type { Infraction, User } from '#src/generated/prisma/client/client.js';
 import { stripIndents } from 'common-tags';
 import {
   ApplicationCommandOptionType,

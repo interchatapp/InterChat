@@ -15,7 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { BlockWord, Hub } from '@prisma/client';
+import type { BlockWord, Hub } from '#src/generated/prisma/client/client.js';
 import type { Redis } from 'ioredis';
 import { type CacheConfig, CacheManager } from '#src/managers/CacheManager.js';
 import HubConnectionsManager from '#src/managers/HubConnectionsManager.js';

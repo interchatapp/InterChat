@@ -17,7 +17,7 @@
 
 import BlacklistManager from '#src/managers/BlacklistManager.js';
 
-import { type BlockWord, BlockWordAction } from '@prisma/client';
+import { type BlockWord, BlockWordAction } from '#src/generated/prisma/client/client.js';
 import type { ActionRowBuilder, Awaitable, ButtonBuilder, Message } from 'discord.js';
 import Logger from '#src/utils/Logger.js';
 import { logBlockwordAlert } from '#src/utils/hub/logger/BlockWordAlert.js';

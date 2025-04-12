@@ -21,7 +21,7 @@ import type Context from '#src/core/CommandContext/Context.js';
 import { HubService } from '#src/services/HubService.js';
 import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
 import { t } from '#src/utils/Locale.js';
-import { Role } from '@prisma/client';
+import { Role } from '#src/generated/prisma/client/client.js';
 import { EmbedBuilder, type AutocompleteInteraction } from 'discord.js';
 
 export default class HubModeratorListSubcommand extends BaseCommand {

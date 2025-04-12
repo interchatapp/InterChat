@@ -21,7 +21,7 @@ import { updateConnections } from '#utils/ConnectedListUtils.js';
 import db from '#utils/Db.js';
 import { InfoEmbed } from '#utils/EmbedUtils.js';
 import Logger from '#utils/Logger.js';
-import type { Connection, Hub } from '@prisma/client';
+import type { Connection, Hub } from '#src/generated/prisma/client/client.js';
 import { stripIndents } from 'common-tags';
 import { type EmbedBuilder, WebhookClient } from 'discord.js';
 

@@ -20,7 +20,7 @@ import { supportedLocaleCodes, t } from '#src/utils/Locale.js';
 import Constants, { numberEmojis } from '#utils/Constants.js';
 import { CustomID } from '#utils/CustomID.js';
 import { InfoEmbed } from '#utils/EmbedUtils.js';
-import { type BlockWord, BlockWordAction } from '@prisma/client';import {
+import { type BlockWord, BlockWordAction } from '#src/generated/prisma/client/client.js';import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,

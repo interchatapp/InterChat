@@ -15,7 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Infraction } from '@prisma/client';
+import type { Infraction } from '#src/generated/prisma/client/client.js';
 import {
   ApplicationCommandOptionType,
   type AutocompleteInteraction,

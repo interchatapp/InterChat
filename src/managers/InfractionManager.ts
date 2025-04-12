@@ -16,7 +16,7 @@
  */
 
 import { isDate } from 'node:util/types';
-import type { Infraction, InfractionStatus, InfractionType, Prisma } from '@prisma/client';
+import type { Infraction, InfractionStatus, InfractionType, Prisma } from '#src/generated/prisma/client/client.js';
 import type { Client, Snowflake, User } from 'discord.js';
 import { HubService } from '#src/services/HubService.js';
 import db from '#src/utils/Db.js';

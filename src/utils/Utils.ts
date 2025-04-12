@@ -27,7 +27,7 @@ import type { RemoveMethods, ThreadParentChannel } from '#types/CustomClientProp
 import Constants from '#utils/Constants.js';
 import { ErrorEmbed } from '#utils/EmbedUtils.js';
 import Logger from '#utils/Logger.js';
-import type { User } from '@prisma/client';
+import type { User } from '#src/generated/prisma/client/client.js';
 import { captureException } from '@sentry/node';
 import {
   type CommandInteraction,

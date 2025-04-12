@@ -15,7 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { BlockWord } from '@prisma/client';
+import type { BlockWord } from '#src/generated/prisma/client/client.js';
 import { stripIndents } from 'common-tags';
 import { EmbedBuilder, type Message } from 'discord.js';
 import HubLogManager from '#src/managers/HubLogManager.js';

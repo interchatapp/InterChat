@@ -36,7 +36,7 @@ import {
   getReferredContent,
   getReferredMsgData,
 } from '#utils/network/utils.js';
-import type { Connection, User } from '@prisma/client';
+import type { Connection, User } from '#src/generated/prisma/client/client.js';
 import type {
   APIMessage,
   Client,

@@ -3,7 +3,7 @@ import { getEmoji } from '#utils/EmojiUtils.js';
 import { checkIfStaff } from '#utils/Utils.js';
 import Constants, { RedisKeys } from '#utils/Constants.js';
 import db from '#src/utils/Db.js';
-import { User } from '@prisma/client';
+import { User } from '#src/generated/prisma/client/client.js';
 import { getRedis } from '#src/utils/Redis.js';
 
 export interface Badge {

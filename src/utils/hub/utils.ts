@@ -24,7 +24,7 @@ import { t } from '#src/utils/Locale.js';
 import { webhookErrorMessages } from '#src/utils/network/storeMessageData.js';
 import { getHubConnections, updateConnections } from '#utils/ConnectedListUtils.js';
 import { checkIfStaff, fetchUserLocale, getReplyMethod } from '#utils/Utils.js';
-import type { HubModerator, Role } from '@prisma/client';
+import type { HubModerator, Role } from '#src/generated/prisma/client/client.js';
 import { type RepliableInteraction, type WebhookMessageCreateOptions } from 'discord.js';
 
 interface ValidationCheck {

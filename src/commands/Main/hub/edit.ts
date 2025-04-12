@@ -18,7 +18,7 @@
 import type Context from '#src/core/CommandContext/Context.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import type HubLogManager from '#src/managers/HubLogManager.js';
-import type { Hub } from '@prisma/client';
+import type { Hub } from '#src/generated/prisma/client/client.js';
 import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,

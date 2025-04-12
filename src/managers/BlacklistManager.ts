@@ -15,7 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Infraction, InfractionStatus, Prisma } from '@prisma/client';
+import type { Infraction, InfractionStatus, Prisma } from '#src/generated/prisma/client/client.js';
 import { stripIndents } from 'common-tags';
 import { type Client, EmbedBuilder, type Snowflake, type User } from 'discord.js';
 import InfractionManager from '#src/managers/InfractionManager.js';
