@@ -83,9 +83,14 @@ export default class HubEditSubcommand extends BaseCommand {
     if (!hub) return;
 
     const embed = await this.getRefreshedHubEmbed(hub, locale, ctx.client);
+
     const actionRow = this.buildActionsSelectMenu(ctx.user.id, hub.id, locale);
 
-    await ctx.reply({ embeds: [embed], components: [actionRow] });
+    await ctx.reply({
+      content: this.getDashboardTip(locale, hub.id),
+      embeds: [embed],
+      components: [actionRow],
+    });
   }
 
   async autocomplete(interaction: AutocompleteInteraction) {
@@ -277,7 +282,12 @@ export default class HubEditSubcommand extends BaseCommand {
     );
 
     const embed = await this.getRefreshedHubEmbed(hub, locale, interaction.client);
-    await interaction.message.edit({ embeds: [embed] }).catch(() => null);
+    await interaction.message
+      .edit({
+        content: this.getDashboardTip(locale, hub.id),
+        embeds: [embed],
+      })
+      .catch(() => null);
 
     await sendToHub(hub.id, {
       username: hub.data.name ?? 'InterChat Hub Announcement',
@@ -306,7 +316,10 @@ export default class HubEditSubcommand extends BaseCommand {
     const embed = interaction.message.embeds[0]?.toJSON();
     if (embed?.fields?.at(0)) {
       embed.fields[0].value = this.channelMention(channelId, interaction.client);
-      await interaction.update({ embeds: [embed] });
+      await interaction.update({
+        content: this.getDashboardTip(locale, logManager.hubId),
+        embeds: [embed],
+      });
     }
 
     await interaction.followUp({
@@ -360,7 +373,11 @@ export default class HubEditSubcommand extends BaseCommand {
         }),
       );
 
-      await interaction.reply({ embeds: [embed] });
+      await interaction.reply({
+        // Add dashboard CTA
+        content: this.getDashboardTip(locale, hubId),
+        embeds: [embed],
+      });
       return;
     }
 
@@ -369,6 +386,12 @@ export default class HubEditSubcommand extends BaseCommand {
 
     await hub.update({ iconUrl });
     await this.replySuccess(interaction, t('hub.manage.icon.changed', locale), true);
+  }
+
+  private getDashboardTip(locale: supportedLocaleCodes, hubId: string) {
+    return t('hub.manage.dashboardTip', locale, {
+      url: `${Constants.Links.Website}/dashboard/hubs/${hubId}/edit`,
+    });
   }
 
   private async updateHubBanner(
@@ -413,7 +436,12 @@ export default class HubEditSubcommand extends BaseCommand {
     const updatedHub = await this.hubService.fetchHub(hubId);
     if (updatedHub) {
       const embed = await this.getRefreshedHubEmbed(updatedHub, locale, interaction.client);
-      await interaction.message?.edit({ embeds: [embed] }).catch(() => null);
+      await interaction.message
+        ?.edit({
+          content: this.getDashboardTip(locale, hubId),
+          embeds: [embed],
+        })
+        .catch(() => null);
     }
   }
 

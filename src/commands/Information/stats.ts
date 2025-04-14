@@ -96,6 +96,11 @@ export default class Stats extends BaseCommand {
         .setEmoji(ctx.getEmoji('plus_icon'))
         .setURL(`https://discord.com/application-directory/${ctx.client.user?.id}`),
       new ButtonBuilder()
+        .setLabel('Dashboard')
+        .setStyle(ButtonStyle.Link)
+        .setEmoji(ctx.getEmoji('wand_icon'))
+        .setURL(`${Constants.Links.Website}/dashboard`),
+      new ButtonBuilder()
         .setLabel('Support')
         .setStyle(ButtonStyle.Link)
         .setEmoji(ctx.getEmoji('code_icon'))
@@ -138,7 +143,7 @@ export default class Stats extends BaseCommand {
       .setDescription(
         stripIndents`
 					### Shard Stats
-					**Total Shards:** ${interaction.client.cluster.info.TOTAL_SHARDS} 
+					**Total Shards:** ${interaction.client.cluster.info.TOTAL_SHARDS}
 					**On Shard:** ${interaction.guild?.shardId ?? 0}
 					`,
       )

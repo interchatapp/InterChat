@@ -32,6 +32,8 @@ import Constants from '#utils/Constants.js';
 import { type supportedLocaleCodes, t } from '#utils/Locale.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import BaseCommand from '#src/core/BaseCommand.js';
+import { stripIndents } from 'common-tags';
+import { getEmoji } from '#src/utils/EmojiUtils.js';
 
 export default class HubCreateSubCommand extends BaseCommand {
   constructor() {
@@ -103,11 +105,13 @@ export default class HubCreateSubCommand extends BaseCommand {
     const successEmbed = new EmbedBuilder()
       .setColor('Green')
       .setDescription(
-        t('hub.create.success', locale, {
+        stripIndents`${t('hub.create.success', locale, {
           name: hubName,
           support_invite: Constants.Links.SupportInvite,
           donateLink: Constants.Links.Donate,
-        }),
+        })}
+        
+        ${getEmoji('wand_icon', interaction.client)} **Pro tip:** Use our [dashboard](${Constants.Links.Website}/dashboard) for easier hub management with a visual interface!`,
       )
       .setTimestamp();
 
@@ -154,13 +158,13 @@ export default class HubCreateSubCommand extends BaseCommand {
             .setRequired(false)
             .setCustomId('banner'),
         ),
-      // new ActionRowBuilder<TextInputBuilder>().addComponents(
-      //   new TextInputBuilder()
-      //     .setLabel('Language')
-      //     .setPlaceholder('Pick a language for this hub.')
-      //     .setStyle(TextInputStyle.Short)
-      //     .setCustomId('language'),
-      // ),
+        // new ActionRowBuilder<TextInputBuilder>().addComponents(
+        //   new TextInputBuilder()
+        //     .setLabel('Language')
+        //     .setPlaceholder('Pick a language for this hub.')
+        //     .setStyle(TextInputStyle.Short)
+        //     .setCustomId('language'),
+        // ),
       );
   }
 }

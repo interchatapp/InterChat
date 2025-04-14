@@ -54,6 +54,7 @@ export default class About extends BaseCommand {
         - Active hubs - Find and join thriving communities around shared interests
         - Privacy first - Full control over your hub's connections and settings
         - Smart moderation - AI-powered image filtering and advanced content filtering keeps discussions healthy
+        - Visual dashboard - Manage your hubs, servers, and settings through our web interface
         `,
       )
       .setFooter({
@@ -67,6 +68,11 @@ export default class About extends BaseCommand {
         .setEmoji(ctx.getEmoji('plus_icon'))
         .setURL('https://discord.com/application-directory/769921109209907241'),
       donateButton,
+      new ButtonBuilder()
+        .setStyle(ButtonStyle.Link)
+        .setLabel('Dashboard')
+        .setEmoji(ctx.getEmoji('wand_icon'))
+        .setURL(`${Constants.Links.Website}/dashboard`),
       new ButtonBuilder()
         .setStyle(ButtonStyle.Link)
         .setLabel('Support')
@@ -104,7 +110,7 @@ export default class About extends BaseCommand {
     const creditsEmbed = new InfoEmbed()
       .setDescription(
         stripIndents`
-      
+
         ${creditsDivider}
         ${getEmoji('developer_badge', interaction.client)} **Developers:**
         ${dotBlue} @${usernames[0]}

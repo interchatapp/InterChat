@@ -29,11 +29,13 @@ import Logger from '#src/utils/Logger.js';
 
 interface ErrorResult {
   webhookURL: string;
+  channelId: string;
   error: string;
 }
 
 interface SendResult {
   messageRes: APIMessage;
+  channelId: string;
   mode: ConnectionMode;
   webhookURL: string;
 }

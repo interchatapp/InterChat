@@ -58,8 +58,10 @@ export default class HubConfigSettingsSubcommand extends BaseCommand {
       }))
     ) return;
 
+    const settingsEmbed = hub.settings.getEmbed(ctx.client);
+
     await ctx.reply({
-      embeds: [hub.settings.getEmbed(ctx.client)],
+      embeds: [settingsEmbed],
       components: [HubConfigSettingsSubcommand.getSettingsMenu(hub, ctx.client)],
     });
   }

@@ -26,25 +26,57 @@ import { updateLeaderboards } from '#src/utils/Leaderboard.js';
 import Logger from '#src/utils/Logger.js';
 import { runCallChecks, runChecks } from '#src/utils/network/runChecks.js';
 import { getRedis } from '#src/utils/Redis.js';
-import { fetchUserData } from '#src/utils/Utils.js';
-import type { Client, Message } from 'discord.js';
+import { fetchUserData, getOrCreateWebhook, handleError } from '#src/utils/Utils.js';
+import type { Client, GuildTextBasedChannel, Message } from 'discord.js';
 import { BroadcastService } from './BroadcastService.js';
+import type { Hub, User } from '#src/generated/prisma/client/client.js';
 
-type messageProcessingResult = { handled: false; hub: null } | { handled: true; hub: HubManager };
+/**
+ * Result of processing a message in a hub channel
+ */
+type MessageProcessingResult = { handled: false; hub: null } | { handled: true; hub: HubManager };
 
+/**
+ * Data structure returned when retrieving hub and connections
+ */
+interface HubConnectionData {
+  hub: HubManager;
+  hubRaw: Hub & { rulesAcceptances: { userId: string }[]; connections: { channelId: string }[] };
+  connection: ConnectionManager;
+  hubConnections: ConnectionManager[];
+}
+
+/**
+ * Processes messages for both hub channels and call channels
+ */
 export class MessageProcessor {
   private readonly broadcastService: BroadcastService;
   private readonly callService: CallService;
 
+  /**
+   * Creates a new MessageProcessor instance
+   * @param client Discord client instance
+   */
   constructor(client: Client) {
     this.broadcastService = new BroadcastService();
     this.callService = new CallService(client);
   }
 
-  static async getHubAndConnections(channelId: string, userId: string) {
+  /**
+   * Retrieves hub and connection data for a given channel and user
+   * @param channelId The channel ID to get hub data for
+   * @param userId The user ID to check rules acceptance for
+   * @returns Hub and connection data or null if not found
+   */
+  static async getHubAndConnections(
+    channelId: string,
+    userId: string,
+  ): Promise<HubConnectionData | null> {
+    // Get the hub ID associated with this channel
     const connectionHubId = await getConnectionHubId(channelId);
     if (!connectionHubId) return null;
 
+    // Fetch the hub with its connections and rule acceptances
     const hub = await db.hub.findFirst({
       where: { id: connectionHubId },
       include: {
@@ -54,10 +86,14 @@ export class MessageProcessor {
     });
     if (!hub) return null;
 
+    // Find and extract the current channel's connection
     const connectionIndex = hub.connections.findIndex((c) => c.channelId === channelId);
-    const connection = hub.connections.splice(connectionIndex, 1)[0];
-    if (!connection) return null;
+    if (connectionIndex === -1) return null;
 
+    // remove the connection from the list since we dont want to broadcast to it
+    const connection = hub.connections.splice(connectionIndex, 1)[0];
+
+    // Return the hub and connection data
     return {
       hub: new HubManager(hub),
       hubRaw: hub,
@@ -66,97 +102,238 @@ export class MessageProcessor {
     };
   }
 
-  async processHubMessage(message: Message<true>): Promise<messageProcessingResult> {
-    const hubAndConnections = await MessageProcessor.getHubAndConnections(
-      message.channelId,
-      message.author.id,
-    );
+  /**
+   * Processes a message sent in a hub channel
+   * @param message The Discord message to process
+   * @returns Result indicating if the message was handled and the associated hub
+   */
+  async processHubMessage(message: Message<true>): Promise<MessageProcessingResult> {
+    try {
+      // Get hub and connection data for this channel
+      const hubAndConnections = await MessageProcessor.getHubAndConnections(
+        message.channelId,
+        message.author.id,
+      );
 
-    if (!hubAndConnections) return { handled: false, hub: null };
-    const { hub, hubRaw, hubConnections, connection } = hubAndConnections;
+      if (!hubAndConnections) return { handled: false, hub: null };
+      const { hub, hubRaw, hubConnections, connection } = hubAndConnections;
 
-    const userData = await fetchUserData(message.author.id);
+      // Ensure webhook URL is set (if connected through dashboard it might not be)
+      if (connection.data.webhookURL.length < 1) {
+        await this.setConnectionWebhookURL(connection, message.channel);
+      }
 
-    // First check if user accepted bot rules
-    if (!userData?.acceptedRules) {
-      await showRulesScreening(message, userData);
+      // Get user data for rules checking and other operations
+      const userData = await fetchUserData(message.author.id);
+
+      // Check if user has accepted the bot's global rules
+      if (!(await this.checkBotRulesAcceptance(message, userData))) {
+        return { handled: false, hub: null };
+      }
+
+      // Check if user has accepted the hub's specific rules
+      if (!(await this.checkHubRulesAcceptance(message, userData, hub, hubRaw))) {
+        return { handled: false, hub: null };
+      }
+
+      // Resolve any attachments in the message
+      const attachmentURL = await this.broadcastService.resolveAttachmentURL(message);
+
+      // Run all message checks (ban, blacklist, NSFW, anti-swear, etc.)
+      if (
+        !(await this.runMessageChecks(message, hub, userData, attachmentURL, hubConnections.length))
+      ) {
+        return { handled: false, hub: null };
+      }
+
+      // Indicate typing in the channel to show the message is being processed
+      message.channel.sendTyping().catch(() => null);
+
+      // Broadcast the message to all connected channels
+      await this.broadcastService.broadcastMessage(
+        message,
+        hub,
+        hubConnections,
+        connection,
+        attachmentURL,
+        userData,
+      );
+
+      // Update leaderboards and metrics
+      this.updateStatsAfterBroadcast(message, hub);
+
+      return { handled: true, hub };
+    }
+    catch (error) {
+      handleError(error, { comment: 'Error processing hub message' });
       return { handled: false, hub: null };
     }
+  }
 
-    // Add a cooldown check for hub rules
+  /**
+   * Checks if a user has accepted the bot's global rules
+   * @param message The Discord message
+   * @param userData The user's data from the database
+   * @returns Whether the user has accepted the rules
+   */
+  private async checkBotRulesAcceptance(
+    message: Message<true>,
+    userData: User | null,
+  ): Promise<boolean> {
+    if (!userData?.acceptedRules) {
+      await showRulesScreening(message, userData);
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Checks if a user has accepted the hub's specific rules
+   * @param message The Discord message
+   * @param userData The user's data from the database
+   * @param hub The hub manager instance
+   * @param hubRaw The raw hub data from the database
+   * @returns Whether the user has accepted the hub rules or if no rules exist
+   */
+  private async checkHubRulesAcceptance(
+    message: Message<true>,
+    userData: User | null,
+    hub: HubManager,
+    hubRaw: Hub & { rulesAcceptances: { userId: string }[] },
+  ): Promise<boolean> {
+    // If the hub has no rules or the user has already accepted them, return true
+    if (hubRaw.rulesAcceptances.length || hub.getRules().length === 0) {
+      return true;
+    }
+
+    // Check if we've recently shown the rules to this user (cooldown)
     const rulesShownKey = `${RedisKeys.RulesShown}:${message.author.id}:${hub.id}`;
     const redis = getRedis();
     const rulesShown = await redis.get(rulesShownKey);
 
-    if (!hubRaw.rulesAcceptances.length && hub.getRules().length > 0) {
-      if (rulesShown) return { handled: false, hub: null };
+    if (rulesShown) return false;
 
-      // Set a cooldown of 5 minutes to prevent spam
-      await redis.set(rulesShownKey, '1', 'EX', 300);
-      await showRulesScreening(message, userData, hub);
-      return { handled: false, hub: null };
-    }
+    // Set a cooldown of 5 minutes to prevent spam
+    await redis.set(rulesShownKey, '1', 'EX', 300);
+    await showRulesScreening(message, userData, hub);
+    return false;
+  }
 
-    const attachmentURL = await this.broadcastService.resolveAttachmentURL(message);
+  /**
+   * Runs all message checks for hub messages
+   * @param message The Discord message
+   * @param hub The hub manager instance
+   * @param userData The user's data from the database
+   * @param attachmentURL URL of any attachment in the message
+   * @param connectionCount Number of connections in the hub
+   * @returns Whether the message passed all checks
+   */
+  private async runMessageChecks(
+    message: Message<true>,
+    hub: HubManager,
+    userData: User | null,
+    attachmentURL: string | undefined,
+    connectionCount: number,
+  ): Promise<boolean> {
+    // If userData is null, we can't run checks
+    if (!userData) return false;
 
-    if (
-      !(await runChecks(message, hub, {
-        userData,
-        settings: hub.settings,
-        attachmentURL,
-        totalHubConnections: hubConnections.length + 1,
-      }))
-    ) {
-      return { handled: false, hub: null };
-    }
-
-    message.channel.sendTyping().catch(() => null);
-
-    await this.broadcastService.broadcastMessage(
-      message,
-      hub,
-      hubConnections,
-      connection,
-      attachmentURL,
+    return await runChecks(message, hub, {
       userData,
-    );
+      settings: hub.settings,
+      attachmentURL,
+      totalHubConnections: connectionCount + 1,
+    });
+  }
 
+  /**
+   * Updates statistics and metrics after a successful message broadcast
+   * @param message The Discord message
+   * @param hub The hub manager instance
+   */
+  private updateStatsAfterBroadcast(message: Message<true>, hub: HubManager): void {
     updateLeaderboards('user', message.author.id);
     updateLeaderboards('server', message.guildId);
     message.client.shardMetrics.incrementMessage(hub.data.name);
-
-    return { handled: true, hub };
   }
 
-  async processCallMessage(message: Message<true>): Promise<boolean> {
-    const activeCall = await this.callService.getActiveCallData(message.channelId);
-    const userData = await fetchUserData(message.author.id);
-
-    if (!activeCall || !userData) return false;
-
-    // rules screening
-    if (!userData.acceptedRules) {
-      await showRulesScreening(message, userData);
-      return false;
-    }
-
-    // Track this user as a participant
-    await this.callService.addParticipant(message.channelId, message.author.id);
-
-    // Find the other participant's webhook URL
-    const otherParticipant = activeCall.participants.find(
-      (p) => p.channelId !== message.channelId,
-    );
-    if (!otherParticipant) return false;
-
-    const checksPassed = await runCallChecks(message, {
-      userData,
-      attachmentURL: message.attachments.first()?.url,
-    });
-
-    if (!checksPassed) return false;
-
+  /**
+   * Sets the webhook URL for a connection if it doesn't have one
+   * @param connection The connection manager instance
+   * @param channel The Discord channel
+   * @returns Result of the operation or void if successful
+   */
+  private async setConnectionWebhookURL(
+    connection: ConnectionManager,
+    channel: GuildTextBasedChannel,
+  ): Promise<MessageProcessingResult | void> {
     try {
+      const webhook = await getOrCreateWebhook(channel);
+      if (!webhook) return { handled: false, hub: null };
+
+      await db.connection.update({
+        where: { id: connection.id },
+        data: { webhookURL: webhook.url },
+      });
+    }
+    catch (error) {
+      handleError(error, { comment: 'Failed to set webhook URL' });
+      return { handled: false, hub: null };
+    }
+  }
+
+  /**
+   * Processes a message sent in a call channel
+   * @param message The Discord message to process
+   * @returns Whether the message was successfully processed and sent
+   */
+  async processCallMessage(message: Message<true>): Promise<boolean> {
+    try {
+      // Get active call data and user data
+      const activeCall = await this.callService.getActiveCallData(message.channelId);
+      const userData = await fetchUserData(message.author.id);
+
+      // Validate call and user data
+      if (!activeCall || !userData) {
+        return false;
+      }
+
+      // Check if user has accepted the bot's rules
+      if (!userData.acceptedRules) {
+        await showRulesScreening(message, userData);
+        return false;
+      }
+
+      // Track this user as a participant in the call
+      await this.callService.addParticipant(message.channelId, message.author.id);
+
+      // Find the other participant to send the message to
+      const otherParticipant = activeCall.participants.find(
+        (p) => p.channelId !== message.channelId,
+      );
+      if (!otherParticipant) {
+        Logger.debug('No other participant found in call');
+        return false;
+      }
+
+      const attachmentURL = message.attachments.first()?.url;
+
+      if (!userData) {
+        Logger.debug('Cannot run call checks: userData is null');
+        return false;
+      }
+
+      // Run call-specific checks (spam, URLs, GIFs, NSFW, etc.)
+      const checksPassed = await runCallChecks(message, {
+        userData,
+        attachmentURL,
+      });
+
+      if (!checksPassed) {
+        return false;
+      }
+
+      // Send the message to the other participant
       await BroadcastService.sendMessage(otherParticipant.webhookUrl, {
         content: message.content,
         username: message.author.username,
@@ -169,7 +346,7 @@ export class MessageProcessor {
       return true;
     }
     catch (error) {
-      Logger.error('Failed to send call message:', error);
+      handleError(error, { comment: 'Failed to process call message' });
       return false;
     }
   }

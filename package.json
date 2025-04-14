@@ -55,7 +55,7 @@
     "prettier": "^3.5.3",
     "prisma": "^6.6.0",
     "release-it": "^18.1.2",
-    "typescript": "^5.8.3",
+    "typescript": "5.9.0-dev.20250412",
     "typescript-eslint": "^8.29.1"
   },
   "config": {

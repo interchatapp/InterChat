@@ -77,10 +77,11 @@ export default class HubSettingsManager {
   }
 
   getEmbed(client: Client): EmbedBuilder {
-    const embed = new InfoEmbed()
-      .setTitle('Hub Settings')
-      .setColor(Constants.Colors.interchat)
-      .setDescription('Current settings for this hub:');
+    const embed = new InfoEmbed().setTitle('Hub Settings').setColor(Constants.Colors.interchat)
+      .setDescription(`
+        Current settings for this hub: 
+        ${getEmoji('wand_icon', client)} For a visual settings interface, visit **${Constants.Links.Website}/dashboard/hubs**
+        `);
 
     for (const [key, value] of Object.entries(this.getAll())) {
       embed.addFields({

@@ -34,6 +34,8 @@ export default class BrowseCommand extends BaseCommand {
       content: stripIndents`
       ### [🔍 Use the hub-browser on the website!](${Constants.Links.Website}/hubs)
       Hey there! This command has been moved to InterChat's website: ${Constants.Links.Website}/hubs as it is much easier to use there with a better interface and more features!
+
+      ${ctx.getEmoji('wand_icon')} **Pro tip:** Check out our full [dashboard](${Constants.Links.Website}/dashboard) to manage your hubs, view analytics, and configure settings visually!
       `,
       flags: ['Ephemeral'],
     });

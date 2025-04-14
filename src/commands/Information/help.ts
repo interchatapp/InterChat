@@ -20,12 +20,17 @@ import type Context from '#src/core/CommandContext/Context.js';
 import { Pagination } from '#src/modules/Pagination.js';
 import { fetchCommands } from '#src/utils/CommandUtils.js';
 import { InfoEmbed } from '#src/utils/EmbedUtils.js';
+import Constants from '#utils/Constants.js';
+import { stripIndents } from 'common-tags';
 import {
   ApplicationCommandOptionType,
   chatInputApplicationCommandMention,
   Collection,
   AutocompleteInteraction,
   ApplicationCommand,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
 } from 'discord.js';
 
 interface CommandInfo {
@@ -303,7 +308,11 @@ export default class HelpCommand extends BaseCommand {
         .setTitle('InterChat Commands')
         .setThumbnail(ctx.client.user.displayAvatarURL())
         .setDescription(
-          `Welcome to InterChat's help menu! Below you'll find all available commands.\n${(
+          stripIndents`Welcome to InterChat's help menu! Below you'll find all available commands.
+          
+          ${ctx.getEmoji('wand_icon')} **Need a visual interface?** Check out our [dashboard](${Constants.Links.Website}/dashboard) for easier hub management, moderation, and settings!
+          
+          ${(
             await Promise.all(
               pageCommands.map((cmd) =>
                 this.formatCommandPath(
@@ -321,7 +330,18 @@ export default class HelpCommand extends BaseCommand {
           iconURL: ctx.client.user.displayAvatarURL(),
         });
 
-      pages.push({ embeds: [embed] });
+      pages.push({
+        embeds: [embed],
+        components: [
+          new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
+              .setLabel('Open Dashboard')
+              .setStyle(ButtonStyle.Link)
+              .setURL(`${Constants.Links.Website}/dashboard`)
+              .setEmoji(ctx.getEmoji('wand_icon')),
+          ),
+        ],
+      });
     }
 
     new Pagination(ctx.client).addPages(pages).run(ctx);
