@@ -144,7 +144,8 @@ export default class AppealInteraction {
     const embed = new InfoEmbed().setTitle('📝 Appeal Sent').setDescription(
       `Your blacklist appeal has been submitted. You will be notified via DM when the appeal is reviewed.
 
-      ${getEmoji('zap_icon', interaction.client)} **Note for moderators:** Appeals can be managed visually through the [dashboard](${Constants.Links.Website}/dashboard/moderation/appeals).`,
+      ${getEmoji('zap_icon', interaction.client)} **View your appeal & status in the dashboard:** ${Constants.Links.Website}/dashboard/my-appeals
+      `,
     );
 
     await interaction.editReply({ embeds: [embed] });
