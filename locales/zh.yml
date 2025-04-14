@@ -31,16 +31,16 @@ rules:
 
     ⚠️ **只有接受这些规则，您才能在此中心发送消息。**
   accepted: |
-    {emoji} 准备完毕！欢迎来到InterChat社区。
+    {emoji} You're all set! Welcome to the InterChat community.
 
-    快速入门提示：
-    - 使用“/浏览中心”查找活跃社区
-    - 加入您感兴趣的讨论
-    - 使用我们新的“/呼叫”指令以连接单个服务器
+    {emoji} You're all set! Welcome to the InterChat community.
 
-    需要帮助吗？加入我们的 [社区]({support_invite}) - 我们很乐意提供帮助！
+    ### Get Started Quickly:
+    - Visit `/hub browse` to find active communities
+    - Join discussions that interest you or create your own through our __dashboard__
+    - Use our new `/call` command to connect with single servers
 
-    喜欢我们的平台吗？请考虑一下 [支持我们]({donateLink}) ，助力InterChat持续发展。
+    Need help? Join our [community]({support_invite}) - we're happy to help! Please consider supporting us by [donating]({donateLink}) to help InterChat grow and thrive.
   declined: |
     {emoji} 您已拒绝InterChat的规则。
     -# ⚠️ **只有接受规则后，您才能使用InterChat或者进行跨服务器聊天。**
@@ -304,6 +304,7 @@ hub:
       notAllowed: "{emoji}只有中心管理员可以更新监管员级别。"
       notOwner: "{emoji}只有此中心的所有者可以更新管理员的级别。"
   manage:
+    dashboardTip: '**🛠️ NEW Dashboard:** Better interface and more features! Use the dashboard to manage your hub: {url}'
     enterImgurUrl: 输入一个有效的Imgur图片网址，且该网址不是图库或相册。
     icon:
       changed: 中心图标已成功更改。
