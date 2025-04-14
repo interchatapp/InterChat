@@ -34,14 +34,14 @@ rules:
   accepted: |
     {emoji} You're all set! Welcome to the InterChat community.
 
-    Quick tips to get started:
-    - Use `/hub browse` to find active communities
-    - Join discussions that interest you
+    {emoji} You're all set! Welcome to the InterChat community.
+
+    ### Get Started Quickly:
+    - Visit `/hub browse` to find active communities
+    - Join discussions that interest you or create your own through our __dashboard__
     - Use our new `/call` command to connect with single servers
 
-    Need help? Join our [community]({support_invite}) - we're happy to help!
-
-    Love what we're building? Consider [supporting us]({donateLink}) to help keep InterChat running.
+    Need help? Join our [community]({support_invite}) - we're happy to help! Please consider supporting us by [donating]({donateLink}) to help InterChat grow and thrive.
   declined: |
     {emoji} You have declined the InterChat rules.
     -# ⚠️ **You won't be able to use InterChat or chat with other servers until you accept the rules.**
@@ -307,6 +307,7 @@ hub:
       notAllowed: "{emoji} Только менеджеры хаба могут обновлять позицию модератора."
       notOwner: "{emoji} Только владелец этого хаба может обновлять позицию менеджера."
   manage:
+    dashboardTip: '**🛠️ NEW Dashboard:** Better interface and more features! Use the dashboard to manage your hub: {url}'
     enterImgurUrl: Введите корректный URL изображения Imgur который не является галереей или альбомом.
     icon:
       changed: Иконка хаба успешно обновлена.
