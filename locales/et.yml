@@ -32,16 +32,16 @@ rules:
 
     ⚠️ **Te ei saa selles keskuses sõnumeid saata enne, kui nõustute nende reeglitega.**
   accepted: |
-    {emoji} Kõik on valmis! Tere tulemast InterChat'i.
+    {emoji} You're all set! Welcome to the InterChat community.
 
-    Kiired näpunäited alustamiseks:
-    - Aktiivsete keskuste leidmiseks kasutage käsku `/hub browse`.
-    - Liituge teid huvitavate aruteludega
-    - Kasutage üksikute serveritega ühenduse loomiseks meie uut käsku `/call`.
+    {emoji} You're all set! Welcome to the InterChat community.
 
-    Vajad abi? Liituge meie [tugiserveriga]({support_invite}) – aitame hea meelega!
+    ### Get Started Quickly:
+    - Visit `/hub browse` to find active communities
+    - Join discussions that interest you or create your own through our __dashboard__
+    - Use our new `/call` command to connect with single servers
 
-    Meeldib mis me loome? Kaaluge [meie toetamist]({donateLink}), et aidata InterChat'i töös hoida.
+    Need help? Join our [community]({support_invite}) - we're happy to help! Please consider supporting us by [donating]({donateLink}) to help InterChat grow and thrive.
   declined: |
     {emoji} Te keeldusite InterChat'i reeglitest.
     -# ⚠️ **Te ei saa InterChat'i kasutada ega teiste serveritega vestelda enne, kui nõustute reeglitega.**
@@ -304,6 +304,7 @@ hub:
       notAllowed: "{emoji} Ainult keskuse haldurid saavad moderaatori rolli muuta."
       notOwner: "{emoji} Ainult selle keskuse omanik saab halduri rolli muuta."
   manage:
+    dashboardTip: '**🛠️ NEW Dashboard:** Better interface and more features! Use the dashboard to manage your hub: {url}'
     enterImgurUrl: Sisestage kehtiv Imgur'i pildi URL, mis ei ole galerii ega album.
     icon:
       changed: Keskuse ikooni muutmine õnnestus.
