@@ -34,16 +34,16 @@ rules:
 
     ⚠️ **No puedes enviar mensajes en este hub hasta que aceptes estas reglas.**  
   accepted: |
-    {emoji} ¡Todo listo! Bienvenido a la comunidad de InterChat.  
+    {emoji} You're all set! Welcome to the InterChat community.
 
-    Consejos rápidos para comenzar:  
-    - Usa `/hub browse` para encontrar comunidades activas.  
-    - Únete a discusiones que te interesen.  
-    - Usa nuestro nuevo comando `/call` para conectarte con servidores individuales.  
+    {emoji} You're all set! Welcome to the InterChat community.
 
-    ¿Necesitas ayuda? Únete a nuestra [comunidad]({support_invite}) - ¡estaremos encantados de ayudarte!  
+    ### Get Started Quickly:
+    - Visit `/hub browse` to find active communities
+    - Join discussions that interest you or create your own through our __dashboard__
+    - Use our new `/call` command to connect with single servers
 
-    ¿Te gusta lo que estamos construyendo? Considera [apoyarnos]({donateLink}) para ayudar a mantener InterChat en funcionamiento.
+    Need help? Join our [community]({support_invite}) - we're happy to help! Please consider supporting us by [donating]({donateLink}) to help InterChat grow and thrive.
   declined: |
     {emoji} Has rechazado las reglas de InterChat.  
     -# ⚠️ **No podrás usar InterChat ni chatear con otros servidores hasta que aceptes las reglas.**  
@@ -309,6 +309,7 @@ hub:
       notAllowed: "{emoji} Solo los administradores de centros pueden actualizar la posición de un moderador."
       notOwner: "{emoji} Solo el propietario de este centro puede actualizar la posición de un administrador."
   manage:
+    dashboardTip: '**🛠️ NEW Dashboard:** Better interface and more features! Use the dashboard to manage your hub: {url}'
     enterImgurUrl: Ingrese una URL de imagen de Imgur válida que no sea una galería o álbum.
     icon:
       changed: El icono del centro cambió con éxito.
