@@ -90,7 +90,7 @@ export default class HubInfractionsSubcommand extends BaseCommand {
     const targetId = ctx.options.getString('target');
 
     if (!targetId) {
-      await this.showAllInfractions(ctx, hub, type);
+      await this.showAllInfractions(ctx, hub);
       return;
     }
 
@@ -102,11 +102,7 @@ export default class HubInfractionsSubcommand extends BaseCommand {
     let choices: { name: string; value: string }[] = [];
     if (focused.name === 'hub') {
       choices = (
-        await HubCommand.getModeratedHubs(
-          focused.value,
-          interaction.user.id,
-          this.hubService,
-        )
+        await HubCommand.getModeratedHubs(focused.value, interaction.user.id, this.hubService)
       ).map((hub) => ({ name: hub.data.name, value: hub.data.name }));
     }
 
@@ -121,9 +117,7 @@ export default class HubInfractionsSubcommand extends BaseCommand {
 
     if (!hub) {
       const locale = await fetchUserLocale(ctx.user.id);
-      await ctx.replyEmbed(
-        t('hub.notFound_mod', locale, { emoji: ctx.getEmoji('x_icon') }),
-      );
+      await ctx.replyEmbed(t('hub.notFound_mod', locale, { emoji: ctx.getEmoji('x_icon') }));
       return null;
     }
 
@@ -136,20 +130,15 @@ export default class HubInfractionsSubcommand extends BaseCommand {
     type: InfractionType,
     targetId: string,
   ) {
-    const targetInfo = await this.getTargetInfo(
-      ctx.client,
-      type,
-      targetId,
-      hub.data.iconUrl,
-    );
+    const targetInfo = await this.getTargetInfo(ctx.client, type, targetId, hub.data.iconUrl);
     const infractionManager = new InfractionManager(type, targetId);
     const infractions = await infractionManager.getHubInfractions(hub.id);
 
     // Update target name if it's a server infraction
     const finalTargetName =
-			infractionManager.targetType === 'user'
-			  ? targetInfo.name
-			  : (infractions.at(0)?.serverName ?? 'Unknown Server');
+      infractionManager.targetType === 'user'
+        ? targetInfo.name
+        : (infractions.at(0)?.serverName ?? 'Unknown Server');
 
     const embeds = await buildInfractionListEmbeds(
       ctx.client,
@@ -181,23 +170,13 @@ export default class HubInfractionsSubcommand extends BaseCommand {
     };
   }
 
-  private async showAllInfractions(
-    interaction: Context,
-    hub: HubManager,
-    type: InfractionType,
-  ) {
+  private async showAllInfractions(interaction: Context, hub: HubManager) {
     const Infractions = await this.getInfractions(hub.id);
-    const embeds = await this.buildAllInfractionsEmbed(
-      interaction.client,
-      Infractions,
-      type,
-    );
+    const embeds = await this.buildAllInfractionsEmbed(interaction.client, Infractions);
     await this.displayPagination(interaction, embeds);
   }
 
-  private async getInfractions(
-    hubId: string,
-  ): Promise<Collection<string, GroupedInfraction>> {
+  private async getInfractions(hubId: string): Promise<Collection<string, GroupedInfraction>> {
     // Fetch all infractions in a single query with included relations
     const infractions = await db.infraction.findMany({
       where: { hubId },
@@ -224,29 +203,25 @@ export default class HubInfractionsSubcommand extends BaseCommand {
 
   private async buildAllInfractionsEmbed(
     client: Client,
-    Infractions: Collection<string, GroupedInfraction>,
-    type: InfractionType,
+    infractions: Collection<string, GroupedInfraction>,
   ) {
     const pages: BaseMessageOptions[] = [];
-    const targetIds = [...Infractions.keys()];
 
     // Batch fetch all users/servers at once
-    const [targets, moderators] = await Promise.all([
-      this.batchFetchTargets(client, targetIds, type),
+    const [moderators] = await Promise.all([
       this.batchFetchModerators(client, [
-        ...new Set(Infractions.map((i) => i.moderatorId).filter(Boolean)),
+        ...new Set(infractions.map((i) => i.moderatorId).filter(Boolean)),
       ]),
     ]);
 
     let currentFields: { name: string; value: string }[] = [];
     let counter = 0;
 
-    for (const [targetId, infraction] of Infractions) {
-      const target = targets.get(targetId);
+    for (const [targetId, infraction] of infractions) {
       const moderator = moderators.get(infraction.moderatorId ?? '') ?? null;
 
       const field = {
-        name: `${this.getTargetName(target, infraction)} (${targetId}) (${time(infraction.createdAt, 'R')})`,
+        name: `${this.getTargetName(infraction)} (${targetId}) (${time(infraction.createdAt, 'R')})`,
         value: this.formatInfractionDetails(
           infraction,
           moderator,
@@ -257,13 +232,7 @@ export default class HubInfractionsSubcommand extends BaseCommand {
       currentFields.push(field);
       counter++;
 
-      if (
-        this.shouldCreateNewPage(
-          counter,
-          currentFields.length,
-          Infractions.size,
-        )
-      ) {
+      if (this.shouldCreateNewPage(counter, currentFields.length, infractions.size)) {
         pages.push(this.createPageEmbed(currentFields));
         currentFields = [];
         counter = 0;
@@ -275,25 +244,27 @@ export default class HubInfractionsSubcommand extends BaseCommand {
 
   private async batchFetchTargets(
     client: Client,
-    targetIds: string[],
-    type: InfractionType,
+    infractions: Collection<string, GroupedInfraction>,
+    type = 'user',
   ) {
-    const targets = new Collection<string, DiscordUser | RemoveMethods<Guild>>();
+    const targets = new Collection<string, User | RemoveMethods<Guild | null>>();
 
     if (type === 'user') {
-      const users = await Promise.all(
-        targetIds.map((id) => client.users.fetch(id).catch(() => null)),
-      );
+      const users = infractions.map((i) => i.user);
       users.forEach((user, index) => {
-        if (user) targets.set(targetIds[index], user);
+        if (user) {
+          targets.set(infractions.keyAt(index)!, user);
+        }
       });
     }
     else {
       const guilds = await Promise.all(
-        targetIds.map((id) => client.fetchGuild(id).catch(() => null)),
+        infractions.map(({ serverId }) =>
+          serverId ? client.fetchGuild(serverId).catch(() => null) : null,
+        ),
       );
       guilds.forEach((guild, index) => {
-        if (guild) targets.set(targetIds[index], guild);
+        if (guild) targets.set(infractions.keyAt(index)!, guild);
       });
     }
 
@@ -314,26 +285,17 @@ export default class HubInfractionsSubcommand extends BaseCommand {
     return moderators;
   }
 
-  private getTargetName(
-    target: DiscordUser | RemoveMethods<Guild> | undefined,
-    infraction: GroupedInfraction,
-  ): string {
-    if (!target) {
-      return infraction.userId
-        ? (infraction.user?.name ?? 'Unknown User')
-        : (infraction.serverName ?? 'Unknown Server');
-    }
-    return target instanceof DiscordUser ? target.username : target.name;
+  private getTargetName(infraction: GroupedInfraction): string {
+    return infraction.userId
+      ? (infraction.user?.name ?? 'Unknown User')
+      : (infraction.serverName ?? 'Unknown Server');
   }
 
   private getTargetId(infraction: Infraction): string {
     return infraction.userId ?? infraction.serverId ?? '';
   }
 
-  private async createInfractionField(
-    client: Client,
-    infraction: GroupedInfraction,
-  ) {
+  private async createInfractionField(client: Client, infraction: GroupedInfraction) {
     const moderator = await this.fetchModerator(client, infraction.moderatorId);
     const expiresAt = this.formatExpirationTime(infraction.expiresAt);
     const targetInfo = await this.getTargetFieldInfo(client, infraction);
@@ -357,10 +319,7 @@ export default class HubInfractionsSubcommand extends BaseCommand {
       : `Expired at ${expiresAt.toLocaleDateString()}`;
   }
 
-  private async getTargetFieldInfo(
-    client: Client,
-    infraction: GroupedInfraction,
-  ) {
+  private async getTargetFieldInfo(client: Client, infraction: GroupedInfraction) {
     const targetId = this.getTargetId(infraction);
 
     if (infraction.userId) {
@@ -393,15 +352,8 @@ export default class HubInfractionsSubcommand extends BaseCommand {
     `;
   }
 
-  private shouldCreateNewPage(
-    counter: number,
-    fieldsLength: number,
-    totalSize: number,
-  ): boolean {
-    return (
-      counter >= HubInfractionsSubcommand.INFRACTIONS_PER_PAGE ||
-			fieldsLength === totalSize
-    );
+  private shouldCreateNewPage(counter: number, fieldsLength: number, totalSize: number): boolean {
+    return counter >= HubInfractionsSubcommand.INFRACTIONS_PER_PAGE || fieldsLength === totalSize;
   }
 
   private createPageEmbed(fields: { name: string; value: string }[]) {
@@ -418,10 +370,7 @@ export default class HubInfractionsSubcommand extends BaseCommand {
     };
   }
 
-  private async displayPagination(
-    interaction: Context,
-    pages: BaseMessageOptions[],
-  ) {
+  private async displayPagination(interaction: Context, pages: BaseMessageOptions[]) {
     const paginator = new Pagination(interaction.client).addPages(pages);
     await paginator.run(interaction);
   }

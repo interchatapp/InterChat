@@ -16,12 +16,15 @@
  */
 
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
+import { AppealStatus } from '#src/generated/prisma/client/index.js';
 import BlacklistManager from '#src/managers/BlacklistManager.js';
 import HubLogManager from '#src/managers/HubLogManager.js';
 import InfractionManager from '#src/managers/InfractionManager.js';
 
 import { HubService } from '#src/services/HubService.js';
+import Constants from '#src/utils/Constants.js';
 import db from '#src/utils/Db.js';
+import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { CustomID } from '#utils/CustomID.js';
 import { ErrorEmbed, InfoEmbed } from '#utils/EmbedUtils.js';
 import Logger from '#utils/Logger.js';
@@ -103,10 +106,27 @@ export default class AppealInteraction {
       appealTargetId = interaction.user.id;
     }
 
-    await new InfractionManager(type, appealTargetId).updateInfraction(
-      { type: 'BLACKLIST', hubId, status: 'ACTIVE' },
-      { appealedBy: interaction.user.id, appealedAt: new Date() },
-    );
+    const infractionManager = new InfractionManager(type, appealTargetId);
+    const infraction = await infractionManager.fetchInfraction('BLACKLIST', hubId);
+
+    if (!infraction) {
+      const embed = new ErrorEmbed(interaction.client).setDescription(
+        'Failed to update infraction with appeal information.',
+      );
+      await interaction.editReply({ embeds: [embed] });
+      return;
+    }
+
+    // Create a new appeal entry
+    const appealReason = interaction.fields.getTextInputValue('unblacklistReason');
+    await db.appeal.create({
+      data: {
+        infractionId: infraction.id,
+        userId: interaction.user.id,
+        reason: appealReason,
+        status: 'PENDING',
+      },
+    });
 
     await logAppeals(type, hubId, interaction.user, {
       appealsChannelId,
@@ -116,16 +136,16 @@ export default class AppealInteraction {
       appealIconUrl: appealIconUrl ?? undefined,
       fields: {
         blacklistedFor: interaction.fields.getTextInputValue('blacklistedFor'),
-        unblacklistReason: interaction.fields.getTextInputValue('unblacklistReason'),
+        unblacklistReason: appealReason,
         extras: interaction.fields.getTextInputValue('extras'),
       },
     });
 
-    const embed = new InfoEmbed()
-      .setTitle('📝 Appeal Sent')
-      .setDescription(
-        'Your blacklist appeal has been submitted. You will be notified via DM when the appeal is reviewed.',
-      );
+    const embed = new InfoEmbed().setTitle('📝 Appeal Sent').setDescription(
+      `Your blacklist appeal has been submitted. You will be notified via DM when the appeal is reviewed.
+
+      ${getEmoji('zap_icon', interaction.client)} **Note for moderators:** Appeals can be managed visually through the [dashboard](${Constants.Links.Website}/dashboard/moderation/appeals).`,
+    );
 
     await interaction.editReply({ embeds: [embed] });
   }
@@ -148,15 +168,39 @@ export default class AppealInteraction {
     await interaction.update({ components: [button] });
 
     const blacklistManager = new BlacklistManager(type, targetId);
-    const blacklist = await blacklistManager.fetchBlacklist(hubId);
+    const blacklist = await blacklistManager.fetchBlacklist(hubId, { appeal: true });
     if (!blacklist) return;
 
+    // Update the appeal status
+    const newStatus: AppealStatus = customId.suffix === 'approve' ? 'ACCEPTED' : 'REJECTED';
+
+    // Find the latest appeal for this infraction
+    const latestAppeal = await db.appeal.findFirst({
+      where: {
+        infractionId: blacklist.id,
+        status: 'PENDING',
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    // Update the appeal status if found
+    if (latestAppeal) {
+      await db.appeal.update({
+        where: { id: latestAppeal.id },
+        data: { status: newStatus },
+      });
+    }
+
+    // If approved, remove the blacklist
     if (customId.suffix === 'approve') await blacklistManager.removeBlacklist(hubId);
+
     const hubService = new HubService(db);
     const hub = await hubService.fetchHub(hubId);
 
-    const appealer = blacklist.appealedBy
-      ? await interaction.client.users.fetch(blacklist.appealedBy).catch(() => null)
+    const appealer = blacklist.appeal
+      ? await interaction.client.users.fetch(blacklist.appeal.userId).catch(() => null)
       : null;
     const appealTarget =
       type === 'user' ? `user \`${appealer?.tag}\`` : `server \`${blacklist.serverName}\``;
@@ -170,6 +214,8 @@ export default class AppealInteraction {
     const message = `
       ### Blacklist Appeal Review
       Your blacklist appeal for ${appealTarget} in the hub **${hub?.data.name}** has been ${approvalStatus}.\n${extraServerSteps}
+
+      ${interaction.client.emojis.cache.find((e) => e.name === 'wand_icon')} **Tip:** Manage all your appeals through our [dashboard](${Constants.Links.Website}/dashboard/my-appeals).
     `;
 
     const embed = new EmbedBuilder()
@@ -215,37 +261,42 @@ export default class AppealInteraction {
 
     const hubService = new HubService(db);
     const hub = await hubService.fetchHub(hubId);
-    const allInfractions = await blacklistManager.infractions.getHubInfractions(hubId, {
-      type: 'BLACKLIST',
-    });
 
-    const sevenDays = 60 * 60 * 24 * 7 * 1000;
-    const appealCooldown = hub?.data.appealCooldownHours
-      ? hub.data.appealCooldownHours * (60 * 60 * 1000)
-      : sevenDays;
-
-    const lastAppealed = allInfractions.find(
-      (i) => i.appealedAt && i.appealedAt.getTime() + appealCooldown > Date.now(),
-    );
-
-    if (lastAppealed?.appealedAt) {
-      const embed = new ErrorEmbed(interaction.client).setDescription(
-        `You can only appeal once every **${msToReadable(appealCooldown, false)}**.`,
-      );
-
-      const replyMethod = getReplyMethod(interaction);
-      await interaction[replyMethod]({ embeds: [embed], flags: ['Ephemeral'] });
-      return { passedCheck: false };
-    }
-
-    // if last appeal was less than 7 days ago
-
+    // Get the active blacklist
     const blacklist = await blacklistManager.fetchBlacklist(hubId);
     if (!blacklist) {
       const embed = new ErrorEmbed(interaction.client).setDescription(
         'You cannot appeal a blacklist that does not exist.',
       );
       await interaction.reply({ embeds: [embed], flags: ['Ephemeral'] });
+      return { passedCheck: false };
+    }
+
+    // Calculate appeal cooldown
+    const sevenDays = 60 * 60 * 24 * 7 * 1000;
+    const appealCooldown = hub?.data.appealCooldownHours
+      ? hub.data.appealCooldownHours * (60 * 60 * 1000)
+      : sevenDays;
+
+    // Find the latest appeal for this infraction
+    const latestAppeal = await db.appeal.findFirst({
+      where: {
+        infractionId: blacklist.id,
+        userId: interaction.user.id,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    // Check if the latest appeal is within the cooldown period
+    if (latestAppeal && latestAppeal.createdAt.getTime() + appealCooldown > Date.now()) {
+      const embed = new ErrorEmbed(interaction.client).setDescription(
+        `You can only appeal once every **${msToReadable(appealCooldown, false)}**.`,
+      );
+
+      const replyMethod = getReplyMethod(interaction);
+      await interaction[replyMethod]({ embeds: [embed], flags: ['Ephemeral'] });
       return { passedCheck: false };
     }
 

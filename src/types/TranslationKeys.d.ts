@@ -133,7 +133,7 @@ export type TranslationKeys = {
   'hub.create.modal.icon.placeholder': never;
   'hub.create.modal.banner.label': never;
   'hub.create.modal.banner.placeholder': never;
-  'hub.create.maxHubs': 'emoji' | 'maxHubs' | 'voteUrl';
+  'hub.create.maxHubs': 'emoji' | 'voteUrl' | 'maxHubs';
   'hub.create.invalidName': 'emoji';
   'hub.create.nameTaken': 'emoji';
   'hub.create.success': 'name' | 'support_invite' | 'donateLink';
@@ -168,6 +168,7 @@ export type TranslationKeys = {
   'hub.moderator.update.notModerator': 'emoji' | 'user';
   'hub.moderator.update.notAllowed': 'emoji';
   'hub.moderator.update.notOwner': 'emoji';
+  'hub.manage.dashboardTip': 'url';
   'hub.manage.enterImgurUrl': never;
   'hub.manage.icon.changed': never;
   'hub.manage.icon.modal.title': never;
@@ -283,7 +284,6 @@ export type TranslationKeys = {
   'report.reasons.gore_violence': never;
   'report.reasons.raid_organizing': never;
   'report.reasons.underage': never;
-  'report.reasons.other': never;
   'report.dropdown.placeholder': never;
   'report.submitted': 'emoji' | 'support_command';
   'report.bug.title': never;

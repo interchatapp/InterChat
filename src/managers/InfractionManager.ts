@@ -15,115 +15,174 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { isDate } from 'node:util/types';
-import type { Infraction, InfractionStatus, InfractionType, Prisma } from '#src/generated/prisma/client/client.js';
-import type { Client, Snowflake, User } from 'discord.js';
+import type {
+  Infraction,
+  InfractionStatus,
+  InfractionType,
+  Prisma,
+} from '#src/generated/prisma/client/client.js';
 import { HubService } from '#src/services/HubService.js';
 import db from '#src/utils/Db.js';
 import { logServerUnblacklist, logUserUnblacklist } from '#src/utils/hub/logger/ModLogs.js';
-import type { ConvertDatesToString } from '#types/Utils.d.ts';
-import { CacheManager } from '#src/managers/CacheManager.js';
-import getRedis from '#src/utils/Redis.js';
+import type { Client, Snowflake, User } from 'discord.js';
 
+/**
+ * Interface for infraction creation options
+ */
+interface InfractionCreateOptions {
+  serverName?: string;
+  hubId: string;
+  reason: string;
+  moderatorId: Snowflake;
+  expiresAt: Date | null;
+}
+
+/**
+ * Interface for infraction filter options
+ */
+interface InfractionFilter {
+  type: InfractionType;
+  hubId: string;
+  status?: InfractionStatus;
+}
+
+/**
+ * Interface for hub infractions query options
+ */
+interface HubInfractionsOptions {
+  type?: InfractionType;
+  count?: number;
+}
+
+/**
+ * Manages infractions (warnings, bans, etc.) for users and servers
+ */
 export default class InfractionManager {
   public readonly targetId: Snowflake;
   public readonly targetType: 'user' | 'server';
 
-  private readonly modelName = 'Infraction';
-  // private readonly cacheExpirySecs = 5 * 60;
-  private readonly cacheManager = new CacheManager(getRedis(), {
-    prefix: this.modelName,
-    expirationMs: 60 * 5 * 1000, // 5 minutes
-  });
-
+  /**
+   * Creates a new InfractionManager instance
+   * @param targetType - Type of target ('user' or 'server')
+   * @param targetId - Discord ID of the target
+   */
   constructor(targetType: 'user' | 'server', targetId: Snowflake) {
     this.targetId = targetId;
     this.targetType = targetType;
   }
 
-  private getKey(entityId: Snowflake, hubId: string) {
-    return `${entityId}:${hubId}`;
-  }
+  // -------------------------------------------------------------------------
+  // CRUD Operations
+  // -------------------------------------------------------------------------
 
+  /**
+   * Creates a new infraction for the target
+   * @param type - Type of infraction
+   * @param options - Infraction details
+   * @returns The created infraction
+   */
   public async addInfraction(
     type: InfractionType,
-    opts: {
-      serverName?: string;
-      hubId: string;
-      reason: string;
-      moderatorId: Snowflake;
-      expiresAt: Date | null;
-    },
-  ) {
-    const infraction = await db.infraction.create({
+    options: InfractionCreateOptions,
+  ): Promise<Infraction> {
+    return await db.infraction.create({
       data: {
-        ...opts,
+        ...options,
         userId: this.targetType === 'user' ? this.targetId : undefined,
         serverId: this.targetType === 'server' ? this.targetId : undefined,
-        serverName: opts.serverName,
+        serverName: options.serverName,
         type,
-        notified: false, // Set default value
+        notified: false, // Default value for new infractions
       },
     });
-
-    await this.cacheEntity(infraction);
-
-    return infraction;
   }
 
-  public async removeInfraction(type: InfractionType, hubId: string) {
-    const infraction = await this.fetchInfraction(type, hubId);
-    if (!infraction) return null;
-
-    const entity = await db.infraction.delete({ where: { id: infraction.id } });
-
-    this.removeCachedInfraction(infraction);
-    return entity;
-  }
-
+  /**
+   * Updates an existing infraction
+   * @param filter - Filter to find the infraction to update
+   * @param data - Data to update the infraction with
+   * @returns The updated infraction or null if not found
+   */
   public async updateInfraction(
-    filter: { type: InfractionType; hubId: string; status?: InfractionStatus },
+    filter: InfractionFilter,
     data: Prisma.InfractionUpdateInput,
-  ) {
+  ): Promise<Infraction | null> {
     const infraction = await this.fetchInfraction(filter.type, filter.hubId, filter.status);
     if (!infraction) return null;
 
-    const updated = await db.infraction.update({
+    return await db.infraction.update({
       where: { id: infraction.id },
       data,
     });
-    this.cacheEntity(updated);
-    return updated;
   }
 
-  private async queryEntityInfractions(hubId: string) {
-    if (this.targetType === 'user') {
-      return await db.infraction.findMany({
-        where: { userId: this.targetId, hubId },
-        orderBy: { createdAt: 'desc' },
-      });
+  /**
+   * Permanently removes an infraction
+   * @param type - Type of infraction to remove
+   * @param hubId - ID of the hub the infraction belongs to
+   * @returns The deleted infraction or null if not found
+   */
+  public async removeInfraction(type: InfractionType, hubId: string): Promise<Infraction | null> {
+    const infraction = await this.fetchInfraction(type, hubId);
+    if (!infraction) return null;
+
+    return await db.infraction.delete({ where: { id: infraction.id } });
+  }
+
+  /**
+   * Changes an active infraction's status to revoked or expired
+   * @param type - Type of infraction to revoke
+   * @param hubId - ID of the hub the infraction belongs to
+   * @param status - New status for the infraction (default: 'REVOKED')
+   * @returns The updated infraction or null if not found
+   */
+  public async revokeInfraction(
+    type: InfractionType,
+    hubId: string,
+    status: Exclude<InfractionStatus, 'ACTIVE'> = 'REVOKED',
+  ): Promise<Infraction | null> {
+    return await this.updateInfraction({ type, hubId, status: 'ACTIVE' }, { status });
+  }
+
+  // -------------------------------------------------------------------------
+  // Query Operations
+  // -------------------------------------------------------------------------
+
+  /**
+   * Fetches all infractions for the target in a specific hub
+   * @param hubId - ID of the hub to fetch infractions for
+   * @param options - Optional filtering options
+   * @returns Array of infractions
+   */
+  public async getHubInfractions(
+    hubId: string,
+    options?: HubInfractionsOptions,
+  ): Promise<Infraction[]> {
+    let infractions = await this.queryEntityInfractions(hubId);
+
+    if (options?.type) {
+      infractions = infractions.filter((i) => i.type === options.type);
     }
 
-    return await db.infraction.findMany({
-      where: { serverId: this.targetId, hubId },
-      orderBy: { createdAt: 'desc' },
-    });
+    if (options?.count) {
+      infractions = infractions.slice(0, options.count);
+    }
+
+    return infractions;
   }
 
-  public async getHubInfractions(hubId: string, opts?: { type?: InfractionType; count?: number }) {
-    let infractionsArr =
-      (await this.cacheManager.get(
-        `${this.targetId}:${hubId}`,
-        async () => await this.queryEntityInfractions(hubId),
-      )) ?? [];
-
-    if (opts?.type) infractionsArr = infractionsArr.filter((i) => i.type === opts.type);
-    if (opts?.count) infractionsArr = infractionsArr.slice(0, opts.count);
-
-    return this.updateInfractionDates(infractionsArr);
-  }
-
-  public async fetchInfraction(type: InfractionType, hubId: string, status?: InfractionStatus) {
+  /**
+   * Fetches a specific infraction by type and hub
+   * @param type - Type of infraction to fetch
+   * @param hubId - ID of the hub the infraction belongs to
+   * @param status - Optional status filter
+   * @returns The infraction or null if not found
+   */
+  public async fetchInfraction(
+    type: InfractionType,
+    hubId: string,
+    status?: InfractionStatus,
+  ): Promise<Infraction | null> {
     const infractions = await this.getHubInfractions(hubId, { type });
     const infraction = infractions.find(
       (i) => (status ? i.status === status : true) && i.type === type,
@@ -132,102 +191,17 @@ export default class InfractionManager {
     return infraction ?? null;
   }
 
-  public async revokeInfraction(
-    type: InfractionType,
-    hubId: string,
-    status: Exclude<InfractionStatus, 'ACTIVE'> = 'REVOKED',
-  ) {
-    const revoked = await this.updateInfraction({ type, hubId, status: 'ACTIVE' }, { status });
-    return revoked;
-  }
-
-  public async logUnblacklist(
-    client: Client,
-    hubId: string,
-    id: string,
-    opts: { mod: User; reason?: string },
-  ) {
-    const hub = await new HubService().fetchHub(hubId);
-    if (!hub) return;
-
-    if (this.targetType === 'user') {
-      await logUserUnblacklist(client, hub, {
-        id,
-        mod: opts.mod,
-        reason: opts.reason,
-      });
-    }
-    else {
-      await logServerUnblacklist(client, hub, {
-        id,
-        mod: opts.mod,
-        reason: opts.reason,
-      });
-    }
-  }
-
-  protected async refreshCache(hubId: string) {
-    const key = this.getKey(this.targetId, hubId);
-    const infractions = await this.queryEntityInfractions(hubId);
-    await this.cacheManager.set(key, infractions);
-  }
-
-  protected async cacheEntity(entity: Infraction) {
-    const entitySnowflake = entity.userId ?? entity.serverId;
-    const key = this.getKey(entitySnowflake as string, entity.hubId);
-    const existing = (await this.getHubInfractions(entity.hubId, { type: entity.type })).filter(
-      (i) => i.id !== entity.id,
-    );
-
-    return this.cacheManager.set(key, [...existing, entity]);
-  }
-
-  protected async removeCachedInfraction(entity: Infraction) {
-    const existingInfractions = await this.getHubInfractions(entity.hubId, {
-      type: entity.type,
-    });
-    const entitySnowflake = entity.userId ?? entity.serverId;
-    return this.cacheManager.set(
-      this.getKey(entitySnowflake as string, entity.hubId),
-      existingInfractions.filter((i) => i.id !== entity.id),
-    );
-  }
-
-  protected updateInfractionDates(infractions: ConvertDatesToString<Infraction>[]): Infraction[] {
-    if (infractions.length === 0) {
-      return [];
-    }
-    if (infractions.every((i) => isDate(i.createdAt))) {
-      return infractions as unknown as Infraction[];
-    }
-
-    const fixedInfractions: Infraction[] = infractions.map((infrac) => ({
-      ...infrac,
-      createdAt: new Date(infrac.createdAt),
-      updatedAt: new Date(infrac.updatedAt),
-      appealedAt: infrac.appealedAt ? new Date(infrac.appealedAt) : null,
-      expiresAt: infrac.expiresAt ? new Date(infrac.expiresAt) : null,
-    }));
-
-    return fixedInfractions;
-  }
-
-  public filterValidInfractions(infractions: Infraction[]): Infraction[] {
-    return infractions.filter(({ expiresAt }) => !expiresAt || expiresAt > new Date()) ?? [];
-  }
-
-  public isExpiredInfraction(infraction: Infraction | null) {
-    return !infraction?.expiresAt || infraction.expiresAt <= new Date();
-  }
-
   /**
    * Fetches unnotified infractions of a specific type for a hub
+   * @param type - Type of infractions to fetch
+   * @param hubId - ID of the hub to fetch infractions for
+   * @returns Array of unnotified infractions
    */
   public async getUnnotifiedInfractions(
     type: InfractionType,
     hubId: string,
   ): Promise<Infraction[]> {
-    const infractions = await db.infraction.findMany({
+    return await db.infraction.findMany({
       where: {
         type,
         hubId,
@@ -237,43 +211,98 @@ export default class InfractionManager {
       },
       orderBy: { createdAt: 'desc' },
     });
-
-    return infractions;
   }
+
+  // -------------------------------------------------------------------------
+  // Utility Methods
+  // -------------------------------------------------------------------------
 
   /**
    * Marks multiple infractions as notified
+   * @param infractionIds - Array of infraction IDs to mark as notified
    */
   public async markInfractionsAsNotified(infractionIds: string[]): Promise<void> {
+    if (infractionIds.length === 0) return;
+
     await db.infraction.updateMany({
-      where: {
-        id: { in: infractionIds },
-      },
-      data: {
-        notified: true,
-      },
-    });
-
-    // Refresh cache for affected infractions
-    const infractions = await db.infraction.findMany({
       where: { id: { in: infractionIds } },
+      data: { notified: true },
     });
+  }
 
-    // Group by hubId to minimize cache updates
-    const hubGroups = infractions.reduce(
-      (groups, infraction) => {
-        if (!groups[infraction.hubId]) {
-          groups[infraction.hubId] = [];
-        }
-        groups[infraction.hubId].push(infraction);
-        return groups;
-      },
-      {} as Record<string, Infraction[]>,
-    );
+  /**
+   * Filters out expired infractions from an array
+   * @param infractions - Array of infractions to filter
+   * @returns Array of valid (non-expired) infractions
+   */
+  public filterValidInfractions(infractions: Infraction[]): Infraction[] {
+    if (!infractions.length) return [];
 
-    // Update cache for each hub
-    for (const [hubId] of Object.entries(hubGroups)) {
-      await this.refreshCache(hubId);
+    return infractions.filter(({ expiresAt }) => !expiresAt || expiresAt > new Date());
+  }
+
+  /**
+   * Checks if an infraction is expired
+   * @param infraction - Infraction to check
+   * @returns True if the infraction is expired or null, false otherwise
+   */
+  public isExpiredInfraction(infraction: Infraction | null): boolean {
+    if (!infraction) return true;
+    if (!infraction.expiresAt) return false; // No expiration date means not expired
+
+    return infraction.expiresAt <= new Date();
+  }
+
+  /**
+   * Logs an unblacklist action to the appropriate mod log channel
+   * @param client - Discord client instance
+   * @param hubId - ID of the hub to log in
+   * @param id - ID of the unblacklisted entity
+   * @param options - Options containing moderator and reason
+   */
+  public async logUnblacklist(
+    client: Client,
+    hubId: string,
+    id: string,
+    options: { mod: User; reason?: string },
+  ): Promise<void> {
+    const hub = await new HubService().fetchHub(hubId);
+    if (!hub) return;
+
+    const logData = {
+      id,
+      mod: options.mod,
+      reason: options.reason,
+    };
+
+    if (this.targetType === 'user') {
+      await logUserUnblacklist(client, hub, logData);
     }
+    else {
+      await logServerUnblacklist(client, hub, logData);
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Private Helper Methods
+  // -------------------------------------------------------------------------
+
+  /**
+   * Queries infractions for the current entity (user or server)
+   * @param hubId - ID of the hub to query infractions for
+   * @returns Array of infractions with their latest appeal
+   * @private
+   */
+  private async queryEntityInfractions(hubId: string): Promise<Infraction[]> {
+    const whereClause =
+      this.targetType === 'user'
+        ? { userId: this.targetId, hubId }
+        : { serverId: this.targetId, hubId };
+
+    return await db.infraction.findMany({
+      where: whereClause,
+      include: { appeals: { orderBy: { createdAt: 'desc' }, take: 1 } },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 }

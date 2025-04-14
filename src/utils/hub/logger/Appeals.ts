@@ -71,7 +71,7 @@ export const logAppeals = async (
       },
     )
     .setFooter({
-      text: `Appeal submitted by ${appealer.username}`,
+      text: `Appeal submitted by ${appealer.username} • Manage appeals visually at ${Constants.Links.Website}/dashboard/moderation/appeals`,
       iconURL: appealer.displayAvatarURL(),
     })
     .setColor(Constants.Colors.invisible);

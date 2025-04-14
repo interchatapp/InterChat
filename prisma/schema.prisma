@@ -151,8 +151,6 @@ model Infraction {
   moderatorId String
   reason      String
   expiresAt   DateTime?
-  appealedAt  DateTime?
-  appealedBy  String? // User ID
   notified    Boolean          @default(false)
 
   // For user infractions
