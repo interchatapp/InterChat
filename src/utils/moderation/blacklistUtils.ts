@@ -16,29 +16,23 @@
  */
 
 import type { Infraction } from '#src/generated/prisma/client/client.js';
-import {
-  type APIActionRowComponent,
-  type APIButtonComponent,
-  ActionRowBuilder,
-  type AutocompleteInteraction,
-  type Client,
-  EmbedBuilder,
-  type ModalActionRowComponentBuilder,
-  ModalBuilder,
-  type Snowflake,
-  TextInputBuilder,
-  TextInputStyle,
-  type User,
-} from 'discord.js';
 import { buildAppealSubmitButton } from '#src/interactions/BlacklistAppeal.js';
 import { HubService } from '#src/services/HubService.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
+import { escapeRegexChars } from '#src/utils/Utils.js';
 import { getHubConnections } from '#utils/ConnectedListUtils.js';
 import Constants from '#utils/Constants.js';
-import { CustomID } from '#utils/CustomID.js';
 import db from '#utils/Db.js';
 import Logger from '#utils/Logger.js';
-import { escapeRegexChars } from '#src/utils/Utils.js';
+import {
+  type APIActionRowComponent,
+  type APIButtonComponent,
+  type AutocompleteInteraction,
+  type Client,
+  EmbedBuilder,
+  type Snowflake,
+  type User,
+} from 'discord.js';
 
 export const isBlacklisted = (infraction: Infraction | null): infraction is Infraction =>
   Boolean(
@@ -135,36 +129,6 @@ export const sendBlacklistNotif = async (
   }
 };
 
-export const buildAppealSubmitModal = (type: 'server' | 'user', hubId: string) => {
-  const questions: [string, string, TextInputStyle, boolean, string?][] = [
-    ['blacklistedFor', 'Why were you blacklisted?', TextInputStyle.Paragraph, true],
-    [
-      'unblacklistReason',
-      'Appeal Reason',
-      TextInputStyle.Paragraph,
-      true,
-      `Why do you think ${type === 'server' ? 'this server' : 'you'} should be unblacklisted?`,
-    ],
-    ['extras', 'Anything else you would like to add?', TextInputStyle.Paragraph, false],
-  ];
-
-  const actionRows = questions.map(([fieldCustomId, label, style, required, placeholder]) => {
-    const input = new TextInputBuilder()
-      .setCustomId(fieldCustomId)
-      .setLabel(label)
-      .setStyle(style)
-      .setMinLength(20)
-      .setRequired(required);
-
-    if (placeholder) input.setPlaceholder(placeholder);
-    return new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(input);
-  });
-
-  return new ModalBuilder()
-    .setTitle('Blacklist Appeal')
-    .setCustomId(new CustomID('appealSubmit:modal', [type, hubId]).toString())
-    .addComponents(actionRows);
-};
 export const showModeratedHubsAutocomplete = async (
   interaction: AutocompleteInteraction,
   hubService: HubService,

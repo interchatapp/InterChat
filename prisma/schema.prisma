@@ -274,6 +274,7 @@ model Announcement {
 model ServerData {
   id            String       @id @map("_id")
   name          String?
+  iconUrl       String?
   premiumStatus Boolean      @default(false)
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt

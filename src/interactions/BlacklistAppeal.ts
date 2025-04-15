@@ -30,16 +30,19 @@ import { ErrorEmbed, InfoEmbed } from '#utils/EmbedUtils.js';
 import Logger from '#utils/Logger.js';
 import { getReplyMethod, msToReadable } from '#utils/Utils.js';
 import logAppeals from '#utils/hub/logger/Appeals.js';
-import { buildAppealSubmitModal } from '#utils/moderation/blacklistUtils.js';
 import {
   ActionRowBuilder,
   ButtonBuilder,
   type ButtonInteraction,
   ButtonStyle,
   EmbedBuilder,
+  ModalActionRowComponentBuilder,
+  ModalBuilder,
   type ModalSubmitInteraction,
   type RepliableInteraction,
   type Snowflake,
+  TextInputBuilder,
+  TextInputStyle,
 } from 'discord.js';
 
 export const buildAppealSubmitButton = (type: 'user' | 'server', hubId: string) =>
@@ -50,6 +53,38 @@ export const buildAppealSubmitButton = (type: 'user' | 'server', hubId: string) 
       .setEmoji('📝')
       .setStyle(ButtonStyle.Primary),
   );
+
+
+export const buildAppealSubmitModal = (type: 'server' | 'user', hubId: string) => {
+  const questions: [string, string, TextInputStyle, boolean, string?][] = [
+    ['blacklistedFor', 'Why were you blacklisted?', TextInputStyle.Paragraph, true],
+    [
+      'unblacklistReason',
+      'Appeal Reason',
+      TextInputStyle.Paragraph,
+      true,
+      `Why do you think ${type === 'server' ? 'this server' : 'you'} should be unblacklisted?`,
+    ],
+    ['extras', 'Anything else you would like to add?', TextInputStyle.Paragraph, false],
+  ];
+
+  const actionRows = questions.map(([fieldCustomId, label, style, required, placeholder]) => {
+    const input = new TextInputBuilder()
+      .setCustomId(fieldCustomId)
+      .setLabel(label)
+      .setStyle(style)
+      .setMinLength(20)
+      .setRequired(required);
+
+    if (placeholder) input.setPlaceholder(placeholder);
+    return new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(input);
+  });
+
+  return new ModalBuilder()
+    .setTitle('Blacklist Appeal')
+    .setCustomId(new CustomID('appealSubmit:modal', [type, hubId]).toString())
+    .addComponents(actionRows);
+};
 
 export default class AppealInteraction {
   @RegisterInteractionHandler('appealSubmit', 'button')

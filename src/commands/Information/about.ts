@@ -119,15 +119,16 @@ export default class About extends BaseCommand {
         ${dotBlue} @${usernames[1]}
         ${dotBlue} @${usernames[2]}
         ${dotBlue} @${usernames[3]}
+        ${dotBlue} @${usernames[4]}
 
         ${getEmoji('translator_badge', interaction.client)} **Translators:**
-        ${dotBlue} @${usernames[4]}
         ${dotBlue} @${usernames[5]}
         ${dotBlue} @${usernames[6]}
+        ${dotBlue} @${usernames[7]}
 
         ✨ **Deserving Mentions:**
-        ${dotBlue} @${usernames[7]} (maker of our cute mascot chipi ${getEmoji('chipi_smile', interaction.client)})
-        ${dotBlue} @${usernames[8]} ([top voter](${Constants.Links.Vote}) of all time ${getEmoji('topggSparkles', interaction.client)})
+        ${dotBlue} @${usernames[8]} (maker of our cute mascot chipi ${getEmoji('chipi_smile', interaction.client)})
+        ${dotBlue} @${usernames[9]} ([top voter](${Constants.Links.Vote}) of all time ${getEmoji('topggSparkles', interaction.client)})
         ${creditsDivider}
       `,
       )

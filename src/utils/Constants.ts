@@ -35,13 +35,30 @@ export const enum ConnectionMode {
 }
 
 /** Unicode emojis for numbers */
-export const numberEmojis = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'] as const;
+export const numberEmojis = [
+  '0️⃣',
+  '1️⃣',
+  '2️⃣',
+  '3️⃣',
+  '4️⃣',
+  '5️⃣',
+  '6️⃣',
+  '7️⃣',
+  '8️⃣',
+  '9️⃣',
+  '🔟',
+] as const;
 
 export default {
   isDevBuild: process.env.NODE_ENV === 'development',
 
   DeveloperIds: ['701727675311587358'] as Snowflake[],
-  StaffIds: ['1160735837940617336', '982656475979710524', '853178500193583104'] as Snowflake[],
+  StaffIds: [
+    '1160735837940617336',
+    '982656475979710524',
+    '853178500193583104',
+    '994411851557392434',
+  ] as Snowflake[],
   SupporterIds: ['880978672037802014', '786348225341947986'] as Snowflake[],
   TranslatorIds: ['845357241132384286', '1289961731115847803', '827745783964499978'] as Snowflake[],
   ProjectVersion: packageJson.version ?? 'Unknown',
@@ -71,7 +88,8 @@ export default {
     ChannelId: /(?<=\/channels\/\d{17,20}\/|<#?)\d{17,20}(?=>?)(?!\d)/,
     UserId: /(?:<@!? ?(\d+)>|\b(\d{17,20})\b(?!\/))/,
     RoleId: /(?:<@& ?(\d+)>|\b(\d{17,20})\b(?!\/))/,
-    DiscordInvite: /(?:https?:\/\/)?(?:www\.)?(?:discord(?:app)?\.com\/invite\/|discord\.gg\/)([a-zA-Z0-9-]{6,32})/g,
+    DiscordInvite:
+      /(?:https?:\/\/)?(?:www\.)?(?:discord(?:app)?\.com\/invite\/|discord\.gg\/)([a-zA-Z0-9-]{6,32})/g,
   },
 
   Links: {

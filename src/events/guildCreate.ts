@@ -98,8 +98,8 @@ export default class Ready extends BaseEventListener<'guildCreate'> {
     // store guild in database
     await db.serverData.upsert({
       where: { id: guild.id },
-      create: { id: guild.id, name: guild.name },
-      update: { name: guild.name },
+      create: { id: guild.id, name: guild.name, iconUrl: guild.iconURL() },
+      update: { name: guild.name, iconUrl: guild.iconURL() },
     });
   }
 }
