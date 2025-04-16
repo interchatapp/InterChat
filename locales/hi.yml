@@ -39,11 +39,11 @@ rules:
   continue: Continue
   accept: स्वीकार करें
   decline: अस्वीकार करें
-  agreementNote: By accepting these rules, you agree to follow them while using InterChat. Breaking these rules may result in restrictions or bans.
+  agreementNote: इन नियमों को स्वीकार करके, आप InterChat का उपयोग करते समय इन्हें पालन करने के लिए सहमति देते हैं। इन नियमों का उल्लंघन करने पर प्रतिबंध या बैन हो सकता है।
   hubAgreementNote: |
-    By accepting these rules, you agree to follow them while chatting in this hub. Breaking these rules may result in removal from the hub.
+    इन नियमों को स्वीकार करके, आप इस हब में बात करते समय इन्हें पालन करने के लिए सहमति देते हैं। इन नियमों का उल्लंघन करने पर हब से हटा दिया जा सकता है।
 
-    ⚠️ **You cannot send messages in this hub until you accept these rules.**
+    ⚠️ जब तक आप इन नियमों को स्वीकार नहीं करते, आप इस हब में संदेश नहीं भेज सकते। 
   accepted: |
     {emoji} You're all set! Welcome to the InterChat community.
 
@@ -67,7 +67,7 @@ rules:
     -# ⚠️ **You won't be able to send messages in this hub until you accept its rules.**
     -# To try again, send another message in this hub.
   noHubRules: This hub has not set any specific rules yet. However, the [general InterChat rules]({rules_link}) still apply.
-  hubRules: Hub Rules
+  hubRules: हब नियम
 vote:
   description: |
     Help more communities discover InterChat! Your vote on top.gg:
@@ -76,37 +76,37 @@ vote:
     • Supports our independent development
   footer: "Votes refresh every 12 hours • Thanks for supporting InterChat!"
   button:
-    label: "Vote on top.gg"
+    label: "top.gg पर वोट करें"
   perks:
-    moreComingSoon: "More perks coming soon! Suggest some in the [support server]({support_invite})."
+    moreComingSoon: "और फायदे जल्द ही आ रहे हैं! कुछ सुझाव [सपोर्ट सर्वर]({support_invite}) में दें।"
 network:
-  accountTooNew: '{emoji} {user} Your account is too new to send messages using InterChat. Please try again later.'
+  accountTooNew: '{emoji} {user} आपका खाता InterChat का उपयोग करके संदेश भेजने के लिए बहुत नया है। कृपया बाद में प्रयास करें।'
   deleteSuccess: '{emoji} Message by {user} has been deleted from __**{deleted}/{total}**__ servers.'
   editSuccess: '{emoji} Message by {user} has been edited in __**{edited}/{total}**__ servers.'
   onboarding:
     embed:
-      title: '👋 Welcome to {hubName}!'
+      title: '👋 {hubName} में आपका स्वागत है!'
       description: |
-        You've found an active community hub! Before joining the discussion, take a quick look at our guidelines to keep conversations engaging and friendly for everyone.
-      footer: InterChat Network | Version {version}
+        आपने एक सक्रिय कम्युनिटी हब ढूंढ लिया है! चर्चा में शामिल होने से पहले, हमारी गाइडलाइन्स पर एक नज़र डाल लें ताकि बातचीत सभी के लिए मनोरंजक और शांतिपूर्ण बनी रहे।
+      footer: InterChat नेटवर्क | संस्करण {version}
     inProgress: '{emoji} {channel} is already in the process of being setup to join a hub. Please wait for the setup to complete or cancel it if you were the one who initiated it.'
 blacklist:
   success: '{emoji} **{name}** has been successfully blacklisted!'
   removed: '{emoji} **{name}** has been removed from the blacklist!'
   modal:
     reason:
-      label: Reason
-      placeholder: Reason for blacklisting
+      label: कारण
+      placeholder: ब्लैकलिस्ट करने का कारण
     duration:
-      label: Duration
-      placeholder: 'Duration of blacklist. Eg: 1d, 1w, 1m, 1y. Leave blank for permanent.'
+      label: अवधि
+      placeholder: 'ब्लैकलिस्ट की अवधि। जैसे: 1d, 1w, 1m, 1y। स्थायी के लिए खाली छोड़ें।'
   user:
     cannotBlacklistMod: '{emoji} You cannot blacklist a moderator. Please remove their moderator role first.'
     alreadyBlacklisted: '{emoji} This user is already blacklisted.'
     easterEggs:
-      blacklistBot: You can't blacklist me wtf.
+      blacklistBot: आप मुझे ब्लैकलिस्ट नहीं कर सकते, क्या बकवास है।
   server:
-    alreadyBlacklisted: '{emoji} This server is already blacklisted.'
+    alreadyBlacklisted: '{emoji} यह सर्वर पहले से ही ब्लैकलिस्टेड है।'
     unknownError: Failed to blacklist **{server}**. Enquire with the developers for more information.
   list:
     user: |
@@ -115,29 +115,29 @@ blacklist:
       **Reason:** {reason}
       **Expires:** {expires}
     server: |
-      **ServerId:** {id}
-      **Moderator:** {moderator}
-      **Reason:** {reason}
-      **Expires:** {expires}
+      **सर्वर ID:** {id}
+      **मॉडरेटर:** {moderator}
+      **कारण:** {reason}
+      **समाप्ति:** {expires}
 msgInfo:
   buttons:
-    message: Message Info
-    server: Server Info
-    user: User Info
-    report: Report
+    message: संदेश जानकारी
+    server: सर्वर जानकारी
+    user: User जानकारी
+    report: रिपोर्ट
   report:
-    notEnabled: '{emoji} Reporting is not enabled for this hub.'
-    success: '{emoji} Report submitted successfully. Thank you!'
+    notEnabled: '{emoji} इस हब के लिए रिपोर्टिंग सक्षम नहीं है।'
+    success: '{emoji} रिपोर्ट सफलतापूर्वक सबमिट की गई। धन्यवाद!'
 invite: |
   Thank you for choosing to invite InterChat! If you have any questions or need help, we are always here to help you in the support server!
 
   **[{invite_emoji} `Invite Link`]( {invite} ) [{support_emoji} `Support Server`]( {support} )**
 connection:
   joinRequestsDisabled: '{emoji} Join requests are disabled for this hub.'
-  notFound: '{emoji} Invalid connection. Verify the channel ID or select from displayed options.'
-  channelNotFound: '{emoji} Unable to find connected channel. To talk again choose a new channel.'
-  alreadyConnected: '{emoji} Channel {channel} is already connected to a hub.'
-  switchChannel: '{emoji} Select a channel to switch to using the select menu below:'
+  notFound: '{emoji} अमान्य कनेक्शन। चैनल ID की पुष्टि करें या प्रदर्शित विकल्पों से चुनें।'
+  channelNotFound: '{emoji} कनेक्टेड चैनल नहीं मिला। फिर से बात करने के लिए एक नया चैनल चुनें।'
+  alreadyConnected: '{emoji} चैनल {channel} पहले से ही एक हब से कनेक्टेड है।'
+  switchChannel: '{emoji} नीचे दिए गए चयन मेनू का उपयोग करके स्विच करने के लिए एक चैनल चुनें:'
   switchCalled: '{emoji} Channel switch called, use the command again to view new connection.'
   switchSuccess: '{emoji} Channel switched. You are now connected from **{channel}**.'
   inviteRemoved: '{emoji} Server Invite removed for this hub.'
