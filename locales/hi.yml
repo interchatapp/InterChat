@@ -1,31 +1,44 @@
 rules:
   rules: |
-    ### {emoji} Rules
-    These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:
+    ### {emoji} नियम
+    ये नियम सभी के लिए एक सुरक्षित और आनंददायक अनुभव बनाने के लिए बनाए गए हैं। इन्हें ध्यान से पढ़ें और इनका पालन करें:
+     1. **कोई घृणा भाषण या उत्पीड़न न करें**
+     -# > **इनमें शामिल है:** दूसरों पर हमला करने के लिए गाली-गलौज का उपयोग करना, [और आदि]({guidelines_link}) ।
 
-    1. **No Hate Speech or Harassment**
-    -# > **Includes:** Using slurs or hate speech to attack others, [and more]({guidelines_link}).
-    2. **No Illegal Content**
-    -# > **Includes:** Sharing links to illegal content, Encouraging violence, [and more]({guidelines_link}).
-    3. **No Severe NSFW or Gore**
-    -# > **Includes:** Posting gore or extreme gore in InterChat, Posting sexual content in non-NSFW hubs, [and more]({guidelines_link}).
-    4. **No Spamming or Flooding**
-    -# > **Includes:** Mass spamming or bot floods, [and more]({guidelines_link})
-    5. **No Impersonation or Fraud**
-    -# > **Includes:** Impersonating InterChat staff or hub moderators, Running cryptocurrency or NFT scams, [and more]({guidelines_link}).
-    6. **No Exploitation or Abuse**
-    -# > **Includes:** Grooming or predatory behavior towards minors, Sharing, Requesting, Blackmailing or threatening to  Encouraging self-harm, [and more]({guidelines_link}).
-    7. **No Sharing Malicious Software**
-    -# > **Includes:** Sharing malware, viruses, 'free nitro' links, harmful scripts [and more]({guidelines_link}).
 
-    You also agree to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines). Check out the [full list of rules]({guidelines_link}).
+    2. कोई अवैध सामग्री नहीं
+     -# > शामिल है: अवैध सामग्री के लिंक साझा करना, हिंसा को बढ़ावा देना, [और आदि]({guidelines_link}) ।
+
+
+    3. कोई गंभीर NSFW या रक्तरंजित सामग्री नहीं
+     -# > शामिल है: InterChat में रक्तरंजित या अत्यधिक रक्तरंजित सामग्री पोस्ट करना, गैर-NSFW हब्स में यौन सामग्री पोस्ट करना, [और आदि]({guidelines_link}) ।
+
+
+    4. कोई स्पैमिंग या बाढ़ नहीं
+     -# > शामिल है: बड़े पैमाने पर स्पैमिंग या बॉट बाढ़, [और आदि]({guidelines_link}) ।
+
+
+    5. कोई प्रतिरूपण या धोखाधड़ी नहीं
+     -# > शामिल है: InterChat स्टाफ या हब मॉडरेटर का प्रतिरूपण करना, क्रिप्टोकरेंसी या NFT घोटाले चलाना, [और आदि]({guidelines_link}) ।
+
+
+    6. कोई शोषण या दुर्व्यवहार नहीं
+     -# > शामिल है: नाबालिगों के प्रति अनुचित या शोषणकारी व्यवहार, साझा करना, अनुरोध करना, ब्लैकमेल करना या आत्म-हानि को बढ़ावा देना, [और आदि]({guidelines_link}) ।
+
+
+    7. कोई दुर्भावनापूर्ण सॉफ़्टवेयर साझा नहीं करना
+     -# > शामिल है: मैलवेयर, वायरस, 'फ्री नाइट्रो' लिंक, हानिकारक स्क्रिप्ट्स साझा करना [और आदि]({guidelines_link}) ।
+
+
+    आप [Discord's Terms of Service](https://discord.com/terms) और [Community Guidelines](https://discord.com/guidelines) का पालन करने के लिए भी सहमत हैं। [नियमों की पूर्ण सूची देखें यहाँ]({guidelines_link})।
   welcome: |
-    {emoji} Hi {user}! Ready to connect with other communities?
-    Before you start chatting across servers, let's quickly review our community guidelines. These help keep InterChat a great place for everyone.
-  alreadyAccepted: '{emoji} You have already accepted the rules. You can now use InterChat to its full extent.'
+    {emoji} हाय {user}! क्या आप दूसरी कम्युनिटीज़ से जुड़ने के लिए तैयार हैं?
+    सर्वर के बीच बातचीत शुरू करने से पहले, आइए जल्दी से हमारी कम्युनिटी गाइडलाइन्स पर एक नज़र डाल लें।
+    यही नियम InterChat को सभी के लिए एक बेहतरीन जगह बनाए रखते हैं।
+  alreadyAccepted: '{emoji} आपने पहले ही नियमों को स्वीकार कर लिया है। अब आप InterChat का पूरा उपयोग कर सकते हैं।'
   continue: Continue
-  accept: Accept
-  decline: Decline
+  accept: स्वीकार करें
+  decline: अस्वीकार करें
   agreementNote: By accepting these rules, you agree to follow them while using InterChat. Breaking these rules may result in restrictions or bans.
   hubAgreementNote: |
     By accepting these rules, you agree to follow them while chatting in this hub. Breaking these rules may result in removal from the hub.
