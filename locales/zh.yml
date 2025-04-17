@@ -33,14 +33,14 @@ rules:
   accepted: |
     {emoji} 准备完毕！欢迎来到InterChat社区。
 
-    快速入门提示：
-    - 使用“/浏览中心”查找活跃社区
-    - 加入您感兴趣的讨论
+    {emoji} 准备完毕！欢迎来到InterChat社区。
+
+    ### 快速入门提示：
+    - 在“/浏览中心”查找活跃社区
+    - 加入您感兴趣的讨论或者通过__dashboard__创建您自己的讨论
     - 使用我们新的“/呼叫”指令以连接单个服务器
 
-    需要帮助吗？加入我们的 [社区]({support_invite}) - 我们很乐意提供帮助！
-
-    喜欢我们的平台吗？请考虑一下 [支持我们]({donateLink}) ，助力InterChat持续发展。
+    需要帮助吗？加入我们的 [社区]({support_invite}) - 我们很乐意提供帮助！请考虑一下 [捐赠]({donateLink}) 支持我们，助力InterChat发展壮大。
   declined: |
     {emoji} 您已拒绝InterChat的规则。
     -# ⚠️ **只有接受规则后，您才能使用InterChat或者进行跨服务器聊天。**
@@ -304,6 +304,7 @@ hub:
       notAllowed: "{emoji}只有中心管理员可以更新监管员级别。"
       notOwner: "{emoji}只有此中心的所有者可以更新管理员的级别。"
   manage:
+    dashboardTip: '**🛠️ 新控制面板：** 界面优化，功能增多！在此使用控制面板管理您的中心：{url}'
     enterImgurUrl: 输入一个有效的Imgur图片网址，且该网址不是图库或相册。
     icon:
       changed: 中心图标已成功更改。
@@ -449,24 +450,23 @@ report:
         label: 描述详情（可选）
         placeholder: 要做的步骤。例如：1.运行／帮助 2.等待5秒……
   reasons:
-    spam: Spam or excessive messages
-    advertising: Unwanted advertising or self-promotion
-    nsfw: NSFW or inappropriate content
-    harassment: Harassment or bullying
-    hate_speech: Hate speech or discrimination
-    scam: Scam, fraud, or phishing attempt
-    illegal: Illegal content or activities
-    personal_info: Sharing personal/private information
-    impersonation: Impersonating others
-    breaks_hub_rules: Violates hub rules
-    trolling: Trolling or intentional disruption
-    misinformation: False or misleading information
-    gore_violence: Gore or extreme violence
-    raid_organizing: Organizing raids or attacks
-    underage: Underage user or content
-    other: Other (Please Specify)
+    spam: 垃圾或过多消息
+    advertising: 垃圾推广
+    nsfw: 成人或不恰当内容
+    harassment: 骚扰或欺凌
+    hate_speech: 侮辱性或仇恨言论
+    scam: 诈骗、欺诈或网络钓鱼
+    illegal: 非法的内容或活动
+    personal_info: 泄露个人/私人信息
+    impersonation: 仿冒他人
+    breaks_hub_rules: 违反中心规则
+    trolling: 拖钓或扰乱
+    misinformation: 错误或误导性信息
+    gore_violence: 血腥或极端暴力
+    raid_organizing: 组织袭击
+    underage: 未达年龄限制的用户或内容
   dropdown:
-    placeholder: Select a reason for your report
+    placeholder: 选择您举报的原因
   submitted: '{emoji}报告已成功提交。加入{support_command}获取详情。谢谢！'
   bug:
     title: 故障报告
