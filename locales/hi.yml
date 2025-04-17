@@ -74,7 +74,7 @@ vote:
     • Helps others find active communities
     • Unlocks special features for you
     • Supports our independent development
-  footer: "Votes refresh every 12 hours • Thanks for supporting InterChat!"
+  footer: "वोट हर बारह (12) घंटे में रीफ़्रेश होते हैं • InterChat का समर्थन करने के लिए धन्यवाद!"
   button:
     label: "top.gg पर वोट करें"
   perks:
@@ -110,10 +110,10 @@ blacklist:
     unknownError: '**{server}** को ब्लैकलिस्ट करने में विफल रहा। अधिक जानकारी के लिए डेवलपर्स से पूछताछ करें।'
   list:
     user: |
-      **UserID:** {id}
-      **Moderator:** {moderator}
-      **Reason:** {reason}
-      **Expires:** {expires}
+      **User ID:** {id}
+      **मॉडरेटर:** {moderator}
+      **कारण:** {reason}
+      **समाप्ति:** {expires}
     server: |
       **सर्वर ID:** {id}
       **मॉडरेटर:** {moderator}
@@ -139,24 +139,24 @@ connection:
   alreadyConnected: '{emoji} चैनल {channel} पहले से ही एक हब से कनेक्टेड है।'
   switchChannel: '{emoji} नीचे दिए गए चयन मेनू का उपयोग करके स्विच करने के लिए एक चैनल चुनें:'
   switchCalled: '{emoji} Channel switch called, use the command again to view new connection.'
-  switchSuccess: '{emoji} Channel switched. You are now connected from **{channel}**.'
-  inviteRemoved: '{emoji} Server Invite removed for this hub.'
+  switchSuccess: '{emoji} चैनल स्विच हो गया है। आप अब **{channel}** से कनेक्ट हो गए हैं।'
+  inviteRemoved: '{emoji} इस हब के लिए सर्वर आमंत्रण हटा दिया गया है।'
   setInviteError: '{emoji} Unable to create invite. Please grant me  the `Create Invite` permission for the connected channel.'
   inviteAdded: '{emoji} Invite Added. Others can now join this server by using `Apps > Message Info/Report` command and `/joinserver` command.'
-  emColorInvalid: '{emoji} Invalid color. Please make sure you have entered a valid hex color code.'
-  emColorChange: '{emoji} Embed color successfully {action}'
+  emColorInvalid: '{emoji} अमान्य रंग। कृपया सुनिश्चित करें कि आपने एक वैध हेक्स रंग कोड दर्ज किया है।'
+  emColorChange: '{emoji} एंबेड रंग सफलतापूर्वक {action}'
   embed:
-    title: Connection Details
+    title: कनेक्शन जानकारी
     fields:
-      hub: Hub
-      channel: Channel
-      invite: Invite
+      hub: हब
+      channel: चैनल
+      invite: आमंत्रण
       connected: Connected
-      emColor: Embed Color
+      emColor: एंबेड रंग
       compact: Compact Mode
     footer: Use the dropdown menu below to manage your connection.
   selects:
-    placeholder: '🛠️ Select an option to edit this connection'
+    placeholder: '🛠️ इस कनेक्शन को संपादित करने के लिए एक विकल्प चुनें'
   unpaused:
     desc: |
       ### {tick_emoji} Unpaused Connection
