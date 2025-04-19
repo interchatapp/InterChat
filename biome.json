@@ -1,0 +1,130 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "formatter": {
+    "ignore": ["./build/**/*", "**/node_modules/", "locales/**", "**/.*"],
+    "enabled": true,
+    "useEditorconfig": true,
+    "formatWithErrors": false,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "lineWidth": 100,
+    "attributePosition": "auto",
+    "bracketSpacing": true
+  },
+  "linter": { "rules": { "recommended": false } },
+  "javascript": {
+    "formatter": {
+      "jsxQuoteStyle": "double",
+      "quoteProperties": "asNeeded",
+      "trailingCommas": "all",
+      "semicolons": "always",
+      "arrowParentheses": "always",
+      "bracketSameLine": false,
+      "quoteStyle": "single",
+      "attributePosition": "auto",
+      "bracketSpacing": true
+    }
+  },
+  "overrides": [
+    {
+      "ignore": ["./build/**/*", "**/node_modules/", "locales/**", "**/.*"],
+      "include": ["src/**/*.ts"],
+      "javascript": { "globals": [] }
+    },
+    {
+      "ignore": ["./build/**/*", "**/node_modules/", "locales/**", "**/.*"],
+      "include": ["src/**/*.ts"],
+      "linter": {
+        "rules": {
+          "complexity": { "noWith": "off" },
+          "correctness": {
+            "noConstAssign": "off",
+            "noGlobalObjectCalls": "off",
+            "noInvalidBuiltinInstantiation": "off",
+            "noInvalidConstructorSuper": "off",
+            "noNewSymbol": "off",
+            "noSetterReturn": "off",
+            "noUndeclaredVariables": "off",
+            "noUnreachable": "off",
+            "noUnreachableSuper": "off"
+          },
+          "style": {
+            "noArguments": "error",
+            "noVar": "error",
+            "useConst": "error"
+          },
+          "suspicious": {
+            "noClassAssign": "off",
+            "noDuplicateClassMembers": "off",
+            "noDuplicateObjectKeys": "off",
+            "noDuplicateParameters": "off",
+            "noFunctionAssign": "off",
+            "noImportAssign": "off",
+            "noRedeclare": "off",
+            "noUnsafeNegation": "off",
+            "useGetterReturn": "off"
+          }
+        }
+      }
+    },
+    {
+      "ignore": ["./build/**/*", "**/node_modules/", "locales/**", "**/.*"],
+      "include": ["src/**/*.ts"],
+      "linter": {
+        "rules": {
+          "complexity": { "noUselessTypeConstraint": "error" },
+          "correctness": {
+            "noUnusedVariables": "error",
+            "useArrayLiterals": "off",
+            "noUnusedImports": "error"
+          },
+          "style": { "noNamespace": "error", "useAsConstAssertion": "error" },
+          "suspicious": {
+            "noExplicitAny": "error",
+            "noExtraNonNullAssertion": "error",
+            "noMisleadingInstantiator": "error",
+            "noUnsafeDeclarationMerging": "error",
+            "useNamespaceKeyword": "error"
+          }
+        }
+      }
+    },
+    {
+      "ignore": ["./build/**/*", "**/node_modules/", "locales/**", "**/.*"],
+      "include": ["src/**/*.ts"],
+      "javascript": { "globals": [] },
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noUselessConstructor": "error",
+            "useLiteralKeys": "off"
+          },
+          "correctness": {
+            "noUnusedVariables": "error",
+            "useArrayLiterals": "error"
+          },
+          "security": { "noGlobalEval": "error" },
+          "style": {
+            "noArguments": "error",
+            "noParameterAssign": "error",
+            "noVar": "error",
+            "noYodaExpression": "error",
+            "useBlockStatements": "off",
+            "useCollapsedElseIf": "error",
+            "useConsistentBuiltinInstantiation": "error",
+            "useConst": "error",
+            "useSingleVarDeclarator": "error",
+            "useTemplate": "error"
+          },
+          "suspicious": {
+            "noConsole": "warn",
+            "noDoubleEquals": "error",
+            "noEmptyBlockStatements": "error",
+            "noExplicitAny": "warn"
+          }
+        }
+      }
+    }
+  ]
+}

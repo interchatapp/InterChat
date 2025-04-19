@@ -17,7 +17,7 @@
 
 import db from '#src/utils/Db.js';
 import getRedis from '#src/utils/Redis.js';
-import { getConnectionHubId, updateConnection } from '#utils/ConnectedListUtils.js';
+import { updateConnection } from '#utils/ConnectedListUtils.js';
 import { RedisKeys } from '#utils/Constants.js';
 import Logger from '#utils/Logger.js';
 
@@ -36,12 +36,15 @@ export default async () => {
     Logger.debug(`Stored message timestamps for channel ${channelId} from cache to db.`);
 
     // Get hubId for this connection
-    const hubId = await getConnectionHubId(channelId);
-    if (hubId) {
-      const currentTimestamp = hubTimestamps.get(hubId);
+    const connection = await db.connection.findFirst({
+      where: { channelId },
+      select: { hubId: true },
+    });
+    if (connection) {
+      const currentTimestamp = hubTimestamps.get(connection.hubId);
       // Only update if this timestamp is higher than what we already have
       if (!currentTimestamp || parsedTimestamp > currentTimestamp) {
-        hubTimestamps.set(hubId, parsedTimestamp);
+        hubTimestamps.set(connection.hubId, parsedTimestamp);
       }
     }
 

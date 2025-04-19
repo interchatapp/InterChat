@@ -17,7 +17,7 @@
 
 import BaseEventListener from '#src/core/BaseEventListener.js';
 import { HubService } from '#src/services/HubService.js';
-import { getConnectionHubId } from '#src/utils/ConnectedListUtils.js';
+import db from '#src/utils/Db.js';
 import { logMsgDelete } from '#src/utils/hub/logger/ModLogs.js';
 import { deleteMessageFromHub } from '#src/utils/moderation/deleteMessage.js';
 import { getOriginalMessage } from '#src/utils/network/messageUtils.js';
@@ -32,10 +32,12 @@ export default class MessageDelete extends BaseEventListener<'messageDelete'> {
   public async execute(message: OmitPartialGroupDMChannel<Message<boolean> | PartialMessage>) {
     if (!message.inGuild()) return;
 
-    const fetchedLogs = await message.guild.fetchAuditLogs({
-      type: AuditLogEvent.MessageDelete,
-      limit: 10,
-    }).catch(() => null);
+    const fetchedLogs = await message.guild
+      .fetchAuditLogs({
+        type: AuditLogEvent.MessageDelete,
+        limit: 10,
+      })
+      .catch(() => null);
 
     if (!fetchedLogs) return;
 
@@ -48,10 +50,13 @@ export default class MessageDelete extends BaseEventListener<'messageDelete'> {
 
     const deletedBy = deletedMessageLog?.executor ?? message.author;
 
-    const connectionHubId = await getConnectionHubId(message.channelId);
-    if (!connectionHubId) return;
+    const connection = await db.connection.findFirst({
+      where: { channelId: message.channelId },
+      select: { hubId: true },
+    });
+    if (!connection) return;
 
-    const hub = await this.hubService.fetchHub(connectionHubId);
+    const hub = await this.hubService.fetchHub(connection.hubId);
     if (!hub) return;
 
     // strictly check if the message is the original, non-webhook message

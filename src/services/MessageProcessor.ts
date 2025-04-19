@@ -19,7 +19,6 @@ import { showRulesScreening } from '#src/interactions/RulesScreening.js';
 import ConnectionManager from '#src/managers/ConnectionManager.js';
 import HubManager from '#src/managers/HubManager.js';
 import { CallService } from '#src/services/CallService.js';
-import { getConnectionHubId } from '#src/utils/ConnectedListUtils.js';
 import { RedisKeys } from '#src/utils/Constants.js';
 import db from '#src/utils/Db.js';
 import { updateLeaderboards } from '#src/utils/Leaderboard.js';
@@ -73,25 +72,22 @@ export class MessageProcessor {
     userId: string,
   ): Promise<HubConnectionData | null> {
     // Get the hub ID associated with this channel
-    const connectionHubId = await getConnectionHubId(channelId);
-    if (!connectionHubId) return null;
-
-    // Fetch the hub with its connections and rule acceptances
-    const hub = await db.hub.findFirst({
-      where: { id: connectionHubId },
+    const connection = await db.connection.findFirst({
+      where: { channelId, connected: true },
       include: {
-        connections: { where: { connected: true } },
-        rulesAcceptances: { where: { userId }, take: 1 },
+        hub: {
+          include: {
+            connections: { where: { connected: true, channelId: { not: channelId } } },
+            rulesAcceptances: { where: { userId }, take: 1 },
+          },
+        },
       },
     });
+    if (!connection) return null;
+
+    // Fetch the hub with its connections and rule acceptances
+    const hub = connection.hub;
     if (!hub) return null;
-
-    // Find and extract the current channel's connection
-    const connectionIndex = hub.connections.findIndex((c) => c.channelId === channelId);
-    if (connectionIndex === -1) return null;
-
-    // remove the connection from the list since we dont want to broadcast to it
-    const connection = hub.connections.splice(connectionIndex, 1)[0];
 
     // Return the hub and connection data
     return {

@@ -64,9 +64,7 @@
     }
   },
   "lint-staged": {
-    "*.ts": [
-      "eslint --cache --fix"
-    ]
+    "*.ts": ["eslint --cache --fix"]
   },
   "imports": {
     "#src/*.js": "./build/*.js",
