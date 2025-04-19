@@ -258,24 +258,47 @@ export default class RulesScreeningInteraction {
       return;
     }
 
-    await db.hubRulesAcceptance.create({
-      data: {
-        userId,
-        hubId,
-      },
-    });
+    try {
+      await db.hubRulesAcceptance.upsert({
+        where: {
+          userId_hubId: {
+            userId,
+            hubId
+          }
+        },
+        update: {}, // No updates - preserve the original acceptedAt timestamp
+        create: {
+          userId,
+          hubId
+        }
+      });
 
-    await interaction.deleteReply();
+      await interaction.deleteReply();
 
-    const locale = await fetchUserLocale(interaction.user.id);
-    const embed = new InfoEmbed().setDescription(
-      t('rules.hubAccepted', locale, {
-        emoji: getEmoji('tick_icon', interaction.client),
-      }),
-    );
+      const locale = await fetchUserLocale(interaction.user.id);
+      const embed = new InfoEmbed().setDescription(
+        t('rules.hubAccepted', locale, {
+          emoji: getEmoji('tick_icon', interaction.client),
+        }),
+      );
 
-    await interaction.followUp({ embeds: [embed], components: [], flags: ['Ephemeral'] });
-    await this.redis.del(`${RedisKeys.RulesShown}:${interaction.user.id}:${hubId}`);
+      if (!interaction.replied) {
+        await interaction.followUp({ embeds: [embed], components: [], flags: ['Ephemeral'] });
+        await this.redis.del(`${RedisKeys.RulesShown}:${interaction.user.id}:${hubId}`);
+      }
+    } catch (error) {
+      Logger.error('Error while accepting hub rules:', error);
+      // Don't attempt to reply if the interaction was already replied to
+      if (!interaction.replied) {
+        const locale = await fetchUserLocale(interaction.user.id);
+        await interaction.followUp({ 
+          content: t('errors.generalError', locale, {
+            emoji: getEmoji('x_icon', interaction.client)
+          }),
+          flags: ['Ephemeral'] 
+        });
+      }
+    }
   }
 
   @RegisterInteractionHandler('rulesScreen', 'decline')
