@@ -20,7 +20,7 @@ import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { type ModAction, replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
 import { getOriginalMessage } from '#src/utils/network/messageUtils.js';
 import type { ReactionArray } from '#types/Utils.d.ts';
-import { updateReactions } from '#utils/reaction/actions.js';
+import { updateReactions } from '#utils/reaction/reactions.js';
 import sortReactions from '#utils/reaction/sortReactions.js';
 import { fetchUserLocale } from '#src/utils/Utils.js';
 
@@ -36,7 +36,17 @@ export default class RemoveReactionsHandler implements ModAction {
       return;
     }
 
-    if (!sortReactions((originalMsg.reactions as ReactionArray) ?? {}).length) {
+    let reactions: ReactionArray;
+
+    try {
+      reactions = originalMsg.reactions ? JSON.parse(originalMsg.reactions) : {};
+    }
+    catch {
+      // Fallback to empty object if parsing fails
+      reactions = {};
+    }
+
+    if (!sortReactions(reactions).length) {
       await interaction.followUp({
         content: `${getEmoji('slash', interaction.client)} No reactions to remove.`,
         flags: ['Ephemeral'],

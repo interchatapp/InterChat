@@ -18,15 +18,12 @@
 import BaseEventListener from '#src/core/BaseEventListener.js';
 import { HubService } from '#src/services/HubService.js';
 import db from '#src/utils/Db.js';
-import {
-  findOriginalMessage,
-  storeMessage,
-} from '#src/utils/network/messageUtils.js';
-import { addReaction, updateReactions } from '#utils/reaction/actions.js';
+import { findOriginalMessage } from '#src/utils/network/messageUtils.js';
+import { addReaction, updateReactions, storeReactions, addNativeReactions } from '#utils/reaction/reactions.js';
 import { checkBlacklists } from '#utils/reaction/helpers.js';
 import type { MessageReaction, PartialMessageReaction, PartialUser, User } from 'discord.js';
 
-export default class ReadctionAdd extends BaseEventListener<'messageReactionAdd'> {
+export default class ReactionAdd extends BaseEventListener<'messageReactionAdd'> {
   readonly name = 'messageReactionAdd';
   public async execute(
     reaction: MessageReaction | PartialMessageReaction,
@@ -58,29 +55,39 @@ export default class ReadctionAdd extends BaseEventListener<'messageReactionAdd'
     if (userBlacklisted || serverBlacklisted) return;
 
     const reactedEmoji = reaction.emoji.toString();
-    const dbReactions = (originalMsg.reactions?.valueOf() ?? {}) as {
-      [key: string]: string[];
-    }; // eg. { '👍': 1, '👎': 2 }
-    const emojiAlreadyReacted = dbReactions[reactedEmoji] ?? [user.id];
 
-    // max 10 reactions
-    if (Object.keys(dbReactions).length >= 10) return;
+    // Handle reactions data - could be a string (JSON) or an object
+    let dbReactions: { [key: string]: string[] };
 
-    // if there already are reactions by others and the user hasn't reacted yet
+    try {
+      dbReactions = originalMsg.reactions ? JSON.parse(originalMsg.reactions) : {};
+    }
+    catch {
+      // Fallback to empty object if parsing fails
+      dbReactions = {};
+    }
+
+    const emojiAlreadyReacted = dbReactions[reactedEmoji] ?? [];
+
+    // max 25 reactions (Discord select menu limit)
+    if (Object.keys(dbReactions).length >= 25 && !dbReactions[reactedEmoji]) return;
+
+    // Add the reaction if the user hasn't already reacted with this emoji
     if (!emojiAlreadyReacted?.includes(user.id)) {
       addReaction(dbReactions, user.id, reactedEmoji);
     }
-    // update the data with a new arr containing userId
+    // Otherwise, the reaction already exists with this user
     else {
       dbReactions[reactedEmoji] = emojiAlreadyReacted;
     }
 
-    await storeMessage(originalMsg.messageId, {
-      ...originalMsg,
-      reactions: dbReactions,
-    });
+    // Store the updated reactions
+    await storeReactions(originalMsg, dbReactions);
 
-    reaction.users.remove(user.id).catch(() => null);
+    // Update all broadcast messages with the new reactions
     await updateReactions(originalMsg, dbReactions);
+
+    // Add native reactions to the original message
+    await addNativeReactions(reaction.client, originalMsg, dbReactions);
   }
 }

@@ -31,7 +31,7 @@ export interface OriginalMessage {
   guildId: string;
   authorId: string;
   timestamp: number;
-  reactions?: { [key: string]: Snowflake[] };
+  reactions?: string; // { [key: string]: Snowflake[] };
   referredMessageId?: string;
 }
 
@@ -42,13 +42,14 @@ export interface Broadcast {
   originalMsgId: string;
 }
 
-export const storeMessage = async (originalMsgId: string, messageData: OriginalMessage) => {
+export const storeMessage = async (
+  originalMsgId: string,
+  messageData: Omit<OriginalMessage, 'reactions'> & { reactions?: { [key: string]: string[] } },
+) => {
   const key = `${RedisKeys.message}:${originalMsgId}`;
   const redis = getRedis();
 
-  Logger.debug(`Storing message ${originalMsgId} in cache`);
-
-  await redis.hset(key, messageData);
+  await redis.hset(key, { ...messageData, reactions: JSON.stringify(messageData.reactions) });
   await redis.expire(key, 86400); // 1 day in seconds
 };
 
@@ -210,4 +211,3 @@ export const deleteMessageCache = async (originalMsgId: Snowflake) => {
 
   return count;
 };
-

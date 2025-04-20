@@ -15,21 +15,41 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { serve } from '@hono/node-server';
+import type { ClusterManager } from 'discord-hybrid-sharding';
+import {
+  Collection,
+  WebhookClient,
+} from 'discord.js';
+import { Hono } from 'hono';
+import { HTTPException } from 'hono/http-exception';
+import { errorHandler } from '#src/api/middleware/error-handler.js';
+import { validateBody } from '#src/api/middleware/validation.js';
+import { reactionsUpdateSchema } from '#src/api/schemas/reactions.js';
+import { toWebhookPayload, votePayloadSchema } from '#src/api/schemas/vote.js';
+import { webhookMessageSchema, webhookSchema } from '#src/api/schemas/webhook.js';
 import { VoteManager } from '#src/managers/VoteManager.js';
-import MainMetricsService from '#src/services/MainMetricsService.js';
+import type MainMetricsService from '#src/services/MainMetricsService.js';
 import Constants from '#src/utils/Constants.js';
 import { handleError } from '#src/utils/Utils.js';
+import { findOriginalMessage } from '#src/utils/network/messageUtils.js';
+import {
+  storeReactions,
+  updateReactions,
+} from '#src/utils/reaction/reactions.js';
 import Logger from '#utils/Logger.js';
-import { serve } from '@hono/node-server';
-import { Collection, WebhookClient, type WebhookMessageCreateOptions } from 'discord.js';
-import { ClusterManager } from 'discord-hybrid-sharding';
-import { Hono } from 'hono';
 
 export const webhookMap = new Collection<string, WebhookClient>();
 
-export const startApi = (metrics: MainMetricsService, clusterManager?: ClusterManager) => {
+export const startApi = (
+  metrics: MainMetricsService,
+  clusterManager?: ClusterManager,
+) => {
   const app = new Hono({});
   const voteManager = new VoteManager();
+
+  // Apply global middleware
+  app.use('*', errorHandler);
 
   if (clusterManager) {
     voteManager.setClusterManager(clusterManager);
@@ -40,34 +60,44 @@ export const startApi = (metrics: MainMetricsService, clusterManager?: ClusterMa
   app.post('/dbl', async (c) => {
     const dblHeader = c.req.header('Authorization');
     if (dblHeader !== process.env.TOPGG_WEBHOOK_SECRET) {
-      return c.json({ message: 'Unauthorized' }, 401);
+      throw new HTTPException(401, { message: 'Unauthorized' });
     }
 
     const payload = await c.req.json();
 
-    if (!voteManager.isValidVotePayload(payload)) {
-      Logger.error('Invalid payload received from top.gg, possible untrusted request: %O', payload);
-      return c.json({ message: 'Invalid payload' }, 400);
+    // Validate the payload against our schema
+    const result = votePayloadSchema.safeParse(payload);
+    if (!result.success) {
+      Logger.error(
+        'Invalid payload received from top.gg, possible untrusted request: %O',
+        payload,
+      );
+      throw new HTTPException(400, {
+        message: 'Invalid payload',
+        cause: result.error,
+      });
     }
 
-    if (payload.type === 'upvote') {
-      await voteManager.incrementUserVote(payload.user);
-      await voteManager.addVoterRole(payload.user);
+    // Convert the validated payload to the WebhookPayload type
+    const webhookPayload = toWebhookPayload(result.data);
+
+    if (webhookPayload.type === 'upvote') {
+      await voteManager.incrementUserVote(webhookPayload.user);
+      await voteManager.addVoterRole(webhookPayload.user);
     }
 
-    await voteManager.announceVote(payload);
+    await voteManager.announceVote(webhookPayload);
 
     // Send DM to the user who voted
-    await voteManager.sendVoteDM(payload);
+    await voteManager.sendVoteDM(webhookPayload);
 
     return c.body(null, 204);
   });
 
-  app.post('/webhook', async (c) => {
-    const body = await c.req.json<{
-      webhookUrl: string;
-      data: WebhookMessageCreateOptions;
-    }>();
+  // Use the imported webhook schema
+
+  app.post('/webhook', validateBody(webhookSchema), async (c) => {
+    const body = c.req.valid('json');
 
     let client = webhookMap.get(body.webhookUrl);
     if (!client) {
@@ -81,7 +111,85 @@ export const startApi = (metrics: MainMetricsService, clusterManager?: ClusterMa
     }
     catch (err) {
       handleError(err, { comment: 'Failed to send webhook message' });
-      return c.json({ data: null, error: err.message }, 500);
+      throw new HTTPException(500, {
+        message: 'Failed to send webhook message',
+        cause: err,
+      });
+    }
+  });
+
+  // Use the imported webhook message schema
+
+  app.post('/webhook/message', validateBody(webhookMessageSchema), async (c) => {
+    const body = c.req.valid('json');
+
+    let client = webhookMap.get(body.webhookUrl);
+    if (!client) {
+      client = new WebhookClient({ url: body.webhookUrl });
+      webhookMap.set(body.webhookUrl, client);
+    }
+
+    try {
+      if (body.action === 'fetch') {
+        // Fetch the message
+        const message = await client
+          .fetchMessage(body.messageId, {
+            threadId: body.threadId,
+          })
+          .catch(() => null);
+
+        return c.json({ data: message });
+      }
+
+      if (body.action === 'edit') {
+        // Edit the message
+        const message = await client
+          .editMessage(body.messageId, {
+            ...body.data,
+            threadId: body.threadId,
+          })
+          .catch(() => null);
+
+        return c.json({ data: message });
+      }
+
+      throw new HTTPException(400, { message: 'Invalid action' });
+    }
+    catch (err) {
+      handleError(err, { comment: `Failed to ${body.action} webhook message` });
+      throw new HTTPException(500, {
+        message: `Failed to ${body.action} webhook message`,
+        cause: err,
+      });
+    }
+  });
+
+  // Use the imported reactions schema
+
+  app.post('/reactions', validateBody(reactionsUpdateSchema), async (c) => {
+    try {
+      const { messageId, reactions } = c.req.valid('json');
+
+      // Find the original message
+      const originalMessage = await findOriginalMessage(messageId);
+      if (!originalMessage) {
+        throw new HTTPException(404, { message: 'Message not found' });
+      }
+
+      // Store the updated reactions in Redis
+      await storeReactions(originalMessage, reactions);
+
+      // Update all broadcast messages with the new reactions
+      await updateReactions(originalMessage, reactions);
+
+      return c.json({ success: true });
+    }
+    catch (err) {
+      handleError(err, { comment: 'Failed to update reactions' });
+      throw new HTTPException(500, {
+        message: 'Failed to update reactions',
+        cause: err,
+      });
     }
   });
 

@@ -20,27 +20,25 @@ import type HubManager from '#src/managers/HubManager.js';
 import { HubService } from '#src/services/HubService.js';
 import db from '#src/utils/Db.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
-import {
-  type OriginalMessage,
-  findOriginalMessage,
-  storeMessage,
-} from '#src/utils/network/messageUtils.js';
-import Constants from '#utils/Constants.js';
+import { type OriginalMessage, findOriginalMessage } from '#src/utils/network/messageUtils.js';
 import { CustomID, type ParsedCustomId } from '#utils/CustomID.js';
 import { t } from '#utils/Locale.js';
-import { fetchUserLocale, getEmojiId } from '#utils/Utils.js';
-import { addReaction, removeReaction, updateReactions } from '#utils/reaction/actions.js';
+import { fetchUserLocale } from '#utils/Utils.js';
+import {
+  addReaction,
+  removeReaction,
+  updateReactions,
+  storeReactions,
+  createReactionEmbed,
+  createReactionSelectMenu,
+  addNativeReactions,
+} from '#utils/reaction/reactions.js';
 import { checkBlacklists } from '#utils/reaction/helpers.js';
 import sortReactions from '#utils/reaction/sortReactions.js';
-import { stripIndents } from 'common-tags';
 import {
-  ActionRowBuilder,
   type AnySelectMenuInteraction,
   type ButtonInteraction,
-  type Client,
-  EmbedBuilder,
   type Snowflake,
-  StringSelectMenuBuilder,
   time,
 } from 'discord.js';
 
@@ -72,7 +70,7 @@ export default class NetworkReactionInteraction {
     if (await this.isUserOnCooldown(interaction)) return;
 
     if (customId.suffix === 'view_all') {
-      await this.handleViewAllReactions(interaction, messageId, hub);
+      await this.handleViewAllReactions(interaction, messageId);
     }
     else {
       await this.handleReactionToggle(interaction, originalMessage, customId);
@@ -121,7 +119,6 @@ export default class NetworkReactionInteraction {
   private async handleViewAllReactions(
     interaction: ButtonInteraction | AnySelectMenuInteraction,
     messageId: string,
-    hub: HubManager,
   ) {
     const originalMessage = await findOriginalMessage(messageId);
     if (!originalMessage?.reactions || !originalMessage.hubId) {
@@ -132,69 +129,29 @@ export default class NetworkReactionInteraction {
       return;
     }
 
-    const dbReactions = originalMessage.reactions as {
-      [key: string]: Snowflake[];
-    };
-    const { reactionMenu, reactionString, totalReactions } = this.buildReactionMenu(
-      dbReactions,
-      interaction,
-      hub,
-    );
+    const dbReactions: { [key: string]: Snowflake[] } = JSON.parse(originalMessage.reactions);
 
-    const embed = this.buildReactionEmbed(reactionString, totalReactions, interaction.client);
+    // Sort reactions by count
+    const sortedReactions = sortReactions(dbReactions);
 
+    // Calculate total reactions
+    let totalReactions = 0;
+    for (const [, users] of sortedReactions) {
+      totalReactions += users.length;
+    }
+
+    // Create the reaction select menu
+    const selectMenu = createReactionSelectMenu(sortedReactions, messageId, interaction.user.id);
+
+    // Create the reaction embed
+    const embed = createReactionEmbed(sortedReactions, totalReactions);
+
+    // Send the ephemeral message with the embed and select menu
     await interaction.followUp({
       embeds: [embed],
-      components: [reactionMenu],
+      components: [selectMenu],
       flags: ['Ephemeral'],
     });
-  }
-
-  private buildReactionMenu(
-    dbReactions: { [key: string]: Snowflake[] },
-    interaction: ButtonInteraction | AnySelectMenuInteraction,
-    hub: HubManager,
-  ) {
-    const sortedReactions = sortReactions(dbReactions);
-    let totalReactions = 0;
-    let reactionString = '';
-    const reactionMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-      new StringSelectMenuBuilder()
-        .setCustomId(
-          new CustomID().setIdentifier('reaction_').setArgs(interaction.message.id).toString(),
-        )
-        .setPlaceholder('Add a reaction'),
-    );
-
-    if (!hub.settings.has('Reactions')) reactionMenu.components[0].setDisabled(true);
-
-    sortedReactions.forEach((r, index) => {
-      if (r[1].length === 0 || index >= 10) return;
-      reactionMenu.components[0].addOptions({
-        label: 'React/Unreact',
-        value: r[0],
-        emoji: getEmojiId(r[0]),
-      });
-      totalReactions++;
-      reactionString += `- ${r[0]}: ${r[1].length}\n`;
-    });
-
-    return { reactionMenu, reactionString, totalReactions };
-  }
-
-  private buildReactionEmbed(reactionString: string, totalReactions: number, client: Client) {
-    return new EmbedBuilder()
-      .setDescription(
-        stripIndents`
-          ## ${getEmoji('clipart', client)} Reactions
-
-          ${reactionString || 'No reactions yet!'}
-
-          **Total Reactions:**
-          __${totalReactions}__
-      `,
-      )
-      .setColor(Constants.Colors.invisible);
   }
 
   private async handleReactionToggle(
@@ -202,14 +159,26 @@ export default class NetworkReactionInteraction {
     originalMessage: OriginalMessage,
     customId: ParsedCustomId,
   ) {
-    const dbReactions = (originalMessage.reactions?.valueOf() ?? {}) as {
-      [key: string]: Snowflake[];
-    };
+    // Parse reactions from JSON string or default to empty object
+    let dbReactions: { [key: string]: Snowflake[] } = {};
+
+    try {
+      if (originalMessage.reactions) {
+        dbReactions = JSON.parse(originalMessage.reactions as string);
+      }
+    }
+    catch {
+      // Fallback to empty object if parsing fails
+      dbReactions = {};
+    }
 
     const reactedEmoji = interaction.isStringSelectMenu() ? interaction.values[0] : customId.suffix;
-    const emojiAlreadyReacted = dbReactions[reactedEmoji];
 
-    if (!emojiAlreadyReacted) {
+    // For select menu, we might be adding a new emoji that doesn't exist yet
+    const emojiAlreadyReacted = dbReactions[reactedEmoji] || [];
+
+    // If it's a button interaction and the emoji doesn't exist, show an error
+    if (interaction.isButton() && emojiAlreadyReacted.length === 0) {
       await interaction.followUp({
         content: `${getEmoji('no', interaction.client)} This reaction doesn't exist.`,
         flags: ['Ephemeral'],
@@ -217,6 +186,7 @@ export default class NetworkReactionInteraction {
       return;
     }
 
+    // Toggle the reaction
     if (emojiAlreadyReacted.includes(interaction.user.id)) {
       removeReaction(dbReactions, interaction.user.id, reactedEmoji);
     }
@@ -224,20 +194,17 @@ export default class NetworkReactionInteraction {
       addReaction(dbReactions, interaction.user.id, reactedEmoji);
     }
 
-    await this.updateReactionsInDb(originalMessage, dbReactions);
+    // Store the updated reactions
+    await storeReactions(originalMessage, dbReactions);
+
+    // Send confirmation to the user
     await this.sendReactionConfirmation(interaction, emojiAlreadyReacted, reactedEmoji);
 
+    // Update all broadcast messages with the new reactions
     await updateReactions(originalMessage, dbReactions);
-  }
 
-  private async updateReactionsInDb(
-    originalMessage: OriginalMessage,
-    reactions: { [key: string]: Snowflake[] },
-  ) {
-    await storeMessage(originalMessage.messageId, {
-      ...originalMessage,
-      reactions,
-    });
+    // Add native reactions to the original message
+    await addNativeReactions(interaction.client, originalMessage, dbReactions);
   }
 
   private async sendReactionConfirmation(
@@ -246,7 +213,7 @@ export default class NetworkReactionInteraction {
     reactedEmoji: string,
   ) {
     if (interaction.isStringSelectMenu()) {
-      const action = emojiAlreadyReacted.includes(interaction.user.id) ? 'reacted' : 'unreacted';
+      const action = emojiAlreadyReacted.includes(interaction.user.id) ? 'unreacted' : 'reacted';
       await interaction
         .followUp({
           content: `You have ${action} with ${reactedEmoji}!`,
