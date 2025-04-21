@@ -17,16 +17,11 @@
 
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
-import BlacklistManager from '#src/managers/BlacklistManager.js';
 import { HubService } from '#src/services/HubService.js';
-import { deleteConnection } from '#src/utils/ConnectedListUtils.js';
 import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
-import {
-  sendBlacklistNotif,
-  showModeratedHubsAutocomplete,
-} from '#src/utils/moderation/blacklistUtils.js';
+import { buildDurationButtons } from '#src/interactions/BlacklistCommandHandler.js';
+import { showModeratedHubsAutocomplete } from '#src/utils/moderation/blacklistUtils.js';
 import { ApplicationCommandOptionType, type AutocompleteInteraction } from 'discord.js';
-import ms from 'ms';
 
 export default class BlacklistServerSubcommand extends BaseCommand {
   private readonly hubService = new HubService();
@@ -71,8 +66,6 @@ export default class BlacklistServerSubcommand extends BaseCommand {
 
     const hubName = ctx.options.getString('hub', true);
     const serverId = ctx.options.getString('serverid', true);
-    const reason = ctx.options.getString('reason', true);
-    const duration = ctx.options.getString('duration');
 
     const hub = (await this.hubService.findHubsByName(hubName)).at(0);
     if (
@@ -91,7 +84,8 @@ export default class BlacklistServerSubcommand extends BaseCommand {
       return;
     }
 
-    const blacklistManager = new BlacklistManager('server', serverId);
+    // Check if the server is already blacklisted
+    const blacklistManager = await import('#src/managers/BlacklistManager.js').then((m) => new m.default('server', serverId));
     const alreadyBlacklisted = await blacklistManager.fetchBlacklist(hub.id);
     if (alreadyBlacklisted) {
       await ctx.replyEmbed('blacklist.server.alreadyBlacklisted', {
@@ -101,36 +95,12 @@ export default class BlacklistServerSubcommand extends BaseCommand {
       return;
     }
 
-    const expiresAt =
-      duration && duration?.length > 1
-        ? new Date(Date.now() + ms(duration as ms.StringValue))
-        : null;
-
-    await blacklistManager.addBlacklist({
-      hubId: hub.id,
-      reason,
-      moderatorId: ctx.user.id,
-      expiresAt,
-      serverName: server.name,
-    });
-
-    await blacklistManager.log(hub.id, ctx.client, {
-      mod: ctx.user,
-      reason,
-      expiresAt,
-    });
-
-    await deleteConnection({ hubId_serverId: { hubId: hub.id, serverId } }).catch(() => null);
-
-    sendBlacklistNotif('server', ctx.client, {
-      hubId: hub.id,
-      target: { id: server.id },
-      reason,
-      expiresAt,
-    }).catch(() => null);
-
-    await ctx.replyEmbed('blacklist.success', {
-      t: { emoji: ctx.getEmoji('tick_icon'), name: server.name },
+    // Show duration selection buttons
+    const durationButtons = buildDurationButtons('server', hub.id, serverId);
+    await ctx.reply({
+      content: `Select blacklist duration for ${server.name}:`,
+      components: durationButtons,
+      flags: ['Ephemeral'],
     });
   }
 

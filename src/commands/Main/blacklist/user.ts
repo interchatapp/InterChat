@@ -17,13 +17,12 @@
 
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
-import BlacklistManager from '#src/managers/BlacklistManager.js';
 import { HubService } from '#src/services/HubService.js';
 import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
+import { buildDurationButtons } from '#src/interactions/BlacklistCommandHandler.js';
 import { showModeratedHubsAutocomplete } from '#src/utils/moderation/blacklistUtils.js';
 import { fetchUserData } from '#src/utils/Utils.js';
 import { ApplicationCommandOptionType, type AutocompleteInteraction } from 'discord.js';
-import ms from 'ms';
 
 export default class BlacklistUserSubcommand extends BaseCommand {
   private readonly hubService = new HubService();
@@ -68,8 +67,6 @@ export default class BlacklistUserSubcommand extends BaseCommand {
 
     const hubName = ctx.options.getString('hub', true);
     const user = await ctx.options.getUser('user');
-    const reason = ctx.options.getString('reason', true);
-    const duration = ctx.options.getString('duration');
 
     const hub = (await this.hubService.findHubsByName(hubName)).at(0);
     if (
@@ -95,7 +92,8 @@ export default class BlacklistUserSubcommand extends BaseCommand {
       return;
     }
 
-    const blacklistManager = new BlacklistManager('user', user.id);
+    // Check if the user is already blacklisted
+    const blacklistManager = await import('#src/managers/BlacklistManager.js').then((m) => new m.default('user', user.id));
     const alreadyBlacklisted = await blacklistManager.fetchBlacklist(hub.id);
     if (alreadyBlacklisted) {
       await ctx.replyEmbed('blacklist.user.alreadyBlacklisted', {
@@ -105,26 +103,12 @@ export default class BlacklistUserSubcommand extends BaseCommand {
       return;
     }
 
-    const expiresAt =
-      duration && duration?.length > 1
-        ? new Date(Date.now() + ms(duration as ms.StringValue))
-        : null;
-
-    await blacklistManager.addBlacklist({
-      hubId: hub.id,
-      reason,
-      moderatorId: ctx.user.id,
-      expiresAt,
-    });
-
-    await blacklistManager.log(hub.id, ctx.client, {
-      mod: ctx.user,
-      reason,
-      expiresAt,
-    });
-
-    await ctx.replyEmbed('blacklist.success', {
-      t: { emoji: ctx.getEmoji('tick_icon'), name: user.username },
+    // Show duration selection buttons
+    const durationButtons = buildDurationButtons('user', hub.id, user.id);
+    await ctx.reply({
+      content: `Select blacklist duration for ${user.username}:`,
+      components: durationButtons,
+      flags: ['Ephemeral'],
     });
   }
 

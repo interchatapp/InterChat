@@ -28,6 +28,7 @@ import { sendBlacklistNotif } from '#utils/moderation/blacklistUtils.js';
 import {
   ActionRowBuilder,
   type ButtonInteraction,
+  ButtonStyle,
   type Client,
   EmbedBuilder,
   ModalBuilder,
@@ -36,6 +37,7 @@ import {
   TextInputBuilder,
   TextInputStyle,
   time,
+  ButtonBuilder,
 } from 'discord.js';
 import ms from 'ms';
 
@@ -52,7 +54,47 @@ abstract class BaseBlacklistHandler implements ModAction {
     locale: supportedLocaleCodes,
   ): Promise<void>;
 
-  buildModal(
+  abstract handleDurationSelect(
+    interaction: ButtonInteraction,
+    originalMsgId: Snowflake,
+    duration: string,
+    locale: supportedLocaleCodes,
+  ): Promise<void>;
+
+  /**
+	 * Builds a modal for blacklisting with reason field only
+	 */
+  buildReasonOnlyModal(
+    title: string,
+    type: 'user' | 'server',
+    originalMsgId: Snowflake,
+    duration: string,
+    locale: supportedLocaleCodes,
+  ) {
+    return new ModalBuilder()
+      .setTitle(title)
+      .setCustomId(
+        new CustomID()
+          .setIdentifier('blacklist_reason_modal', type)
+          .setArgs(originalMsgId, duration)
+          .toString(),
+      )
+      .addComponents(
+        new ActionRowBuilder<TextInputBuilder>().addComponents(
+          new TextInputBuilder()
+            .setCustomId('reason')
+            .setLabel(t('blacklist.modal.reason.label', locale))
+            .setPlaceholder(t('blacklist.modal.reason.placeholder', locale))
+            .setStyle(TextInputStyle.Paragraph)
+            .setMaxLength(500),
+        ),
+      );
+  }
+
+  /**
+	 * Builds a modal for blacklisting with both reason and custom duration fields
+	 */
+  buildCustomDurationModal(
     title: string,
     type: 'user' | 'server',
     originalMsgId: Snowflake,
@@ -61,7 +103,10 @@ abstract class BaseBlacklistHandler implements ModAction {
     return new ModalBuilder()
       .setTitle(title)
       .setCustomId(
-        new CustomID().setIdentifier('blacklist_modal', type).setArgs(originalMsgId).toString(),
+        new CustomID()
+          .setIdentifier('blacklist_custom_modal', type)
+          .setArgs(originalMsgId)
+          .toString(),
       )
       .addComponents(
         new ActionRowBuilder<TextInputBuilder>().addComponents(
@@ -79,17 +124,163 @@ abstract class BaseBlacklistHandler implements ModAction {
             .setPlaceholder(t('blacklist.modal.duration.placeholder', locale))
             .setStyle(TextInputStyle.Short)
             .setMinLength(2)
-            .setRequired(false),
+            .setRequired(true),
         ),
       );
   }
 
-  protected getModalData(interaction: ModalSubmitInteraction) {
-    const reason = interaction.fields.getTextInputValue('reason');
-    const duration = ms(
-      (interaction.fields.getTextInputValue('duration') || ' ') as ms.StringValue,
+  /**
+	 * Builds duration selection buttons for blacklisting
+	 */
+  buildDurationButtons(type: 'user' | 'server', originalMsgId: Snowflake) {
+    // First row: 10m, 30m, 1h, 2h, 6h
+    const firstRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId(
+          new CustomID()
+            .setIdentifier('blacklist_duration', type)
+            .setArgs(originalMsgId, '10m')
+            .toString(),
+        )
+        .setLabel('10m')
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId(
+          new CustomID()
+            .setIdentifier('blacklist_duration', type)
+            .setArgs(originalMsgId, '30m')
+            .toString(),
+        )
+        .setLabel('30m')
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId(
+          new CustomID()
+            .setIdentifier('blacklist_duration', type)
+            .setArgs(originalMsgId, '1h')
+            .toString(),
+        )
+        .setLabel('1h')
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId(
+          new CustomID()
+            .setIdentifier('blacklist_duration', type)
+            .setArgs(originalMsgId, '2h')
+            .toString(),
+        )
+        .setLabel('2h')
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId(
+          new CustomID()
+            .setIdentifier('blacklist_duration', type)
+            .setArgs(originalMsgId, '6h')
+            .toString(),
+        )
+        .setLabel('6h')
+        .setStyle(ButtonStyle.Secondary),
     );
-    const expiresAt = duration ? new Date(Date.now() + duration) : null;
+
+    // Second row: 12h, 24h, 7d, 1mo, 1y
+    const secondRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId(
+          new CustomID()
+            .setIdentifier('blacklist_duration', type)
+            .setArgs(originalMsgId, '12h')
+            .toString(),
+        )
+        .setLabel('12h')
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId(
+          new CustomID()
+            .setIdentifier('blacklist_duration', type)
+            .setArgs(originalMsgId, '24h')
+            .toString(),
+        )
+        .setLabel('24h')
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId(
+          new CustomID()
+            .setIdentifier('blacklist_duration', type)
+            .setArgs(originalMsgId, '7d')
+            .toString(),
+        )
+        .setLabel('7d')
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId(
+          new CustomID()
+            .setIdentifier('blacklist_duration', type)
+            .setArgs(originalMsgId, '1mo')
+            .toString(),
+        )
+        .setLabel('1mo')
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId(
+          new CustomID()
+            .setIdentifier('blacklist_duration', type)
+            .setArgs(originalMsgId, '1y')
+            .toString(),
+        )
+        .setLabel('1y')
+        .setStyle(ButtonStyle.Secondary),
+    );
+
+    // Third row: Permanent, Custom
+    const thirdRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId(
+          new CustomID()
+            .setIdentifier('blacklist_duration', type)
+            .setArgs(originalMsgId, 'permanent')
+            .toString(),
+        )
+        .setLabel('Permanent')
+        .setStyle(ButtonStyle.Danger),
+      new ButtonBuilder()
+        .setCustomId(
+          new CustomID()
+            .setIdentifier('blacklist_duration', type)
+            .setArgs(originalMsgId, 'custom')
+            .toString(),
+        )
+        .setLabel('Custom')
+        .setStyle(ButtonStyle.Primary),
+    );
+
+    return [firstRow, secondRow, thirdRow];
+  }
+
+  /**
+	 * Extracts data from a modal submission
+	 */
+  protected getModalData(
+    interaction: ModalSubmitInteraction,
+    predefinedDuration?: string,
+  ) {
+    const reason = interaction.fields.getTextInputValue('reason');
+    let expiresAt: Date | null = null;
+
+    // If we have a predefined duration from the button
+    if (predefinedDuration) {
+      if (predefinedDuration !== 'permanent') {
+        const duration = ms(predefinedDuration as ms.StringValue);
+        expiresAt = duration ? new Date(Date.now() + duration) : null;
+      }
+      // If permanent, expiresAt remains null
+    }
+    // Otherwise get duration from the modal input
+    else if (interaction.fields.getTextInputValue('duration')) {
+      const duration = ms(
+        interaction.fields.getTextInputValue('duration') as ms.StringValue,
+      );
+      expiresAt = duration ? new Date(Date.now() + duration) : null;
+    }
 
     return { reason, expiresAt };
   }
@@ -117,7 +308,9 @@ abstract class BaseBlacklistHandler implements ModAction {
         },
         {
           name: 'Expires',
-          value: expires ? `${time(Math.round(expires.getTime() / 1000), 'R')}` : 'Never.',
+          value: expires
+            ? `${time(Math.round(expires.getTime() / 1000), 'R')}`
+            : 'Never.',
           inline: true,
         },
       );
@@ -125,12 +318,48 @@ abstract class BaseBlacklistHandler implements ModAction {
 }
 
 export class BlacklistUserHandler extends BaseBlacklistHandler {
-  async handle(
+  async handle(interaction: ButtonInteraction, originalMsgId: Snowflake) {
+    // Show duration selection buttons instead of modal directly
+    const durationButtons = this.buildDurationButtons('user', originalMsgId);
+    await interaction.reply({
+      content: 'Select blacklist duration:',
+      components: durationButtons,
+      flags: ['Ephemeral'],
+    });
+  }
+
+  /**
+	 * Handles the duration selection button click
+	 */
+  async handleDurationSelect(
     interaction: ButtonInteraction,
     originalMsgId: Snowflake,
+    duration: string,
     locale: supportedLocaleCodes,
   ) {
-    await interaction.showModal(this.buildModal('Blacklist User', 'user', originalMsgId, locale));
+    if (duration === 'custom') {
+      // For custom duration, show the modal with both fields
+      await interaction.showModal(
+        this.buildCustomDurationModal(
+          'Blacklist User',
+          'user',
+          originalMsgId,
+          locale,
+        ),
+      );
+    }
+    else {
+      // For predefined durations, show modal with only reason field
+      await interaction.showModal(
+        this.buildReasonOnlyModal(
+          'Blacklist User',
+          'user',
+          originalMsgId,
+          duration,
+          locale,
+        ),
+      );
+    }
   }
 
   async handleModal(
@@ -138,7 +367,15 @@ export class BlacklistUserHandler extends BaseBlacklistHandler {
     originalMsg: OriginalMessage,
     locale: supportedLocaleCodes,
   ) {
-    const user = await interaction.client.users.fetch(originalMsg.authorId).catch(() => null);
+    // Extract duration from customId if it's a reason-only modal
+    const customId = CustomID.parseCustomId(interaction.customId);
+    const predefinedDuration =
+			customId.prefix === 'blacklist_reason_modal'
+			  ? customId.args[1]
+			  : undefined;
+    const user = await interaction.client.users
+      .fetch(originalMsg.authorId)
+      .catch(() => null);
 
     if (!user) {
       await interaction.reply({
@@ -160,13 +397,17 @@ export class BlacklistUserHandler extends BaseBlacklistHandler {
 
     if (originalMsg.authorId === interaction.user.id) {
       await interaction.followUp({
-        content: '<a:nuhuh:1256859727158050838> Nuh uh! You can\'t blacklist yourself.',
+        content:
+					'<a:nuhuh:1256859727158050838> Nuh uh! You can\'t blacklist yourself.',
         flags: ['Ephemeral'],
       });
       return;
     }
 
-    const { reason, expiresAt } = this.getModalData(interaction);
+    const { reason, expiresAt } = this.getModalData(
+      interaction,
+      predefinedDuration,
+    );
     const blacklistManager = new BlacklistManager('user', user.id);
 
     await blacklistManager.addBlacklist({
@@ -205,14 +446,48 @@ export class BlacklistUserHandler extends BaseBlacklistHandler {
 }
 
 export class BlacklistServerHandler extends BaseBlacklistHandler {
-  async handle(
+  async handle(interaction: ButtonInteraction, originalMsgId: Snowflake) {
+    // Show duration selection buttons instead of modal directly
+    const durationButtons = this.buildDurationButtons('server', originalMsgId);
+    await interaction.reply({
+      content: 'Select blacklist duration:',
+      components: durationButtons,
+      flags: ['Ephemeral'],
+    });
+  }
+
+  /**
+	 * Handles the duration selection button click
+	 */
+  async handleDurationSelect(
     interaction: ButtonInteraction,
     originalMsgId: Snowflake,
+    duration: string,
     locale: supportedLocaleCodes,
   ) {
-    await interaction.showModal(
-      this.buildModal('Blacklist Server', 'server', originalMsgId, locale),
-    );
+    if (duration === 'custom') {
+      // For custom duration, show the modal with both fields
+      await interaction.showModal(
+        this.buildCustomDurationModal(
+          'Blacklist Server',
+          'server',
+          originalMsgId,
+          locale,
+        ),
+      );
+    }
+    else {
+      // For predefined durations, show modal with only reason field
+      await interaction.showModal(
+        this.buildReasonOnlyModal(
+          'Blacklist Server',
+          'server',
+          originalMsgId,
+          duration,
+          locale,
+        ),
+      );
+    }
   }
 
   async handleModal(
@@ -220,6 +495,12 @@ export class BlacklistServerHandler extends BaseBlacklistHandler {
     originalMsg: OriginalMessage,
     locale: supportedLocaleCodes,
   ) {
+    // Extract duration from customId if it's a reason-only modal
+    const customId = CustomID.parseCustomId(interaction.customId);
+    const predefinedDuration =
+			customId.prefix === 'blacklist_reason_modal'
+			  ? customId.args[1]
+			  : undefined;
     const client = interaction.client;
 
     if (!originalMsg.hubId) {
@@ -243,8 +524,14 @@ export class BlacklistServerHandler extends BaseBlacklistHandler {
       return;
     }
 
-    const { reason, expiresAt } = this.getModalData(interaction);
-    const blacklistManager = new BlacklistManager('server', originalMsg.guildId);
+    const { reason, expiresAt } = this.getModalData(
+      interaction,
+      predefinedDuration,
+    );
+    const blacklistManager = new BlacklistManager(
+      'server',
+      originalMsg.guildId,
+    );
 
     await blacklistManager.addBlacklist({
       reason,
@@ -263,7 +550,10 @@ export class BlacklistServerHandler extends BaseBlacklistHandler {
     });
 
     await deleteConnection({
-      hubId_serverId: { hubId: originalMsg.hubId, serverId: originalMsg.guildId },
+      hubId_serverId: {
+        hubId: originalMsg.hubId,
+        serverId: originalMsg.guildId,
+      },
     });
 
     if (server) {
@@ -276,7 +566,13 @@ export class BlacklistServerHandler extends BaseBlacklistHandler {
         .catch(() => null);
     }
 
-    const successEmbed = this.buildSuccessEmbed(server.name, reason, expiresAt, client, locale);
+    const successEmbed = this.buildSuccessEmbed(
+      server.name,
+      reason,
+      expiresAt,
+      client,
+      locale,
+    );
 
     const { embed, buttons } = await buildModPanel(interaction, originalMsg);
     await interaction.editReply({ embeds: [embed], components: buttons });

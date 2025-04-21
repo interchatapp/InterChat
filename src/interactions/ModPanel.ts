@@ -83,6 +83,21 @@ export default class ModPanelHandler {
       await handler.handle(interaction, originalMsgId, locale);
     }
   }
+
+  @RegisterInteractionHandler('blacklist_duration')
+  async handleDurationSelect(interaction: ButtonInteraction): Promise<void> {
+    const customId = CustomID.parseCustomId(interaction.customId);
+    const [originalMsgId, duration] = customId.args;
+    const locale = await fetchUserLocale(interaction.user.id);
+
+    // Get the handler based on the type (user or server)
+    const handlerType = customId.suffix === 'user' ? 'blacklistUser' : 'blacklistServer';
+    const handler = this.modActionHandlers[handlerType];
+
+    if (handler && 'handleDurationSelect' in handler) {
+      await handler.handleDurationSelect(interaction, originalMsgId, duration, locale);
+    }
+  }
   private async validateUser(
     interaction: RepliableInteraction,
     userId: string,
@@ -102,7 +117,8 @@ export default class ModPanelHandler {
     return true;
   }
 
-  @RegisterInteractionHandler('blacklist_modal')
+  @RegisterInteractionHandler('blacklist_reason_modal')
+  @RegisterInteractionHandler('blacklist_custom_modal')
   async handleBlacklistModal(interaction: ModalSubmitInteraction): Promise<void> {
     await interaction.deferUpdate();
 
