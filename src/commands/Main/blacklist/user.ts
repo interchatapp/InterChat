@@ -22,7 +22,10 @@ import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
 import { buildDurationButtons } from '#src/interactions/BlacklistCommandHandler.js';
 import { showModeratedHubsAutocomplete } from '#src/utils/moderation/blacklistUtils.js';
 import { fetchUserData } from '#src/utils/Utils.js';
-import { ApplicationCommandOptionType, type AutocompleteInteraction } from 'discord.js';
+import {
+  ApplicationCommandOptionType,
+  type AutocompleteInteraction,
+} from 'discord.js';
 
 export default class BlacklistUserSubcommand extends BaseCommand {
   private readonly hubService = new HubService();
@@ -35,7 +38,8 @@ export default class BlacklistUserSubcommand extends BaseCommand {
       options: [
         {
           name: 'user',
-          description: 'The ID of the user to blacklist (get id using /messageinfo command)',
+          description:
+						'The ID of the user to blacklist (get id using /messageinfo command)',
           type: ApplicationCommandOptionType.User,
           required: true,
         },
@@ -52,12 +56,6 @@ export default class BlacklistUserSubcommand extends BaseCommand {
           required: true,
           autocomplete: true,
         },
-        {
-          name: 'duration',
-          description: 'Duration for blacklist',
-          type: ApplicationCommandOptionType.String,
-          required: false,
-        },
       ],
     });
   }
@@ -71,9 +69,9 @@ export default class BlacklistUserSubcommand extends BaseCommand {
     const hub = (await this.hubService.findHubsByName(hubName)).at(0);
     if (
       !hub ||
-      !(await runHubRoleChecksAndReply(hub, ctx, {
-        checkIfMod: true,
-      }))
+			!(await runHubRoleChecksAndReply(hub, ctx, {
+			  checkIfMod: true,
+			}))
     ) return;
 
     if (!user || !(await fetchUserData(user.id))) {
@@ -93,7 +91,9 @@ export default class BlacklistUserSubcommand extends BaseCommand {
     }
 
     // Check if the user is already blacklisted
-    const blacklistManager = await import('#src/managers/BlacklistManager.js').then((m) => new m.default('user', user.id));
+    const blacklistManager = await import(
+      '#src/managers/BlacklistManager.js'
+    ).then((m) => new m.default('user', user.id));
     const alreadyBlacklisted = await blacklistManager.fetchBlacklist(hub.id);
     if (alreadyBlacklisted) {
       await ctx.replyEmbed('blacklist.user.alreadyBlacklisted', {
