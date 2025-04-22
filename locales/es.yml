@@ -34,16 +34,16 @@ rules:
 
     ⚠️ **No puedes enviar mensajes en este hub hasta que aceptes estas reglas.**  
   accepted: |
-    {emoji} You're all set! Welcome to the InterChat community.
+    {emoji} ¡Listo! Bienvenido a la comunidad del InterChat.
 
-    {emoji} You're all set! Welcome to the InterChat community.
+    {emoji} ¡Listo! Bienvenido a la comunidad del InterChat.
 
-    ### Get Started Quickly:
-    - Visit `/hub browse` to find active communities
-    - Join discussions that interest you or create your own through our __dashboard__
-    - Use our new `/call` command to connect with single servers
+    ### Empieza Rápidamente:
+    - Visita `/hub browse` para encontrar comunidades activas
+    - Únete a discusiones que te interesan o crea las tuyas propias a través de nuestra __dashboard__
+    - Usa nuestro nuevo comando `/call` para conectar con un solo servidor
 
-    Need help? Join our [community]({support_invite}) - we're happy to help! Please consider supporting us by [donating]({donateLink}) to help InterChat grow and thrive.
+    ¿Necesitas ayuda? Únete a nuestra [comunidad]({support_invite}) - ¡Nos encantaría ayudarte! Considera apoyarnos con una [donación]({donateLink}) para ayudar a que InterChat crezca y prospere.
   declined: |
     {emoji} Has rechazado las reglas de InterChat.  
     -# ⚠️ **No podrás usar InterChat ni chatear con otros servidores hasta que aceptes las reglas.**  
@@ -232,25 +232,23 @@ hub:
     invalidName: '{emoji} Nombre de la concentración no válida. No debe contener `discord`,`clyde` o `/`. Elija otro nombre.'
     nameTaken: '{emoji} Este nombre del centro ya está tomado. Elija otro nombre.'
     success: |
-      ## ¡Hub creado! Está __private__ por defecto.  
-      Usa `/hub edit hub:{name}` para personalizar tu hub. Sigue los pasos a continuación para comenzar:  
-      ### Próximos pasos:  
-      1. **Crear una invitación:**  
-      > Usa `/hub invite create` para generar una invitación y permitir que otros se unan.  
-      2. **Vincular un canal:**  
-      > Usa `/connect` **con el enlace de invitación generado previamente** para vincular un canal al hub y empezar a chatear.  
-      3. **Configurar el hub:** (Recomendado)  
-      > Usa `/hub config settings`, `/hub config logging` y `/hub config anti-swear` para ajustar la configuración del hub.  
-      4. **Agregar moderadores:**  
-      > Usa `/hub moderator add` para asignar moderadores al hub.  
-      5. **Personalizar el hub:**  
-      > Usa `/hub edit` para cambiar el ícono, el banner y la descripción del hub.  
-      6. **Hacerlo público:**  
-      > Usa `/hub visibility` para hacer el hub público y permitir que otros lo exploren y se unan sin necesidad de una invitación. (Opcional)  
+      ## ¡Centro creado! Está __private__ por defecto. 
+      Usa `/hub edit hub:{name}` para personalizar tu hub. Sigue los pasos a continuación para comenzar: 
+      ### Próximos pasos: 
+      1. **Crear una invitación:** 
+      > Usa `/hub invite create` para generar una invitación y permitir que otros se unan. 
+      2. **Vincula un canal:** 
+      > Usa `/connect` **con el enlace de invitación generado previamente** para vincular un canal al hub y empezar a chatear. 
+      3. **Configurar el hub:** (Recomendado) 
+      > Usa `/hub config settings`, `/hub config logging` y `/hub config anti-swear` para ajustar la configuración del hub. 
+      4. **Agregar moderadores:** 
+      > Usa `/hub moderator add` para asignar moderadores al hub. 
+      5. **Personalizar el hub:** 
+      > Usa `/hub edit` para cambiar el ícono, el banner y la descripción del hub. 
+      6. **Hacerlo público:** 
+      > Usa `/hub visibility` para hacer el hub público y permitir que otros lo exploren y se unan sin necesidad de una invitación. (Opcional) 
 
-      Si tienes preguntas o necesitas ayuda, no dudes en preguntar en el [servidor de soporte]({support_invite}).  
-      Considera [donar]({donateLink}) para ayudar a cubrir los costos de desarrollo.  
-
+      Si tienes preguntas o necesitas ayuda, no dudes en preguntar en el [servidor de soporte]({support_invite}). Considera [donar]({donateLink}) para ayudar a cubrir los costos de desarrollo.
   delete:
     confirm: '¿Estás seguro de que desea eliminar **{hub}**? Esta acción es irreversible. Todos los servidores conectados, invitaciones y datos de mensajes se eliminarán de este centro.'
     ownerOnly: '{emoji} Solo el propietario de este centro puede eliminarlo.'
@@ -258,27 +256,18 @@ hub:
     cancelled: '{emoji} La eliminación de concentración ha sido cancelada.'
   browse:
     joinConfirm: |
-      ¿Estás seguro de que deseas unirte {hub} de {channel}?
+      ¿Estás seguro qué deseas unirte a {hub} dé {channel}?
 
       **Nota:** Siempre puede cambiar esto más tarde usando `/connection`.
     joinFooter: '¿Quieres usar un canal diferente? Use el menú desplegable a continuación.'
     noHubs: '{emoji} No hay centros enumerados aquí en este momento. ¡Por favor, inténtelo de nuevo más tarde!'
     rating:
-      invalid: Calificación no válida. Debe ingresar un número entre 1 y 5.
+      invalid: Calificación inválida. Debe ingresar un número entre 1 y 5.
       success: Calificación presentada! Gracias por tus comentarios.
   invite:
     create:
       success: |
-        ### Invite Created!
-
-        Your invite has been successfully created. Others can now join this hub by using the `/connect` command.
-
-        - **Join using:** `/connect invite:{inviteCode}`
-        - **View invites:** `/hub invite list`
-        - **Expiry:** {expiry}
-        - **Uses**: ∞
-
-        **Note:** You can revoke this invite anytime using `/hub invite revoke {inviteCode}`.
+        .......
     revoke:
       invalidCode: '{emoji} Código de invitación no válido. Asegúrese de haber ingresado un código de invitación válido.'
       success: '{emoji} Invitación {inviteCode} revocada.'
