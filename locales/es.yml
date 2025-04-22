@@ -263,7 +263,7 @@ hub:
     noHubs: '{emoji} No hay centros enumerados aquí en este momento. ¡Por favor, inténtelo de nuevo más tarde!'
     rating:
       invalid: Calificación inválida. Debe ingresar un número entre 1 y 5.
-      success: Calificación presentada! Gracias por tus comentarios.
+      success: '¡Calificación presentada! Gracias por tus comentarios.'
   invite:
     create:
       success: |
@@ -276,7 +276,7 @@ hub:
       noInvites: '{emoji} Este centro aún no tiene invitaciones. Use `/hub Invite create` para crear uno.'
       notPrivate: '{emoji} Solo los centros privados pueden tener invitaciones. Use `/Hub Management` para que este centro sea privado.'
   joined:
-    noJoinedHubs: '{emoji} Este servidor aún no se ha unido a ningún centro. Use `/Hub Browse` para ver una lista de centros.'
+    noJoinedHubs: '{emoji} Este servidor aún no se ha unido a ningún centro. Use `/hub browse` para ver una lista de centros.'
     joinedHubs: Este servidor es parte de **{total}** Hub(s). Use `/disconnect` para dejar un centro.
   leave:
     noHub: '{emoji} ese canal no es válido o no ha unido ningún centro.'
@@ -298,20 +298,20 @@ hub:
       notAllowed: "{emoji} Solo los administradores de centros pueden actualizar la posición de un moderador."
       notOwner: "{emoji} Solo el propietario de este centro puede actualizar la posición de un administrador."
   manage:
-    dashboardTip: '**🛠️ NEW Dashboard:** Better interface and more features! Use the dashboard to manage your hub: {url}'
+    dashboardTip: '**🛠️ NUEVO panel:** ¡Mejor interfaz y más características! Usa el panel de control para administrar tu centro: {url}'
     enterImgurUrl: Ingrese una URL de imagen de Imgur válida que no sea una galería o álbum.
     icon:
       changed: El icono del centro cambió con éxito.
       modal:
-        title: Edit Icon
+        title: Editar Icono
         label: URL de icono
       selects:
-        label: Edit Icon
+        label: Editar Icono
         description: Cambie el icono de este centro.
     description:
       changed: La descripción del concentrador cambió con éxito.
       modal:
-        title: Edit Description
+        title: Editar Descripción
         label: Descripción
         placeholder: Ingrese una descripción para este centro.
       selects:
@@ -321,10 +321,10 @@ hub:
       changed: El banner del hub se cambió con éxito.
       removed: Banner de concentrador eliminado con éxito.
       modal:
-        title: Edit Banner
+        title: Editar Banner
         label: URL de banner
       selects:
-        label: Edit Banner
+        label: Editar Banner
         description: Cambia la pancarta de este centro.
     visibility:
       success: '{emoji} La visibilidad del centro cambió correctamente a **{visibility}**.'
@@ -333,29 +333,29 @@ hub:
         description: Haz este centro público o privado.
     toggleLock:
       selects:
-        label: 'Lock/Unlock Hub'
-        description: 'Lock or unlock the hub chats'
-      confirmation: 'Hub chats are now {status}.'
-      announcementTitle: 'Hub chats are now {status}.'
+        label: 'Bloquear/Desbloquear Centro'
+        description: 'Bloquea o desbloquea los chats del centro'
+      confirmation: 'Los chats de centro ahora son {status}.'
+      announcementTitle: 'Los chats de centro ahora son {status}.'
       announcementDescription:
-        locked: 'Only moderators can send messages.'
-        unlocked: 'Everyone can send messages.'
+        locked: 'Solo los moderadores pueden enviar mensajes.'
+        unlocked: 'Cualquiera pueden enviar mensajes.'
     embed:
-      visibility: 'Visibility'
-      connections: 'Connections'
-      chatsLocked: 'Chats Locked'
-      blacklists: 'Blacklists'
+      visibility: 'Visibilidad'
+      connections: 'Conexiones'
+      chatsLocked: 'Chats Bloqueados'
+      blacklists: 'Listas negras'
       total: 'Total'
-      users: 'Users'
-      servers: 'Servers'
-      hubStats: 'Hub Stats'
-      moderators: 'Moderators'
-      owner: 'Owner'
+      users: 'Usuarios'
+      servers: 'Servidores'
+      hubStats: 'Estadísticas del Centro'
+      moderators: 'Moderadores'
+      owner: 'Propietario'
     logs:
       title: Configurar registros
       reset: '{emoji} Se reinició con éxito la configuración de registros para `{type}`.'
       roleSuccess: '{emoji} registros de tipo `{type}` ahora mencionará {role}!'
-      roleRemoved: '{emoji} Logs of type `{type}` will no longer mention a role.'
+      roleRemoved: '{emoji} Los registros de tipo `{type}` no volverán a mencionar un rol.'
       channelSuccess: '{emoji} registros de tipo `{type}` se enviará a {channel} de ahora!'
       channelSelect: '#️⃣ Seleccione el tipo de registro para configurar.'
       roleSelect: '🏓 Seleccione el papel a mencionar cuándo se activa un registro.'
@@ -381,55 +381,55 @@ hub:
         label: Apelaciones
         description: Reciba apelaciones de usuarios/servidores en la lista negra.
       networkAlerts:
-        label: Network Alerts
-        description: Recieve alerts about automatically blocked messages.
+        label: Alertas de la red
+        description: Recibir alertas sobre mensajes bloqueados automáticamente.
   transfer:
-    invalidUser: '{emoji} The specified user was not found.'
-    selfTransfer: '{emoji} You cannot transfer ownership to yourself.'
-    botUser: '{emoji} You cannot transfer ownership to a bot.'
-    confirm: 'Are you sure you want to transfer ownership of **{hub}** to {newOwner}? You will be demoted to manager role.'
-    cancelled: '{emoji} Hub transfer has been cancelled.'
-    error: '{emoji} An error occurred while transferring hub ownership.'
-    success: '{emoji} Successfully transferred ownership of **{hub}** to {newOwner}. You have been added as a manager.'
-    timeout: '{emoji} Hub transfer has timed out.'
+    invalidUser: '{emoji} No se encontró el usuario especificado.'
+    selfTransfer: '{emoji} No puedes transferirte la propiedad a ti mismo.'
+    botUser: '{emoji} No puedes transferir la propiedad a un bot.'
+    confirm: '¿Estás seguro de que quieres transferir la propiedad de **{hub}** a {newOwner}? Serás degradado al rol de administrador.'
+    cancelled: '{emoji} La transferencia ha sido cancelada.'
+    error: '{emoji} Se ha producido un error al transferir la propiedad del centro.'
+    success: '{emoji} Se ha transferido con éxito la propiedad de **{hub}** a {newOwner}. Has sido añadido como administrador.'
+    timeout: '{emoji} Se ha agotado el tiempo de espera de transferencia del centro.'
   rules:
-    noRules: "{emoji} This hub has no rules configured yet. Let's add some!"
-    list: "### {emoji} Hub Rules\n{rules}"
-    maxRulesReached: "{emoji} Maximum number of rules ({max}) reached."
-    ruleExists: "{emoji} This rule already exists."
-    selectedRule: "Selected Rule {number}"
+    noRules: "{emoji} Este centro no tiene reglas configuradas aún. ¡Añadamos algunas!"
+    list: "### {emoji} Reglas del centro\n{rules}"
+    maxRulesReached: "{emoji} Se ha alcanzado el número máximo de reglas ({max})."
+    ruleExists: "{emoji} Esta regla ya existe."
+    selectedRule: "Regla seleccionada {number}"
     modal:
       add:
-        title: Add Hub Rule
-        label: Rule Text
-        placeholder: Enter the rule text (max 1000 characters)
+        title: Añadir regla al centro
+        label: Contenido de la regla
+        placeholder: Introduzca el contenido de la regla (máx. 1000 caracteres)
       edit:
-        title: Edit Hub Rule
-        label: Rule Text
-        placeholder: Enter the new rule text (max 1000 characters)
+        title: Editar regla del centro
+        label: Contenido de la regla
+        placeholder: Introduzca el nuevo contenido de la regla (máx. 1000 caracteres)
     select:
-      placeholder: Select a rule to edit or remove
+      placeholder: Seleccione una regla para editar o eliminar
       option:
-        label: Rule {number}
+        label: Regla {number}
     buttons:
-      add: Add Rule
-      edit: Edit Rule
-      delete: Delete Rule
-      back: Back
+      add: Añadir regla
+      edit: Editar regla
+      delete: Eliminar regla
+      back: Volver
     success:
-      add: '{emoji} Rule added successfully!'
-      edit: '{emoji} Rule updated successfully!'
-      delete: '{emoji} Rule deleted successfully!'
+      add: '{emoji} ¡Regla añadida con éxito!'
+      edit: '{emoji} ¡Regla actualizada con éxito!'
+      delete: '{emoji} ¡Regla eliminada con éxito!'
     view:
-      title: 'Rule {number}'
-      select: Select an action for this rule
+      title: 'Regla {number}'
+      select: Seleccione una acción para esta regla
   welcome:
-    set: '{emoji} Welcome message updated successfully!'
-    removed: '{emoji} Welcome message removed.'
-    voterOnly: '{emoji} Custom welcome messages are a voter-only perk! Vote to unlock this feature.'
+    set: '{emoji} ¡Mensaje de bienvenida actualizado con éxito!'
+    removed: '{emoji} Mensaje de bienvenida eliminado.'
+    voterOnly: '{emoji} ¡Los mensajes de bienvenida personalizados son un beneficio de solo votantes! Vota para desbloquear esta función.'
     placeholder: |
-      Welcome {user} from {serverName} to {hubName}! 🎉
-      Members: {memberCount}, Hub: {totalConnections}!
+      ¡Bienvenido {user} de {serverName} a {hubName}! 🎉
+      Miembros: {memberCount}, Centro: {totalConnections}!!
 report:
   modal:
     title: Detalles del reporte
@@ -444,8 +444,8 @@ report:
         label: Descripción detallada (opcional)
         placeholder: Pasos que tomaste. Ej. 1. Ejecuta /help 2. espera 5 segundos...
   reasons:
-    spam: Spam or excessive messages
-    advertising: Unwanted advertising or self-promotion
+    spam: Spam o mensajes excesivos
+    advertising: Anuncios no deseados o autopromoción
     nsfw: NSFW or inappropriate content
     harassment: Harassment or bullying
     hate_speech: Hate speech or discrimination
