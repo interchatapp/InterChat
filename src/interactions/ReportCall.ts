@@ -50,7 +50,7 @@ export default class ReportCallHandler {
     if (!callId) {
       await interaction.reply({
         content: `${getEmoji('x_icon', interaction.client)} Invalid report button. Please try again.`,
-        ephemeral: true,
+        flags: ['Ephemeral'],
       });
       return;
     }
@@ -61,7 +61,7 @@ export default class ReportCallHandler {
     await interaction.reply({
       content: `${getEmoji('info_icon', interaction.client)} Please select a reason for your report:`,
       components: [selectMenu],
-      ephemeral: true,
+      flags: ['Ephemeral'],
     });
   }
 
@@ -76,7 +76,7 @@ export default class ReportCallHandler {
     if (!callId) {
       await interaction.followUp({
         content: `${getEmoji('x_icon', interaction.client)} Invalid report. Please try again.`,
-        ephemeral: true,
+        flags: ['Ephemeral'],
       });
       return;
     }
@@ -87,7 +87,7 @@ export default class ReportCallHandler {
     if (!callData) {
       await interaction.followUp({
         content: `${getEmoji('x_icon', interaction.client)} Unable to find call data. The call might have ended too long ago.`,
-        ephemeral: true,
+        flags: ['Ephemeral'],
       });
       return;
     }
@@ -100,7 +100,7 @@ export default class ReportCallHandler {
     if (!otherChannelParticipants || otherChannelParticipants.users.size === 0) {
       await interaction.followUp({
         content: `${getEmoji('x_icon', interaction.client)} Unable to find participants from the other channel.`,
-        ephemeral: true,
+        flags: ['Ephemeral'],
       });
       return;
     }

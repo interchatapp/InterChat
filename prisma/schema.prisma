@@ -5,8 +5,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("POSTGRES_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -67,7 +67,7 @@ model Hub {
   rulesAcceptances HubRulesAcceptance[]
   moderators       HubModerator[]
   connections      Connection[]
-  tags             HubTag[]
+  tags             Tag[]
   upvotes          HubUpvote[]
   reviews          HubReview[]
   logConfig        HubLogConfig?
@@ -79,22 +79,10 @@ model Hub {
   @@index([ownerId])
 }
 
-model HubTag {
-  id    String @id @default(cuid())
-  hubId String
-  hub   Hub    @relation(fields: [hubId], references: [id], onDelete: Cascade)
-  tagId String
-  tag   Tag    @relation(fields: [tagId], references: [id])
-
-  @@unique([hubId, tagId])
-  @@index([tagId])
-}
-
 model Tag {
-  id    String   @id @default(cuid())
-  name  String   @unique
-  count Int      @default(0)
-  hubs  HubTag[]
+  id    String @id @default(cuid())
+  name  String @unique
+  hubs  Hub[]
 }
 
 model HubUpvote {
@@ -220,7 +208,6 @@ model BlockWord {
   @@unique([hubId, name])
   @@index([hubId])
 }
-
 
 model HubLogConfig {
   id                     String  @id @default(cuid())

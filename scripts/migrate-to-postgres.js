@@ -7,31 +7,21 @@ import { PrismaClient as PostgresPrismaClient } from "../build/generated/prisma/
 import { Spinner, greenText, redText } from "./utils.js";
 
 // Ensure we have both MongoDB and PostgreSQL connection strings
-if (!process.env.DATABASE_URL) {
+if (!process.env.MONGODB_URL) {
 	throw new Error("Missing MONGODB_URL environment variable");
 }
 
-if (!process.env.POSTGRES_URL) {
+if (!process.env.DATABASE_URL) {
 	throw new Error("Missing DATABASE_URL environment variable");
 }
 
 // Initialize clients with explicit datasource URLs to avoid env conflicts
 // Also disable loading of .env files to prevent conflicts
 const mongoClient = new MongoPrismaClient({
-	datasources: {
-		db: {
-			url: process.env.DATABASE_URL,
-		},
-	},
 	errorFormat: "minimal",
 });
 
 const postgresClient = new PostgresPrismaClient({
-	datasources: {
-		db: {
-			url: process.env.POSTGRES_URL,
-		},
-	},
 	errorFormat: "minimal",
 });
 
