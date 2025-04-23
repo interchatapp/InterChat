@@ -5,10 +5,12 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("POSTGRES_URL")
+  directUrl = env("DIRECT_URL")
 }
 
+// Enums moved to top for better organization
 enum Role {
   MODERATOR
   MANAGER
@@ -37,105 +39,119 @@ enum BlockWordAction {
   SEND_ALERT
 }
 
-type LogChannel {
-  channelId String
-  roleId    String?
+enum CallRatingStatus {
+  LIKE
+  DISLIKE
 }
 
 // Models
 model Hub {
-  id                  String               @id @default(auto()) @map("_id") @db.ObjectId
-  name                String
+  id                  String   @id @default(cuid())
+  name                String   @unique
   description         String
-  owner               User                 @relation(fields: [ownerId], references: [id])
   ownerId             String
+  owner               User     @relation("OwnedHubs", fields: [ownerId], references: [id])
   iconUrl             String
   bannerUrl           String?
   welcomeMessage      String?
-  private             Boolean              @default(true)
-  locked              Boolean              @default(false)
-  appealCooldownHours Int                  @default(168)
-  lastActive          DateTime             @default(now())
+  private             Boolean  @default(true)
+  locked              Boolean  @default(false)
+  appealCooldownHours Int      @default(168)
+  lastActive          DateTime @default(now())
   settings            Int
-  rules               String[]             @default([])
-  rulesAcceptances    HubRulesAcceptance[]
-  moderators          HubModerator[]
-  connections         Connection[]
-  tags                String[]
-  upvotes             HubUpvote[]
-  reviews             HubReview[]
-  logConfig           HubLogConfig?
-  blockWords          BlockWord[]
-  infractions         Infraction[] // Combined user and server infractions
-  invites             HubInvite[]
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
-  @@unique([name])
+  // Relations
+  rules            String[]
+  rulesAcceptances HubRulesAcceptance[]
+  moderators       HubModerator[]
+  connections      Connection[]
+  tags             HubTag[]
+  upvotes          HubUpvote[]
+  reviews          HubReview[]
+  logConfig        HubLogConfig?
+  blockWords       BlockWord[]
+  infractions      Infraction[]
+  invites          HubInvite[]
+  userId           String?
+
   @@index([ownerId])
 }
 
+model HubTag {
+  id    String @id @default(cuid())
+  hubId String
+  hub   Hub    @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  tagId String
+  tag   Tag    @relation(fields: [tagId], references: [id])
+
+  @@unique([hubId, tagId])
+  @@index([tagId])
+}
+
 model Tag {
-  id    String @id @default(auto()) @map("_id") @db.ObjectId
-  name  String
-  count Int    @default(0)
-  // hubIds Hub[]
+  id    String   @id @default(cuid())
+  name  String   @unique
+  count Int      @default(0)
+  hubs  HubTag[]
 }
 
 model HubUpvote {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  hubId     String   @db.ObjectId
+  id        String   @id @default(cuid())
+  hubId     String
+  hub       Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
   userId    String
-  createdAt DateTime @default(now())
-  hub       Hub      @relation(fields: [hubId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
 
   @@unique([hubId, userId])
-  @@index([hubId])
+  @@index([userId])
 }
 
 model HubReview {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  hubId     String   @db.ObjectId
+  id        String   @id @default(cuid())
+  hubId     String
+  hub       Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
   userId    String
+  user      User     @relation(fields: [userId], references: [id])
   rating    Int
   text      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  hub       Hub      @relation(fields: [hubId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
 
   @@unique([hubId, userId])
-  @@index([hubId])
+  @@index([userId])
 }
 
 model HubModerator {
-  id     String @id @default(auto()) @map("_id") @db.ObjectId
-  hubId  String @db.ObjectId
+  id     String @id @default(cuid())
+  hubId  String
+  hub    Hub    @relation(fields: [hubId], references: [id], onDelete: Cascade)
   userId String
-  role   Role
-  hub    Hub    @relation(fields: [hubId], references: [id])
   user   User   @relation(fields: [userId], references: [id])
+  role   Role
 
   @@unique([hubId, userId])
+  @@index([userId])
 }
 
 model Connection {
-  id                   String      @id @default(auto()) @map("_id") @db.ObjectId
-  channelId            String      @unique
+  id                   String     @id @default(cuid())
+  channelId            String     @unique
   parentId             String? // Parent channel ID for threads
   serverId             String
-  hubId                String      @db.ObjectId
-  connected            Boolean     @default(true)
-  compact              Boolean     @default(false)
+  server               ServerData @relation(fields: [serverId], references: [id])
+  hubId                String
+  hub                  Hub        @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  connected            Boolean    @default(true)
+  compact              Boolean    @default(false)
   invite               String?
-  createdAt            DateTime    @default(now())
+  createdAt            DateTime   @default(now())
   embedColor           String?
   webhookURL           String
-  lastActive           DateTime    @default(now())
-  joinRequestsDisabled Boolean?    @default(false)
-  hub                  Hub         @relation(fields: [hubId], references: [id])
-  server               ServerData? @relation(fields: [serverId], references: [id])
+  lastActive           DateTime   @default(now())
+  joinRequestsDisabled Boolean    @default(false)
 
   @@unique([channelId, serverId])
   @@unique([hubId, serverId])
@@ -143,8 +159,8 @@ model Connection {
 }
 
 model Infraction {
-  id          String           @id @default(nanoid(10)) @map("_id")
-  hubId       String           @db.ObjectId
+  id          String           @id @default(nanoid(10))
+  hubId       String
   type        InfractionType   @default(BLACKLIST)
   status      InfractionStatus @default(ACTIVE)
   moderator   User             @relation(name: "issuedInfractions", fields: [moderatorId], references: [id])
@@ -161,24 +177,26 @@ model Infraction {
   serverId   String?
   serverName String?
 
-  hub       Hub      @relation(fields: [hubId], references: [id])
-  appeals   Appeal[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  hub          Hub         @relation(fields: [hubId], references: [id])
+  appeals      Appeal[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  ServerData   ServerData? @relation(fields: [serverDataId], references: [id])
+  serverDataId String?
 
   @@index([status, hubId])
 }
 
 model Appeal {
-  id           String       @id @default(auto()) @map("_id") @db.ObjectId
+  id           String       @id @default(cuid())
   infractionId String
+  infraction   Infraction   @relation(fields: [infractionId], references: [id])
   userId       String
+  user         User         @relation(fields: [userId], references: [id])
   reason       String
   status       AppealStatus @default(PENDING)
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
-  infraction   Infraction   @relation(fields: [infractionId], references: [id])
-  user         User         @relation(fields: [userId], references: [id])
 
   @@index([infractionId])
   @@index([userId])
@@ -186,84 +204,96 @@ model Appeal {
 }
 
 model BlockWord {
-  id        String            @id @default(auto()) @map("_id") @db.ObjectId
-  hubId     String            @db.ObjectId
+  id        String   @id @default(cuid())
+  hubId     String
+  hub       Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
   name      String
-  words     String // words separated by comma
   createdBy String
-  actions   BlockWordAction[]
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
+  creator   User     @relation(fields: [createdBy], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  hub Hub @relation(fields: [hubId], references: [id])
+  // Relations
+  words   String // seperated by comma (,)
+  actions BlockWordAction[]
 
+  @@unique([hubId, name])
   @@index([hubId])
-  @@index([words])
 }
 
+
 model HubLogConfig {
-  id            String      @id @default(auto()) @map("_id") @db.ObjectId
-  hubId         String      @unique @db.ObjectId
-  modLogs       LogChannel?
-  joinLeaves    LogChannel?
-  appeals       LogChannel?
-  reports       LogChannel?
-  networkAlerts LogChannel?
-  hub           Hub         @relation(fields: [hubId], references: [id])
+  id                     String  @id @default(cuid())
+  hubId                  String  @unique
+  hub                    Hub     @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  modLogsChannelId       String?
+  modLogsRoleId          String?
+  joinLeavesChannelId    String?
+  joinLeavesRoleId       String?
+  appealsChannelId       String?
+  appealsRoleId          String?
+  reportsChannelId       String?
+  reportsRoleId          String?
+  networkAlertsChannelId String?
+  networkAlertsRoleId    String?
 }
 
 model HubInvite {
   code    String   @id @default(nanoid(10)) @map("_id")
-  hubId   String   @db.ObjectId
+  hubId   String
+  hub     Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
   expires DateTime
-  hub     Hub      @relation(fields: [hubId], references: [id])
 
   @@index([hubId])
+  @@index([code])
 }
 
 model HubRulesAcceptance {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  id         String   @id @default(cuid())
   userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  hubId      String
+  hub        Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
   acceptedAt DateTime @default(now())
-  hub        Hub      @relation(fields: [hubId], references: [id])
-  hubId      String   @db.ObjectId
 
   @@unique([userId, hubId])
-  @@index([userId])
-  @@index([hubId])
 }
 
 model User {
-  id                String          @id @map("_id")
+  id                String         @id
   name              String?
-  showBadges        Boolean         @default(true)
+  showBadges        Boolean        @default(true)
   image             String?
   locale            String?
-  voteCount         Int             @default(0)
-  reputation        Int             @default(0)
+  voteCount         Int            @default(0)
+  reputation        Int            @default(0)
   lastVoted         DateTime?
   banReason         String?
-  mentionOnReply    Boolean         @default(true)
-  acceptedRules     Boolean         @default(false)
-  messageCount      Int             @default(0)
-  lastMessageAt     DateTime        @default(now())
+  mentionOnReply    Boolean        @default(true)
+  acceptedRules     Boolean        @default(false)
+  messageCount      Int            @default(0)
+  lastMessageAt     DateTime       @default(now())
   modPositions      HubModerator[]
-  ownedHubs         Hub[]
-  infractions       Infraction[]    @relation("infractions")
-  appeals           Appeal[]
-  reviews           HubReview[]
-  issuedInfractions Infraction[]    @relation("issuedInfractions")
-  upvotedHubs       HubUpvote[]
-  inboxLastReadDate DateTime?       @default(now())
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  ReputationLog     ReputationLog[]
+  inboxLastReadDate DateTime?      @default(now())
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 
-  @@index([messageCount])
+  // Relations
+  ownedHubs         Hub[]                @relation("OwnedHubs")
+  appeals           Appeal[]
+  infractions       Infraction[]         @relation("infractions")
+  issuedInfractions Infraction[]         @relation("issuedInfractions")
+  upvotedHubs       HubUpvote[]
+  reputationLog     ReputationLog[]
+  reviews           HubReview[]
+  blockWordsCreated BlockWord[]
+  rulesAcceptances  HubRulesAcceptance[]
+  ratingsMade       CallRating[]         @relation("RatingsMade")
+  ratingsReceived   CallRating[]         @relation("RatingsReceived")
 }
 
 model Announcement {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  id           String   @id @default(cuid())
   title        String
   content      String
   thumbnailUrl String?
@@ -272,38 +302,45 @@ model Announcement {
 }
 
 model ServerData {
-  id            String       @id @map("_id")
+  id            String   @id
   name          String?
   iconUrl       String?
-  premiumStatus Boolean      @default(false)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
   inviteCode    String?
-  messageCount  Int          @default(0)
-  lastMessageAt DateTime     @default(now())
-  connections   Connection[]
-}
+  messageCount  Int      @default(0)
+  premiumStatus Boolean  @default(false)
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-enum CallRatingStatus {
-  like
-  dislike
+  // Relations
+  connections Connection[]
+  infractions Infraction[]
 }
 
 model CallRating {
-  id        String           @id @default(auto()) @map("_id") @db.ObjectId
+  id        String           @id @default(cuid())
   callId    String
-  targetId  String
   raterId   String
+  rater     User             @relation("RatingsMade", fields: [raterId], references: [id])
+  targetId  String
+  target    User             @relation("RatingsReceived", fields: [targetId], references: [id])
   rating    CallRatingStatus
   timestamp DateTime         @default(now())
+
+  @@unique([callId, raterId, targetId])
+  @@index([targetId])
+  @@index([raterId])
 }
 
 model ReputationLog {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  id         String   @id @default(cuid())
   giverId    String
-  receiver   User     @relation(fields: [receiverId], references: [id])
   receiverId String
-  timestamp  DateTime @default(now())
+  receiver   User     @relation(fields: [receiverId], references: [id])
   reason     String
   automatic  Boolean  @default(false)
+  timestamp  DateTime @default(now())
+
+  @@index([receiverId])
+  @@index([giverId])
 }

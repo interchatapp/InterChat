@@ -28,11 +28,11 @@ import {
 } from '#src/utils/report/ReportReasons.js';
 import { fetchUserLocale } from '#src/utils/Utils.js';
 import { CustomID } from '#utils/CustomID.js';
-import { supportedLocaleCodes, t } from '#utils/Locale.js';
+import { type supportedLocaleCodes, t } from '#utils/Locale.js';
 import {
   ActionRowBuilder,
   StringSelectMenuBuilder,
-  StringSelectMenuInteraction,
+  type StringSelectMenuInteraction,
 } from 'discord.js';
 
 export const buildReportReasonDropdown = (messageId: string, locale: supportedLocaleCodes) =>
@@ -55,7 +55,7 @@ export default class ReportMessageHandler {
 
     if (
       !originalMsg?.hubId ||
-      !(await HubLogManager.create(originalMsg?.hubId)).config.reports?.channelId
+      !(await HubLogManager.create(originalMsg?.hubId)).config.reportsChannelId
     ) {
       const notEnabledEmbed = new InfoEmbed().setDescription(
         t('msgInfo.report.notEnabled', locale, { emoji: getEmoji('x_icon', interaction.client) }),

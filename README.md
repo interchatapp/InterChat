@@ -61,21 +61,21 @@ git clone https://github.com/discord-interchat/InterChat.git
 
 # Install dependencies
 cd interchat
-bun install
+npm install
 
 # Configure environment
 # Edit .env with your credentials
 
-bun run build
-bun sync:commands --private --public
-bun sync:emojis
-bun locale-types
+npm run build
+npm run sync:commands --private --public
+npm run sync:emojis
+npm run locale-types
 
 # Start development server
-bun dev
+npm run dev
 
 # Or production mode
-bun start
+npm start
 ```
 
 ## 📘 Documentation

@@ -16,7 +16,7 @@
  */
 
 import db from '#src/utils/Db.js';
-import { User } from '#src/generated/prisma/client/client.js';
+import { CallRatingStatus, type User } from '#src/generated/prisma/client/client.js';
 import type { Snowflake } from 'discord.js';
 
 export class ReputationService {
@@ -43,7 +43,7 @@ export class ReputationService {
         callId,
         raterId,
         targetId: userId,
-        rating: rating > 0 ? 'like' : 'dislike',
+        rating: rating > 0 ? CallRatingStatus.LIKE : CallRatingStatus.DISLIKE,
         timestamp: new Date(),
       },
     });

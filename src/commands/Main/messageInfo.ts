@@ -283,7 +283,7 @@ export default class MessageInfo extends BaseCommand {
     interaction: ButtonInteraction,
     { hub, locale, messageId }: ReportOpts,
   ) {
-    if (!hub || !(await HubLogManager.create(hub.id)).config.reports?.channelId) {
+    if (!hub || !(await HubLogManager.create(hub.id)).config.reportsChannelId) {
       const notEnabledEmbed = new InfoEmbed().setDescription(
         t('msgInfo.report.notEnabled', locale, { emoji: getEmoji('x_icon', interaction.client) }),
       );

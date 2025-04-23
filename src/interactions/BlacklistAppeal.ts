@@ -16,7 +16,7 @@
  */
 
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
-import { AppealStatus } from '#src/generated/prisma/client/index.js';
+import type { AppealStatus } from '#src/generated/prisma/client/index.js';
 import BlacklistManager from '#src/managers/BlacklistManager.js';
 import HubLogManager from '#src/managers/HubLogManager.js';
 import InfractionManager from '#src/managers/InfractionManager.js';
@@ -36,7 +36,7 @@ import {
   type ButtonInteraction,
   ButtonStyle,
   EmbedBuilder,
-  ModalActionRowComponentBuilder,
+  type ModalActionRowComponentBuilder,
   ModalBuilder,
   type ModalSubmitInteraction,
   type RepliableInteraction,
@@ -125,7 +125,9 @@ export default class AppealInteraction {
     const { passedCheck } = await this.checkBlacklistOrSendError(interaction, hubId, type);
     if (!passedCheck) return;
 
-    const { channelId: appealsChannelId, roleId: appealsRoleId } = appealsConfig;
+    const { appealsChannelId, appealsRoleId } = appealsConfig;
+    if (!appealsChannelId) return;
+
 
     let appealIconUrl: string | null;
     let appealName: string | undefined;
@@ -274,7 +276,7 @@ export default class AppealInteraction {
 
   async validateBlacklistAppealLogConfig(interaction: RepliableInteraction, hubId: string) {
     const hubLogManager = await HubLogManager.create(hubId);
-    if (!hubLogManager.config.appeals?.channelId) {
+    if (!hubLogManager.config.appealsChannelId) {
       const embed = new InfoEmbed().setDescription('Blacklist appeals are disabled in this hub.');
       const replyMethod = getReplyMethod(interaction);
 
@@ -282,7 +284,7 @@ export default class AppealInteraction {
       return null;
     }
 
-    return hubLogManager.config.appeals;
+    return hubLogManager.config;
   }
 
   async checkBlacklistOrSendError(

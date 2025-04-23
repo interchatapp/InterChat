@@ -29,7 +29,7 @@ export const logJoinToHub = async (
   opt?: { totalConnections: number; hubName: string },
 ) => {
   const logManager = await HubLogManager.create(hubId);
-  if (!logManager.config.joinLeaves) return;
+  if (!logManager.config.joinLeavesChannelId) return;
 
   const dotBlueEmoji = getEmoji('dot', server.client);
   const owner = await server.fetchOwner();
@@ -48,12 +48,12 @@ export const logJoinToHub = async (
       text: `We have ${opt?.totalConnections} server(s) connected to ${opt?.hubName} now!`,
     });
 
-  await sendLog(server.client.cluster, logManager.config.joinLeaves.channelId, embed);
+  await sendLog(server.client.cluster, logManager.config.joinLeavesChannelId, embed);
 };
 
 export const logGuildLeaveToHub = async (hubId: string, server: Guild) => {
   const logManager = await HubLogManager.create(hubId);
-  if (!logManager.config.joinLeaves) return;
+  if (!logManager.config.joinLeavesChannelId) return;
 
   const owner = await server.client.users.fetch(server.ownerId).catch(() => null);
   const totalConnections = (await getHubConnections(hubId))?.reduce(
@@ -78,5 +78,5 @@ export const logGuildLeaveToHub = async (hubId: string, server: Guild) => {
       text: `We now have ${totalConnections} server(s) connected to the hub now!`,
     });
 
-  await sendLog(server.client.cluster, logManager.config.joinLeaves.channelId, embed);
+  await sendLog(server.client.cluster, logManager.config.joinLeavesChannelId, embed);
 };

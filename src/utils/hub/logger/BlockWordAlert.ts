@@ -31,7 +31,7 @@ export const logBlockwordAlert = async (
   matches: string[],
 ) => {
   const logManager = await HubLogManager.create(rule.hubId);
-  if (!logManager.config.networkAlerts) return;
+  if (!logManager.config.networkAlertsChannelId) return;
 
   const content = message.content.replace(createRegexFromWords(matches), boldANSIText);
   const embed = new EmbedBuilder()
@@ -54,9 +54,9 @@ export const logBlockwordAlert = async (
     )
     .setTimestamp();
 
-  const { networkAlerts: config } = logManager.config;
-
-  await sendLog(message.client.cluster, config.channelId, embed, {
-    roleMentionIds: config.roleId ? [config.roleId] : undefined,
+  await sendLog(message.client.cluster, logManager.config.networkAlertsChannelId, embed, {
+    roleMentionIds: logManager.config.networkAlertsRoleId
+      ? [logManager.config.networkAlertsRoleId]
+      : undefined,
   });
 };

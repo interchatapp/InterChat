@@ -30,7 +30,7 @@ import {
 } from 'discord.js';
 
 export type RoleIdLogConfigs = 'appeals' | 'reports' | 'networkAlerts';
-export type LogConfigTypes = keyof Omit<Omit<HubLogConfig, 'hubId'>, 'id'>;
+export type LogConfigTypes = 'modLogs' | 'joinLeaves' | 'appeals' | 'reports' | 'networkAlerts';
 export const logsWithRoleId = ['appeals', 'reports', 'networkAlerts'];
 
 export default class HubLogManager {
@@ -42,9 +42,13 @@ export default class HubLogManager {
   constructor(logConfig: HubLogConfig) {
     this.hubId = logConfig.hubId;
     this.logConfig = logConfig;
-    this.logTypes = Object.keys(logConfig).filter(
-      (key) => key !== 'hubId' && key !== 'id',
-    ) as LogConfigTypes[];
+    this.logTypes = [
+      'modLogs',
+      'joinLeaves',
+      'appeals',
+      'reports',
+      'networkAlerts',
+    ] as LogConfigTypes[];
   }
 
   static async create(hubId: string) {
@@ -108,40 +112,40 @@ export default class HubLogManager {
 
   async setLogChannel(type: LogConfigTypes, channelId: string) {
     await this.updateLogConfig({
-      [type]: { upsert: { set: { channelId }, update: { channelId } } },
+      [`${type}ChannelId`]: channelId,
     });
   }
 
   async resetLog(...type: LogConfigTypes[]) {
     await this.updateLogConfig(
       type.reduce(
-        (acc, typ) => Object.assign(acc, { [typ]: { unset: true } }),
+        (acc, typ) => Object.assign(acc, {
+          [`${typ}ChannelId`]: null,
+          [`${typ}RoleId`]: null,
+        }),
         {},
       ),
     );
   }
 
   async setRoleId(type: RoleIdLogConfigs, roleId: string) {
-    if (!this.config[type]?.channelId) throw new Error('Channel ID must be set before .');
+    const channelIdField = `${type}ChannelId` as const;
+    if (!this.config[channelIdField]) throw new Error('Channel ID must be set before setting role ID.');
 
     await this.updateLogConfig({
-      [type]: {
-        upsert: {
-          set: { roleId, channelId: this.config[type].channelId },
-          update: { roleId },
-        },
-      },
+      [`${type}RoleId`]: roleId,
     });
   }
 
   async removeRoleId(type: RoleIdLogConfigs) {
-    if (!this.config[type]) {
+    const channelIdField = `${type}ChannelId` as const;
+    if (!this.config[channelIdField]) {
       await this.resetLog(type);
       return;
     }
 
     await this.updateLogConfig({
-      [type]: { set: { channelId: this.config[type].channelId } },
+      [`${type}RoleId`]: null,
     });
   }
 
@@ -166,17 +170,17 @@ export default class HubLogManager {
 
     const logDesc = this.logTypes
       .map((type) => {
-        const configType = this.config[type];
-        const mentionedRole =
-					typeof configType !== 'string' && configType?.roleId
-					  ? roleMention(configType.roleId)
-					  : x_icon;
+        const channelIdField = `${type}ChannelId` as const;
+        const roleIdField = `${type}RoleId` as const;
+
+        const channelId = this.config[channelIdField];
+        const roleId = this.logsWithRoleId.includes(type) ? this.config[roleIdField] : null;
+
+        const mentionedRole = roleId ? roleMention(roleId) : x_icon;
         const roleInfo = this.logsWithRoleId.includes(type)
           ? `${dividerEnd} ${roleStr} ${mentionedRole}`
           : '';
 
-        const channelId =
-					typeof configType === 'string' ? configType : configType?.channelId;
         return stripIndents`
           ${getEmoji('arrow', client)} \`${type}:\`
           ${divider} ${t(`hub.manage.logs.${type}.description`, locale)}

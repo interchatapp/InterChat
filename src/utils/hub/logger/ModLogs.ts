@@ -79,8 +79,8 @@ export const logServerUnblacklist = async (
   const blacklist = await blacklistManager.fetchBlacklist(hub.id);
 
   const logConfig = await hub.fetchLogConfig();
-  const modLogs = logConfig.config.modLogs;
-  if (!blacklist?.serverName || !modLogs) return;
+  const modLogsChannelId = logConfig.config.modLogsChannelId;
+  if (!blacklist?.serverName || !modLogsChannelId) return;
 
   const embed = getUnblacklistEmbed('Server', client, {
     id: opts.id,
@@ -91,7 +91,7 @@ export const logServerUnblacklist = async (
     originalReason: blacklist.reason,
   });
 
-  await sendLog(client.cluster, modLogs.channelId, embed);
+  await sendLog(client.cluster, modLogsChannelId, embed);
 };
 
 export const logUserUnblacklist = async (
@@ -103,8 +103,8 @@ export const logUserUnblacklist = async (
   const blacklist = await blacklistManager.fetchBlacklist(hub.id);
 
   const logConfig = await hub.fetchLogConfig();
-  const modLogs = logConfig.config.modLogs;
-  if (!blacklist || !modLogs) return;
+  const modLogsChannelId = logConfig.config.modLogsChannelId;
+  if (!blacklist || !modLogsChannelId) return;
 
   const user = await client.users.fetch(opts.id).catch(() => null);
   const name = `${user?.username}`;
@@ -118,7 +118,7 @@ export const logUserUnblacklist = async (
     originalReason: blacklist.reason,
   });
 
-  await sendLog(client.cluster, modLogs.channelId, embed);
+  await sendLog(client.cluster, modLogsChannelId, embed);
 };
 
 export const logMsgDelete = async (
@@ -127,8 +127,8 @@ export const logMsgDelete = async (
   logConfig: HubLogManager,
   opts: { hubName: string; modName: string },
 ) => {
-  const modLogs = logConfig.config.modLogs;
-  if (!modLogs?.channelId) return;
+  const modLogsChannelId = logConfig.config.modLogsChannelId;
+  if (!modLogsChannelId) return;
 
   const { authorId, guildId, content } = originalMsg;
   const user = await client.users.fetch(authorId).catch(() => null);
@@ -157,5 +157,5 @@ export const logMsgDelete = async (
     ])
     .setFooter({ text: `Deleted by: ${opts.modName}` });
 
-  await sendLog(client.cluster, modLogs.channelId, embed);
+  await sendLog(client.cluster, modLogsChannelId, embed);
 };

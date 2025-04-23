@@ -47,8 +47,11 @@ export default class HubCreateSubCommand extends BaseCommand {
   private readonly hubService = new HubService();
 
   async execute(ctx: Context) {
-    const modal = HubCreateSubCommand.hubCreateModal(await ctx.getLocale());
-    await ctx.showModal(modal);
+    // FIXME: enable this after testing
+    await ctx.reply(`${ctx.getEmoji('disabled')} This feature is **temporarily** disabled to prevent any data loss as we migrate our database. Learn more in the __support server__.`);
+    return;
+    // const modal = HubCreateSubCommand.hubCreateModal(await ctx.getLocale());
+    // await ctx.showModal(modal);
   }
 
   @RegisterInteractionHandler('hub_create_modal')
