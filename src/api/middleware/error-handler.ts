@@ -1,7 +1,7 @@
 import type { Context, MiddlewareHandler, Next } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import { ZodError } from 'zod';
-import Logger from '#utils/Logger.js';
+import { handleError } from '#src/utils/Utils.js';
 
 /**
  * Middleware to handle errors in the API
@@ -11,7 +11,7 @@ export const errorHandler: MiddlewareHandler = async (c: Context, next: Next) =>
     await next();
   }
   catch (error) {
-    Logger.error('API Error: %O', error);
+    handleError(error, { comment: 'API Error' });
 
     if (error instanceof HTTPException) {
       // Handle HTTP exceptions
