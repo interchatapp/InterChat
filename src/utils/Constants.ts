@@ -7,7 +7,6 @@ const packageJson = require('../../package.json');
 export const enum RedisKeys {
   msgTimestamp = 'msgTimestamp',
   lastActive = 'lastActive',
-  connectionHubId = 'connectionHubId',
   userData = 'UserData',
   cooldown = 'cooldown',
   blacklistedServers = 'blacklistedServers',

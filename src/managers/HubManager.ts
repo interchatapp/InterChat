@@ -16,20 +16,14 @@
  */
 
 import type { BlockWord, Hub } from '#src/generated/prisma/client/client.js';
-import type { Redis } from 'ioredis';
-import { type CacheConfig, CacheManager } from '#src/managers/CacheManager.js';
 import HubConnectionsManager from '#src/managers/HubConnectionsManager.js';
 import HubLogManager from '#src/managers/HubLogManager.js';
 import HubModeratorManager from '#src/managers/HubModeratorManager.js';
 import HubSettingsManager from '#src/managers/HubSettingsManager.js';
 import { HubService } from '#src/services/HubService.js';
-import { RedisKeys } from '#src/utils/Constants.js';
 import db from '#src/utils/Db.js';
-import Logger from '#src/utils/Logger.js';
-import getRedis from '#src/utils/Redis.js';
 
 export default class HubManager {
-  private readonly cacheManager: CacheManager;
   private readonly components: {
     hubService: HubService;
     moderators: HubModeratorManager;
@@ -44,26 +38,16 @@ export default class HubManager {
     config: Partial<{
       hubService: HubService;
       modManager: HubModeratorManager;
-      cache: Redis;
-      cacheConfig: CacheConfig;
     }> = {},
   ) {
     this.hub = hub;
-    this.cacheManager = new CacheManager(config.cache ?? getRedis(), {
-      expirationMs: 10 * 60 * 1000, // 10 minutes
-      prefix: RedisKeys.Hub,
-      ...config.cacheConfig,
-    });
-
     this.components = {
       hubService: config.hubService ?? new HubService(),
-      moderators: config.modManager ?? new HubModeratorManager(this, this.cacheManager.redis),
+      moderators: config.modManager ?? new HubModeratorManager(this),
       settings: new HubSettingsManager(this),
-      connections: new HubConnectionsManager(this, this.cacheManager.redis),
-      logs: null, // Lazy loaded
+      connections: new HubConnectionsManager(this),
+      logs: null,
     };
-
-    this.initializeCache().catch(Logger.error);
   }
 
   // Public accessors
@@ -87,10 +71,6 @@ export default class HubManager {
     return this.components.connections;
   }
 
-  private async initializeCache(): Promise<void> {
-    await this.cacheManager.set(this.hub.id, this.hub);
-  }
-
   // Data operations
   public async update(
     data: Partial<
@@ -112,7 +92,6 @@ export default class HubManager {
       where: { id: this.hub.id },
       data,
     });
-    await this.initializeCache();
   }
 
   public async delete(): Promise<void> {
@@ -166,7 +145,6 @@ export default class HubManager {
       where: { id: this.hub.id },
       data: { rules },
     });
-    await this.initializeCache();
   }
 
   public getRules(): string[] {

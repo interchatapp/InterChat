@@ -15,23 +15,17 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Connection, Prisma } from '#src/generated/prisma/client/client.js';
 import type { HexColorString } from 'discord.js';
+import type { Connection, Prisma } from '#src/generated/prisma/client/client.js';
 import { HubService } from '#src/services/HubService.js';
-import { cacheHubConnection } from '#src/utils/ConnectedListUtils.js';
-import { RedisKeys } from '#src/utils/Constants.js';
 import db from '#src/utils/Db.js';
-import getRedis from '#src/utils/Redis.js';
 
 export default class ConnectionManager {
-  private readonly cache = getRedis();
   private readonly hubService = new HubService();
-  private readonly cacheKey: string;
   private connection: Connection;
 
   constructor(connection: Connection) {
     this.connection = connection;
-    this.cacheKey = this.getCacheKey(connection.hubId);
   }
 
   get id(): string {
@@ -75,7 +69,6 @@ export default class ConnectionManager {
     await db.connection.delete({
       where: { id: this.connection.id },
     });
-    await this.clearCache();
   }
 
   async setInvite(invite: string): Promise<void> {
@@ -96,13 +89,10 @@ export default class ConnectionManager {
     });
   }
 
-  // Private helper methods
-  private getCacheKey(hubId: string): string {
-    return `${RedisKeys.Hub}:${hubId}:connections`;
-  }
-
   private async connectionExists(): Promise<boolean> {
-    return Boolean(await this.cache.hget(this.cacheKey, this.connection.channelId));
+    return (await db.connection.findFirst({
+      where: { id: this.connection.id },
+    })) !== null;
   }
 
   private async updateConnectionIfExists(data: Prisma.ConnectionUpdateInput): Promise<void> {
@@ -117,13 +107,5 @@ export default class ConnectionManager {
       where: { id: this.connection.id },
       data,
     });
-    await cacheHubConnection(this.connection);
-  }
-
-  private async clearCache(): Promise<void> {
-    await Promise.all([
-      this.cache.hdel(this.cacheKey, this.connection.channelId),
-      this.cache.del(`${RedisKeys.connectionHubId}:${this.connection.channelId}`),
-    ]);
   }
 }
