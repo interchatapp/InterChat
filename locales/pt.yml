@@ -410,7 +410,7 @@ hub:
     select:
       placeholder: Selecione uma regra para editar ou remover
       option:
-        label: Regra {número}
+        label: Regra {number}
     buttons:
       add: Adicionar regra
       edit: Editar regra
