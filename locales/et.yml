@@ -34,8 +34,6 @@ rules:
   accepted: |
     {emoji} You're all set! Welcome to the InterChat community.
 
-    {emoji} You're all set! Welcome to the InterChat community.
-
     ### Get Started Quickly:
     - Visit `/hub browse` to find active communities
     - Join discussions that interest you or create your own through our __dashboard__
