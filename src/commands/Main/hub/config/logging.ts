@@ -17,7 +17,7 @@ import {
   type AnySelectMenuInteraction,
   type ChannelSelectMenuInteraction,
   type Client,
-  SelectMenuComponentOptionData,
+  type SelectMenuComponentOptionData,
 } from 'discord.js';
 import { HubService } from '#src/services/HubService.js';
 import type HubManager from '#src/managers/HubManager.js';
@@ -164,6 +164,8 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
     logConfig: HubLogManager,
     type: LogConfigTypes,
   ): ActionRowBuilder<ChannelSelectMenuBuilder> {
+    const channelIdField = `${type}ChannelId`;
+    const channelId = logConfig.config[channelIdField as keyof typeof logConfig.config];
     return new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(
       new ChannelSelectMenuBuilder()
         .setCustomId(
@@ -172,7 +174,7 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
         .setPlaceholder('Select a channel to send logs to')
         .addChannelTypes(...ALLOWED_CHANNEL_TYPES)
         .setDefaultChannels(
-          logConfig.config[type]?.channelId ? [logConfig.config[type].channelId] : [],
+          channelId ? [channelId as string] : [],
         )
         .setMinValues(0),
     );
@@ -183,7 +185,8 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
     logConfig: HubLogManager,
     type: RoleIdLogConfigs,
   ): ActionRowBuilder<RoleSelectMenuBuilder> {
-    const existingRole = logConfig.config[type]?.roleId;
+    const roleIdField = `${type}RoleId`;
+    const existingRole = logConfig.config[roleIdField as keyof typeof logConfig.config];
 
     return new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(
       new RoleSelectMenuBuilder()
@@ -191,7 +194,7 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
           new CustomID('hubConfig:logsRole').setArgs(userId, logConfig.hubId, type).toString(),
         )
         .setPlaceholder('Select a role to ping when logs are sent')
-        .setDefaultRoles(existingRole ? [existingRole] : [])
+        .setDefaultRoles(existingRole ? [existingRole as string] : [])
         .setMinValues(0),
     );
   }

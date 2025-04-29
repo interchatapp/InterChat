@@ -27,7 +27,7 @@ import { fetchUserLocale, extractMessageId } from '#src/utils/Utils.js';
 import {
   type APIActionRowComponent,
   type APIInteractionGuildMember,
-  type APIMessageActionRowComponent,
+  type APIComponentInMessageActionRow,
   type APIModalInteractionResponseCallbackData,
   type ActionRowData,
   type BitFieldResolvable,
@@ -179,13 +179,19 @@ export default abstract class Context<T extends ContextT = ContextT> {
       content?: string;
       title?: string;
       components?: readonly (
-        | JSONEncodable<APIActionRowComponent<APIMessageActionRowComponent>>
+        | JSONEncodable<APIActionRowComponent<APIComponentInMessageActionRow>>
         | ActionRowData<MessageActionRowComponentData | MessageActionRowComponentBuilder>
-        | APIActionRowComponent<APIMessageActionRowComponent>
+        | APIActionRowComponent<APIComponentInMessageActionRow>
       )[];
       flags?: BitFieldResolvable<
-        Extract<MessageFlagsString, 'Ephemeral' | 'SuppressEmbeds' | 'SuppressNotifications'>,
-        MessageFlags.Ephemeral | MessageFlags.SuppressEmbeds | MessageFlags.SuppressNotifications
+        Extract<
+          MessageFlagsString,
+          'Ephemeral' | 'SuppressEmbeds' | 'SuppressNotifications' | 'IsComponentsV2'
+        >,
+        | MessageFlags.Ephemeral
+        | MessageFlags.SuppressEmbeds
+        | MessageFlags.SuppressNotifications
+        | MessageFlags.IsComponentsV2
       >;
       edit?: boolean;
     },

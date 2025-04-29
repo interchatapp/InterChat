@@ -15,24 +15,28 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import BaseCommand from '#src/core/BaseCommand.js';
+import type Context from '#src/core/CommandContext/Context.js';
 import type { Infraction } from '#src/generated/prisma/client/client.js';
-import {
-  ApplicationCommandOptionType,
-  type AutocompleteInteraction,
-  EmbedBuilder,
-  type User,
-  time,
-} from 'discord.js';
 import { Pagination } from '#src/modules/Pagination.js';
-import Constants from '#utils/Constants.js';
+import { HubService } from '#src/services/HubService.js';
+import Constants from '#src/utils/Constants.js';
+import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
+import { showModeratedHubsAutocomplete } from '#src/utils/moderation/blacklistUtils.js';
 import db from '#utils/Db.js';
 import { type supportedLocaleCodes, t } from '#utils/Locale.js';
 import { fetchUserLocale, toTitleCase } from '#utils/Utils.js';
-import BaseCommand from '#src/core/BaseCommand.js';
-import type Context from '#src/core/CommandContext/Context.js';
-import { HubService } from '#src/services/HubService.js';
-import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
-import { showModeratedHubsAutocomplete } from '#src/utils/moderation/blacklistUtils.js';
+import {
+  ApplicationCommandOptionType,
+  type AutocompleteInteraction,
+  ButtonBuilder,
+  ButtonStyle,
+  ContainerBuilder,
+  SectionBuilder,
+  TextDisplayBuilder,
+  type User,
+  time,
+} from 'discord.js';
 
 // Type guard
 const isServerType = (list: Infraction) => list.serverId && list.serverName;
@@ -74,10 +78,7 @@ export default class BlacklistListSubcommand extends BaseCommand {
     const hub = (await this.hubService.findHubsByName(hubName)).at(0);
 
     const locale = await fetchUserLocale(ctx.user.id);
-    if (
-      !hub ||
-			!(await runHubRoleChecksAndReply(hub, ctx, { checkIfMod: true }))
-    ) return;
+    if (!hub || !(await runHubRoleChecksAndReply(hub, ctx, { checkIfMod: true }))) return;
 
     const list = await db.infraction.findMany({
       where: { hubId: hub.id, type: 'BLACKLIST', status: 'ACTIVE' },
@@ -85,73 +86,90 @@ export default class BlacklistListSubcommand extends BaseCommand {
       include: { user: { select: { name: true } } },
     });
 
-    const options = { LIMIT: 5, iconUrl: hub.data.iconUrl };
+    if (list.length === 0) {
+      await ctx.editReply({
+        content: `No blacklisted ${ctx.options.getString('type', true)}s found in hub **${hubName}**.`,
+      });
+      return;
+    }
 
-    const fields = [];
-    let counter = 0;
-    const type = isServerType(list[0]) ? 'server' : 'user';
+    const options = { LIMIT: 5, iconUrl: hub.data.iconUrl };
+    const type = ctx.options.getString('type', true) as 'user' | 'server';
 
     const paginator = new Pagination(ctx.client);
+    let counter = 0;
+    let currentItems = [];
+
     for (const data of list) {
       const moderator = data.moderatorId
         ? await ctx.client.users.fetch(data.moderatorId).catch(() => null)
         : null;
 
-      fields.push(this.createFieldData(data, type, { moderator, locale }));
-
+      currentItems.push({ data, moderator });
       counter++;
-      if (counter >= options.LIMIT || fields.length === list.length) {
-        paginator.addPage({
-          embeds: [
-            new EmbedBuilder()
-              .setFields(fields)
-              .setColor(Constants.Colors.invisible)
-              .setAuthor({
-                name: `Blacklisted ${toTitleCase(type)}s:`,
-                iconURL: options.iconUrl,
-              }),
-          ],
-        });
+
+      if (counter >= options.LIMIT || currentItems.length === list.length) {
+        const container = this.buildBlacklistContainer(currentItems, type, locale, ctx);
+
+        paginator.addPage({ components: [container] });
 
         counter = 0;
-        fields.length = 0; // Clear fields array
+        currentItems = [];
       }
     }
 
-    await paginator.run(ctx);
+    await paginator.run(ctx, { isComponentsV2: true });
+  }
+
+  private buildBlacklistContainer(
+    items: Array<{
+      data: Infraction & { user: { name: string | null } | null };
+      moderator: User | null;
+    }>,
+    type: 'server' | 'user',
+    locale: supportedLocaleCodes,
+    ctx: Context,
+  ) {
+    const container = new ContainerBuilder();
+
+    // Add title
+    const titleText = new TextDisplayBuilder().setContent(`# Blacklisted ${toTitleCase(type)}s`);
+    container.addTextDisplayComponents(titleText);
+
+    // Add each blacklist entry as a section with an edit button
+    for (const { data, moderator } of items) {
+      const name = isServerType(data)
+        ? (data.serverName ?? 'Unknown Server')
+        : (data.user?.name ?? 'Unknown User');
+
+      const targetId = (data.userId ?? data.serverId) as string;
+
+      const content = t(`blacklist.list.${type}`, locale, {
+        id: targetId,
+        moderator: moderator ? `@${moderator.username} (${moderator.id})` : 'Unknown',
+        reason: `${data?.reason}`,
+        expires: !data?.expiresAt
+          ? 'Never'
+          : `${time(Math.round(data?.expiresAt.getTime() / 1000), 'R')}`,
+      });
+
+      const section = new SectionBuilder()
+        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### ${name}\n${content}`))
+        .setButtonAccessory(
+          new ButtonBuilder()
+            .setLabel('Edit')
+            .setStyle(ButtonStyle.Link)
+            .setURL(`${Constants.Links.Website}/dashboard/moderation/blacklist/extend/${data.id}`)
+            .setEmoji(ctx.getEmoji('edit_icon')),
+        );
+
+      container.addSectionComponents(section);
+    }
+
+    return container;
   }
 
   async autocomplete(interaction: AutocompleteInteraction): Promise<void> {
     await showModeratedHubsAutocomplete(interaction, this.hubService);
-  }
-
-  private createFieldData(
-    data: Infraction & { user: { name: string | null } | null },
-    type: 'user' | 'server',
-    {
-      moderator,
-      locale,
-    }: {
-      moderator: User | null;
-      locale: supportedLocaleCodes;
-    },
-  ) {
-    const name = isServerType(data)
-      ? (data.serverName ?? 'Unknown Server.')
-      : (data.user?.name ?? 'Unknown User.');
-
-    return {
-      name,
-      value: t(`blacklist.list.${type}`, locale, {
-        id: (data.userId ?? data.serverId) as string,
-        moderator: moderator
-          ? `@${moderator.username} (${moderator.id})`
-          : 'Unknown',
-        reason: `${data?.reason}`,
-        expires: !data?.expiresAt
-          ? 'Never.'
-          : `${time(Math.round(data?.expiresAt.getTime() / 1000), 'R')}`,
-      }),
-    };
   }
 }

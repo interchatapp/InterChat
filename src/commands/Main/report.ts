@@ -66,7 +66,7 @@ export default class ReportPrefixCommand extends BaseCommand {
     await ctx.reply({
       content: `${ctx.getEmoji('info_icon')} Please select a reason for your report:`,
       components: [selectMenu],
-      ephemeral: true,
+      flags: ['Ephemeral'],
     });
   }
 }

@@ -26,7 +26,7 @@ import db from '#utils/Db.js';
 import { parseEmoji } from '#utils/Utils.js';
 import {
   type APIActionRowComponent,
-  type APIMessageActionRowComponent,
+  type APIComponentInMessageActionRow,
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
@@ -269,9 +269,9 @@ export const createReactionEmbed = (
  * @returns The updated components
  */
 export const updateMessageComponents = (
-  components: APIActionRowComponent<APIMessageActionRowComponent>[],
+  components: APIActionRowComponent<APIComponentInMessageActionRow>[],
   reactionRow: ActionRowBuilder<ButtonBuilder> | null,
-): APIActionRowComponent<APIMessageActionRowComponent>[] => {
+): APIActionRowComponent<APIComponentInMessageActionRow>[] => {
   if (!reactionRow) return components;
 
   // Filter out rows that contain reaction buttons

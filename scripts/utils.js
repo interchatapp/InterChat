@@ -48,13 +48,19 @@ export function deconstructSnowflake(snowflake) {
 }
 
 export class Spinner {
+  _isSpinning = false;
   constructor(message = 'Loading...', frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']) {
     this.message = message;
     this.frames = frames;
     this.frameIndex = 0;
     this.intervalId = null;
-    this.isSpinning = false;
+    this._isSpinning = false;
     this.lastLineLength = 0;
+  }
+
+
+  get isSpinning() {
+    return this._isSpinning;
   }
 
   /**
@@ -64,9 +70,9 @@ export class Spinner {
    */
   start(message = null) {
     if (message) this.message = message;
-    if (this.isSpinning) return;
+    if (this._isSpinning) return;
 
-    this.isSpinning = true;
+    this._isSpinning = true;
     this.frameIndex = 0;
     process.stdout.write('\x1B[?25l'); // Hide cursor
 
@@ -84,10 +90,10 @@ export class Spinner {
     }, 80);
   }
   stop(message = '') {
-    if (!this.isSpinning) return;
+    if (!this._isSpinning) return;
 
     clearInterval(this.intervalId);
-    this.isSpinning = false;
+    this._isSpinning = false;
 
     // Clear the spinner line
     process.stdout.write(`\r${' '.repeat(this.lastLineLength)}\r`);
@@ -99,7 +105,7 @@ export class Spinner {
     process.stdout.write('\x1B[?25h'); // Show cursor
   }
 
-  update(message) {
+  edit(message) {
     this.message = message;
   }
 }

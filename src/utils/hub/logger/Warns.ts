@@ -13,7 +13,7 @@ export const logWarn = async (
   },
 ) => {
   const logManager = await HubLogManager.create(hubId);
-  if (!logManager.config.modLogs?.channelId) return;
+  if (!logManager.config.modLogsChannelId) return;
 
   const { warnedUser, moderator, reason } = opts;
   const arrow = getEmoji('dot', moderator.client);
@@ -43,5 +43,5 @@ export const logWarn = async (
       iconURL: moderator.displayAvatarURL(),
     });
 
-  await sendLog(moderator.client.cluster, logManager.config.modLogs.channelId, embed);
+  await sendLog(moderator.client.cluster, logManager.config.modLogsChannelId, embed);
 };

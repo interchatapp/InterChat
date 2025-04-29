@@ -40,7 +40,7 @@ export default class DisconnectCommand extends BaseCommand {
     const channelId = ctx.options.getString('hub', true);
     const isChannelConnected = await db.connection.findFirst({
       where: { channelId },
-      include: { hub: true },
+      select: { hubId: true, hub: { select: { name: true } } },
     });
 
     const locale = await fetchUserLocale(ctx.user.id);

@@ -103,7 +103,7 @@ export default class HubVisibilitySubcommnd extends BaseCommand {
       { name: 'Hub has atleast 2 moderators', check: mods.size >= 2 },
       {
         name: 'Hub accepts user-reports by setting a log channel for reports',
-        check: logConfig.config.reports !== null,
+        check: logConfig.config.reportsChannelId !== null,
       },
     ];
 

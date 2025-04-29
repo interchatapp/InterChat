@@ -22,6 +22,7 @@ import {
   type ColorResolvable,
   EmbedBuilder,
   type Guild,
+  PartialUser,
   type TextChannel,
   type User,
 } from 'discord.js';
@@ -35,7 +36,7 @@ import { handleError } from '#src/utils/Utils.js';
  */
 export const getGuildOwnerOrFirstChannel = async (
   guild: Guild,
-): Promise<{ guildOwner: User | null; guildChannel: TextChannel | null }> => {
+): Promise<{ guildOwner: PartialUser | User | null; guildChannel: TextChannel | null }> => {
   let guildOwner = null;
 
   if (guild.members.me?.permissions.has('ViewAuditLog', true)) {

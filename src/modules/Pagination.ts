@@ -15,10 +15,6 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import Context from '#src/core/CommandContext/Context.js';
-import { getEmoji } from '#src/utils/EmojiUtils.js';
-import Logger from '#src/utils/Logger.js';
-import { getReplyMethod, handleError } from '#utils/Utils.js';
 import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
@@ -29,21 +25,36 @@ import {
   ComponentType,
   type EmbedBuilder,
   InteractionCallbackResponse,
-  type InteractionReplyOptions,
   InteractionResponse,
   Message,
+  MessageFlags,
   ModalBuilder,
   type ModalSubmitInteraction,
   type RepliableInteraction,
   TextInputBuilder,
   TextInputStyle,
 } from 'discord.js';
+import Context from '#src/core/CommandContext/Context.js';
+import { getEmoji } from '#src/utils/EmojiUtils.js';
+import Logger from '#src/utils/Logger.js';
+import { getReplyMethod, handleError } from '#utils/Utils.js';
 
 type PaginationInteraction = Exclude<RepliableInteraction, ModalSubmitInteraction>;
 
 type ButtonEmojis = { back: string; next: string; search: string; select: string };
 
-type RunOptions = { idle?: number; ephemeral?: boolean; deleteOnEnd?: boolean };
+type RunOptions = {
+  idle?: number;
+  ephemeral?: boolean;
+  deleteOnEnd?: boolean;
+  isComponentsV2?: boolean;
+};
+
+type SupportedFlags =
+  | MessageFlags.SuppressNotifications
+  | MessageFlags.IsComponentsV2
+  | MessageFlags.SuppressEmbeds
+  | MessageFlags.Ephemeral;
 
 export class Pagination {
   private readonly pages: BaseMessageOptions[] = [];
@@ -247,7 +258,7 @@ export class Pagination {
       await this.sendReply(
         ctx,
         { content: `${getEmoji('tick', this.client)} No results to display!` },
-        { flags: ['Ephemeral'] },
+        { ephemeral: true },
       );
       return;
     }
@@ -259,7 +270,10 @@ export class Pagination {
     const listMessage = await this.sendReply(
       ctx,
       { ...resp, content: resp.content },
-      { flags: options?.ephemeral ? ['Ephemeral'] : [] },
+      {
+        ephemeral: options?.ephemeral,
+        flags: options?.isComponentsV2 ? [MessageFlags.IsComponentsV2] : [],
+      },
     );
 
     if (!listMessage) return;
@@ -305,7 +319,6 @@ export class Pagination {
 
       if (!interaction) {
         if (options?.ephemeral) {
-
           (options?.deleteOnEnd
             ? listMessage.delete()
             : listMessage.edit({ components: [] })
@@ -330,16 +343,24 @@ export class Pagination {
   }
 
   private async sendReply(
-    ctx: RepliableInteraction | Message | Context,
+    interaction: RepliableInteraction | Message | Context,
     opts: BaseMessageOptions,
-    interactionOpts?: { flags?: InteractionReplyOptions['flags'] },
+    interactionOpts?: {
+      flags?: Exclude<SupportedFlags, MessageFlags.Ephemeral>[];
+      ephemeral?: boolean;
+    },
   ): Promise<Message | InteractionResponse | null> {
-    if (ctx instanceof Message || ctx instanceof Context) return await ctx.reply(opts);
+    if (interaction instanceof Message || interaction instanceof Context) {
+      return await interaction.reply({ ...opts, flags: interactionOpts?.flags });
+    }
 
-    const replyMethod = getReplyMethod(ctx);
-    const reply = await ctx[replyMethod]({
+    const flags: SupportedFlags[] = interactionOpts?.ephemeral ? [MessageFlags.Ephemeral] : [];
+    if (interactionOpts?.flags) flags.push(...interactionOpts.flags);
+
+    const replyMethod = getReplyMethod(interaction);
+    const reply = await interaction[replyMethod]({
       ...opts,
-      flags: interactionOpts?.flags,
+      flags,
       withResponse: true,
     });
 
@@ -358,7 +379,7 @@ export class Pagination {
     actionButtons: ActionRowBuilder<ButtonBuilder>,
     replyOpts: BaseMessageOptions,
   ) {
-    return { ...replyOpts, components: [actionButtons, ...(replyOpts.components || [])] };
+    return { ...replyOpts, components: [...(replyOpts.components || []), actionButtons] };
   }
 
   private createButtons(index: number, totalPages: number) {

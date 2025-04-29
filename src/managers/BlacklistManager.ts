@@ -182,7 +182,7 @@ export default class BlacklistManager {
     const logConfig = await hub?.fetchLogConfig();
 
     // Exit if mod logs are not configured
-    if (!logConfig?.config.modLogs) return;
+    if (!logConfig?.config.modLogsChannelId) return;
 
     // Get target information based on type (server or user)
     const targetInfo = await this.getTargetInfo(client);
@@ -216,7 +216,7 @@ export default class BlacklistManager {
       });
 
     // Send log to the configured channel
-    await sendLog(mod.client.cluster, logConfig.config.modLogs.channelId, embed);
+    await sendLog(mod.client.cluster, logConfig.config.modLogsChannelId, embed);
   }
 
   /**
@@ -224,9 +224,11 @@ export default class BlacklistManager {
    * @param client - The Discord client instance
    * @returns Target information including name, icon URL, and type, or null if not found
    */
-  private async getTargetInfo(
-    client: Client,
-  ): Promise<{ name: string; iconURL: string | undefined; type: 'User' | 'Server' } | null> {
+  private async getTargetInfo(client: Client): Promise<{
+    name: string;
+    iconURL: string | undefined;
+    type: 'User' | 'Server';
+  } | null> {
     if (this.infractions.targetType === 'server') {
       // For servers, use broadcastEval to find the server across shards
       const target =
@@ -254,20 +256,19 @@ export default class BlacklistManager {
         type: 'Server',
       };
     }
-    else {
-      // For users, fetch the user directly
-      try {
-        const user = await client.users.fetch(this.targetId);
-        return {
-          name: user.username,
-          iconURL: user.displayAvatarURL(),
-          type: 'User',
-        };
-      }
-      catch {
-        // Silently fail and return null when user can't be fetched
-        return null;
-      }
+
+    // For users, fetch the user directly
+    try {
+      const user = await client.users.fetch(this.targetId);
+      return {
+        name: user.username,
+        iconURL: user.displayAvatarURL(),
+        type: 'User',
+      };
+    }
+    catch {
+      // Silently fail and return null when user can't be fetched
+      return null;
     }
   }
 
