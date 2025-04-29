@@ -26,11 +26,14 @@ import { InfoEmbed } from '#utils/EmbedUtils.js';
 import { getCredits } from '#utils/Utils.js';
 import { stripIndents } from 'common-tags';
 import {
-  ActionRowBuilder,
   ButtonBuilder,
   type ButtonInteraction,
   ButtonStyle,
   type Client,
+  ContainerBuilder,
+  SectionBuilder,
+  SeparatorSpacingSize,
+  TextDisplayBuilder,
 } from 'discord.js';
 
 export default class About extends BaseCommand {
@@ -43,60 +46,91 @@ export default class About extends BaseCommand {
   }
 
   async execute(ctx: Context) {
-    const aboutEmbed = new InfoEmbed()
-      .setDescription(
-        stripIndents`
-        ### ${ctx.getEmoji('wand_icon')} About InterChat
-        InterChat connects Discord communities through active cross-server discussions. Messages flow naturally between servers in real-time, helping you build engaged topic-focused communities.
+    const container = new ContainerBuilder();
 
-        ### What makes InterChat different:
-        - Built for real communities - Designed with Discord server owners' needs in mind
-        - Active hubs - Find and join thriving communities around shared interests
-        - Privacy first - Full control over your hub's connections and settings
-        - Smart moderation - AI-powered image filtering and advanced content filtering keeps discussions healthy
-        - Visual dashboard - Manage your hubs, servers, and settings through our web interface
-        `,
+    const text1 = new TextDisplayBuilder().setContent(
+      stripIndents`
+      # ${ctx.getEmoji('wand_icon')} About InterChat
+      InterChat connects Discord communities through active cross-server discussions. Messages flow naturally between servers in real-time, helping you build engaged topic-focused communities.
+      ## What makes InterChat different:
+      - Built for real communities - Designed with Discord server owners' needs in mind
+      - Active hubs - Find and join thriving communities around shared interests
+      - Privacy first - Full control over your hub's connections and settings
+      - Smart moderation - AI-powered image filtering and advanced content filtering keeps discussions healthy
+      - Visual dashboard - Manage your hubs, servers, and settings through our web interface
+      `,
+    );
+
+    container.addTextDisplayComponents(text1);
+
+    const inviteButton = new ButtonBuilder()
+      .setStyle(ButtonStyle.Link)
+      .setLabel('Invite')
+      .setEmoji(ctx.getEmoji('plus_icon'))
+      .setURL('https://discord.com/application-directory/769921109209907241');
+
+    const dashboardButton = new ButtonBuilder()
+      .setStyle(ButtonStyle.Link)
+      .setLabel('Dashboard')
+      .setEmoji(ctx.getEmoji('wand_icon'))
+      .setURL(`${Constants.Links.Website}/dashboard`);
+
+    const supportButton = new ButtonBuilder()
+      .setStyle(ButtonStyle.Link)
+      .setLabel('Support Server')
+      .setEmoji(ctx.getEmoji('code_icon'))
+      .setURL(Constants.Links.SupportInvite);
+
+
+    const sectionInvite = new SectionBuilder()
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent('Invite InterChat to your server:'),
       )
-      .setFooter({
-        text: ` InterChat v${ctx.client.version} • Made with ❤️ by the InterChat Team`,
-      });
+      .setButtonAccessory(inviteButton);
+    const sectionDashboard = new SectionBuilder()
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent('Visit the InterChat dashboard:'),
+      )
+      .setButtonAccessory(dashboardButton);
+    const sectionSupport = new SectionBuilder()
+      .addTextDisplayComponents(new TextDisplayBuilder().setContent('Join our support server:'))
+      .setButtonAccessory(supportButton);
 
-    const linkButtons = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setStyle(ButtonStyle.Link)
-        .setLabel('Invite')
-        .setEmoji(ctx.getEmoji('plus_icon'))
-        .setURL('https://discord.com/application-directory/769921109209907241'),
-      donateButton,
-      new ButtonBuilder()
-        .setStyle(ButtonStyle.Link)
-        .setLabel('Dashboard')
-        .setEmoji(ctx.getEmoji('wand_icon'))
-        .setURL(`${Constants.Links.Website}/dashboard`),
-      new ButtonBuilder()
-        .setStyle(ButtonStyle.Link)
-        .setLabel('Support')
-        .setEmoji(ctx.getEmoji('code_icon'))
-        .setURL(Constants.Links.SupportInvite),
-      new ButtonBuilder()
-        .setStyle(ButtonStyle.Link)
-        .setLabel('Vote!')
-        .setEmoji(ctx.getEmoji('topggSparkles'))
-        .setURL('https://top.gg/bot/769921109209907241/vote'),
+    container
+      .addSectionComponents(sectionInvite, sectionDashboard, sectionSupport)
+      .addSeparatorComponents((separator) => separator.setSpacing(SeparatorSpacingSize.Large));
+
+    const creditsSection = new SectionBuilder()
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent('Check out the InterChat team!'),
+      )
+      .setButtonAccessory(
+        new ButtonBuilder()
+          .setCustomId(new CustomID('about:credits').toString())
+          .setStyle(ButtonStyle.Primary)
+          .setLabel('Credits & Team')
+          .setEmoji(`${ctx.getEmoji('ghost_heart')}`),
+      );
+
+    container
+      .addSectionComponents(creditsSection)
+      .addSeparatorComponents((separator) => separator.setSpacing(SeparatorSpacingSize.Large));
+
+    const text4 = new TextDisplayBuilder().setContent(
+      'InterChat is completely free to use. If you like InterChat, consider supporting us on Ko-fi! Or even a vote on top.gg helps us a lot!',
     );
 
-    const normalButtons = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setCustomId(new CustomID('about:credits').toString())
-        .setStyle(ButtonStyle.Primary)
-        .setLabel('Credits & Team')
-        .setEmoji(`${ctx.getEmoji('ghost_heart')}`),
-    );
+    const voteButton = new ButtonBuilder()
+      .setStyle(ButtonStyle.Link)
+      .setLabel('Vote!')
+      .setEmoji(ctx.getEmoji('topggSparkles'))
+      .setURL('https://top.gg/bot/769921109209907241/vote');
 
-    await ctx.reply({
-      embeds: [aboutEmbed],
-      components: [linkButtons, normalButtons],
-    });
+    container
+      .addTextDisplayComponents(text4)
+      .addActionRowComponents((row) => row.addComponents(donateButton, voteButton));
+
+    await ctx.reply({ components: [container], flags: ['IsComponentsV2'] });
   }
 
   @RegisterInteractionHandler('about', 'credits')

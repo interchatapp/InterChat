@@ -60,6 +60,8 @@ export default class MarkResolvedButton {
     if (!components) return [];
 
     const rows = components.map((row) =>
+      // FIXME: correct types yeah
+      // @ts-expect-error fix the types for components v2 compatibility
       ActionRowBuilder.from(row),
     ) as ActionRowBuilder<MessageActionRowComponentBuilder>[];
 

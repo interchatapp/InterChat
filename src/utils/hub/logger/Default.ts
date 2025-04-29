@@ -18,7 +18,7 @@
 import type { ClusterClient } from 'discord-hybrid-sharding';
 import type {
   APIActionRowComponent,
-  APIMessageActionRowComponent,
+  APIComponentInMessageActionRow,
   Channel,
   Client,
   EmbedBuilder,
@@ -37,7 +37,7 @@ export const sendLog = async (
   opts?: {
     content?: string;
     roleMentionIds?: readonly string[];
-    components?: APIActionRowComponent<APIMessageActionRowComponent>[];
+    components?: APIActionRowComponent<APIComponentInMessageActionRow>[];
   },
 ): Promise<{ id: string } | null> => {
   const result = await cluster.broadcastEval(

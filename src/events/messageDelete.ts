@@ -80,7 +80,7 @@ export default class MessageDelete extends BaseEventListener<'messageDelete'> {
 
     await logMsgDelete(message.client, originalMsg, await hub.fetchLogConfig(), {
       hubName: hub.data.name,
-      modName: deletedBy.username,
+      modName: deletedBy.username ?? 'Unknown',
     });
   }
 }

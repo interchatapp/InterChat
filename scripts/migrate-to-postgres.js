@@ -151,16 +151,21 @@ async function migrateModel({ log }, config) {
 			const validUsers = await postgresClient.user.findMany({
 				select: { id: true },
 			});
+			const validServers = await postgresClient.serverData.findMany({
+				select: { id: true },
+			});
 
 			const hubIdSet = new Set(validHubIds.map((h) => h.id));
 			const userIdSet = new Set(validUsers.map((m) => m.id));
+			const serverIdSet = new Set(validServers.map((s) => s.id));
 
 			records = records.filter(
 				(
 					/** @type {import('../build/generated/postgres-prisma/client/client.d.ts').Infraction} */ record,
 				) => {
 					const isValid =
-						hubIdSet.has(record.hubId) && userIdSet.has(record.moderatorId);
+						hubIdSet.has(record.hubId) && userIdSet.has(record.moderatorId) && (record.serverId && serverIdSet.has(record.serverId))
+
 					if (record.userId && !userIdSet.has(record.userId)) {
 						log(
 							`Skipping infraction ${record.id} - Referenced user ${record.userId} not found\n`,
@@ -233,6 +238,22 @@ async function migrateModel({ log }, config) {
 				if (!isValid) {
 					log(
 						`Skipping ${mongoModel} ${record.id} - Referenced hub (${record.hubId}) not found\n`,
+					);
+				}
+				return isValid;
+			});
+		}
+		else if (mongoModel === "appeal") {
+			// Get all valid infraction IDs from PostgreSQL
+			const validInfractionIds = await postgresClient.infraction.findMany({
+				select: { id: true },
+			});
+			const infractionIdSet = new Set(validInfractionIds.map((i) => i.id));
+			records = records.filter((/** @type {any} */ record) => {
+				const isValid = infractionIdSet.has(record.infractionId);
+				if (!isValid) {
+					log(
+						`Skipping appeal ${record.id} - Referenced infraction (${record.infractionId}) not found\n`,
 					);
 				}
 				return isValid;
