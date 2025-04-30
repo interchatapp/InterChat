@@ -15,23 +15,22 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { getEmoji } from '#src/utils/EmojiUtils.js';
-import { supportedLocaleCodes, t } from '#src/utils/Locale.js';
-import Constants, { numberEmojis } from '#utils/Constants.js';
-import { CustomID } from '#utils/CustomID.js';
-import { InfoEmbed } from '#utils/EmbedUtils.js';
-import { type BlockWord, BlockWordAction } from '#src/generated/prisma/client/client.js';import {
+import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   type Client,
-  EmbedBuilder,
   ModalBuilder,
   StringSelectMenuBuilder,
   TextInputBuilder,
   TextInputStyle,
-  codeBlock,
 } from 'discord.js';
+import { type BlockWord, BlockWordAction } from '#src/generated/prisma/client/client.js';
+import { getEmoji } from '#src/utils/EmojiUtils.js';
+import { supportedLocaleCodes, t } from '#src/utils/Locale.js';
+import { numberEmojis } from '#utils/Constants.js';
+import { CustomID } from '#utils/CustomID.js';
+import { InfoEmbed } from '#utils/EmbedUtils.js';
 
 export const ACTION_LABELS = {
   [BlockWordAction.BLOCK_MESSAGE]: '🚫 Block Message',
@@ -77,34 +76,6 @@ export const buildAntiSpamListEmbed = (
     )
     .setFooter({ text: t('hub.blockwords.listFooter', locale) });
 
-export const buildAntiSwearRuleEmbed = (
-  rule: BlockWord,
-  locale: supportedLocaleCodes,
-  client: Client,
-) => {
-  const actions = rule.actions.map((a) => ACTION_LABELS[a]).join(', ');
-  return new EmbedBuilder()
-    .setColor(Constants.Colors.invisible)
-    .setDescription(
-      t('hub.blockwords.ruleDescription', locale, {
-        emoji: getEmoji('alert_icon', client),
-        ruleName: rule.name,
-        words: rule.words ? codeBlock(rule.words.replace(/\.\*/g, '*')) : '',
-      }),
-    )
-    .addFields({
-      name: t('hub.blockwords.embedFields.actionsName', locale),
-      value: t('hub.blockwords.embedFields.actionsValue', locale, {
-        actions:
-          actions.length > 0
-            ? `**${actions}**`
-            : t('hub.blockwords.embedFields.noActions', locale, {
-              emoji: getEmoji('x_icon', client),
-            }),
-      }),
-    })
-    .setFooter({ text: t('hub.blockwords.ruleFooter', locale) });
-};
 export const buildEditAntiSwearRuleButton = (hubId: string, ruleId: string) =>
   new ButtonBuilder()
     .setCustomId(new CustomID('antiSwear:editRule', [hubId, ruleId]).toString())

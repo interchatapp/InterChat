@@ -22,11 +22,8 @@ import {
   type HubSettingsString,
 } from '#src/modules/BitFields.js';
 import { HubService } from '#src/services/HubService.js';
-import Constants from '#src/utils/Constants.js';
-import { InfoEmbed } from '#src/utils/EmbedUtils.js';
-import { getEmoji } from '#src/utils/EmojiUtils.js';
 
-import type { BitFieldResolvable, Client, EmbedBuilder } from 'discord.js';
+import type { BitFieldResolvable } from 'discord.js';
 
 export default class HubSettingsManager {
   private readonly hub: HubManager;
@@ -44,9 +41,18 @@ export default class HubSettingsManager {
   }
 
   async updateSetting(setting: HubSettingsString, value?: boolean): Promise<boolean> {
-    if (value) this.settings.add(setting);
-    else if (value === undefined) this.settings.toggle(setting);
-    else this.settings.remove(setting);
+    if (value === undefined) {
+      // Toggle the setting if no value is provided
+      this.settings.toggle(setting);
+    }
+    else if (value) {
+      // Enable the setting
+      this.settings.add(setting);
+    }
+    else {
+      // Disable the setting
+      this.settings.remove(setting);
+    }
 
     await this.saveSettings();
     return this.has(setting);
@@ -73,27 +79,7 @@ export default class HubSettingsManager {
   }
 
   getAll(): Record<HubSettingsString, boolean> {
-    return this.settings.serialize();
-  }
-
-  getEmbed(client: Client): EmbedBuilder {
-    const embed = new InfoEmbed().setTitle('Hub Settings').setColor(Constants.Colors.interchat)
-      .setDescription(`
-        Current settings for this hub: 
-        ${getEmoji('wand_icon', client)} For a visual settings interface, visit **${Constants.Links.Website}/dashboard/hubs**
-        `);
-
-    for (const [key, value] of Object.entries(this.getAll())) {
-      embed.addFields({
-        name: key,
-        value: value
-          ? `${getEmoji('tick_icon', client)} Enabled`
-          : `${getEmoji('x_icon', client)} Disabled`,
-        inline: true,
-      });
-    }
-
-    return embed;
+    return this.settings.serialize(this.settings.freeze());
   }
 
   private async saveSettings(): Promise<void> {

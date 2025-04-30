@@ -5,8 +5,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
   // directUrl = env("DIRECT_URL") // Uncomment if you use a provider that requires directUrl
 }
 
@@ -263,6 +263,10 @@ model User {
   inboxLastReadDate DateTime?      @default(now())
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
+  
+  // empty fields for nextauth to work
+  email             String?
+  emailVerified     DateTime?
 
   // Relations
   ownedHubs         Hub[]                @relation("OwnedHubs")

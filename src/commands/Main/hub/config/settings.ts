@@ -25,11 +25,17 @@ import { HubService } from '#src/services/HubService.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
+import Constants from '#utils/Constants.js';
+import { stripIndents } from 'common-tags';
 import {
-  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonInteraction,
+  ButtonStyle,
   Client,
-  StringSelectMenuBuilder,
-  StringSelectMenuInteraction,
+  ContainerBuilder,
+  SectionBuilder,
+  SeparatorSpacingSize,
+  TextDisplayBuilder,
   type AutocompleteInteraction,
 } from 'discord.js';
 
@@ -58,11 +64,11 @@ export default class HubConfigSettingsSubcommand extends BaseCommand {
       }))
     ) return;
 
-    const settingsEmbed = hub.settings.getEmbed(ctx.client);
+    const settingsContainer = HubConfigSettingsSubcommand.getSettingsMenu(hub, ctx.client);
 
     await ctx.reply({
-      embeds: [settingsEmbed],
-      components: [HubConfigSettingsSubcommand.getSettingsMenu(hub, ctx.client)],
+      components: [settingsContainer],
+      flags: ['IsComponentsV2'],
     });
   }
 
@@ -70,46 +76,78 @@ export default class HubConfigSettingsSubcommand extends BaseCommand {
     return await HubCommand.handleManagerCmdAutocomplete(interaction, this.hubService);
   }
 
-  @RegisterInteractionHandler(CustomIdPrefix, 'settings')
-  async handleSettingsMenu(interaction: StringSelectMenuInteraction) {
+  @RegisterInteractionHandler(CustomIdPrefix, 'toggle')
+  async handleToggleSetting(interaction: ButtonInteraction) {
     const customId = CustomID.parseCustomId(interaction.customId);
-    const [hubId] = customId.args;
+    const [hubId, setting] = customId.args as [string, HubSettingsString];
 
     const hub = await this.hubService.fetchHub(hubId);
     if (!hub) return;
 
-    const setting = interaction.values[0] as HubSettingsString;
-    const value = await hub.settings.updateSetting(setting);
+    const updatedSettingValue = await hub.settings.updateSetting(setting);
 
     await interaction.update({
-      embeds: [hub.settings.getEmbed(interaction.client)],
       components: [HubConfigSettingsSubcommand.getSettingsMenu(hub, interaction.client)],
+      flags: ['IsComponentsV2'],
     });
 
     await interaction.followUp({
-      content: `${getEmoji('info_icon', interaction.client)} Setting \`${setting}\` is now **${value ? 'Enabled' : 'Disabled'}**`,
+      content: `${getEmoji('info_icon', interaction.client)} Setting \`${setting}\` is now **${updatedSettingValue ? 'Enabled' : 'Disabled'}**`,
       flags: ['Ephemeral'],
     });
   }
 
   static getSettingsMenu(hub: HubManager, client: Client) {
-    const settings = Object.keys(hub.settings.getAll());
-    return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-      new StringSelectMenuBuilder()
-        .setCustomId(
-          new CustomID().setIdentifier(CustomIdPrefix, 'settings').setArgs(hub.id).toString(),
-        )
-        .setPlaceholder('Select a setting to toggle')
-        .setOptions(
-          settings.map((setting) => ({
-            label: `Toggle ${setting}`,
-            value: setting,
-            emoji: getEmoji(
-              hub.settings.has(setting as HubSettingsString) ? 'enabled' : 'disabled',
-              client,
-            ),
-          })),
-        ),
+    const settingsData = hub.settings.getAll();
+    const container = new ContainerBuilder();
+
+    // header text display
+    const headerText = new TextDisplayBuilder().setContent(
+      stripIndents`
+      ## ⚙️ Hub Settings
+      Manage your hub settings below.\n${getEmoji('wand_icon', client)} For a visual settings interface, visit **[the Dashboard](${Constants.Links.Website}/dashboard/hubs)**.`,
     );
+    container.addTextDisplayComponents(headerText);
+
+    // separator
+    container.addSeparatorComponents((separator) =>
+      separator.setSpacing(SeparatorSpacingSize.Large),
+    );
+
+    // Setting descriptions
+    const settingDescriptions = {
+      Reactions: 'Allow users to add reactions to messages in the hub',
+      HideLinks: 'Hide or replace links in messages with a placeholder',
+      SpamFilter: 'Automatically detect and prevent spam messages',
+      BlockInvites: 'Block Discord invite links in messages',
+      UseNicknames: 'Use server nicknames instead of usernames for messages',
+      BlockNSFW: 'Block NSFW images using content detection',
+    };
+
+    // Create a section for each setting with a toggle button
+    Object.entries(settingsData).forEach(([setting, isEnabled]) => {
+      const section = new SectionBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `### ${setting}\n${settingDescriptions[setting as HubSettingsString] || 'No description available.'}`,
+          ),
+        )
+        .setButtonAccessory(
+          new ButtonBuilder()
+            .setCustomId(
+              new CustomID()
+                .setIdentifier(CustomIdPrefix, 'toggle')
+                .setArgs(hub.id, setting)
+                .toString(),
+            )
+            .setStyle(isEnabled ? ButtonStyle.Secondary : ButtonStyle.Success)
+            .setLabel(isEnabled ? 'Disable' : 'Enable')
+            .setEmoji(getEmoji(isEnabled ? 'x_icon' : 'tick_icon', client)),
+        );
+
+      container.addSectionComponents(section);
+    });
+
+    return container;
   }
 }

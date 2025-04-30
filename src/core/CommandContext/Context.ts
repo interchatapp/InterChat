@@ -216,17 +216,24 @@ export default abstract class Context<T extends ContextT = ContextT> {
     data: string | MessageEditOptions | InteractionEditReplyOptions,
     flags: Extract<
       MessageFlagsString,
-      'Ephemeral' | 'SuppressEmbeds' | 'SuppressNotifications'
+      'Ephemeral' | 'SuppressEmbeds' | 'SuppressNotifications' | 'IsComponentsV2'
     >[] = [],
   ): Promise<T['responseType'] | null> {
     const data_ = typeof data === 'string' ? { content: data } : { ...data };
     if (this.deferred || this.replied) {
+      const supportedFlags = ['SuppressEmbeds', 'IsComponentsV2'] as const;
+
       return await this.editReply({
         ...data_,
-        flags: flags.includes('SuppressEmbeds') ? 'SuppressEmbeds' : [],
+        flags: supportedFlags.filter((flag) => flags.includes(flag)),
       });
     }
-    return await this.reply(data_);
+
+    return await this.reply({
+      ...data_,
+      flags,
+      content: data_.content ?? undefined,
+    } satisfies InteractionReplyOptions);
   }
 
   abstract reply(

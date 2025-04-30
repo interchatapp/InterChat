@@ -215,7 +215,7 @@ export class BroadcastService {
     const json = await res.json().catch(() => null);
 
     if (!res.ok || !json || json?.error) {
-      return { error: json.error ?? 'Unknown error' };
+      return { error: json?.error ?? res.statusText ?? 'Unknown error' };
     }
 
     return { message: json.data };

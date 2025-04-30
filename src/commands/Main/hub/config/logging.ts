@@ -8,10 +8,13 @@ import {
   ChannelType,
   StringSelectMenuBuilder,
   ChannelSelectMenuBuilder,
+  ContainerBuilder,
   RoleSelectMenuBuilder,
+  SectionBuilder,
+  SeparatorSpacingSize,
+  TextDisplayBuilder,
   type ButtonInteraction,
   type AutocompleteInteraction,
-  type StringSelectMenuInteraction,
   type MessageActionRowComponentBuilder,
   type RoleSelectMenuInteraction,
   type AnySelectMenuInteraction,
@@ -65,10 +68,17 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
       return;
     }
 
-    const embed = await this.getEmbed(ctx.client, hub);
-    const components = this.buildComponents(hub.id, ctx.user.id, await ctx.getLocale());
+    const container = await this.buildLoggingContainer(
+      hub,
+      ctx.user.id,
+      ctx.client,
+      await ctx.getLocale(),
+    );
 
-    await ctx.reply({ embeds: [embed], components });
+    await ctx.reply({
+      components: [container],
+      flags: ['IsComponentsV2'],
+    });
   }
 
   public async autocomplete(interaction: AutocompleteInteraction): Promise<void> {
@@ -86,17 +96,24 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
 
     if (!hub || interaction.user.id !== userId) return;
 
-    const embed = await this.getEmbed(interaction.client, hub);
-    const components = this.buildComponents(hubId, userId, await fetchUserLocale(userId));
-    await interaction.editReply({ embeds: [embed], components });
+    const container = await this.buildLoggingContainer(
+      hub,
+      userId,
+      interaction.client,
+      await fetchUserLocale(userId),
+    );
+
+    await interaction.editReply({
+      components: [container],
+      flags: ['IsComponentsV2'],
+    });
   }
 
   @RegisterInteractionHandler(CUSTOM_ID_PREFIX, 'logsSelect')
-  async handleSelectLogs(interaction: StringSelectMenuInteraction): Promise<void> {
+  async handleSelectLogs(interaction: ButtonInteraction): Promise<void> {
     const {
-      args: [userId, hubId],
+      args: [userId, hubId, type],
     } = CustomID.parseCustomId(interaction.customId);
-    const type = interaction.values[0] as LogConfigTypes;
 
     const hub = await this.hubService.fetchHub({ id: hubId });
     if (!hub || !(await runHubRoleChecksAndReply(hub, interaction, { checkIfManager: true }))) {
@@ -104,16 +121,18 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
     }
 
     const logConfig = await hub.fetchLogConfig();
-    const embed = this.createLogConfigEmbed(type, logConfig);
-    const components = this.createLogConfigComponents(
+    const container = this.buildLogTypeContainer(
       userId,
       hubId,
-      type,
+      type as LogConfigTypes,
       logConfig,
       interaction.client,
     );
 
-    await interaction.update({ embeds: [embed], components });
+    await interaction.update({
+      components: [container],
+      flags: ['IsComponentsV2'],
+    });
   }
 
   private createLogConfigEmbed(type: LogConfigTypes, logConfig: HubLogManager): InfoEmbed {
@@ -173,9 +192,7 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
         )
         .setPlaceholder('Select a channel to send logs to')
         .addChannelTypes(...ALLOWED_CHANNEL_TYPES)
-        .setDefaultChannels(
-          channelId ? [channelId as string] : [],
-        )
+        .setDefaultChannels(channelId ? [channelId as string] : [])
         .setMinValues(0),
     );
   }
@@ -217,11 +234,39 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
     if (!channelId) {
       await logManager.resetLog(selectedType);
       await this.sendSuccessResponse(interaction, 'reset', locale, selectedType);
+
+      // Update the UI with components v2
+      const container = this.buildLogTypeContainer(
+        userId,
+        hubId,
+        selectedType,
+        logManager,
+        interaction.client,
+      );
+
+      await interaction.editReply({
+        components: [container],
+        flags: ['IsComponentsV2'],
+      });
       return;
     }
 
     await logManager.setLogChannel(selectedType, channelId);
     await this.sendSuccessResponse(interaction, 'channelSuccess', locale, selectedType, channelId);
+
+    // Update the UI with components v2
+    const container = this.buildLogTypeContainer(
+      userId,
+      hubId,
+      selectedType,
+      logManager,
+      interaction.client,
+    );
+
+    await interaction.editReply({
+      components: [container],
+      flags: ['IsComponentsV2'],
+    });
   }
 
   @RegisterInteractionHandler(CUSTOM_ID_PREFIX, 'logsRole')
@@ -242,6 +287,20 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
     if (!roleId) {
       await logConfig.removeRoleId(selectedType);
       await this.sendSuccessResponse(interaction, 'roleRemoved', locale, selectedType);
+
+      // Update the UI with components v2
+      const container = this.buildLogTypeContainer(
+        userId,
+        hubId,
+        selectedType,
+        logConfig,
+        interaction.client,
+      );
+
+      await interaction.editReply({
+        components: [container],
+        flags: ['IsComponentsV2'],
+      });
       return;
     }
 
@@ -254,6 +313,20 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
       undefined,
       roleId,
     );
+
+    // Update the UI with components v2
+    const container = this.buildLogTypeContainer(
+      userId,
+      hubId,
+      selectedType,
+      logConfig,
+      interaction.client,
+    );
+
+    await interaction.editReply({
+      components: [container],
+      flags: ['IsComponentsV2'],
+    });
   }
 
   private async sendSuccessResponse(
@@ -311,9 +384,150 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
     ];
   }
 
-  private async getEmbed(client: Client, hub: HubManager): Promise<InfoEmbed> {
+  private async buildLoggingContainer(
+    hub: HubManager,
+    userId: string,
+    client: Client,
+    locale: supportedLocaleCodes,
+  ): Promise<ContainerBuilder> {
     const hubLogManager = await hub.fetchLogConfig();
-    return hubLogManager.getEmbed(client);
+    const container = new ContainerBuilder();
+
+    // header
+    const headerText = new TextDisplayBuilder().setContent(
+      stripIndents`## ${getEmoji('wand_icon', client)} Hub Logging Configuration
+      Configure where different types of logs are sent in your server.`,
+    );
+    container.addTextDisplayComponents(headerText);
+
+    // Add separator
+    container.addSeparatorComponents((separator) =>
+      separator.setSpacing(SeparatorSpacingSize.Large),
+    );
+
+    // Add current log settings
+    const channelStr = t('hub.manage.logs.config.fields.channel', locale);
+    const roleStr = t('hub.manage.logs.config.fields.role', locale);
+    const x_icon = getEmoji('x_icon', client);
+
+    // Create a section for each log type
+    for (const type of hubLogManager.logTypes) {
+      const channelIdField = `${type}ChannelId` as const;
+      const roleIdField = `${type}RoleId` as const;
+
+      const channelId = hubLogManager.config[channelIdField];
+      const roleId = hubLogManager.logsWithRoleId.includes(type)
+        ? hubLogManager.config[roleIdField]
+        : null;
+
+      const channelStatus = channelId ? `<#${channelId}>` : x_icon;
+      // eslint-disable-next-line no-nested-ternary
+      const roleStatus = roleId
+        ? `<@&${roleId}>`
+        : hubLogManager.logsWithRoleId.includes(type)
+          ? x_icon
+          : 'N/A';
+
+      const section = new SectionBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `### ${toTitleCase(type)}\n${t(`hub.manage.logs.${type}.description`, locale)}\n**${channelStr}:** ${channelStatus}\n**${roleStr}:** ${roleStatus}`,
+          ),
+        )
+        .setButtonAccessory(
+          new ButtonBuilder()
+            .setCustomId(
+              new CustomID()
+                .setIdentifier(CUSTOM_ID_PREFIX, 'logsSelect')
+                .setArgs(userId, hub.id, type) // Add type to the args to make each custom ID unique
+                .toString(),
+            )
+            .setLabel('Configure')
+            .setStyle(ButtonStyle.Secondary)
+            .setEmoji('⚙️'),
+        );
+
+      container.addSectionComponents(section);
+    }
+
+    // Add refresh button
+    container.addActionRowComponents(
+      new ActionRowBuilder<ButtonBuilder>().addComponents(this.getRefreshButton(userId, hub.id)),
+    );
+
+    return container;
+  }
+
+  private buildLogTypeContainer(
+    userId: string,
+    hubId: string,
+    type: LogConfigTypes,
+    logConfig: HubLogManager,
+    client: Client,
+  ): ContainerBuilder {
+    const container = new ContainerBuilder();
+
+    // Add header
+    const headerText = new TextDisplayBuilder().setContent(
+      stripIndents`
+      ## Configuring \`${toTitleCase(type)}\` Logs
+      Use the options below to set up where these logs will be sent.`,
+    );
+    container.addTextDisplayComponents(headerText);
+
+    // Add description
+    const descriptionText = new TextDisplayBuilder().setContent(
+      stripIndents`
+      ### ${t(`hub.manage.logs.${type}.label`, 'en')}
+      ${t(`hub.manage.logs.${type}.description`, 'en')}
+      `,
+    );
+    container.addTextDisplayComponents(descriptionText);
+
+    // Add separator
+    container.addSeparatorComponents((separator) =>
+      separator.setSpacing(SeparatorSpacingSize.Large),
+    );
+
+    // Add channel selection
+    const channelSelectText = new TextDisplayBuilder().setContent(
+      `### Channel Selection\nSelect a channel where ${toTitleCase(type)} logs will be sent:`,
+    );
+    container.addTextDisplayComponents(channelSelectText);
+
+    // Add channel select menu
+    container.addActionRowComponents(this.createChannelSelectRow(userId, logConfig, type));
+
+    // Add role selection if applicable
+    if (logConfig.logsWithRoleId.includes(type)) {
+      const roleSelectText = new TextDisplayBuilder().setContent(
+        `### Role Mention\nSelect a role to be pinged when ${toTitleCase(type)} logs are sent:`,
+      );
+      container.addTextDisplayComponents(roleSelectText);
+
+      // Add role select menu
+      container.addActionRowComponents(
+        this.createRoleSelectRow(userId, logConfig, type as RoleIdLogConfigs),
+      );
+    }
+
+    // Add back button
+    container.addActionRowComponents(
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setCustomId(
+            new CustomID()
+              .setIdentifier(CUSTOM_ID_PREFIX, 'logsRefresh')
+              .setArgs(userId, hubId)
+              .toString(),
+          )
+          .setLabel('Back to Overview')
+          .setStyle(ButtonStyle.Secondary)
+          .setEmoji(getEmoji('back', client)),
+      ),
+    );
+
+    return container;
   }
 
   private async getHubForUser(ctx: Context): Promise<HubManager | null> {

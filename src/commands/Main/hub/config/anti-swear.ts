@@ -23,30 +23,30 @@ import { HubService } from '#src/services/HubService.js';
 import { numberEmojis } from '#src/utils/Constants.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import db from '#src/utils/Db.js';
-import { InfoEmbed } from '#src/utils/EmbedUtils.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
 import { supportedLocaleCodes, t } from '#src/utils/Locale.js';
 import {
   ACTION_LABELS,
   buildAntiSwearModal,
-  buildAntiSwearRuleEmbed,
   buildBlockWordActionsSelect,
-  buildAntiSpamListEmbed,
   buildEditAntiSwearRuleButton,
   sanitizeWords,
 } from '#src/utils/moderation/antiSwear.js';
 import { fetchUserLocale, getReplyMethod } from '#src/utils/Utils.js';
 import { BlockWord, BlockWordAction } from '#src/generated/prisma/client/client.js';
 import {
-  ActionRowBuilder,
   ButtonBuilder,
   ButtonInteraction,
   ButtonStyle,
   Client,
+  ContainerBuilder,
+  MessageFlags,
   ModalSubmitInteraction,
-  StringSelectMenuBuilder,
+  SectionBuilder,
+  SeparatorSpacingSize,
   StringSelectMenuInteraction,
+  TextDisplayBuilder,
   type AutocompleteInteraction,
 } from 'discord.js';
 
@@ -75,19 +75,91 @@ export default class HubConfigAntiSwearSubcommand extends BaseCommand {
 
     const locale = await ctx.getLocale();
     const antiSwearRules = await hub.fetchAntiSwearRules();
-    const components = HubConfigAntiSwearSubcommand.buildComponents(antiSwearRules, hub.id, locale);
 
-    if (!antiSwearRules.length) {
-      await ctx.replyEmbed('hub.blockwords.noRules', {
-        t: { emoji: ctx.getEmoji('slash_icon') },
-        flags: ['Ephemeral'],
-        components,
+    const container = this.buildAntiSwearContainer(antiSwearRules, hub.id, locale, ctx.client);
+
+    await ctx.editOrReply(
+      {
+        components: [container],
+      },
+      ['IsComponentsV2'],
+    );
+  }
+
+  /**
+   * Builds a Components v2 container for the anti-swear rules list
+   */
+  private buildAntiSwearContainer(
+    rules: BlockWord[],
+    hubId: string,
+    locale: supportedLocaleCodes,
+    client: Client,
+  ): ContainerBuilder {
+    const container = new ContainerBuilder();
+
+    // Header section
+    const headerText = new TextDisplayBuilder().setContent(
+      t('hub.blockwords.listDescription', locale, {
+        totalRules: rules.length.toString(),
+        emoji: getEmoji('alert_icon', client),
+      }),
+    );
+
+    container.addTextDisplayComponents(headerText);
+
+    // If there are no rules, show a message
+    if (rules.length === 0) {
+      const noRulesText = new TextDisplayBuilder().setContent(
+        t('hub.blockwords.noRules', locale, {
+          emoji: getEmoji('slash_icon', client),
+        }),
+      );
+      container.addTextDisplayComponents(noRulesText);
+    }
+    else {
+      // Add each rule as a section
+      rules.forEach((rule, index) => {
+        const actionsList =
+          rule.actions.length > 0 ? rule.actions.map((a) => ACTION_LABELS[a]).join(', ') : 'None';
+
+        const ruleSection = new SectionBuilder()
+          .addTextDisplayComponents(
+            new TextDisplayBuilder().setContent(
+              `### ${numberEmojis[index + 1]} ${rule.name}\n**Actions:** ${actionsList}`,
+            ),
+          )
+          .setButtonAccessory(
+            new ButtonBuilder()
+              .setCustomId(
+                new CustomID()
+                  .setIdentifier(CUSTOM_ID_PREFIX, 'select-rule')
+                  .setArgs(hubId, rule.id)
+                  .toString(),
+              )
+              .setLabel('Edit Rule')
+              .setStyle(ButtonStyle.Secondary),
+          );
+
+        container.addSectionComponents(ruleSection);
       });
-      return;
+
+      // Add separator
+      container.addSeparatorComponents((separator) =>
+        separator.setSpacing(SeparatorSpacingSize.Large),
+      );
     }
 
-    const embed = buildAntiSpamListEmbed(antiSwearRules, locale, ctx.client);
-    await ctx.editOrReply({ embeds: [embed], components });
+    // Add button to create a new rule
+    const addRuleButton = new ButtonBuilder()
+      .setCustomId(
+        new CustomID().setIdentifier(CUSTOM_ID_PREFIX, 'add-rule').setArgs(hubId).toString(),
+      )
+      .setLabel('Add Rule')
+      .setStyle(ButtonStyle.Success);
+
+    container.addActionRowComponents((row) => row.addComponents(addRuleButton));
+
+    return container;
   }
 
   async autocomplete(interaction: AutocompleteInteraction): Promise<void> {
@@ -101,19 +173,86 @@ export default class HubConfigAntiSwearSubcommand extends BaseCommand {
   }
 
   @RegisterInteractionHandler(CUSTOM_ID_PREFIX, 'select-rule')
-  async handleRuleSelection(interaction: StringSelectMenuInteraction) {
+  async handleRuleSelection(interaction: ButtonInteraction | StringSelectMenuInteraction) {
     const customId = CustomID.parseCustomId(interaction.customId);
-    const [hubId] = customId.args;
-    const selectedRuleId = interaction.values[0];
+    const [hubId, ruleId] = customId.args;
+
+    // If this is a select menu interaction, get the selected rule ID from values
+    const selectedRuleId = 'values' in interaction ? interaction.values[0] : ruleId;
 
     const { rule } = await this.getHubAndRule(hubId, selectedRuleId, interaction);
     if (!rule) return;
 
     const locale = await fetchUserLocale(interaction.user.id);
-    const embed = buildAntiSwearRuleEmbed(rule, locale, interaction.client);
-    const components = this.createRuleComponents(rule, hubId, locale, interaction.client);
+    const container = this.buildRuleDetailContainer(rule, hubId, locale, interaction.client);
 
-    await interaction.update({ embeds: [embed], components });
+    await interaction.update({
+      components: [container],
+      flags: MessageFlags.IsComponentsV2,
+    });
+  }
+
+  /**
+   * Builds a Components v2 container for a specific rule's details
+   */
+  private buildRuleDetailContainer(
+    rule: BlockWord,
+    hubId: string,
+    locale: supportedLocaleCodes,
+    client: Client,
+  ): ContainerBuilder {
+    const container = new ContainerBuilder();
+
+    // Rule details section
+    const actionsList =
+      rule.actions.length > 0
+        ? rule.actions.map((a) => ACTION_LABELS[a]).join(', ')
+        : t('hub.blockwords.embedFields.noActions', locale, {
+          emoji: getEmoji('x_icon', client),
+        });
+
+    const ruleDetailsText = new TextDisplayBuilder().setContent(
+      `# ${getEmoji('alert_icon', client)} ${rule.name}\n${t(
+        'hub.blockwords.ruleDescription',
+        locale,
+        {
+          emoji: getEmoji('alert_icon', client),
+          ruleName: rule.name,
+          words: rule.words ? `\`\`\`\n${rule.words.replace(/\.\*/g, '*')}\n\`\`\`` : '',
+        },
+      )}## ${t('hub.blockwords.embedFields.actionsName', locale)}\n${actionsList}`,
+    );
+
+    container.addTextDisplayComponents(ruleDetailsText);
+
+    // Actions select menu
+    const actionsSelect = buildBlockWordActionsSelect(hubId, rule.id, rule.actions, locale);
+    container.addActionRowComponents((row) => row.addComponents(actionsSelect.components[0]));
+
+    // Buttons for navigation and actions
+    const backButton = new ButtonBuilder()
+      .setCustomId(new CustomID().setIdentifier(CUSTOM_ID_PREFIX, 'home').setArgs(hubId).toString())
+      .setEmoji(getEmoji('back', client))
+      .setStyle(ButtonStyle.Secondary);
+
+    const editButton = buildEditAntiSwearRuleButton(hubId, rule.id);
+
+    const deleteButton = new ButtonBuilder()
+      .setCustomId(
+        new CustomID()
+          .setIdentifier(CUSTOM_ID_PREFIX, 'del-rule')
+          .setArgs(hubId, rule.id)
+          .toString(),
+      )
+      .setEmoji(getEmoji('deleteDanger_icon', client))
+      .setLabel('Delete Rule')
+      .setStyle(ButtonStyle.Danger);
+
+    container.addActionRowComponents((row) =>
+      row.addComponents(backButton, editButton, deleteButton),
+    );
+
+    return container;
   }
 
   @RegisterInteractionHandler(CUSTOM_ID_PREFIX, 'del-rule')
@@ -175,19 +314,18 @@ export default class HubConfigAntiSwearSubcommand extends BaseCommand {
 
     const antiSwearRules = await hub.fetchAntiSwearRules();
     const locale = await fetchUserLocale(interaction.user.id);
-    const components = HubConfigAntiSwearSubcommand.buildComponents(antiSwearRules, hub.id, locale);
-    if (!antiSwearRules.length) {
-      const embed = new InfoEmbed().setDescription(
-        t('hub.blockwords.noRules', await fetchUserLocale(interaction.user.id), {
-          emoji: getEmoji('slash_icon', interaction.client),
-        }),
-      );
 
-      await interaction.editReply({ embeds: [embed], components });
-      return;
-    }
-    const embed = buildAntiSpamListEmbed(antiSwearRules, locale, interaction.client);
-    await interaction.editReply({ embeds: [embed], components });
+    const container = this.buildAntiSwearContainer(
+      antiSwearRules,
+      hub.id,
+      locale,
+      interaction.client,
+    );
+
+    await interaction.editReply({
+      components: [container],
+      flags: MessageFlags.IsComponentsV2,
+    });
   }
 
   @RegisterInteractionHandler(CUSTOM_ID_PREFIX, 'modal')
@@ -229,9 +367,12 @@ export default class HubConfigAntiSwearSubcommand extends BaseCommand {
       });
     }
 
-    const embed = buildAntiSwearRuleEmbed(rule, locale, interaction.client);
-    const components = this.createRuleComponents(rule, hubId, locale, interaction.client);
-    await interaction.editReply({ embeds: [embed], components });
+    const container = this.buildRuleDetailContainer(rule, hubId, locale, interaction.client);
+
+    await interaction.editReply({
+      components: [container],
+      flags: MessageFlags.IsComponentsV2,
+    });
   }
 
   @RegisterInteractionHandler(CUSTOM_ID_PREFIX, 'actions')
@@ -267,73 +408,6 @@ export default class HubConfigAntiSwearSubcommand extends BaseCommand {
     });
   }
 
-  static buildComponents(rules: BlockWord[], hubId: string, locale: supportedLocaleCodes) {
-    const components: ActionRowBuilder<ButtonBuilder | StringSelectMenuBuilder>[] = [
-      new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder()
-          .setCustomId(
-            new CustomID().setIdentifier(CUSTOM_ID_PREFIX, 'add-rule').setArgs(hubId).toString(),
-          )
-          .setLabel('Add Rule')
-          .setStyle(ButtonStyle.Success),
-      ),
-    ];
-
-    if (rules.length > 0) {
-      // add select menu as first component
-      components.unshift(
-        new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-          new StringSelectMenuBuilder()
-            .setCustomId(
-              new CustomID()
-                .setIdentifier(CUSTOM_ID_PREFIX, 'select-rule')
-                .setArgs(hubId)
-                .toString(),
-            )
-            .setPlaceholder(t('hub.blockwords.selectRuleToEdit', locale))
-            .addOptions(
-              rules.map((rule, i) => ({
-                label: rule.name,
-                value: rule.id,
-                emoji: numberEmojis[i + 1],
-              })),
-            ),
-        ),
-      );
-    }
-
-    return components;
-  }
-
-  private createRuleComponents(
-    rule: BlockWord,
-    hubId: string,
-    locale: supportedLocaleCodes,
-    client: Client,
-  ) {
-    return [
-      buildBlockWordActionsSelect(hubId, rule.id, rule.actions, locale),
-      new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder()
-          .setCustomId(
-            new CustomID().setIdentifier(CUSTOM_ID_PREFIX, 'home').setArgs(hubId).toString(),
-          )
-          .setEmoji(getEmoji('back', client))
-          .setStyle(ButtonStyle.Secondary),
-        buildEditAntiSwearRuleButton(hubId, rule.id),
-        new ButtonBuilder()
-          .setCustomId(
-            new CustomID()
-              .setIdentifier(CUSTOM_ID_PREFIX, 'del-rule')
-              .setArgs(hubId, rule.id)
-              .toString(),
-          )
-          .setEmoji(getEmoji('deleteDanger_icon', client))
-          .setLabel('Delete Rule')
-          .setStyle(ButtonStyle.Danger),
-      ),
-    ];
-  }
   private async sendRuleNotFoundResponse(
     interaction: ButtonInteraction | StringSelectMenuInteraction,
   ) {
