@@ -17,20 +17,25 @@
 
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
-import { Pagination } from '#src/modules/Pagination.js';
+import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import { fetchCommands } from '#src/utils/CommandUtils.js';
-import { InfoEmbed } from '#src/utils/EmbedUtils.js';
+import { CustomID } from '#src/utils/CustomID.js';
+import { getEmoji } from '#src/utils/EmojiUtils.js';
 import Constants from '#utils/Constants.js';
-import { stripIndents } from 'common-tags';
 import {
   ApplicationCommandOptionType,
   chatInputApplicationCommandMention,
   Collection,
   AutocompleteInteraction,
   ApplicationCommand,
-  ActionRowBuilder,
   ButtonBuilder,
+  ButtonInteraction,
   ButtonStyle,
+  ContainerBuilder,
+  SectionBuilder,
+  TextDisplayBuilder,
+  MessageFlags,
+  SeparatorSpacingSize,
 } from 'discord.js';
 
 interface CommandInfo {
@@ -251,6 +256,7 @@ export default class HelpCommand extends BaseCommand {
     const commandPath = ctx.options.getString('command')?.split(' ') ?? [];
 
     if (commandPath.length > 0) {
+      // Handle specific command help with Components v2
       const baseCommand = ctx.client.commands.get(commandPath[0]);
       if (!baseCommand) {
         await ctx.reply({
@@ -269,81 +275,333 @@ export default class HelpCommand extends BaseCommand {
         return;
       }
 
-      const commandInfo = this.getCommandInfo(command);
-      const embed = new InfoEmbed()
-        .setTitle(`${ctx.getEmoji('wand_icon')} Command Help`)
-        .setDescription(
-          await this.formatCommandPath(
-            commandInfo,
-            ctx.getEmoji('dot'),
-            commandPath.slice(0, -1).join(' '),
-            applicationCommands,
-          ),
-        )
-        .setFooter({
-          text: 'Tip: Click on a command to use it!',
-          iconURL: ctx.client.user.displayAvatarURL(),
-        });
+      // Create Components v2 container for command details
+      const container = new ContainerBuilder();
 
+      // Add header
+      const headerText = new TextDisplayBuilder().setContent(
+        `# ${ctx.getEmoji('wand_icon')} Command Help: /${commandPath.join(' ')}`,
+      );
+      container.addTextDisplayComponents(headerText);
+
+      // Add command description and usage
+      const commandInfo = this.getCommandInfo(command);
+      const commandDetailsText = new TextDisplayBuilder().setContent(
+        await this.formatCommandPath(
+          commandInfo,
+          ctx.getEmoji('dot'),
+          commandPath.slice(0, -1).join(' '),
+          applicationCommands,
+        ),
+      );
+      container.addTextDisplayComponents(commandDetailsText);
+
+      // Add options if available
       if (command.options?.length) {
-        embed.addFields({
-          name: 'Options',
-          value: command.options.map((opt) => `\`${opt.name}\` - ${opt.description}`).join('\n'),
-        });
+        const optionsText = new TextDisplayBuilder().setContent(
+          `## Options\n${command.options.map((opt) => `\`${opt.name}\` - ${opt.description}`).join('\n')}`,
+        );
+        container.addTextDisplayComponents(optionsText);
       }
 
-      await ctx.reply({ embeds: [embed] });
+      // Add dashboard button
+      const dashboardButton = new ButtonBuilder()
+        .setStyle(ButtonStyle.Link)
+        .setLabel('Open Dashboard')
+        .setURL(`${Constants.Links.Website}/dashboard`)
+        .setEmoji(ctx.getEmoji('wand_icon'));
+
+      const dashboardSection = new SectionBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent('Need a visual interface? Check out our dashboard:'),
+        )
+        .setButtonAccessory(dashboardButton);
+
+      container.addSectionComponents(dashboardSection);
+
+      // Send the response
+      await ctx.reply({
+        components: [container],
+        flags: [MessageFlags.IsComponentsV2],
+      });
       return;
     }
 
+    // Handle general help menu with Components v2
     const commands = Array.from(ctx.client.commands.values());
     const commandsPerPage = 5;
-    const pages = [];
     const totalPages = Math.ceil(commands.length / commandsPerPage);
 
-    for (let i = 0; i < commands.length; i += commandsPerPage) {
-      const pageNumber = Math.floor(i / commandsPerPage) + 1;
-      const pageCommands = commands.slice(i, i + commandsPerPage);
-      const embed = new InfoEmbed()
-        .setTitle('InterChat Commands')
-        .setThumbnail(ctx.client.user.displayAvatarURL())
-        .setDescription(
-          stripIndents`Welcome to InterChat's help menu! Below you'll find all available commands.
-          
-          ${ctx.getEmoji('wand_icon')} **Need a visual interface?** Check out our [dashboard](${Constants.Links.Website}/dashboard) for easier hub management, moderation, and settings!
-          
-          ${(
-            await Promise.all(
-              pageCommands.map((cmd) =>
-                this.formatCommandPath(
-                  this.getCommandInfo(cmd),
-                  ctx.getEmoji('dot'),
-                  '',
-                  applicationCommands,
-                ),
-              ),
-            )
-          ).join('')}`,
-        )
-        .setFooter({
-          text: `Page ${pageNumber}/${totalPages} • Click on a command to use it!`,
-          iconURL: ctx.client.user.displayAvatarURL(),
-        });
+    // Get current page commands
+    const currentPage = 0; // Start with first page
+    const pageCommands = commands.slice(
+      currentPage * commandsPerPage,
+      (currentPage + 1) * commandsPerPage,
+    );
 
-      pages.push({
-        embeds: [embed],
-        components: [
-          new ActionRowBuilder<ButtonBuilder>().addComponents(
-            new ButtonBuilder()
-              .setLabel('Open Dashboard')
-              .setStyle(ButtonStyle.Link)
-              .setURL(`${Constants.Links.Website}/dashboard`)
-              .setEmoji(ctx.getEmoji('wand_icon')),
-          ),
-        ],
-      });
+    // Create container for help menu
+    const container = new ContainerBuilder();
+
+    // Add header
+    const headerText = new TextDisplayBuilder().setContent(
+      `# ${ctx.getEmoji('wand_icon')} InterChat Commands\nWelcome to InterChat's help menu! Below you'll find all available commands.`,
+    );
+    container.addTextDisplayComponents(headerText);
+
+    // Add separator
+    container.addSeparatorComponents();
+
+    // Add command sections with buttons
+    for (const cmd of pageCommands) {
+      // Create a brief description of the command
+      const commandDescription = `### /${cmd.name}\n${cmd.description}`;
+
+      // Create a "View Details" button for this command
+      const detailsButton = new ButtonBuilder()
+        .setCustomId(new CustomID().setIdentifier('help', 'details').setArgs(cmd.name).toString())
+        .setLabel('View Details')
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji(ctx.getEmoji('info'));
+
+      // Create a section for this command
+      const commandSection = new SectionBuilder()
+        .addTextDisplayComponents(new TextDisplayBuilder().setContent(commandDescription))
+        .setButtonAccessory(detailsButton);
+
+      container.addSectionComponents(commandSection);
     }
 
-    new Pagination(ctx.client).addPages(pages).run(ctx);
+    // Add page indicator
+    const pageIndicatorText = new TextDisplayBuilder().setContent(
+      `Page ${currentPage + 1}/${totalPages} • Click on a button to view command details`,
+    );
+    container.addTextDisplayComponents(pageIndicatorText);
+
+    // Add navigation buttons
+    const prevButton = new ButtonBuilder()
+      .setCustomId(new CustomID().setIdentifier('help', 'prev').setArgs('0').toString())
+      .setStyle(ButtonStyle.Secondary)
+      .setEmoji(ctx.getEmoji('arrow_left'))
+      .setDisabled(currentPage === 0);
+
+    const nextButton = new ButtonBuilder()
+      .setCustomId(new CustomID().setIdentifier('help', 'next').setArgs('0').toString())
+      .setStyle(ButtonStyle.Secondary)
+      .setEmoji(ctx.getEmoji('arrow_right'))
+      .setDisabled(currentPage === totalPages - 1);
+
+    const dashboardButton = new ButtonBuilder()
+      .setStyle(ButtonStyle.Link)
+      .setLabel('Open Dashboard')
+      .setURL(`${Constants.Links.Website}/dashboard`)
+      .setEmoji(ctx.getEmoji('wand_icon'));
+
+    container.addActionRowComponents((row) =>
+      row.addComponents(prevButton, nextButton, dashboardButton),
+    );
+
+    // Send the response
+    await ctx.reply({
+      components: [container],
+      flags: [MessageFlags.IsComponentsV2],
+    });
+  }
+
+  /**
+   * Creates a help container for the specified page
+   */
+  private async createHelpContainer(
+    interaction: ButtonInteraction,
+    currentPage: number,
+    totalPages: number,
+    commands: BaseCommand[],
+  ) {
+    const commandsPerPage = 5;
+    const pageCommands = commands.slice(
+      currentPage * commandsPerPage,
+      (currentPage + 1) * commandsPerPage,
+    );
+
+    // Create container for help menu
+    const container = new ContainerBuilder();
+
+    // Add header
+    const headerText = new TextDisplayBuilder().setContent(
+      `## ${getEmoji('wand_icon', interaction.client)} InterChat Commands\nWelcome to InterChat's help menu! Below you'll find all available commands.`,
+    );
+    container.addTextDisplayComponents(headerText);
+
+    // Add separator
+    container.addSeparatorComponents((separator) =>
+      separator.setDivider(true).setSpacing(SeparatorSpacingSize.Large),
+    );
+
+    // Add command sections with buttons
+    for (const cmd of pageCommands) {
+      // Create a brief description of the command
+      const commandDescription = `### /${cmd.name}\n${cmd.description}`;
+
+      // Create a "View Details" button for this command
+      const detailsButton = new ButtonBuilder()
+        .setCustomId(new CustomID().setIdentifier('help', 'details').setArgs(cmd.name).toString())
+        .setLabel('View Details')
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji(getEmoji('info', interaction.client));
+
+      // Create a section for this command
+      const commandSection = new SectionBuilder()
+        .addTextDisplayComponents(new TextDisplayBuilder().setContent(commandDescription))
+        .setButtonAccessory(detailsButton);
+
+      container.addSectionComponents(commandSection);
+    }
+
+    // Add page indicator
+    const pageIndicatorText = new TextDisplayBuilder().setContent(
+      `Page ${currentPage + 1}/${totalPages} • Click on a button to view command details`,
+    );
+    container.addTextDisplayComponents(pageIndicatorText);
+
+    // Add navigation buttons
+    const prevButton = new ButtonBuilder()
+      .setCustomId(
+        new CustomID().setIdentifier('help', 'prev').setArgs(currentPage.toString()).toString(),
+      )
+      .setStyle(ButtonStyle.Secondary)
+      .setEmoji(getEmoji('arrow_left', interaction.client))
+      .setDisabled(currentPage === 0);
+
+    const nextButton = new ButtonBuilder()
+      .setCustomId(
+        new CustomID().setIdentifier('help', 'next').setArgs(currentPage.toString()).toString(),
+      )
+      .setStyle(ButtonStyle.Secondary)
+      .setEmoji(getEmoji('arrow_right', interaction.client))
+      .setDisabled(currentPage === totalPages - 1);
+
+    const dashboardButton = new ButtonBuilder()
+      .setStyle(ButtonStyle.Link)
+      .setLabel('Open Dashboard')
+      .setURL(`${Constants.Links.Website}/dashboard`)
+      .setEmoji(getEmoji('wand_icon', interaction.client));
+
+    container.addActionRowComponents((row) =>
+      row.addComponents(prevButton, nextButton, dashboardButton),
+    );
+
+    return container;
+  }
+
+  @RegisterInteractionHandler('help', 'prev')
+  async handlePrevButton(interaction: ButtonInteraction) {
+    await interaction.deferUpdate();
+
+    const currentPage = Number.parseInt(
+      CustomID.parseCustomId(interaction.customId).args[0] || '0',
+    );
+    const newPage = Math.max(0, currentPage - 1);
+
+    const commands = Array.from(interaction.client.commands.values());
+    const totalPages = Math.ceil(commands.length / 5);
+
+    const container = await this.createHelpContainer(interaction, newPage, totalPages, commands);
+
+    await interaction.editReply({
+      components: [container],
+      flags: [MessageFlags.IsComponentsV2],
+    });
+  }
+
+  @RegisterInteractionHandler('help', 'next')
+  async handleNextButton(interaction: ButtonInteraction) {
+    await interaction.deferUpdate();
+
+    const currentPage = Number.parseInt(
+      CustomID.parseCustomId(interaction.customId).args[0] || '0',
+    );
+    const commands = Array.from(interaction.client.commands.values());
+    const totalPages = Math.ceil(commands.length / 5);
+    const newPage = Math.min(totalPages - 1, currentPage + 1);
+
+    const container = await this.createHelpContainer(interaction, newPage, totalPages, commands);
+
+    await interaction.editReply({
+      components: [container],
+      flags: [MessageFlags.IsComponentsV2],
+    });
+  }
+
+  @RegisterInteractionHandler('help', 'details')
+  async handleDetailsButton(interaction: ButtonInteraction) {
+    await interaction.deferReply({ ephemeral: true });
+
+    // Get the command name from the button's custom ID
+    const commandName = CustomID.parseCustomId(interaction.customId).args[0];
+    if (!commandName) {
+      await interaction.editReply({
+        content: `${getEmoji('x_icon', interaction.client)} Command not found.`,
+      });
+      return;
+    }
+
+    // Find the command
+    const baseCommand = interaction.client.commands.get(commandName);
+    if (!baseCommand) {
+      await interaction.editReply({
+        content: `${getEmoji('x_icon', interaction.client)} Command \`${commandName}\` not found.`,
+      });
+      return;
+    }
+
+    // Create Components v2 container for command details
+    const container = new ContainerBuilder();
+
+    // Add header
+    const headerText = new TextDisplayBuilder().setContent(
+      `# ${getEmoji('wand_icon', interaction.client)} Command Help: /${commandName}`,
+    );
+    container.addTextDisplayComponents(headerText);
+
+    // Add command description and usage
+    const applicationCommands = await fetchCommands(interaction.client);
+    const commandInfo = this.getCommandInfo(baseCommand);
+    const commandDetailsText = new TextDisplayBuilder().setContent(
+      await this.formatCommandPath(
+        commandInfo,
+        getEmoji('dot', interaction.client),
+        '',
+        applicationCommands,
+      ),
+    );
+    container.addTextDisplayComponents(commandDetailsText);
+
+    // Add options if available
+    if (baseCommand.options?.length) {
+      const optionsText = new TextDisplayBuilder().setContent(
+        `## Options\n${baseCommand.options.map((opt) => `\`${opt.name}\` - ${opt.description}`).join('\n')}`,
+      );
+      container.addTextDisplayComponents(optionsText);
+    }
+
+    // Add dashboard button
+    const dashboardButton = new ButtonBuilder()
+      .setStyle(ButtonStyle.Link)
+      .setLabel('Open Dashboard')
+      .setURL(`${Constants.Links.Website}/dashboard`)
+      .setEmoji(getEmoji('wand_icon', interaction.client));
+
+    const dashboardSection = new SectionBuilder()
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent('Need a visual interface? Check out our dashboard:'),
+      )
+      .setButtonAccessory(dashboardButton);
+
+    container.addSectionComponents(dashboardSection);
+
+    // Send the response
+    await interaction.editReply({
+      components: [container],
+      flags: [MessageFlags.IsComponentsV2],
+    });
   }
 }
