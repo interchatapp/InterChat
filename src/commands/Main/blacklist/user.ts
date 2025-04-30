@@ -44,12 +44,6 @@ export default class BlacklistUserSubcommand extends BaseCommand {
           required: true,
         },
         {
-          name: 'reason',
-          description: 'Reason for blacklist',
-          type: ApplicationCommandOptionType.String,
-          required: true,
-        },
-        {
           name: 'hub',
           description: 'Hub to blacklist from',
           type: ApplicationCommandOptionType.String,

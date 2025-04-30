@@ -5,9 +5,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL") // Uncomment if you use a provider that requires directUrl
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // directUrl = env("DIRECT_URL") // Uncomment if you use a provider that requires directUrl
 }
 
 // Enums moved to top for better organization
@@ -265,22 +265,24 @@ model User {
   updatedAt         DateTime       @updatedAt
 
   // empty fields for nextauth to work
-  email             String?
-  emailVerified     DateTime?
+  email         String?
+  emailVerified DateTime?
 
   // Relations
-  ownedHubs         Hub[]                @relation("OwnedHubs")
+  ownedHubs         Hub[]                  @relation("OwnedHubs")
   appeals           Appeal[]
-  infractions       Infraction[]         @relation("infractions")
-  issuedInfractions Infraction[]         @relation("issuedInfractions")
+  infractions       Infraction[]           @relation("infractions")
+  issuedInfractions Infraction[]           @relation("issuedInfractions")
   upvotedHubs       HubUpvote[]
   reputationLog     ReputationLog[]
   reviews           HubReview[]
   blockWordsCreated BlockWord[]
   rulesAcceptances  HubRulesAcceptance[]
-  ratingsMade       CallRating[]         @relation("RatingsMade")
-  ratingsReceived   CallRating[]         @relation("RatingsReceived")
+  ratingsMade       CallRating[]           @relation("RatingsMade")
+  ratingsReceived   CallRating[]           @relation("RatingsReceived")
   tutorialProgress  UserTutorialProgress[]
+  accounts          Account[]
+  sessions          Session[]
 }
 
 model Announcement {
@@ -338,58 +340,86 @@ model ReputationLog {
 
 // Tutorial models
 model Tutorial {
-  id                  String                @id @default(cuid())
-  name                String                @unique
-  description         String
-  targetAudience      String                // 'all', 'admin', 'moderator', 'new-user'
-  estimatedTimeMinutes Int                  @default(5)
-  steps               TutorialStep[]
-  prerequisites       TutorialPrerequisite[]
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
+  id                   String                 @id @default(cuid())
+  name                 String                 @unique
+  description          String
+  targetAudience       String // 'all', 'admin', 'moderator', 'new-user'
+  estimatedTimeMinutes Int                    @default(5)
+  steps                TutorialStep[]
+  prerequisites        TutorialPrerequisite[]
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
 
   // Relations
-  userProgress        UserTutorialProgress[]
+  userProgress UserTutorialProgress[]
 }
 
 model TutorialStep {
-  id                String                @id @default(cuid())
-  tutorialId        String
-  tutorial          Tutorial              @relation(fields: [tutorialId], references: [id], onDelete: Cascade)
-  title             String
-  description       String
-  order             Int
-  actionType        String                // 'command', 'button', 'selection', 'information'
-  actionData        String?               // JSON data for the action
-  timeoutSeconds    Int                   @default(60)
-  createdAt         DateTime              @default(now())
-  updatedAt         DateTime              @updatedAt
+  id             String   @id @default(cuid())
+  tutorialId     String
+  tutorial       Tutorial @relation(fields: [tutorialId], references: [id], onDelete: Cascade)
+  title          String
+  description    String
+  order          Int
+  actionType     String // 'command', 'button', 'selection', 'information'
+  actionData     String? // JSON data for the action
+  timeoutSeconds Int      @default(60)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@index([tutorialId])
 }
 
 model TutorialPrerequisite {
-  id                String                @id @default(cuid())
-  tutorialId        String
-  tutorial          Tutorial              @relation(fields: [tutorialId], references: [id], onDelete: Cascade)
-  prerequisiteId    String
+  id             String   @id @default(cuid())
+  tutorialId     String
+  tutorial       Tutorial @relation(fields: [tutorialId], references: [id], onDelete: Cascade)
+  prerequisiteId String
 
   @@unique([tutorialId, prerequisiteId])
   @@index([tutorialId])
 }
 
 model UserTutorialProgress {
-  id                String                @id @default(cuid())
-  userId            String
-  user              User                  @relation(fields: [userId], references: [id])
-  tutorialId        String
-  tutorial          Tutorial              @relation(fields: [tutorialId], references: [id], onDelete: Cascade)
-  currentStepIndex  Int                   @default(0)
-  completed         Boolean               @default(false)
-  startedAt         DateTime              @default(now())
-  completedAt       DateTime?
+  id               String    @id @default(cuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id])
+  tutorialId       String
+  tutorial         Tutorial  @relation(fields: [tutorialId], references: [id], onDelete: Cascade)
+  currentStepIndex Int       @default(0)
+  completed        Boolean   @default(false)
+  startedAt        DateTime  @default(now())
+  completedAt      DateTime?
 
   @@unique([userId, tutorialId])
   @@index([userId])
   @@index([tutorialId])
+}
+
+// Website / Dashboard related
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
