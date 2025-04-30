@@ -26,6 +26,8 @@ export const enum RedisKeys {
   CallRecentMatches = 'call:recent_matches',
   LastHubMessageUser = 'lastHubMessageUser',
   ReportReporter = 'report:reporter', // Stores reporter ID for report resolution notifications
+  tutorialData = 'tutorialData', // Base prefix for all tutorial-related keys
+  tutorialProgress = 'tutorialProgress', // Stores user progress in tutorials
 }
 
 export const enum ConnectionMode {

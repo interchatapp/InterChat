@@ -40,7 +40,7 @@ interface Config {
   defaultPermissions?: PermissionsBitField;
 }
 
-interface CommandConfig extends Config {
+export interface CommandConfig extends Config {
   types: {
     slash?: boolean;
     prefix?: boolean;

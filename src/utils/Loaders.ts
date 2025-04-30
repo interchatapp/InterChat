@@ -50,7 +50,7 @@ export const loadCommands = async (
   for (const file of files) {
     if (file.endsWith('.js')) {
       const { default: Command } = await import(`${path}/${file}`);
-      if (Command.prototype instanceof BaseCommand) {
+      if (Command.prototype instanceof BaseCommand && !Command.abstract) {
         const command: BaseCommand = new Command();
         if (depth <= 1 || (depth > 1 && file === 'index.js')) {
           map.set(command.name, command);
