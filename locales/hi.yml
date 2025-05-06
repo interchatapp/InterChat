@@ -47,6 +47,8 @@ rules:
   accepted: |
     {emoji} You're all set! Welcome to the InterChat community.
 
+    {emoji} You're all set! Welcome to the InterChat community.
+
     ### Get Started Quickly:
     - Visit `/hub browse` to find active communities
     - Join discussions that interest you or create your own through our __dashboard__
@@ -69,9 +71,9 @@ rules:
 vote:
   description: |
     Help more communities discover InterChat! Your vote on top.gg:
-    • Helps others find active communities
-    • Unlocks special features for you
-    • Supports our independent development
+    - Helps others find active communities
+    - Unlocks special features for you
+    - Supports our independent development
   footer: "वोट हर बारह (12) घंटे में रीफ़्रेश होते हैं • InterChat का समर्थन करने के लिए धन्यवाद!"
   button:
     label: "top.gg पर वोट करें"
@@ -318,7 +320,7 @@ hub:
       notAllowed: "{emoji} Only hub managers can update a moderator's position."
       notOwner: "{emoji} Only the owner of this hub can update a manager's position."
   manage:
-    dashboardTip: '**🛠️ NEW Dashboard:** Better interface and more features! Use the dashboard to manage your hub: {url}'
+    dashboardTip: "**🛠️ NEW Dashboard:** Improved interface and more features! Try it out at [your hub's dashboard page]({url})."
     enterImgurUrl: Enter a valid Imgur image URL that is not a gallery or album.
     icon:
       changed: Hub icon successfully changed.
