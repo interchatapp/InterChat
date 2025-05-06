@@ -34,6 +34,8 @@ rules:
   accepted: |
     {emoji} You're all set! Welcome to the InterChat community.
 
+    {emoji} You're all set! Welcome to the InterChat community.
+
     ### Get Started Quickly:
     - Visit `/hub browse` to find active communities
     - Join discussions that interest you or create your own through our __dashboard__
@@ -53,10 +55,10 @@ rules:
   hubRules: Keskuse reeglid
 vote:
   description: |
-    Aidake rohkematel kogukondadel avastada InterChat! Sinu hääl saidil top.gg:
-    - Aitab teistel leida aktiivseid kogukondi
-    - Avab teie jaoks erilised funktsioonid
-    - Toetab meie iseseisvat arengut
+    Help more communities discover InterChat! Your vote on top.gg:
+    - Helps others find active communities
+    - Unlocks special features for you
+    - Supports our independent development
   footer: "Hääl taastub iga 12 tunni järel • Täname InterChat'i toetamise eest!"
   button:
     label: "Hääletage saidil top.gg"
@@ -302,7 +304,7 @@ hub:
       notAllowed: "{emoji} Ainult keskuse haldurid saavad moderaatori rolli muuta."
       notOwner: "{emoji} Ainult selle keskuse omanik saab halduri rolli muuta."
   manage:
-    dashboardTip: '**🛠️ NEW Dashboard:** Better interface and more features! Use the dashboard to manage your hub: {url}'
+    dashboardTip: "**🛠️ NEW Dashboard:** Improved interface and more features! Try it out at [your hub's dashboard page]({url})."
     enterImgurUrl: Sisestage kehtiv Imgur'i pildi URL, mis ei ole galerii ega album.
     icon:
       changed: Keskuse ikooni muutmine õnnestus.
