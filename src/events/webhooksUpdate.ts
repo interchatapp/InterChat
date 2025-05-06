@@ -35,7 +35,7 @@ export default class Ready extends BaseEventListener<'webhooksUpdate'> {
   ) {
     try {
       const connection = await db.connection.findFirst({
-        where: { OR: [{ channelId: channel.id }, { parentId: channel.id }] },
+        where: { OR: [{ channelId: channel.id }, { parentId: channel.id }], connected: true },
       });
 
       if (!connection) return;
