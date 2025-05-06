@@ -23,9 +23,14 @@ import {
   type Interaction,
   InteractionType,
   Message,
+  MessageComponentInteraction,
 } from 'discord.js';
 
-type Repliable = Message | Interaction | ContextMenuCommandInteraction;
+type Repliable =
+  | Message
+  | Interaction
+  | ContextMenuCommandInteraction
+  | MessageComponentInteraction;
 
 export interface ErrorHandlerOptions {
   repliable?: Repliable;
@@ -46,7 +51,7 @@ function extractUserInfo(repliable: Repliable): UserInfo {
 }
 
 function extractCommandInfo(
-  interaction: Interaction | ContextMenuCommandInteraction,
+  interaction: Interaction | ContextMenuCommandInteraction | MessageComponentInteraction,
 ): string | undefined {
   if (!interaction.isCommand() && !interaction.isAutocomplete()) {
     return undefined;

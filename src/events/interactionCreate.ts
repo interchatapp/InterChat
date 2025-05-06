@@ -42,6 +42,7 @@ import type {
   MessageComponentInteraction,
   ModalSubmitInteraction,
 } from 'discord.js';
+import { createComponentContext } from '#src/utils/ContextUtils.js';
 
 export default class InteractionCreate extends BaseEventListener<'interactionCreate'> {
   readonly name = 'interactionCreate';
@@ -143,7 +144,10 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
       return;
     }
 
-    if (handler) await handler(interaction);
+    if (handler) {
+      const context = createComponentContext(interaction);
+      await handler(context, interaction);
+    }
   }
 
   private getInteractionHandler(

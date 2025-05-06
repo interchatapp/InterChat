@@ -66,7 +66,7 @@ export default class Ready extends BaseEventListener<'guildCreate'> {
         If you enjoy InterChat, consider [supporting us](${Constants.Links.Donate}) 💝
         `,
       )
-      .setColor(Constants.Colors.interchat)
+      .setColor(Constants.Colors.primary)
       .setFooter({
         text: `Sent for server: ${guild.name}`,
         iconURL: guild.iconURL() ?? undefined,

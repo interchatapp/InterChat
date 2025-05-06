@@ -15,6 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import type { AppealStatus } from '#src/generated/prisma/client/index.js';
 import BlacklistManager from '#src/managers/BlacklistManager.js';
@@ -28,18 +29,15 @@ import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { CustomID } from '#utils/CustomID.js';
 import { ErrorEmbed, InfoEmbed } from '#utils/EmbedUtils.js';
 import Logger from '#utils/Logger.js';
-import { getReplyMethod, msToReadable } from '#utils/Utils.js';
+import { msToReadable } from '#utils/Utils.js';
 import logAppeals from '#utils/hub/logger/Appeals.js';
 import {
   ActionRowBuilder,
   ButtonBuilder,
-  type ButtonInteraction,
   ButtonStyle,
   EmbedBuilder,
   type ModalActionRowComponentBuilder,
   ModalBuilder,
-  type ModalSubmitInteraction,
-  type RepliableInteraction,
   type Snowflake,
   TextInputBuilder,
   TextInputStyle,
@@ -88,41 +86,39 @@ export const buildAppealSubmitModal = (type: 'server' | 'user', hubId: string) =
 
 export default class AppealInteraction {
   @RegisterInteractionHandler('appealSubmit', 'button')
-  async appealSubmitButton(interaction: ButtonInteraction): Promise<void> {
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [type, hubId] = customId.args as ['user' | 'server', string];
+  async appealSubmitButton(ctx: ComponentContext): Promise<void> {
+    const [type, hubId] = ctx.customId.args as ['user' | 'server', string];
 
-    const appealChannelId = await this.validateBlacklistAppealLogConfig(interaction, hubId);
-    const { passedCheck: passed } = await this.checkBlacklistOrSendError(interaction, hubId, type);
+    const appealChannelId = await this.validateBlacklistAppealLogConfig(ctx, hubId);
+    const { passedCheck: passed } = await this.checkBlacklistOrSendError(ctx, hubId, type);
     if (!appealChannelId || !passed) return;
 
     if (
       type === 'server' &&
-      (!interaction.inCachedGuild() ||
-        !interaction.channel?.permissionsFor(interaction.member).has('ManageMessages', true))
+      (!ctx.inGuild() ||
+        !ctx.member?.permissionsIn(ctx.channelId).has('ManageMessages', true))
     ) {
       const embed = new InfoEmbed().setDescription(
         'You do not have the required permissions in this channel to appeal this blacklist.',
       );
-      await interaction.reply({ embeds: [embed], flags: ['Ephemeral'] });
+      await ctx.reply({ embeds: [embed], flags: ['Ephemeral'] });
       return;
     }
 
     const modal = buildAppealSubmitModal(type, hubId);
-    await interaction.showModal(modal);
+    await ctx.showModal(modal);
   }
 
   @RegisterInteractionHandler('appealSubmit', 'modal')
-  async appealSubmitModal(interaction: ModalSubmitInteraction): Promise<void> {
-    await interaction.deferReply({ flags: ['Ephemeral'] });
+  async appealSubmitModal(ctx: ComponentContext): Promise<void> {
+    await ctx.deferReply({ flags: ['Ephemeral'] });
 
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [type, hubId] = customId.args as ['user' | 'server', string];
+    const [type, hubId] = ctx.customId.args as ['user' | 'server', string];
 
-    const appealsConfig = await this.validateBlacklistAppealLogConfig(interaction, hubId);
+    const appealsConfig = await this.validateBlacklistAppealLogConfig(ctx, hubId);
     if (!appealsConfig) return;
 
-    const { passedCheck } = await this.checkBlacklistOrSendError(interaction, hubId, type);
+    const { passedCheck } = await this.checkBlacklistOrSendError(ctx, hubId, type);
     if (!passedCheck) return;
 
     const { appealsChannelId, appealsRoleId } = appealsConfig;
@@ -133,84 +129,83 @@ export default class AppealInteraction {
     let appealName: string | undefined;
     let appealTargetId: Snowflake;
     if (type === 'server') {
-      appealIconUrl = interaction.guild?.iconURL() ?? null;
-      appealName = interaction.guild?.name ?? undefined;
-      appealTargetId = interaction.guildId as string;
+      appealIconUrl = ctx.guild?.iconURL() ?? null;
+      appealName = ctx.guild?.name ?? undefined;
+      appealTargetId = ctx.guildId as string;
     }
     else {
-      appealIconUrl = interaction.user.displayAvatarURL();
-      appealName = interaction.user.username;
-      appealTargetId = interaction.user.id;
+      appealIconUrl = ctx.user.displayAvatarURL();
+      appealName = ctx.user.username;
+      appealTargetId = ctx.user.id;
     }
 
     const infractionManager = new InfractionManager(type, appealTargetId);
     const infraction = await infractionManager.fetchInfraction('BLACKLIST', hubId);
 
     if (!infraction) {
-      const embed = new ErrorEmbed(interaction.client).setDescription(
+      const embed = new ErrorEmbed(ctx.client).setDescription(
         'Failed to update infraction with appeal information.',
       );
-      await interaction.editReply({ embeds: [embed] });
+      await ctx.editReply({ embeds: [embed] });
       return;
     }
 
     // Create a new appeal entry
-    const appealReason = interaction.fields.getTextInputValue('unblacklistReason');
+    const appealReason = ctx.getModalFieldValue('unblacklistReason');
     await db.appeal.create({
       data: {
         infractionId: infraction.id,
-        userId: interaction.user.id,
-        reason: appealReason,
+        userId: ctx.user.id,
+        reason: appealReason ?? 'No reason provided.',
         status: 'PENDING',
       },
     });
 
-    await logAppeals(type, hubId, interaction.user, {
+    await logAppeals(type, hubId, ctx.user, {
       appealsChannelId,
       appealsRoleId,
       appealName,
       appealTargetId,
       appealIconUrl: appealIconUrl ?? undefined,
       fields: {
-        blacklistedFor: interaction.fields.getTextInputValue('blacklistedFor'),
-        unblacklistReason: appealReason,
-        extras: interaction.fields.getTextInputValue('extras'),
+        blacklistedFor: ctx.getModalFieldValue('blacklistedFor') ?? 'None provided.',
+        unblacklistReason: appealReason ?? 'None provided.',
+        extras: ctx.getModalFieldValue('extras') ?? 'None provided.',
       },
     });
 
     const embed = new InfoEmbed().setTitle('📝 Appeal Sent').setDescription(
       `Your blacklist appeal has been submitted. You will be notified via DM when the appeal is reviewed.
 
-      ${getEmoji('zap_icon', interaction.client)} **View your appeal & status in the dashboard:** ${Constants.Links.Website}/dashboard/my-appeals
+      ${getEmoji('zap_icon', ctx.client)} **View your appeal & status in the dashboard:** ${Constants.Links.Website}/dashboard/my-appeals
       `,
     );
 
-    await interaction.editReply({ embeds: [embed] });
+    await ctx.editReply({ embeds: [embed] });
   }
 
   @RegisterInteractionHandler('appealReview')
-  async appealReviewButton(interaction: ButtonInteraction): Promise<void> {
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [type, hubId, targetId] = customId.args as ['user' | 'server', string, Snowflake];
+  async appealReviewButton(ctx: ComponentContext): Promise<void> {
+    const [type, hubId, targetId] = ctx.customId.args as ['user' | 'server', string, Snowflake];
 
     const button = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
         .setCustomId('disabledAppealReview')
         .setDisabled(true)
         .setLabel(
-          `${customId.suffix === 'approve' ? 'Approved' : 'Rejected'} by @${interaction.user.username}`,
+          `${ctx.customId.suffix === 'approve' ? 'Approved' : 'Rejected'} by @${ctx.user.username}`,
         )
-        .setStyle(customId.suffix === 'approve' ? ButtonStyle.Success : ButtonStyle.Danger),
+        .setStyle(ctx.customId.suffix === 'approve' ? ButtonStyle.Success : ButtonStyle.Danger),
     );
 
-    await interaction.update({ components: [button] });
+    await ctx.editReply({ components: [button] });
 
     const blacklistManager = new BlacklistManager(type, targetId);
     const blacklist = await blacklistManager.fetchBlacklist(hubId, { appeal: true });
     if (!blacklist) return;
 
     // Update the appeal status
-    const newStatus: AppealStatus = customId.suffix === 'approve' ? 'ACCEPTED' : 'REJECTED';
+    const newStatus: AppealStatus = ctx.customId.suffix === 'approve' ? 'ACCEPTED' : 'REJECTED';
 
     // Find the latest appeal for this infraction
     const latestAppeal = await db.appeal.findFirst({
@@ -232,13 +227,13 @@ export default class AppealInteraction {
     }
 
     // If approved, remove the blacklist
-    if (customId.suffix === 'approve') await blacklistManager.removeBlacklist(hubId);
+    if (ctx.customId.suffix === 'approve') await blacklistManager.removeBlacklist(hubId);
 
     const hubService = new HubService(db);
     const hub = await hubService.fetchHub(hubId);
 
     const appealer = blacklist.appeal
-      ? await interaction.client.users.fetch(blacklist.appeal.userId).catch(() => null)
+      ? await ctx.client.users.fetch(blacklist.appeal.userId).catch(() => null)
       : null;
     const appealTarget =
       type === 'user' ? `user \`${appealer?.tag}\`` : `server \`${blacklist.serverName}\``;
@@ -248,12 +243,12 @@ export default class AppealInteraction {
         : '';
 
     // TODO: localize
-    const approvalStatus = customId.suffix === 'approve' ? 'appealed 🎉' : 'rejected';
+    const approvalStatus = ctx.customId.suffix === 'approve' ? 'appealed 🎉' : 'rejected';
     const message = `
       ### Blacklist Appeal Review
       Your blacklist appeal for ${appealTarget} in the hub **${hub?.data.name}** has been ${approvalStatus}.\n${extraServerSteps}
 
-      ${interaction.client.emojis.cache.find((e) => e.name === 'wand_icon')} **Tip:** Manage all your appeals through our [dashboard](${Constants.Links.Website}/dashboard/my-appeals).
+      ${ctx.client.emojis.cache.find((e) => e.name === 'wand_icon')} **Tip:** Manage all your appeals through our [dashboard](${Constants.Links.Website}/dashboard/my-appeals).
     `;
 
     const embed = new EmbedBuilder()
@@ -262,7 +257,7 @@ export default class AppealInteraction {
 
     if (!appealer) {
       Logger.error(`Failed to fetch appealer for blacklist appeal review: ${targetId}`);
-      await interaction.followUp({
+      await ctx.reply({
         content: 'I couldn\'t DM appeal approval to appealer.',
         flags: ['Ephemeral'],
       });
@@ -274,13 +269,12 @@ export default class AppealInteraction {
       .catch((e) => Logger.error(`Failed to DM appeal approval to ${appealer.tag}`, e));
   }
 
-  async validateBlacklistAppealLogConfig(interaction: RepliableInteraction, hubId: string) {
+  async validateBlacklistAppealLogConfig(ctx: ComponentContext, hubId: string) {
     const hubLogManager = await HubLogManager.create(hubId);
     if (!hubLogManager.config.appealsChannelId) {
       const embed = new InfoEmbed().setDescription('Blacklist appeals are disabled in this hub.');
-      const replyMethod = getReplyMethod(interaction);
 
-      await interaction[replyMethod]({ embeds: [embed], flags: ['Ephemeral'] });
+      await ctx.reply({ embeds: [embed], flags: ['Ephemeral'] });
       return null;
     }
 
@@ -288,13 +282,13 @@ export default class AppealInteraction {
   }
 
   async checkBlacklistOrSendError(
-    interaction: RepliableInteraction,
+    ctx: ComponentContext,
     hubId: string,
     type: 'user' | 'server',
   ): Promise<{ passedCheck: boolean }> {
     const blacklistManager = new BlacklistManager(
       type,
-      type === 'user' ? interaction.user.id : (interaction.guildId as string),
+      type === 'user' ? ctx.user.id : (ctx.guildId as string),
     );
 
     const hubService = new HubService(db);
@@ -303,10 +297,10 @@ export default class AppealInteraction {
     // Get the active blacklist
     const blacklist = await blacklistManager.fetchBlacklist(hubId);
     if (!blacklist) {
-      const embed = new ErrorEmbed(interaction.client).setDescription(
+      const embed = new ErrorEmbed(ctx.client).setDescription(
         'You cannot appeal a blacklist that does not exist.',
       );
-      await interaction.reply({ embeds: [embed], flags: ['Ephemeral'] });
+      await ctx.reply({ embeds: [embed], flags: ['Ephemeral'] });
       return { passedCheck: false };
     }
 
@@ -320,7 +314,7 @@ export default class AppealInteraction {
     const latestAppeal = await db.appeal.findFirst({
       where: {
         infractionId: blacklist.id,
-        userId: interaction.user.id,
+        userId: ctx.user.id,
       },
       orderBy: {
         createdAt: 'desc',
@@ -329,12 +323,11 @@ export default class AppealInteraction {
 
     // Check if the latest appeal is within the cooldown period
     if (latestAppeal && latestAppeal.createdAt.getTime() + appealCooldown > Date.now()) {
-      const embed = new ErrorEmbed(interaction.client).setDescription(
+      const embed = new ErrorEmbed(ctx.client).setDescription(
         `You can only appeal once every **${msToReadable(appealCooldown, false)}**.`,
       );
 
-      const replyMethod = getReplyMethod(interaction);
-      await interaction[replyMethod]({ embeds: [embed], flags: ['Ephemeral'] });
+      await ctx.reply({ embeds: [embed], flags: ['Ephemeral'] });
       return { passedCheck: false };
     }
 

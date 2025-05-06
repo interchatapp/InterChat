@@ -15,36 +15,30 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import ConnectionCommand from '#src/commands/Main/connection/index.js';
+import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
-import Logger from '#src/utils/Logger.js';
+import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { isGuildTextBasedChannel } from '#utils/ChannelUtls.js';
-import { handleConnectionInviteCreation, updateConnection } from '#utils/ConnectedListUtils.js';
+import { updateConnection } from '#utils/ConnectedListUtils.js';
+import { createServerInvite } from '#src/utils/Utils.js';
 import Constants from '#utils/Constants.js';
 import { CustomID } from '#utils/CustomID.js';
 import db from '#utils/Db.js';
 import { InfoEmbed } from '#utils/EmbedUtils.js';
 import { t } from '#utils/Locale.js';
 import { fetchUserLocale, getOrCreateWebhook } from '#utils/Utils.js';
-import {
-  buildChannelSelect,
-  buildEditEmbed,
-  buildEditSelect,
-} from '#utils/network/buildConnectionAssets.js';
+import { buildConnectionEditUI } from '#utils/network/buildConnectionAssetsV2.js';
 import {
   ActionRowBuilder,
   ApplicationCommandOptionType,
-  type AutocompleteInteraction,
-  type ChannelSelectMenuInteraction,
+  AutocompleteInteraction,
   ModalBuilder,
-  type ModalSubmitInteraction,
-  type StringSelectMenuInteraction,
   TextInputBuilder,
   TextInputStyle,
 } from 'discord.js';
-import { getEmoji } from '#src/utils/EmojiUtils.js';
-import BaseCommand from '#src/core/BaseCommand.js';
-import ConnectionCommand from '#src/commands/Main/connection/index.js';
 
 export default class ConnectionEditSubcommand extends BaseCommand {
   constructor() {
@@ -66,11 +60,25 @@ export default class ConnectionEditSubcommand extends BaseCommand {
   async execute(ctx: Context): Promise<void> {
     await ctx.deferReply();
 
-    const channelId =
+    // Get the channel ID from options or current channel
+    const channelIdInput =
       ctx.options.getString('channel')?.replace(Constants.Regex.ChannelMention, '') ??
       ctx.channelId;
 
-    const isInDb = await db.connection.findFirst({ where: { channelId } });
+    // Ensure channelId is not null
+    if (!channelIdInput) {
+      await ctx.replyEmbed('connection.notFound', {
+        t: { emoji: ctx.getEmoji('x_icon') },
+        flags: ['Ephemeral'],
+      });
+      return;
+    }
+
+    const channelId = channelIdInput;
+    const isInDb = await db.connection.findFirst({
+      where: { channelId },
+    });
+
     const locale = await ctx.getLocale();
 
     if (!isInDb) {
@@ -81,24 +89,22 @@ export default class ConnectionEditSubcommand extends BaseCommand {
       return;
     }
 
-    const channelExists = await ctx.guild?.channels.fetch(channelId).catch(() => null);
-    if (!channelExists) {
-      await updateConnection({ channelId }, { connected: !isInDb.connected });
+    // Check if channel exists
+    if (ctx.guild) {
+      const channelExists = await ctx.guild.channels.fetch(channelId).catch(() => null);
+      if (!channelExists) {
+        await updateConnection({ channelId }, { connected: !isInDb.connected });
 
-      await ctx.replyEmbed('connection.channelNotFound', {
-        t: { emoji: ctx.getEmoji('x_icon') },
-        flags: ['Ephemeral'],
-      });
+        await ctx.replyEmbed('connection.channelNotFound', {
+          t: { emoji: ctx.getEmoji('x_icon') },
+          flags: ['Ephemeral'],
+        });
+      }
     }
 
-    const embed = await buildEditEmbed(ctx.client, channelId, locale);
-    const editSelect = buildEditSelect(ctx.client, channelId, ctx.user.id, locale);
-    const channelSelect = buildChannelSelect(channelId, ctx.user.id);
-
-    await ctx.editOrReply({
-      embeds: [embed],
-      components: [channelSelect, editSelect],
-    });
+    // Build the connection edit UI using Components v2
+    const container = await buildConnectionEditUI(ctx.client, channelId, ctx.user.id, locale);
+    await ctx.editOrReply({ components: [container] }, ['IsComponentsV2']);
   }
 
   async autocomplete(interaction: AutocompleteInteraction) {
@@ -106,85 +112,159 @@ export default class ConnectionEditSubcommand extends BaseCommand {
   }
 
   @RegisterInteractionHandler('connectionModal')
-  async handleModals(interaction: ModalSubmitInteraction): Promise<void> {
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const locale = await fetchUserLocale(interaction.user.id);
+  async handleModals(ctx: ComponentContext) {
+    const locale = await fetchUserLocale(ctx.user.id);
 
+    if (ctx.customId.suffix === 'embed_color') {
+      const embedColor = ctx.getModalFieldValue('embed_color');
 
-    if (customId.suffix === 'embed_color') {
-      const embedColor = interaction.fields.getTextInputValue('embed_color');
-
-      if (!Constants.Regex.Hexcode.test(embedColor)) {
-        await interaction.reply({
+      if (!embedColor || !Constants.Regex.Hexcode.test(embedColor)) {
+        await ctx.reply({
           content: t('connection.emColorInvalid', locale, {
-            emoji: getEmoji('x_icon', interaction.client),
+            emoji: getEmoji('x_icon', ctx.client),
           }),
           flags: ['Ephemeral'],
         });
         return;
       }
 
+      await ctx.deferUpdate();
+
       await updateConnection(
-        { channelId: customId.args[0] },
+        { channelId: ctx.customId.args[0] },
         { embedColor: embedColor ?? { unset: true } },
       );
 
-      await interaction.reply({
+      // Build the connection edit UI using Components v2
+      const container = await buildConnectionEditUI(
+        ctx.client,
+        ctx.customId.args[0],
+        ctx.user.id,
+        locale,
+      );
+
+      await ctx
+        .editReply({
+          components: [container],
+          flags: ['IsComponentsV2'],
+        })
+        .catch(() => null);
+
+      await ctx.reply({
         content: t('connection.emColorChange', locale, {
           action: embedColor ? `set to \`${embedColor}\`!` : 'unset',
-          emoji: getEmoji('tick_icon', interaction.client),
+          emoji: getEmoji('tick_icon', ctx.client),
         }),
         flags: ['Ephemeral'],
       });
     }
-
-    await interaction.message
-      ?.edit({
-        embeds: [await buildEditEmbed(interaction.client, customId.args[0], locale)],
-      })
-      .catch(() => null);
   }
 
   @RegisterInteractionHandler('connection')
-  async handleStringSelects(interaction: StringSelectMenuInteraction) {
-    if (!interaction.isStringSelectMenu()) return;
+  async handleStringSelects(ctx: ComponentContext) {
+    if (!ctx.isStringSelectMenu()) return;
 
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const channelId = customId.args.at(0);
-    const userIdFilter = customId.args.at(1);
+    const channelId = ctx.customId.args.at(0);
+    const userIdFilter = ctx.customId.args.at(1);
+    const locale = await fetchUserLocale(ctx.user.id);
 
-    const locale = await fetchUserLocale(interaction.user.id);
-
-    if (userIdFilter !== interaction.user.id) {
+    if (userIdFilter !== ctx.user.id) {
       const embed = new InfoEmbed().setDescription(
         t('errors.notYourAction', locale, {
-          emoji: getEmoji('x_icon', interaction.client),
+          emoji: getEmoji('x_icon', ctx.client),
         }),
       );
-      await interaction.reply({ embeds: [embed], flags: ['Ephemeral'] });
+      await ctx.reply({ embeds: [embed], flags: ['Ephemeral'] });
       return;
     }
 
     const connection = await db.connection.findFirst({ where: { channelId } });
     if (!channelId || !connection) {
-      await interaction.reply({
+      await ctx.reply({
         content: t('connection.channelNotFound', locale, {
-          emoji: getEmoji('x_icon', interaction.client),
+          emoji: getEmoji('x_icon', ctx.client),
         }),
         flags: ['Ephemeral'],
       });
       return;
     }
 
-    switch (interaction.values[0]) {
+    // Get the selected values from the select menu
+    const values = ctx.values;
+    if (!values || values.length === 0) {
+      await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} Invalid selection. Please try again.`,
+        flags: ['Ephemeral'],
+      });
+      return;
+    }
+
+    switch (values[0]) {
       case 'compact':
+        await ctx.deferUpdate();
         await updateConnection({ channelId }, { compact: !connection.compact });
+
+        // Build the connection edit UI using Components v2
+        const compactContainer = await buildConnectionEditUI(
+          ctx.client,
+          channelId,
+          ctx.user.id,
+          locale,
+        );
+
+        await ctx.editReply({
+          components: [compactContainer],
+          flags: ['IsComponentsV2'],
+        });
         break;
 
       case 'invite': {
-        // TODO: maybe send them error message
-        if (!interaction.inCachedGuild()) return;
-        await handleConnectionInviteCreation(interaction, connection, locale);
+        // Check if we're in a guild
+        if (!ctx.guild) {
+          await ctx.reply({
+            content: `${getEmoji('x_icon', ctx.client)} This command can only be used in a server.`,
+            flags: ['Ephemeral'],
+          });
+          return;
+        }
+
+        await ctx.deferUpdate();
+
+        // Create a server invite directly
+        const { success, inviteUrl: invite } = await createServerInvite(
+          channelId,
+          ctx.guild,
+          ctx.user.username,
+        );
+
+        if (success && invite) {
+          await updateConnection({ channelId }, { invite });
+        }
+
+        // Send response
+        const messageKey = success ? 'connection.inviteAdded' : 'connection.setInviteError';
+        const emojiKey = success ? 'tick_icon' : 'x_icon';
+
+        await ctx.reply({
+          content: t(messageKey, locale, {
+            emoji: getEmoji(emojiKey, ctx.client),
+          }),
+          flags: ['Ephemeral'],
+        });
+
+        // Build the connection edit UI using Components v2
+        const inviteContainer = await buildConnectionEditUI(
+          ctx.client,
+          channelId,
+          ctx.user.id,
+          locale,
+        );
+
+        // Note: For editReply, flags are part of the options object
+        await ctx.editReply({
+          components: [inviteContainer],
+          flags: ['IsComponentsV2'],
+        });
         break;
       }
       case 'embed_color': {
@@ -208,56 +288,40 @@ export default class ConnectionEditSubcommand extends BaseCommand {
             ),
           );
 
-        await interaction.showModal(modal);
+        await ctx.showModal(modal);
         break;
       }
-
       default:
         break;
-    }
-
-    const newEmbeds = await buildEditEmbed(interaction.client, channelId, locale);
-    const msgBody = { embeds: [newEmbeds] };
-
-    try {
-      if (interaction.replied || interaction.deferred) {
-        await interaction.message.edit(msgBody);
-      }
-      else {
-        await interaction.update(msgBody);
-      }
-    }
-    catch (e) {
-      Logger.error('[/connection edit] Error updating message', e);
     }
   }
 
   @RegisterInteractionHandler('connection', 'change_channel')
-  async handleChannelSelects(interaction: ChannelSelectMenuInteraction) {
-    if (!interaction.isChannelSelectMenu()) return;
-    await interaction.deferUpdate();
+  async handleChannelSelects(ctx: ComponentContext) {
+    if (!ctx.isChannelSelectMenu()) return;
+    await ctx.deferUpdate();
 
-    const locale = await fetchUserLocale(interaction.user.id);
+    const locale = await fetchUserLocale(ctx.user.id);
 
-    const emoji = getEmoji('x_icon', interaction.client);
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const channelId = customId.args.at(0);
-    const userIdFilter = customId.args.at(1);
+    const emoji = getEmoji('x_icon', ctx.client);
+    const channelId = ctx.customId.args.at(0);
+    const userIdFilter = ctx.customId.args.at(1);
 
-    const newChannel = interaction.channels.first();
+    // Get the first selected channel
+    const newChannel = ctx.channels?.first();
 
-    if (!isGuildTextBasedChannel(newChannel) || newChannel.isVoiceBased()) {
-      await interaction.followUp({
+    if (!newChannel || !isGuildTextBasedChannel(newChannel) || newChannel.isVoiceBased()) {
+      await ctx.reply({
         content: t('hub.invalidChannel', locale, { emoji }),
         flags: ['Ephemeral'],
       });
       return;
     }
 
-    if (userIdFilter !== interaction.user.id) {
+    if (userIdFilter !== ctx.user.id) {
       const embed = new InfoEmbed().setDescription(t('errors.notYourAction', locale, { emoji }));
 
-      await interaction.reply({ embeds: [embed], flags: ['Ephemeral'] });
+      await ctx.reply({ embeds: [embed], flags: ['Ephemeral'] });
       return;
     }
 
@@ -273,7 +337,7 @@ export default class ConnectionEditSubcommand extends BaseCommand {
         }),
       );
 
-      await interaction.followUp({ embeds: [embed], flags: ['Ephemeral'] });
+      await ctx.reply({ embeds: [embed], flags: ['Ephemeral'] });
       return;
     }
 
@@ -287,17 +351,17 @@ export default class ConnectionEditSubcommand extends BaseCommand {
       },
     );
 
-    const editSelect = buildEditSelect(
-      interaction.client,
+    // Build the connection edit UI using Components v2
+    const channelContainer = await buildConnectionEditUI(
+      ctx.client,
       newChannel.id,
-      interaction.user.id,
+      ctx.user.id,
       locale,
     );
-    const channelSelect = buildChannelSelect(newChannel.id, interaction.user.id);
 
-    await interaction.editReply({
-      embeds: [await buildEditEmbed(interaction.client, newChannel.id, locale)],
-      components: [channelSelect, editSelect],
+    await ctx.editReply({
+      components: [channelContainer],
+      flags: ['IsComponentsV2'],
     });
   }
 }

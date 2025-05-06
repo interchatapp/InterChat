@@ -16,6 +16,7 @@
  */
 
 import { PrismaClient } from '#src/generated/prisma/client/client.js';
+import { stripIndents } from 'common-tags';
 
 const prisma = new PrismaClient();
 
@@ -26,7 +27,7 @@ async function main() {
     update: {},
     create: {
       name: 'Getting Started with InterChat',
-      description: `Learn the basics of InterChat and how to connect with other servers.`,
+      description: stripIndents`Learn the basics of InterChat and how to connect with other servers.`,
       targetAudience: 'new-user',
       estimatedTimeMinutes: 5,
     },
@@ -37,7 +38,7 @@ async function main() {
     update: {},
     create: {
       name: 'Server Setup Guide',
-      description: `Set up InterChat in your server with the optimal configuration.`,
+      description: stripIndents`Set up InterChat in your server with the optimal configuration.`,
       targetAudience: 'admin',
       estimatedTimeMinutes: 10,
     },
@@ -48,7 +49,7 @@ async function main() {
     update: {},
     create: {
       name: 'Creating Your First Hub',
-      description: `Learn how to create and configure a hub to connect multiple servers.`,
+      description: stripIndents`Learn how to create and configure a hub to connect multiple servers.`,
       targetAudience: 'admin',
       estimatedTimeMinutes: 8,
     },
@@ -59,7 +60,7 @@ async function main() {
     {
       tutorialId: hubCreationTutorial.id,
       title: 'Hub Creation Overview',
-      description: `Welcome to the Hub Creation tutorial! Hubs are the central feature of InterChat, allowing you to create communities that span across multiple Discord servers.
+      description: stripIndents`Welcome to the Hub Creation tutorial! Hubs are the central feature of InterChat, allowing you to create communities that span across multiple Discord servers.
       
       In this tutorial, you\'ll learn how to create and configure your own hub.`,
       order: 0,
@@ -68,7 +69,7 @@ async function main() {
     {
       tutorialId: hubCreationTutorial.id,
       title: 'Creating a Hub',
-      description: `To create a hub:
+      description: stripIndents`To create a hub:
       
       1. Use the \`/hub create\` command
       2. Fill in the required information in the modal:
@@ -84,7 +85,7 @@ async function main() {
     {
       tutorialId: hubCreationTutorial.id,
       title: 'Hub Visibility',
-      description: `By default, your hub is private. You can change its visibility:
+      description: stripIndents`By default, your hub is private. You can change its visibility:
       
       - **Private hubs** are invitation-only and won\'t appear in the hub browser
       - **Public hubs** are discoverable through the hub browser on our website
@@ -97,7 +98,7 @@ async function main() {
     {
       tutorialId: hubCreationTutorial.id,
       title: 'Setting Hub Rules',
-      description: `Clear rules help maintain a positive community:
+      description: stripIndents`Clear rules help maintain a positive community:
       
       1. Use \`/hub config rules\` to set hub rules
       2. Enter your rules in the modal that appears
@@ -111,7 +112,7 @@ async function main() {
     {
       tutorialId: hubCreationTutorial.id,
       title: 'Creating Hub Invites',
-      description: `For private hubs, you\'ll need to create invite codes:
+      description: stripIndents`For private hubs, you\'ll need to create invite codes:
       
       - Use \`/hub invite create hub:YourHub\` to create a new invite
       - Optional parameters:
@@ -126,7 +127,7 @@ async function main() {
     {
       tutorialId: hubCreationTutorial.id,
       title: 'Setting Up Welcome Messages',
-      description: `Welcome messages greet new servers when they join your hub:
+      description: stripIndents`Welcome messages greet new servers when they join your hub:
       
       1. Use \`/hub config welcome\` to set a welcome message
       2. Enter your message in the modal that appears
@@ -140,7 +141,7 @@ async function main() {
     {
       tutorialId: hubCreationTutorial.id,
       title: 'Adding Moderators',
-      description: `As your hub grows, you may want to add moderators:
+      description: stripIndents`As your hub grows, you may want to add moderators:
       
       - Use \`/hub moderator add hub:YourHub user:@User position:moderator|manager\`
       - Positions:
@@ -155,7 +156,7 @@ async function main() {
     {
       tutorialId: hubCreationTutorial.id,
       title: 'Hub Management',
-      description: `Other useful hub management commands:
+      description: stripIndents`Other useful hub management commands:
       
       - \`/hub edit\` - Edit hub details (name, description, icon)
       - \`/hub config settings\` - Adjust hub settings like filters and reactions
@@ -187,7 +188,7 @@ async function main() {
     update: {},
     create: {
       name: 'Moderation Tools',
-      description: `Discover the moderation tools available to keep your community safe.`,
+      description: 'Discover the moderation tools available to keep your community safe.',
       targetAudience: 'moderator',
       estimatedTimeMinutes: 10,
     },
@@ -198,7 +199,8 @@ async function main() {
     {
       tutorialId: moderationTutorial.id,
       title: 'Moderation Overview',
-      description: `Welcome to the Moderation Tools tutorial! As a hub moderator, you have access to powerful tools to keep your community safe and welcoming.
+      description: stripIndents`
+      Welcome to the Moderation Tools tutorial! As a hub moderator, you have access to powerful tools to keep your community safe and welcoming.
       
       In this tutorial, you\'ll learn about the various moderation features available in InterChat.`,
       order: 0,
@@ -207,7 +209,7 @@ async function main() {
     {
       tutorialId: moderationTutorial.id,
       title: 'Moderator Roles',
-      description: `InterChat has three levels of moderation permissions:
+      description: stripIndents`InterChat has three levels of moderation permissions:
       
       1. **Hub Owner** - Full control over the hub
       2. **Hub Manager** - Can manage most hub settings and moderators
@@ -221,7 +223,7 @@ async function main() {
     {
       tutorialId: moderationTutorial.id,
       title: 'Content Filtering',
-      description: `InterChat provides automatic content filtering to prevent inappropriate content:
+      description: stripIndents`InterChat provides automatic content filtering to prevent inappropriate content:
       
       - Use \`/hub config settings\` to enable spam and NSFW filters
       - Use \`/hub config anti-swear\` to set up custom word filters
@@ -235,7 +237,8 @@ async function main() {
     {
       tutorialId: moderationTutorial.id,
       title: 'User Management',
-      description: `To manage problematic users:
+      description: stripIndents`
+      To manage problematic users:
       
       - Use \`/blacklist user\` to ban a user from the hub
       - Use \`/warn\` to issue a warning to a user
@@ -249,7 +252,8 @@ async function main() {
     {
       tutorialId: moderationTutorial.id,
       title: 'Server Management',
-      description: `If an entire server is causing problems:
+      description: stripIndents`
+      If an entire server is causing problems:
       
       - Use \`/blacklist server\` to remove and ban a server from the hub
       - Use \`/hub servers\` to view all servers in the hub
@@ -262,7 +266,8 @@ async function main() {
     {
       tutorialId: moderationTutorial.id,
       title: 'Logging',
-      description: `Set up logging to keep track of moderation actions:
+      description: stripIndents`
+      Set up logging to keep track of moderation actions:
       
       1. Use \`/hub config logging\` to configure log channels
       2. Choose which events to log:
@@ -280,7 +285,7 @@ async function main() {
     {
       tutorialId: moderationTutorial.id,
       title: 'Handling Reports',
-      description: `Users can report inappropriate content with the \`/report\` command:
+      description: stripIndents`Users can report inappropriate content with the \`/report\` command:
       
       1. Reports appear in your configured report log channel
       2. Each report includes the message content and context
@@ -293,7 +298,7 @@ async function main() {
     {
       tutorialId: moderationTutorial.id,
       title: 'Moderation Best Practices',
-      description: `Tips for effective moderation:
+      description: stripIndents`Tips for effective moderation:
       
       - Be consistent in enforcing rules
       - Document reasons for moderation actions
@@ -354,7 +359,7 @@ async function main() {
     {
       tutorialId: newUserTutorial.id,
       title: 'Welcome to InterChat',
-      description: `'InterChat connects Discord communities through active cross-server discussions. Messages flow naturally between servers in real-time, helping you build engaged topic-focused communities.
+      description: stripIndents`'InterChat connects Discord communities through active cross-server discussions. Messages flow naturally between servers in real-time, helping you build engaged topic-focused communities.
       
       In this tutorial, you'll learn the basics of using InterChat.`,
       order: 0,
@@ -363,7 +368,7 @@ async function main() {
     {
       tutorialId: newUserTutorial.id,
       title: 'Finding Hubs',
-      description: `Hubs are the central connection points in InterChat. They allow multiple servers to communicate with each other.
+      description: stripIndents`Hubs are the central connection points in InterChat. They allow multiple servers to communicate with each other.
       
       To find available hubs, use the \`/hub browse\` command. This will show you a list of public hubs you can join.`,
       order: 1,
@@ -373,7 +378,7 @@ async function main() {
     {
       tutorialId: newUserTutorial.id,
       title: 'Connecting to a Hub',
-      description: `Once you've found a hub you\'re interested in, you can connect your channel to it using the \`/connect\` command followed by the hub name.
+      description: stripIndents`Once you've found a hub you\'re interested in, you can connect your channel to it using the \`/connect\` command followed by the hub name.
       
       For example: \`/connect hub:Gaming\` would connect your current channel to the Gaming hub.`,
       order: 2,
@@ -383,7 +388,7 @@ async function main() {
     {
       tutorialId: newUserTutorial.id,
       title: 'Sending Messages',
-      description: `Once your server is connected to a hub, you can send messages that will be visible to all other servers in that hub.
+      description: stripIndents`Once your server is connected to a hub, you can send messages that will be visible to all other servers in that hub.
       
       Just type in the connected channel like you normally would in Discord!`,
       order: 3,
@@ -392,7 +397,7 @@ async function main() {
     {
       tutorialId: newUserTutorial.id,
       title: 'Using Commands',
-      description: `InterChat has many useful commands. You can see a full list by typing \`/help\`.
+      description: stripIndents`InterChat has many useful commands. You can see a full list by typing \`/help\`.
       
       Some commonly used commands include:
       - \`/hub\` - Manage your hubs
@@ -423,7 +428,7 @@ async function main() {
     {
       tutorialId: serverSetupTutorial.id,
       title: 'Server Setup Overview',
-      description: `Welcome to the Server Setup Guide! This tutorial will walk you through setting up InterChat in your server.
+      description: stripIndents`Welcome to the Server Setup Guide! This tutorial will walk you through setting up InterChat in your server.
       
       As a server admin, you\'ll learn how to configure channels, permissions, and connect to hubs.`,
       order: 0,
@@ -432,7 +437,7 @@ async function main() {
     {
       tutorialId: serverSetupTutorial.id,
       title: 'Creating a Dedicated Channel',
-      description: `First, it\'s recommended to create a dedicated channel for InterChat connections. This helps keep your server organized.
+      description: stripIndents`First, it\'s recommended to create a dedicated channel for InterChat connections. This helps keep your server organized.
       
       1. Go to your server settings
       2. Click on "Channels"
@@ -445,7 +450,7 @@ async function main() {
     {
       tutorialId: serverSetupTutorial.id,
       title: 'Setting Up Permissions',
-      description: `Make sure InterChat has the following permissions in your server:
+      description: stripIndents`Make sure InterChat has the following permissions in your server:
       
       - Read Messages
       - Send Messages
@@ -461,7 +466,7 @@ async function main() {
     {
       tutorialId: serverSetupTutorial.id,
       title: 'Joining or Creating a Hub',
-      description: `Now you need to either join an existing hub or create your own:
+      description: stripIndents`Now you need to either join an existing hub or create your own:
       
       - To join: Use \`/connect hub:[hub name]\` in the channel you want to connect
       - To create: Use \`/hub create\`
@@ -474,7 +479,7 @@ async function main() {
     {
       tutorialId: serverSetupTutorial.id,
       title: 'Configuring Hub Settings',
-      description: `InterChat provides powerful moderation and configuration tools to keep your community safe.
+      description: stripIndents`InterChat provides powerful moderation and configuration tools to keep your community safe.
       
       Use \`/hub config settings\` to configure:
       - Spam filter
@@ -490,7 +495,7 @@ async function main() {
     {
       tutorialId: serverSetupTutorial.id,
       title: 'Setup Complete!',
-      description: `Congratulations! Your server is now set up with InterChat.
+      description: stripIndents`Congratulations! Your server is now set up with InterChat.
       
       Next steps:
       - Create your own hub with \`/hub create\`

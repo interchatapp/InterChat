@@ -17,6 +17,7 @@
 
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import { fetchCommands } from '#src/utils/CommandUtils.js';
 import { CustomID } from '#src/utils/CustomID.js';
@@ -29,7 +30,6 @@ import {
   AutocompleteInteraction,
   ApplicationCommand,
   ButtonBuilder,
-  ButtonInteraction,
   ButtonStyle,
   ContainerBuilder,
   SectionBuilder,
@@ -411,7 +411,7 @@ export default class HelpCommand extends BaseCommand {
    * Creates a help container for the specified page
    */
   private async createHelpContainer(
-    interaction: ButtonInteraction,
+    ctx: ComponentContext,
     currentPage: number,
     totalPages: number,
     commands: BaseCommand[],
@@ -427,7 +427,7 @@ export default class HelpCommand extends BaseCommand {
 
     // Add header
     const headerText = new TextDisplayBuilder().setContent(
-      `## ${getEmoji('wand_icon', interaction.client)} InterChat Commands\nWelcome to InterChat's help menu! Below you'll find all available commands.`,
+      `## ${getEmoji('wand_icon', ctx.client)} InterChat Commands\nWelcome to InterChat's help menu! Below you'll find all available commands.`,
     );
     container.addTextDisplayComponents(headerText);
 
@@ -446,7 +446,7 @@ export default class HelpCommand extends BaseCommand {
         .setCustomId(new CustomID().setIdentifier('help', 'details').setArgs(cmd.name).toString())
         .setLabel('View Details')
         .setStyle(ButtonStyle.Secondary)
-        .setEmoji(getEmoji('info', interaction.client));
+        .setEmoji(getEmoji('info', ctx.client));
 
       // Create a section for this command
       const commandSection = new SectionBuilder()
@@ -468,7 +468,7 @@ export default class HelpCommand extends BaseCommand {
         new CustomID().setIdentifier('help', 'prev').setArgs(currentPage.toString()).toString(),
       )
       .setStyle(ButtonStyle.Secondary)
-      .setEmoji(getEmoji('arrow_left', interaction.client))
+      .setEmoji(getEmoji('arrow_left', ctx.client))
       .setDisabled(currentPage === 0);
 
     const nextButton = new ButtonBuilder()
@@ -476,14 +476,14 @@ export default class HelpCommand extends BaseCommand {
         new CustomID().setIdentifier('help', 'next').setArgs(currentPage.toString()).toString(),
       )
       .setStyle(ButtonStyle.Secondary)
-      .setEmoji(getEmoji('arrow_right', interaction.client))
+      .setEmoji(getEmoji('arrow_right', ctx.client))
       .setDisabled(currentPage === totalPages - 1);
 
     const dashboardButton = new ButtonBuilder()
       .setStyle(ButtonStyle.Link)
       .setLabel('Open Dashboard')
       .setURL(`${Constants.Links.Website}/dashboard`)
-      .setEmoji(getEmoji('wand_icon', interaction.client));
+      .setEmoji(getEmoji('wand_icon', ctx.client));
 
     container.addActionRowComponents((row) =>
       row.addComponents(prevButton, nextButton, dashboardButton),
@@ -493,62 +493,58 @@ export default class HelpCommand extends BaseCommand {
   }
 
   @RegisterInteractionHandler('help', 'prev')
-  async handlePrevButton(interaction: ButtonInteraction) {
-    await interaction.deferUpdate();
+  async handlePrevButton(ctx: ComponentContext) {
+    await ctx.deferUpdate();
 
-    const currentPage = Number.parseInt(
-      CustomID.parseCustomId(interaction.customId).args[0] || '0',
-    );
+    const currentPage = Number.parseInt(ctx.customId.args[0] || '0');
     const newPage = Math.max(0, currentPage - 1);
 
-    const commands = Array.from(interaction.client.commands.values());
+    const commands = Array.from(ctx.client.commands.values());
     const totalPages = Math.ceil(commands.length / 5);
 
-    const container = await this.createHelpContainer(interaction, newPage, totalPages, commands);
+    const container = await this.createHelpContainer(ctx, newPage, totalPages, commands);
 
-    await interaction.editReply({
+    await ctx.editReply({
       components: [container],
       flags: [MessageFlags.IsComponentsV2],
     });
   }
 
   @RegisterInteractionHandler('help', 'next')
-  async handleNextButton(interaction: ButtonInteraction) {
-    await interaction.deferUpdate();
+  async handleNextButton(ctx: ComponentContext) {
+    await ctx.deferUpdate();
 
-    const currentPage = Number.parseInt(
-      CustomID.parseCustomId(interaction.customId).args[0] || '0',
-    );
-    const commands = Array.from(interaction.client.commands.values());
+    const currentPage = Number.parseInt(ctx.customId.args[0] || '0');
+    const commands = Array.from(ctx.client.commands.values());
     const totalPages = Math.ceil(commands.length / 5);
     const newPage = Math.min(totalPages - 1, currentPage + 1);
 
-    const container = await this.createHelpContainer(interaction, newPage, totalPages, commands);
+    const container = await this.createHelpContainer(ctx, newPage, totalPages, commands);
 
-    await interaction.editReply({
+    await ctx.editReply({
       components: [container],
       flags: [MessageFlags.IsComponentsV2],
     });
   }
 
   @RegisterInteractionHandler('help', 'details')
-  async handleDetailsButton(interaction: ButtonInteraction) {
-    await interaction.deferReply({ ephemeral: true });
+  async handleDetailsButton(ctx: ComponentContext) {
+    await ctx.deferReply({ flags: ['Ephemeral'] });
 
     // Get the command name from the button's custom ID
-    const commandName = CustomID.parseCustomId(interaction.customId).args[0];
+    const commandName = ctx.customId.args[0];
     if (!commandName) {
-      await interaction.editReply({
-        content: `${getEmoji('x_icon', interaction.client)} Command not found.`,
+      await ctx.editReply({
+        content: `${getEmoji('x_icon', ctx.client)} Command not found.`,
       });
       return;
     }
 
     // Find the command
-    const baseCommand = interaction.client.commands.get(commandName);
+    const baseCommand = ctx.client.commands.get(commandName);
     if (!baseCommand) {
-      await interaction.editReply({
-        content: `${getEmoji('x_icon', interaction.client)} Command \`${commandName}\` not found.`,
+      await ctx.editReply({
+        content: `${getEmoji('x_icon', ctx.client)} Command \`${commandName}\` not found.`,
       });
       return;
     }
@@ -558,17 +554,17 @@ export default class HelpCommand extends BaseCommand {
 
     // Add header
     const headerText = new TextDisplayBuilder().setContent(
-      `# ${getEmoji('wand_icon', interaction.client)} Command Help: /${commandName}`,
+      `# ${getEmoji('wand_icon', ctx.client)} Command Help: /${commandName}`,
     );
     container.addTextDisplayComponents(headerText);
 
     // Add command description and usage
-    const applicationCommands = await fetchCommands(interaction.client);
+    const applicationCommands = await fetchCommands(ctx.client);
     const commandInfo = this.getCommandInfo(baseCommand);
     const commandDetailsText = new TextDisplayBuilder().setContent(
       await this.formatCommandPath(
         commandInfo,
-        getEmoji('dot', interaction.client),
+        getEmoji('dot', ctx.client),
         '',
         applicationCommands,
       ),
@@ -588,7 +584,7 @@ export default class HelpCommand extends BaseCommand {
       .setStyle(ButtonStyle.Link)
       .setLabel('Open Dashboard')
       .setURL(`${Constants.Links.Website}/dashboard`)
-      .setEmoji(getEmoji('wand_icon', interaction.client));
+      .setEmoji(getEmoji('wand_icon', ctx.client));
 
     const dashboardSection = new SectionBuilder()
       .addTextDisplayComponents(
@@ -599,7 +595,7 @@ export default class HelpCommand extends BaseCommand {
     container.addSectionComponents(dashboardSection);
 
     // Send the response
-    await interaction.editReply({
+    await ctx.editReply({
       components: [container],
       flags: [MessageFlags.IsComponentsV2],
     });

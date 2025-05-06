@@ -17,6 +17,7 @@
 
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import { donateButton } from '#src/utils/ComponentUtils.js';
 import Constants from '#utils/Constants.js';
@@ -26,7 +27,6 @@ import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
   ButtonBuilder,
-  type ButtonInteraction,
   ButtonStyle,
   EmbedBuilder,
   Status,
@@ -52,19 +52,19 @@ export default class Stats extends BaseCommand {
   async execute(ctx: Context) {
     await ctx.deferReply();
 
-    const guildCount: number[] =
-      await ctx.client.cluster.fetchClientValues('guilds.cache.size');
+    const guildCount: number[] = await ctx.client.cluster.fetchClientValues('guilds.cache.size');
     const memberCount: number[] = await ctx.client.cluster.fetchClientValues(
       'guilds.cache.reduce((p, n) => p + n.memberCount, 0)',
     );
 
     const upSince = new Date(Date.now() - ctx.client.uptime);
     const memoryUsedRaw = await ctx.client.cluster.broadcastEval(() =>
-      Math.round(process.memoryUsage().heapUsed / 1024 / 1024));
+      Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+    );
     const memoryUsed = memoryUsedRaw.reduce((p, n) => p + (n ?? 0), 0);
 
     const embed = new EmbedBuilder()
-      .setColor(Constants.Colors.interchat)
+      .setColor(Constants.Colors.primary)
       .setDescription(`### ${ctx.getEmoji('fire_icon')} InterChat Statistics`)
       .setFooter({
         text: `InterChat v${ctx.client.version}${Constants.isDevBuild ? '+dev' : ''}`,
@@ -122,10 +122,8 @@ export default class Stats extends BaseCommand {
   }
 
   @RegisterInteractionHandler('stats', 'shardStats')
-  async handleComponents(interaction: ButtonInteraction) {
-    const customId = CustomID.parseCustomId(interaction.customId);
-
-    const allCusterData = await interaction.client.cluster.broadcastEval((client) =>
+  async handleComponents(ctx: ComponentContext) {
+    const allCusterData = await ctx.client.cluster.broadcastEval((client) =>
       client.ws.shards.map((shard) => ({
         id: shard.id,
         status: shard.status,
@@ -136,15 +134,15 @@ export default class Stats extends BaseCommand {
       })),
     );
 
-    if (customId.suffix !== 'shardStats') return;
+    if (ctx.customId.suffix !== 'shardStats') return;
 
     const embed = new EmbedBuilder()
       .setColor(Constants.Colors.invisible)
       .setDescription(
         stripIndents`
 					### Shard Stats
-					**Total Shards:** ${interaction.client.cluster.info.TOTAL_SHARDS}
-					**On Shard:** ${interaction.guild?.shardId ?? 0}
+					**Total Shards:** ${ctx.client.cluster.info.TOTAL_SHARDS}
+					**On Shard:** ${ctx.guild?.shardId ?? 0}
 					`,
       )
       .setFields(
@@ -161,10 +159,10 @@ export default class Stats extends BaseCommand {
         })),
       )
       .setFooter({
-        text: `InterChat v${interaction.client.version}${Constants.isDevBuild ? '+dev' : ''}`,
-        iconURL: interaction.client.user.displayAvatarURL(),
+        text: `InterChat v${ctx.client.version}${Constants.isDevBuild ? '+dev' : ''}`,
+        iconURL: ctx.client.user.displayAvatarURL(),
       });
 
-    await interaction.reply({ embeds: [embed], flags: ['Ephemeral'] });
+    await ctx.reply({ embeds: [embed], flags: ['Ephemeral'] });
   }
 }

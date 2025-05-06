@@ -1,6 +1,8 @@
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
+import type { Connection } from '#src/generated/prisma/client/client.js';
 import { BroadcastService } from '#src/services/BroadcastService.js';
 import { fetchConnection, handleConnectionInviteCreation } from '#src/utils/ConnectedListUtils.js';
 import { CustomID } from '#src/utils/CustomID.js';
@@ -10,15 +12,12 @@ import { t } from '#src/utils/Locale.js';
 import { replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
 import { findOriginalMessage } from '#src/utils/network/messageUtils.js';
 import { fetchUserLocale, resolveEval } from '#src/utils/Utils.js';
-import type { Connection } from '#src/generated/prisma/client/client.js';
 import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
   ApplicationCommandOptionType,
   ButtonBuilder,
-  type ButtonInteraction,
   ButtonStyle,
-  type ModalSubmitInteraction,
 } from 'discord.js';
 
 export default class JoinServerCommand extends BaseCommand {
@@ -48,6 +47,15 @@ export default class JoinServerCommand extends BaseCommand {
   }
 
   async execute(ctx: Context): Promise<void> {
+    // Ensure channelId is not null
+    if (!ctx.channelId) {
+      await ctx.reply({
+        content: 'This command can only be used in a channel.',
+        flags: ['Ephemeral'],
+      });
+      return;
+    }
+
     const commandChannelConnection = await fetchConnection(ctx.channelId);
 
     if (!commandChannelConnection) {
@@ -113,7 +121,7 @@ export default class JoinServerCommand extends BaseCommand {
         new ActionRowBuilder<ButtonBuilder>().addComponents(
           new ButtonBuilder()
             .setCustomId(
-              new CustomID('joinReq:accept').setArgs(ctx.user.id, ctx.channelId).toString(),
+              new CustomID('joinReq:accept').setArgs(ctx.user.id, ctx.channelId || '').toString(),
             )
             .setLabel('Accept')
             .setStyle(ButtonStyle.Success),
@@ -169,13 +177,13 @@ export default class JoinServerCommand extends BaseCommand {
   }
 
   @RegisterInteractionHandler('joinReq')
-  async handleJoinRequest(interaction: ButtonInteraction) {
-    if (!interaction.inCachedGuild()) return;
+  async handleJoinRequest(ctx: ComponentContext) {
+    if (!ctx.inGuild()) return;
 
-    if (!interaction.member.permissions.has('ManageMessages')) {
-      await interaction.reply({
-        content: t('errors.missingPermissions', await fetchUserLocale(interaction.user.id), {
-          emoji: getEmoji('x_icon', interaction.client),
+    if (!ctx.member.permissions.has('ManageMessages')) {
+      await ctx.reply({
+        content: t('errors.missingPermissions', await fetchUserLocale(ctx.user.id), {
+          emoji: getEmoji('x_icon', ctx.client),
           permissions: 'Manage Messages',
         }),
         flags: ['Ephemeral'],
@@ -183,78 +191,77 @@ export default class JoinServerCommand extends BaseCommand {
       return;
     }
 
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const action = customId.suffix as 'accept' | 'reject';
-    const [userId] = customId.args;
-    const locale = await fetchUserLocale(interaction.user.id);
+    const action = ctx.customId.suffix as 'accept' | 'reject';
+    const [userId] = ctx.customId.args;
+    const locale = await fetchUserLocale(ctx.user.id);
 
     if (action === 'reject') {
-      await interaction.reply({
+      await ctx.reply({
         content: t('global.cancelled', locale, {
-          emoji: getEmoji('x_icon', interaction.client),
+          emoji: getEmoji('x_icon', ctx.client),
         }),
         flags: ['Ephemeral'],
       });
-      await this.updateButtonState(interaction, 'reject');
+      await this.updateButtonState(ctx, 'reject');
       return;
     }
 
     if (action === 'accept') {
-      const connection = await fetchConnection(interaction.channelId);
+      const connection = await fetchConnection(ctx.channelId);
       if (!connection) {
-        await interaction.reply({
+        await ctx.reply({
           flags: ['Ephemeral'],
           content: t('connection.notFound', locale, {
-            emoji: getEmoji('x_icon', interaction.client),
+            emoji: getEmoji('x_icon', ctx.client),
           }),
         });
         return;
       }
 
-      await interaction.reply(
-        `${getEmoji('loading', interaction.client)} This server does not have an invite link yet. Creating one...`,
+      await ctx.reply(
+        `${getEmoji('loading', ctx.client)} This server does not have an invite link yet. Creating one...`,
       );
 
-      const inviteLink = await handleConnectionInviteCreation(interaction, connection, locale);
+      const inviteLink = await handleConnectionInviteCreation(ctx, connection, locale);
 
-      const user = await interaction.client.users.fetch(userId).catch(() => null);
+      const user = await ctx.client.users.fetch(userId).catch(() => null);
       if (!user) return;
 
       const dmStatus = await user
         .send(
           stripIndents`
         ### Join Request
-        You requested to join the server \`${interaction.guild?.name}\` through InterChat. Here is the invite link:
+        You requested to join the server \`${ctx.guild?.name}\` through InterChat. Here is the invite link:
         ${inviteLink}
       `,
         )
         .catch(() => null);
 
-      await interaction.editReply(
+      await ctx.editReply(
         dmStatus
-          ? `${getEmoji('tick_icon', interaction.client)} The invite link has been sent to the user.`
-          : `${getEmoji('x_icon', interaction.client)} The invite link could not be sent to the user. They may have DMs disabled.`,
+          ? `${getEmoji('tick_icon', ctx.client)} The invite link has been sent to the user.`
+          : `${getEmoji('x_icon', ctx.client)} The invite link could not be sent to the user. They may have DMs disabled.`,
       );
 
       if (dmStatus) {
-        await this.updateButtonState(interaction, 'accept');
+        await this.updateButtonState(ctx, 'accept');
       }
     }
   }
 
   /**
-   * Updates the state of the interaction button based on the action taken.
+   * Updates the state of the ctx button based on the action taken.
    */
   private async updateButtonState(
-    interaction: ButtonInteraction | ModalSubmitInteraction,
+    ctx: ComponentContext,
     action: 'accept' | 'reject',
   ) {
-    if (!interaction.message) return;
+    if (!ctx.originalInteraction.message) return;
 
-    const updatedButton = this.createUpdatedButton(interaction, action);
+    const updatedButton = this.createUpdatedButton(ctx, action);
     try {
-      const webhook = await interaction.message.fetchWebhook();
-      await webhook.editMessage(interaction.message, { components: [updatedButton] });
+      const webhook = await ctx.originalInteraction.message.fetchWebhook();
+      await webhook.editMessage(ctx.originalInteraction.message, { components: [updatedButton] });
     }
     catch {
       // Fail silently if button update fails.
@@ -265,17 +272,17 @@ export default class JoinServerCommand extends BaseCommand {
    * Creates an updated button reflecting the accepted or rejected state.
    */
   private createUpdatedButton(
-    interaction: ButtonInteraction | ModalSubmitInteraction,
+    ctx: ComponentContext,
     action: 'accept' | 'reject',
   ): ActionRowBuilder<ButtonBuilder> {
     const isAccepted = action === 'accept';
     const buttonStyle = isAccepted ? ButtonStyle.Success : ButtonStyle.Danger;
-    const statusLabel = `${isAccepted ? 'Accepted' : 'Rejected'} by ${interaction.user.username}`;
-    const emoji = getEmoji(isAccepted ? 'tick_icon' : 'x_icon', interaction.client);
+    const statusLabel = `${isAccepted ? 'Accepted' : 'Rejected'} by ${ctx.user.username}`;
+    const emoji = getEmoji(isAccepted ? 'tick_icon' : 'x_icon', ctx.client);
 
     return new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
-        .setCustomId(interaction.customId)
+        .setCustomId(ctx.originalInteraction.customId)
         .setStyle(buttonStyle)
         .setLabel(statusLabel)
         .setEmoji(emoji)

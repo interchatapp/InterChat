@@ -15,6 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { HubService } from '#src/services/HubService.js';
 import { InfoEmbed } from '#src/utils/EmbedUtils.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
@@ -24,7 +25,6 @@ import { getOriginalMessage } from '#src/utils/network/messageUtils.js';
 import { CustomID } from '#utils/CustomID.js';
 import type { supportedLocaleCodes } from '#utils/Locale.js';
 import {
-  type ButtonInteraction,
   ActionRowBuilder,
   ModalBuilder,
   TextInputBuilder,
@@ -34,7 +34,7 @@ import {
 export default class WarnHandler implements ModAction {
   private readonly hubService = new HubService();
   async handle(
-    interaction: ButtonInteraction,
+    ctx: ComponentContext,
     originalMsgId: string,
     locale: supportedLocaleCodes,
   ): Promise<void> {
@@ -43,10 +43,10 @@ export default class WarnHandler implements ModAction {
     if (!originalMsg) {
       const errorEmbed = new InfoEmbed().setDescription(
         t('errors.messageNotSentOrExpired', locale, {
-          emoji: getEmoji('x_icon', interaction.client),
+          emoji: getEmoji('x_icon', ctx.client),
         }),
       );
-      await interaction.reply({ embeds: [errorEmbed], flags: ['Ephemeral'] });
+      await ctx.reply({ embeds: [errorEmbed], flags: ['Ephemeral'] });
       return;
     }
 
@@ -72,7 +72,7 @@ export default class WarnHandler implements ModAction {
         ),
       );
 
-    await interaction.showModal(modal);
+    await ctx.showModal(modal);
     // modal will be handled by WarnModalHandler in interactions/WarnModal.ts
   }
 }

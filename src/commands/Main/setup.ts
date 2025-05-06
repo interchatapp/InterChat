@@ -17,34 +17,37 @@
 
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import { HubValidator } from '#src/modules/HubValidator.js';
 import { HubJoinService } from '#src/services/HubJoinService.js';
 import { HubCreationData, HubService } from '#src/services/HubService.js';
 import { fetchCommands } from '#src/utils/CommandUtils.js';
 import Constants from '#src/utils/Constants.js';
+import { createComponentContext } from '#src/utils/ContextUtils.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import db from '#src/utils/Db.js';
+import { UIComponents } from '#src/utils/DesignSystem.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
-import { fetchUserLocale } from '#src/utils/Utils.js';
+import { fetchUserLocale, handleError } from '#src/utils/Utils.js';
 import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonInteraction,
   ButtonStyle,
   ChannelSelectMenuBuilder,
-  ChannelSelectMenuInteraction,
   ChannelType,
   chatInputApplicationCommandMention,
+  ContainerBuilder,
   EmbedBuilder,
   MessageComponentInteraction,
+  MessageFlags,
   ModalBuilder,
-  ModalSubmitInteraction,
   PermissionFlagsBits,
+  SeparatorSpacingSize,
   StringSelectMenuBuilder,
-  StringSelectMenuInteraction,
   TextChannel,
+  TextDisplayBuilder,
   TextInputBuilder,
   TextInputStyle,
 } from 'discord.js';
@@ -76,7 +79,7 @@ export default class SetupCommand extends BaseCommand {
   }
 
   private validateSetupPrerequisites(ctx: Context): boolean {
-    if (!ctx.guild) {
+    if (!ctx.inGuild()) {
       ctx.reply({
         content: 'This command can only be used in a server.',
         flags: ['Ephemeral'],
@@ -84,7 +87,8 @@ export default class SetupCommand extends BaseCommand {
       return false;
     }
 
-    const botMember = ctx.guild.members.me;
+    // After inGuild() check, we know guild is not null
+    const botMember = ctx.guild!.members.me;
     if (!botMember?.permissions.has(SetupCommand.REQUIRED_PERMISSIONS)) {
       ctx.reply({
         embeds: [
@@ -97,7 +101,7 @@ export default class SetupCommand extends BaseCommand {
               - Send Messages
               - Manage Messages
               - Embed Links
-              
+
               Please give me these permissions and try again!
               Need help? [Join our support server](${Constants.Links.SupportInvite})
               `,
@@ -113,210 +117,428 @@ export default class SetupCommand extends BaseCommand {
   }
 
   private async startSetupFlow(ctx: Context): Promise<void> {
-    const steps = ['Channel', 'Hub', 'Settings', 'Done'];
-    const currentStep = 1;
+    try {
+      // Create UI components helper
+      const ui = new UIComponents(ctx.client);
 
-    const embed = new EmbedBuilder()
-      .setTitle('InterChat Setup (1/4)')
-      .setDescription(
-        stripIndents`
-        ### Step 1: Choose a Channel
-        First, select the channel where you want InterChat messages to appear.
-        This can be any text channel in your server.
+      // Create container for Components v2
+      const container = new ContainerBuilder();
 
-        **Tips:**
-        - Choose a channel that's easy to find
-        - Make sure members can see the channel
-        - You can create a new channel just for InterChat
-        `,
-      )
-      .setColor(Constants.Colors.interchat)
-      .setFooter({ text: `Step ${currentStep} of ${steps.length}: ${steps[currentStep - 1]}` });
+      // Add header
+      container.addTextDisplayComponents(
+        ui.createHeader(
+          'InterChat Setup (1/4)',
+          stripIndents`
+          Welcome to InterChat Setup!
 
-    const channelRow = new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(
-      new ChannelSelectMenuBuilder()
-        .setCustomId('setup_channel')
-        .setChannelTypes([ChannelType.GuildText])
-        .setPlaceholder('Select a channel'),
-    );
+          Let's get your server connected to the InterChat network. This setup will guide you through:
+          1. Selecting a channel for InterChat messages
+          2. Connecting to or creating a hub
+          3. Configuring basic settings
+          `,
+          'info_icon',
+        ),
+      );
 
-    await ctx.reply({
-      embeds: [embed],
-      components: [channelRow],
-      flags: ['Ephemeral'],
-    });
+      // Add separator
+      ui.addSeparator(container, SeparatorSpacingSize.Small);
 
-    const collector = ctx.channel?.createMessageComponentCollector({
-      time: SetupCommand.TIMEOUT,
-    });
+      // Add channel selection section
+      container.addTextDisplayComponents(
+        ui.createSection(
+          'Step 1: Choose a Channel',
+          'First, select the channel where you want InterChat messages to appear.\nThis can be any text channel in your server.',
+        ),
+      );
 
-    collector?.on('collect', async (i) => {
-      if (!i.inCachedGuild()) {
-        await i.reply({ content: 'You must be in a server to use this.', flags: ['Ephemeral'] });
-        return;
-      }
+      // Add channel select menu using action row
+      container.addActionRowComponents((row) => {
+        const channelSelect = new ChannelSelectMenuBuilder()
+          .setCustomId('setup_channel')
+          .setChannelTypes([ChannelType.GuildText])
+          .setPlaceholder('Select a channel');
 
-      if (i.user.id !== ctx.user.id) {
-        await i.reply({
-          content: 'This setup is for another user.',
+        return row.addComponents(channelSelect);
+      });
+
+      // Add tips section
+      container.addTextDisplayComponents(
+        ui.createSubsection(
+          'Channel Selection Tips',
+          stripIndents`
+          - Create a dedicated channel named \`#interchat\` or \`#global-chat\`
+          - Make sure the channel is visible to members who should see messages
+          - You can connect multiple channels to different hubs later
+          `,
+          'info_icon',
+        ),
+      );
+
+      // Add help buttons
+      ui.createActionButtons(
+        container,
+        {
+          label: 'Support Server',
+          url: Constants.Links.SupportInvite,
+          emoji: 'question_icon',
+        },
+        undefined,
+        {
+          label: 'Documentation',
+          url: `${Constants.Links.Website}/docs/setup`,
+          emoji: 'wiki_icon',
+        },
+      );
+
+      // Send the response with Components v2
+      await ctx.reply({
+        components: [container],
+        flags: [MessageFlags.IsComponentsV2, 'Ephemeral'],
+      });
+
+      const collector = ctx.channel?.createMessageComponentCollector({
+        time: SetupCommand.TIMEOUT,
+      });
+
+      collector?.on('collect', async (i) => {
+        try {
+          if (!i.inCachedGuild()) {
+            await i.reply({
+              content: 'You must be in a server to use this.',
+              flags: ['Ephemeral'],
+            });
+            return;
+          }
+
+          if (i.user.id !== ctx.user.id) {
+            await i.reply({
+              content: 'This setup is for another user.',
+              flags: ['Ephemeral'],
+            });
+            return;
+          }
+
+          const componentCtx = createComponentContext(i);
+
+          switch (componentCtx.customId.prefix) {
+            case 'setup_channel':
+              await this.handleChannelSelection(componentCtx);
+              break;
+            case 'join_popular':
+              await this.handlePopularHubs(componentCtx);
+              break;
+            case 'create_hub':
+              await this.showHubCreationModal(componentCtx);
+              break;
+            case 'back_to_hub_choice':
+              await this.handleBackToHubChoice(componentCtx);
+              break;
+            case 'select_hub':
+              await this.handleHubSelection(componentCtx);
+              break;
+            case 'finish_setup':
+              await this.finishSetup(componentCtx);
+              break;
+          }
+        }
+        catch (error) {
+          handleError(error, {
+            comment: 'Error handling interaction in setup flow',
+          });
+
+          await i
+            .reply({
+              content: `${getEmoji('x_icon', i.client)} There was an error processing your request. Please try again.`,
+              flags: ['Ephemeral'],
+            })
+            .catch(() => null);
+        }
+      });
+
+      collector?.on('end', async (_, reason) => {
+        if (reason === 'time') {
+          await ctx
+            .editReply({
+              content: 'Setup timed out. Please run the setup command again.',
+              embeds: [],
+              components: [],
+            })
+            .catch(() => null);
+        }
+      });
+    }
+    catch (error) {
+      handleError(error, {
+        comment: 'Error starting setup flow',
+      });
+
+      await ctx
+        .reply({
+          content: `${getEmoji('x_icon', ctx.client)} There was an error starting the setup process. Please try again later.`,
+          flags: ['Ephemeral'],
+        })
+        .catch(() => null);
+    }
+  }
+
+  private async handleChannelSelection(ctx: ComponentContext): Promise<void> {
+    try {
+      if (!ctx.isChannelSelectMenu() || !ctx.guildId || !ctx.guild) return;
+
+      const selectedChannel = ctx.channels?.first();
+      if (!selectedChannel) {
+        await ctx.reply({
+          content: `${getEmoji('x_icon', ctx.client)} No channel was selected. Please try again.`,
           flags: ['Ephemeral'],
         });
         return;
       }
 
-      switch (i.customId.split(':')[0]) {
-        case 'setup_channel':
-          await this.handleChannelSelection(i as ChannelSelectMenuInteraction<'cached'>);
-          break;
-        case 'join_popular':
-          await this.handlePopularHubs(i as ButtonInteraction<'cached'>);
-          break;
-        case 'create_hub':
-          await this.showHubCreationModal(i as ButtonInteraction);
-          break;
-        case 'back_to_hub_choice':
-          await this.handleBackToHubChoice(i as ButtonInteraction);
-          break;
-        case 'select_hub':
-          await this.handleHubSelection(i as StringSelectMenuInteraction);
-          break;
-        case 'finish_setup':
-          await this.finishSetup(i as ButtonInteraction);
-          break;
-      }
-    });
-
-    collector?.on('end', async (_, reason) => {
-      if (reason === 'time') {
-        await ctx.editReply({
-          content: 'Setup timed out. Please run the setup command again.',
-          embeds: [],
-          components: [],
+      if (selectedChannel.type !== ChannelType.GuildText) {
+        await ctx.reply({
+          content: `${getEmoji('x_icon', ctx.client)} Please select a text channel. Voice channels, forums, and other channel types are not supported.`,
+          flags: ['Ephemeral'],
         });
+        return;
       }
-    });
-  }
 
-  private async handleChannelSelection(
-    interaction: ChannelSelectMenuInteraction<'cached'>,
-  ): Promise<void> {
-    const selectedChannel = interaction.channels.first();
-    if (selectedChannel?.type !== ChannelType.GuildText) return;
+      // Check if the bot has necessary permissions in the channel
+      if (
+        !ctx.guild.members.me
+          ?.permissionsIn(selectedChannel as TextChannel)
+          .has(SetupCommand.REQUIRED_PERMISSIONS)
+      ) {
+        await ctx.reply({
+          embeds: [
+            new EmbedBuilder()
+              .setTitle('❌ Missing Channel Permissions')
+              .setDescription(
+                stripIndents`
+                I need the following permissions in ${selectedChannel}:
+                - Manage Webhooks
+                - Send Messages
+                - Manage Messages
+                - Embed Links
 
-    // Check if channel is already connected to a hub
-    const existingConnection = await db.connection.findFirst({
-      where: { channelId: selectedChannel.id },
-      include: { hub: { select: { name: true } } },
-    });
+                Please update the channel permissions and try again!
+                `,
+              )
+              .setColor('Red'),
+          ],
+          flags: ['Ephemeral'],
+        });
+        return;
+      }
 
-    if (existingConnection) {
-      await interaction.reply({
-        content: `${getEmoji('x_icon', interaction.client)} This channel is already connected to the hub "${existingConnection.hub.name}". Please select a different channel.`,
-        flags: ['Ephemeral'],
-        embeds: [],
-        components: [],
+      // Check if channel is already connected to a hub
+      const existingConnection = await db.connection.findFirst({
+        where: { channelId: selectedChannel.id },
+        include: { hub: { select: { name: true } } },
       });
-      return;
-    }
 
-    await this.showHubChoiceScreen(interaction, selectedChannel);
-  }
+      if (existingConnection) {
+        await ctx.reply({
+          content: `${getEmoji('x_icon', ctx.client)} This channel is already connected to the hub "${existingConnection.hub.name}". Please select a different channel.`,
+          flags: ['Ephemeral'],
+        });
+        return;
+      }
 
-  private async handlePopularHubs(interaction: ButtonInteraction<'cached'>): Promise<void> {
-    const channelId = interaction.customId.split(':')[1];
-
-    // Get server's existing connections to exclude those hubs
-    const existingConnections = await db.connection.findMany({
-      where: { serverId: interaction.guildId },
-      select: { hubId: true },
-    });
-    const connectedHubIds = existingConnections.map((conn) => conn.hubId);
-
-    const popularHubs = await this.hubService.getPopularHubs(5);
-
-    // Filter out hubs that the server is already connected to
-    const availableHubs = popularHubs.filter(({ hub }) => !connectedHubIds.includes(hub.id));
-
-    if (availableHubs.length === 0) {
-      await interaction.update({
-        content: `${getEmoji('x_icon', interaction.client)} Your server is already connected to all available popular hubs! Try creating a new hub instead.`,
-        embeds: [],
-        components: [],
+      // Check if server already has connections to other hubs
+      const serverConnections = await db.connection.findMany({
+        where: { serverId: ctx.guildId },
+        include: { hub: { select: { name: true } } },
       });
-      return;
-    }
 
-    const embed = new EmbedBuilder()
-      .setTitle('InterChat Setup (2/4)')
-      .setDescription(
-        stripIndents`
-        ### Popular Hubs
-        Choose a hub to join from our most active communities:
-        
-        ${availableHubs
-          .map(
-            ({ hub, totalConnections }) =>
-              `**${hub.data.name}**\n${hub.data.description}\n👥 ${totalConnections} servers\n`,
+      if (serverConnections.length > 0) {
+        // Show a notice about existing connections
+        const connectionList = serverConnections
+          .map((conn) => `• **${conn.hub.name}** in <#${conn.channelId}>`)
+          .join('\n');
+
+        const embed = new EmbedBuilder()
+          .setTitle('Existing Connections')
+          .setDescription(
+            stripIndents`
+            Your server is already connected to the following hubs:
+
+            ${connectionList}
+
+            You can continue to add more connections if you'd like.
+            `,
           )
-          .join('\n')}
-        
-        **Tip:** You can always join more hubs later using \`/connect\` and [the hub list](https://interchat.app/hubs)].
-        `,
-      )
-      .setColor(Constants.Colors.interchat)
-      .setFooter({ text: 'Step 2 of 4: Hub Selection' });
+          .setColor(Constants.Colors.primary);
 
-    const hubSelect = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-      new StringSelectMenuBuilder()
-        .setCustomId('select_hub')
-        .setPlaceholder('Choose a hub to join')
-        .addOptions(
-          availableHubs.map(({ hub, totalConnections }) => ({
-            label: hub.data.name,
-            description: `${totalConnections} connected servers`,
-            value: `${hub.id}|${channelId}`,
-            emoji: '👥',
-          })),
-        ),
-    );
+        await ctx.reply({
+          embeds: [embed],
+          flags: ['Ephemeral'],
+        });
 
-    const backRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setCustomId(`back_to_hub_choice:${channelId}`)
-        .setLabel('Go Back')
-        .setEmoji('⬅️')
-        .setStyle(ButtonStyle.Secondary),
-    );
+        // Wait a moment before showing the hub choice screen
+        setTimeout(async () => {
+          await this.showHubChoiceScreen(ctx, selectedChannel as TextChannel);
+        }, 3000);
+        return;
+      }
 
-    await interaction.update({
-      embeds: [embed],
-      components: [hubSelect, backRow],
-    });
+      await this.showHubChoiceScreen(ctx, selectedChannel as TextChannel);
+    }
+    catch (error) {
+      handleError(error, {
+        comment: 'Error in handleChannelSelection',
+      });
+
+      await ctx
+        .reply({
+          content: `${getEmoji('x_icon', ctx.client)} There was an error processing your channel selection. Please try again.`,
+          flags: ['Ephemeral'],
+        })
+        .catch(() => null);
+    }
   }
 
-  private async handleHubSelection(interaction: StringSelectMenuInteraction): Promise<void> {
-    const [selectedHubId, selectedChannelId] = interaction.values[0].split('|');
+  private async handlePopularHubs(ctx: ComponentContext): Promise<void> {
+    if (!ctx.inGuild()) return;
+
+    try {
+      const [channelId] = ctx.customId.args;
+
+      // Get server's existing connections to exclude those hubs
+      const existingConnections = await db.connection.findMany({
+        where: { serverId: ctx.guildId! }, // guildId is guaranteed to be non-null after inGuild() check
+        select: { hubId: true },
+      });
+      const connectedHubIds = existingConnections.map((conn) => conn.hubId);
+
+      const popularHubs = await this.hubService.getPopularHubs(5);
+
+      // Filter out hubs that the server is already connected to
+      const availableHubs = popularHubs.filter(({ hub }) => !connectedHubIds.includes(hub.id));
+
+      if (availableHubs.length === 0) {
+        // Create UI components helper
+        const ui = new UIComponents(ctx.client);
+
+        // Create container for Components v2
+        const container = ui.createWarningMessage(
+          'No Available Hubs',
+          'Your server is already connected to all available popular hubs! Try creating a new hub instead.',
+        );
+
+        // Add back button
+        ui.createActionButtons(container, {
+          label: 'Go Back',
+          customId: `back_to_hub_choice:${channelId}`,
+          emoji: '⬅️',
+        });
+
+        await ctx.editReply({
+          components: [container],
+          flags: [MessageFlags.IsComponentsV2],
+        });
+        return;
+      }
+
+      // Create UI components helper
+      const ui = new UIComponents(ctx.client);
+
+      // Create container for Components v2
+      const container = new ContainerBuilder();
+
+      // Add header
+      container.addTextDisplayComponents(
+        ui.createHeader(
+          'InterChat Setup (2/4)',
+          'Choose a hub to join from our most active communities:',
+          'info_icon',
+        ),
+      );
+
+      // Add separator
+      ui.addSeparator(container, SeparatorSpacingSize.Small);
+
+      // Add hub descriptions
+      const hubDescriptions = availableHubs
+        .map(
+          ({ hub, totalConnections }) =>
+            `### ${hub.data.name}\n${hub.data.description}\n👥 ${totalConnections} servers\n`,
+        )
+        .join('\n');
+
+      container.addTextDisplayComponents(new TextDisplayBuilder().setContent(hubDescriptions));
+
+      // Add hub select menu
+      container.addActionRowComponents((row) => {
+        const hubSelect = new StringSelectMenuBuilder()
+          .setCustomId('select_hub')
+          .setPlaceholder('Choose a hub to join')
+          .addOptions(
+            availableHubs.map(({ hub, totalConnections }) => ({
+              label: hub.data.name,
+              description: `${totalConnections} connected servers`,
+              value: `${hub.id}|${channelId}`,
+              emoji: '👥',
+            })),
+          );
+
+        return row.addComponents(hubSelect);
+      });
+
+      // Add tip about joining more hubs later
+      container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          '> **Tip:** You can always join more hubs later using `/connect` and [the hub list](https://interchat.app/hubs).',
+        ),
+      );
+
+      // Add back button
+      ui.createActionButtons(container, {
+        label: 'Go Back',
+        customId: `back_to_hub_choice:${channelId}`,
+        emoji: '⬅️',
+      });
+
+      await ctx.editReply({
+        components: [container],
+        flags: [MessageFlags.IsComponentsV2],
+      });
+    }
+    catch (error) {
+      handleError(error, {
+        comment: 'Error in handlePopularHubs',
+      });
+
+      await ctx
+        .editReply({
+          content: `${getEmoji('x_icon', ctx.client)} There was an error loading popular hubs. Please try again.`,
+          components: [],
+        })
+        .catch(() => null);
+    }
+  }
+
+  private async handleHubSelection(ctx: ComponentContext): Promise<void> {
+    if (!ctx.isStringSelectMenu()) return;
+
+    const values = ctx.values;
+    if (!values || values.length === 0) return;
+
+    const [selectedHubId, selectedChannelId] = values[0].split('|');
 
     const hub = await this.hubService.fetchHub(selectedHubId);
     if (!hub) {
-      await interaction.update({
+      await ctx.editReply({
         content: 'This hub no longer exists. Please choose another one.',
         components: [],
       });
       return;
     }
 
-    await this.showNextSteps(
-      interaction,
-      'joined',
-      hub.data.name,
-      selectedHubId,
-      selectedChannelId,
-    );
+    await this.showNextSteps(ctx, 'joined', hub.data.name, selectedHubId, selectedChannelId);
   }
 
-  private async showHubCreationModal(interaction: ButtonInteraction): Promise<void> {
-    const channelId = interaction.customId.split(':')[1];
+  private async showHubCreationModal(ctx: ComponentContext): Promise<void> {
+    const [channelId] = ctx.customId.args;
 
     const modal = new ModalBuilder()
       .setCustomId(new CustomID('setup_hub_create_modal').setArgs(channelId).toString())
@@ -342,32 +564,30 @@ export default class SetupCommand extends BaseCommand {
         ),
       );
 
-    await interaction.showModal(modal);
+    await ctx.showModal(modal);
   }
 
   @RegisterInteractionHandler('setup_hub_create_modal')
-  async handleHubCreation(interaction: ModalSubmitInteraction): Promise<void> {
-    const locale = await fetchUserLocale(interaction.user.id);
-    const {
-      args: [channelId],
-    } = CustomID.parseCustomId(interaction.customId);
+  async handleHubCreation(ctx: ComponentContext): Promise<void> {
+    const locale = await fetchUserLocale(ctx.user.id);
+    const [channelId] = ctx.customId.args;
 
     const hubData: HubCreationData = {
-      name: interaction.fields.getTextInputValue('hub_name'),
-      description: interaction.fields.getTextInputValue('hub_description'),
-      ownerId: interaction.user.id,
+      name: ctx.getModalFieldValue('hub_name') as string,
+      description: ctx.getModalFieldValue('hub_description') as string,
+      ownerId: ctx.user.id,
     };
 
-    const hubValidator = new HubValidator(locale, interaction.client);
+    const hubValidator = new HubValidator(locale, ctx.client);
 
     // Get existing hubs for limit validation
-    const existingHubs = await this.hubService.getOwnedHubs(interaction.user.id);
+    const existingHubs = await this.hubService.getOwnedHubs(ctx.user.id);
 
     // Validate the new hub
     const validationResult = await hubValidator.validateNewHub(hubData, existingHubs);
 
     if (!validationResult.isValid) {
-      await interaction.reply({
+      await ctx.reply({
         content: validationResult.error,
         flags: ['Ephemeral'],
       });
@@ -376,10 +596,10 @@ export default class SetupCommand extends BaseCommand {
 
     try {
       const hub = await this.hubService.createHub(hubData);
-      await this.showNextSteps(interaction, 'created', hubData.name, hub.id, channelId);
+      await this.showNextSteps(ctx, 'created', hubData.name, hub.id, channelId);
     }
     catch {
-      await interaction.reply({
+      await ctx.reply({
         content: 'Failed to create hub. Please try again.',
         flags: ['Ephemeral'],
       });
@@ -387,210 +607,332 @@ export default class SetupCommand extends BaseCommand {
   }
 
   private async showNextSteps(
-    interaction: ModalSubmitInteraction | MessageComponentInteraction,
+    ctx: ComponentContext,
     type: 'created' | 'joined',
     hubName: string,
     hubId: string,
     selectedChannelId: string,
   ): Promise<void> {
-    if (!interaction.replied && !interaction.deferred) {
-      await interaction.deferUpdate();
-    }
+    try {
+      if (!ctx.replied && !ctx.deferred) {
+        await ctx.deferUpdate();
+      }
 
-    const applicationCommands = await fetchCommands(interaction.client);
-    const hubCommand = applicationCommands?.find((cmd) => cmd.name === 'hub');
-    const connectionCommand = applicationCommands?.find((cmd) => cmd.name === 'connection');
+      const applicationCommands = await fetchCommands(ctx.client);
+      const hubCommand = applicationCommands?.find((cmd) => cmd.name === 'hub');
+      const connectionCommand = applicationCommands?.find((cmd) => cmd.name === 'connection');
 
-    if (!hubCommand || !connectionCommand) {
-      await interaction.editReply({
-        content: 'Failed to load commands. Please try again or join our support server for help.',
-        embeds: [],
-        components: [],
-      });
-      return;
-    }
+      if (!hubCommand || !connectionCommand) {
+        // Create UI components helper
+        const ui = new UIComponents(ctx.client);
 
-    const dot = getEmoji('dot', interaction.client);
+        // Create error container
+        const container = ui.createErrorMessage(
+          'Command Loading Error',
+          'Failed to load commands. Please try again or join our support server for help.',
+        );
 
-    const embed = new EmbedBuilder()
-      .setTitle(type === 'created' ? '✨ Almost Done!' : '✨ Ready to Join?')
-      .setColor('Green')
-      .setFooter({ text: 'Click Finish Setup to complete the process' });
-
-    if (type === 'created') {
-      embed.setDescription(
-        stripIndents`
-        ### Your Hub "${hubName}" is Ready!
-        Click Finish Setup to complete the process. After that, follow these steps:
-        
-        **1️⃣ Create an Invite Link**
-        ${chatInputApplicationCommandMention('hub', 'invite', 'create', hubCommand.id)} \`hub:${hubName}\`
-        This will generate an invite link you can share with other servers
-        
-        **2️⃣ Share Your Hub**
-        Share the invite link with at least one other server to start chatting!
-        ${dot} Send to your friends & servers
-        ${dot} Share in our [support server](${Constants.Links.SupportInvite})
-        
-        **3️⃣ Essential Configuration**
-        ${chatInputApplicationCommandMention('hub', 'config', 'rules', hubCommand.id)}
-        Create hub rules and guidelines
-        
-        ${chatInputApplicationCommandMention('hub', 'config', 'logging', hubCommand.id)}
-        Set up logging channels for hub events
-        
-        ${chatInputApplicationCommandMention('hub', 'config', 'anti-swear', hubCommand.id)}
-        Configure word filters and auto-moderation
-        
-        ${chatInputApplicationCommandMention('hub', 'config', 'settings', hubCommand.id)}
-        Manage message types and notifications
-        
-        **💡 Pro Tips**
-        ${dot} Your hub is private by default - only servers with invites can join
-        ${dot} Vote for InterChat to unlock custom welcome messages and colors
-        ${dot} You can publish your hub to the [hub directory](${Constants.Links.Website}/hubs) using ${chatInputApplicationCommandMention('hub', 'visibility', hubCommand.id)}
-        • Join our [support server](${Constants.Links.SupportInvite}) for hub management tips!
-        `,
-      );
-
-      // Add a button to copy the hub invite command
-      const inviteCommandRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder()
-          .setLabel('Copy Invite Command')
-          .setEmoji('📋')
-          .setCustomId(`copy_invite_command:${hubName}`)
-          .setStyle(ButtonStyle.Secondary),
-      );
-
-      const finalRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder()
-          .setLabel('Hub Directory')
-          .setURL(`${Constants.Links.Website}/hubs`)
-          .setEmoji('🌐')
-          .setStyle(ButtonStyle.Link),
-        new ButtonBuilder()
-          .setLabel('Support Server')
-          .setURL(Constants.Links.SupportInvite)
-          .setEmoji('❓')
-          .setStyle(ButtonStyle.Link),
-      );
-
-      const finishButton = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        this.createFinishButton(hubId, selectedChannelId),
-      );
-
-      await interaction.editReply({
-        embeds: [embed],
-        components: [inviteCommandRow, finalRow, finishButton],
-      });
-
-      // Register a one-time collector for the copy command button
-      const collector = interaction.message?.createMessageComponentCollector({
-        filter: (i) => i.customId.startsWith('copy_invite_command'),
-        time: 300000,
-      });
-
-      collector?.on('collect', async (i) => {
-        if (i.user.id !== interaction.user.id) return;
-        await i.reply({
-          content: `\`/hub invite create hub:${hubName}\`\n✨ Command copied! Run this to create an invite link.`,
-          flags: ['Ephemeral'],
+        // Add support server button
+        ui.createActionButtons(container, {
+          label: 'Support Server',
+          url: Constants.Links.SupportInvite,
+          emoji: 'question_icon',
         });
+
+        await ctx.editReply({
+          components: [container],
+          flags: [MessageFlags.IsComponentsV2],
+        });
+        return;
+      }
+
+      // Create UI components helper
+      const ui = new UIComponents(ctx.client);
+
+      // Create container for Components v2
+      const container = new ContainerBuilder();
+
+      const dot = getEmoji('dot', ctx.client);
+
+      if (type === 'created') {
+        // Add header for created hub
+        container.addTextDisplayComponents(
+          ui.createHeader(
+            '✨ Almost Done!',
+            `Your Hub "${hubName}" is Ready!\nClick Finish Setup to complete the process. After that, follow these steps:`,
+            'tick_icon',
+          ),
+        );
+
+        // Add separator
+        ui.addSeparator(container, SeparatorSpacingSize.Small);
+
+        // Add invite link section
+        container.addTextDisplayComponents(
+          ui.createSubsection(
+            '1️⃣ Create an Invite Link',
+            stripIndents`
+            ${chatInputApplicationCommandMention('hub', 'invite', 'create', hubCommand.id)} \`hub:${hubName}\`
+            This will generate an invite link you can share with other servers
+            `,
+          ),
+        );
+
+        // Add share hub section
+        container.addTextDisplayComponents(
+          ui.createSubsection(
+            '2️⃣ Share Your Hub',
+            stripIndents`
+            Share the invite link with at least one other server to start chatting!
+            ${dot} Send to your friends & servers
+            ${dot} Share in our [support server](${Constants.Links.SupportInvite})
+            `,
+          ),
+        );
+
+        // Add configuration section
+        container.addTextDisplayComponents(
+          ui.createSubsection(
+            '3️⃣ Essential Configuration',
+            stripIndents`
+            ${chatInputApplicationCommandMention('hub', 'config', 'rules', hubCommand.id)}
+            Create hub rules and guidelines
+
+            ${chatInputApplicationCommandMention('hub', 'config', 'logging', hubCommand.id)}
+            Set up logging channels for hub events
+
+            ${chatInputApplicationCommandMention('hub', 'config', 'anti-swear', hubCommand.id)}
+            Configure word filters and auto-moderation
+
+            ${chatInputApplicationCommandMention('hub', 'config', 'settings', hubCommand.id)}
+            Manage message types and notifications
+            `,
+          ),
+        );
+
+        // Add pro tips section
+        container.addTextDisplayComponents(
+          ui.createSubsection(
+            '💡 Pro Tips',
+            stripIndents`
+            ${dot} Your hub is private by default - only servers with invites can join
+            ${dot} Vote for InterChat to unlock custom welcome messages and colors
+            ${dot} You can publish your hub to the [hub directory](${Constants.Links.Website}/hubs) using ${chatInputApplicationCommandMention('hub', 'visibility', hubCommand.id)}
+            ${dot} Join our [support server](${Constants.Links.SupportInvite}) for hub management tips!
+            `,
+          ),
+        );
+
+        // Add copy invite command button
+        container.addActionRowComponents((row) => {
+          const copyButton = new ButtonBuilder()
+            .setLabel('Copy Invite Command')
+            .setEmoji('📋')
+            .setCustomId(`copy_invite_command:${hubName}`)
+            .setStyle(ButtonStyle.Secondary);
+
+          return row.addComponents(copyButton);
+        });
+
+        // Add help buttons
+        ui.createActionButtons(
+          container,
+          {
+            label: 'Finish Setup',
+            customId: new CustomID('finish_setup', [hubId, selectedChannelId]).toString(),
+            emoji: 'tick_icon',
+          },
+          {
+            label: 'Hub Directory',
+            url: `${Constants.Links.Website}/hubs`,
+            emoji: 'globe_icon',
+          },
+          {
+            label: 'Support Server',
+            url: Constants.Links.SupportInvite,
+            emoji: 'question_icon',
+          },
+        );
+
+        // Update the message with Components v2
+        await ctx.editReply({
+          components: [container],
+          flags: [MessageFlags.IsComponentsV2],
+        });
+
+        // Register a one-time collector for the copy command button
+        // Check if the interaction is a MessageComponentInteraction which has a message property
+        if ('message' in ctx.originalInteraction) {
+          const message = ctx.originalInteraction.message;
+          const collector = message?.createMessageComponentCollector({
+            filter: (i: MessageComponentInteraction) => i.customId.startsWith('copy_invite_command'),
+            time: 300000,
+          });
+
+          collector?.on('collect', async (i: MessageComponentInteraction) => {
+            if (i.user.id !== ctx.user.id) return;
+            await i.reply({
+              content: `\`/hub invite create hub:${hubName}\`\n✨ Command copied! Run this to create an invite link.`,
+              flags: ['Ephemeral'],
+            });
+          });
+        }
+      }
+      else {
+        // Add header for joined hub
+        container.addTextDisplayComponents(
+          ui.createHeader(
+            '✨ Ready to Join?',
+            `Ready to Join "${hubName}"?\nClick Finish Setup to join the hub. After joining, you can use these commands:`,
+            'tick_icon',
+          ),
+        );
+
+        // Add separator
+        ui.addSeparator(container, SeparatorSpacingSize.Small);
+
+        // Add commands section
+        container.addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            stripIndents`
+            ${chatInputApplicationCommandMention('connection', 'edit', connectionCommand.id)}
+            Customize how you receive/send messages to the hub
+
+            ${chatInputApplicationCommandMention('connection', 'list', connectionCommand.id)}
+            View all your connected hubs
+
+            ${Constants.Links.Website}/hubs (New :sparkles:)
+            Join more hubs
+            `,
+          ),
+        );
+
+        // Add help section
+        container.addTextDisplayComponents(
+          ui.createSubsection(
+            'Need Help?',
+            `Join our [support server](${Constants.Links.SupportInvite}) if you have questions!`,
+          ),
+        );
+
+        // Add help buttons
+        ui.createActionButtons(
+          container,
+          {
+            label: 'Finish Setup',
+            customId: new CustomID('finish_setup', [hubId, selectedChannelId]).toString(),
+            emoji: 'tick_icon',
+          },
+          {
+            label: 'Find More Hubs',
+            url: `${Constants.Links.Website}/hubs`,
+            emoji: 'globe_icon',
+          },
+          {
+            label: 'Support Server',
+            url: Constants.Links.SupportInvite,
+            emoji: 'question_icon',
+          },
+        );
+
+        // Update the message with Components v2
+        await ctx.editReply({
+          components: [container],
+          flags: [MessageFlags.IsComponentsV2],
+        });
+      }
+    }
+    catch (error) {
+      handleError(error, {
+        comment: 'Error in showNextSteps',
       });
+
+      await ctx
+        .editReply({
+          content: `${getEmoji('x_icon', ctx.client)} There was an error showing the next steps. Please try again.`,
+          components: [],
+        })
+        .catch(() => null);
     }
-    else {
-      embed.setDescription(
-        stripIndents`
-        ### Ready to Join "${hubName}"?
-        Click Finish Setup to join the hub. After joining, you can use these commands:
-        
-        ${chatInputApplicationCommandMention('connection', 'edit', connectionCommand.id)}
-        Customize how you receive/send messages to the hub
-        
-        ${chatInputApplicationCommandMention('connection', 'list', connectionCommand.id)}
-        View all your connected hubs
-        
-        ${Constants.Links.Website}/hubs (New :sparkles:)
-        Join more hubs
-        
-        **Need Help?**
-        Join our [support server](${Constants.Links.SupportInvite}) if you have questions!
-        `,
-      );
-    }
-
-    const finalRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setLabel('Find More Hubs')
-        .setURL(`${Constants.Links.Website}/hubs`)
-        .setEmoji('🌐')
-        .setStyle(ButtonStyle.Link),
-      new ButtonBuilder()
-        .setLabel('Support Server')
-        .setURL(Constants.Links.SupportInvite)
-        .setEmoji('❓')
-        .setStyle(ButtonStyle.Link),
-    );
-
-    const finishButton = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      this.createFinishButton(hubId, selectedChannelId),
-    );
-
-    await interaction.editReply({
-      embeds: [embed],
-      components: [finalRow, finishButton],
-    });
   }
 
-  private createFinishButton(hubId: string, channelId: string): ButtonBuilder {
-    return new ButtonBuilder()
-      .setLabel('Finish Setup')
-      .setCustomId(`finish_setup:${hubId}:${channelId}`)
-      .setStyle(ButtonStyle.Success);
-  }
+  private async finishSetup(ctx: ComponentContext): Promise<void> {
+    const [hubId, channelId] = ctx.customId.args;
 
-  private async finishSetup(interaction: ButtonInteraction): Promise<void> {
-    if (!interaction.inCachedGuild()) return;
-
-    const [, hubId, channelId] = interaction.customId.split(':');
-
-    const channel = interaction.guild?.channels.cache.get(channelId) as TextChannel;
+    const channel = ctx.guild?.channels.cache.get(channelId) as TextChannel;
     if (!channel) {
-      await interaction.update({
-        content: 'Selected channel no longer exists. Please run the setup command again.',
-        components: [],
+      // Create UI components helper
+      const ui = new UIComponents(ctx.client);
+
+      // Create error container
+      const container = ui.createErrorMessage(
+        'Channel Not Found',
+        'Selected channel no longer exists. Please run the setup command again.',
+      );
+
+      await ctx.editReply({
+        components: [container],
+        flags: [MessageFlags.IsComponentsV2],
       });
       return;
     }
 
-    // Replace the finish button row with a new one
-    const newFinishButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      this.createFinishButton(hubId, channelId)
-        .setDisabled(true)
-        .setEmoji('🎉')
-        .setLabel('Setup Complete!'),
-    );
+    try {
+      // Create UI components helper
+      const ui = new UIComponents(ctx.client);
 
-    // Update the message with the modified components
-    await interaction.update({
-      components: [interaction.message.components[0], newFinishButtonRow],
-    });
+      // Create success container
+      const container = ui.createSuccessMessage(
+        'Setup Complete!',
+        `Your server has been successfully connected to the hub in ${channel}. You can now start chatting!`,
+      );
 
-    // Join the hub using HubJoinService
-    const hubJoinService = new HubJoinService(
-      interaction,
-      await fetchUserLocale(interaction.user.id),
-    );
-    await hubJoinService.joinHub(channel, { hubId });
+      // Add help buttons
+      ui.createActionButtons(
+        container,
+        {
+          label: 'View Channel',
+          url: `https://discord.com/channels/${ctx.guildId}/${channelId}`,
+          emoji: 'channel_icon',
+        },
+        undefined,
+        {
+          label: 'Support Server',
+          url: Constants.Links.SupportInvite,
+          emoji: 'question_icon',
+        },
+      );
+
+      // Update the message with Components v2
+      await ctx.editReply({
+        components: [container],
+        flags: [MessageFlags.IsComponentsV2],
+      });
+
+      // Join the hub using HubJoinService with the interaction directly
+      const hubJoinService = new HubJoinService(ctx, await fetchUserLocale(ctx.user.id));
+
+      await hubJoinService.joinHub(channel, { hubId });
+    }
+    catch (error) {
+      handleError(error, {
+        comment: 'Failed to complete setup process',
+      });
+
+      await ctx
+        .reply({
+          content: `${getEmoji('x_icon', ctx.client)} There was an error completing the setup. Please try again or contact support if the issue persists.`,
+          flags: ['Ephemeral'],
+        })
+        .catch(() => null);
+    }
   }
 
-  private async handleBackToHubChoice(interaction: ButtonInteraction): Promise<void> {
-    const channel = await interaction.guild?.channels
-      .fetch(interaction.customId.split(':')[1])
-      .catch(() => null);
+  private async handleBackToHubChoice(ctx: ComponentContext): Promise<void> {
+    const channel = await ctx.guild?.channels.fetch(ctx.customId.args[0]).catch(() => null);
 
     if (channel?.type !== ChannelType.GuildText) {
-      await interaction.update({
+      await ctx.editReply({
         content: 'Selected channel no longer exists. Please run the setup command again.',
         embeds: [],
         components: [],
@@ -598,47 +940,115 @@ export default class SetupCommand extends BaseCommand {
       return;
     }
 
-    await this.showHubChoiceScreen(interaction, channel);
+    await this.showHubChoiceScreen(ctx, channel);
   }
 
-  private async showHubChoiceScreen(
-    interaction: MessageComponentInteraction,
-    channel: TextChannel,
-  ): Promise<void> {
-    const embed = new EmbedBuilder()
-      .setTitle('InterChat Setup (2/4)')
-      .setDescription(
-        stripIndents`
-        ### Step 2: Choose Your Hub
-        Great! Messages will appear in ${channel}. Now, let's connect to a hub!
+  private async showHubChoiceScreen(ctx: ComponentContext, channel: TextChannel): Promise<void> {
+    try {
+      // Create UI components helper
+      const ui = new UIComponents(ctx.client);
 
-        **What's a hub?**
-        A hub is a shared chat space where multiple servers can talk together.
-        
-        **Choose an option:**
-        🌟 **Join Popular Hub** - Perfect for first-time users
-        🆕 **Create New Hub** - Start your own community
-        `,
-      )
-      .setColor(Constants.Colors.interchat)
-      .setFooter({ text: 'Step 2 of 4: Hub' });
+      // Create container for Components v2
+      const container = new ContainerBuilder();
 
-    const hubChoiceRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setCustomId(`join_popular:${channel.id}`)
-        .setLabel('Join Popular Hub')
-        .setEmoji('🌟')
-        .setStyle(ButtonStyle.Primary),
-      new ButtonBuilder()
-        .setCustomId(`create_hub:${channel.id}`)
-        .setLabel('Create New Hub')
-        .setEmoji('🆕')
-        .setStyle(ButtonStyle.Secondary),
-    );
+      // Add header
+      container.addTextDisplayComponents(
+        ui.createHeader(
+          'InterChat Setup (2/4)',
+          `Great! Messages will appear in ${channel}. Now, let's connect to a hub!`,
+          'info_icon',
+        ),
+      );
 
-    await interaction.update({
-      embeds: [embed],
-      components: [hubChoiceRow],
-    });
+      // Add separator
+      ui.addSeparator(container, SeparatorSpacingSize.Small);
+
+      // Add what is a hub section
+      container.addTextDisplayComponents(
+        ui.createSection(
+          'What is a Hub?',
+          'A hub is a shared chat space where multiple servers can talk together. Think of it like a bridge connecting different Discord servers.',
+        ),
+      );
+
+      // Add hub types section
+      container.addTextDisplayComponents(
+        ui.createSubsection(
+          'Popular Hubs',
+          stripIndents`
+          - Join existing active communities
+          - Start chatting immediately
+          - Great for new users
+          - No setup required
+          `,
+        ),
+      );
+
+      container.addTextDisplayComponents(
+        ui.createSubsection(
+          'Create Your Own Hub',
+          stripIndents`
+          - Start a fresh community
+          - Full control over settings
+          - Invite specific servers
+          - Set your own rules
+          `,
+        ),
+      );
+
+      // Add note about joining more hubs later
+      container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          '> You can always join more hubs later with the `/connect` command!',
+        ),
+      );
+
+      // Add hub choice buttons
+      container.addActionRowComponents((row) => {
+        const joinPopularButton = new ButtonBuilder()
+          .setCustomId(`join_popular:${channel.id}`)
+          .setLabel('Join Popular Hub')
+          .setEmoji('🌟')
+          .setStyle(ButtonStyle.Primary);
+
+        const createHubButton = new ButtonBuilder()
+          .setCustomId(`create_hub:${channel.id}`)
+          .setLabel('Create New Hub')
+          .setEmoji('🆕')
+          .setStyle(ButtonStyle.Secondary);
+
+        return row.addComponents(joinPopularButton, createHubButton);
+      });
+
+      // Add help buttons
+      ui.createActionButtons(
+        container,
+        {
+          label: 'Hub Directory',
+          url: `${Constants.Links.Website}/hubs`,
+          emoji: 'search_icon',
+        },
+        undefined,
+        {
+          label: 'Learn More',
+          url: `${Constants.Links.Website}/docs/hubs`,
+          emoji: 'book_icon',
+        },
+      );
+
+      await ctx.editReply({ components: [container], flags: [MessageFlags.IsComponentsV2] });
+    }
+    catch (error) {
+      handleError(error, {
+        comment: 'Error in showHubChoiceScreen',
+      });
+
+      await ctx
+        .editReply({
+          content: `${getEmoji('x_icon', ctx.client)} There was an error showing the hub selection screen. Please try again.`,
+          components: [],
+        })
+        .catch(() => null);
+    }
   }
 }

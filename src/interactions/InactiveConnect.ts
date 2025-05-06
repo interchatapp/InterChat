@@ -15,14 +15,15 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ActionRowBuilder, ButtonBuilder, type ButtonInteraction, ButtonStyle } from 'discord.js';
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
+import { fetchUserLocale } from '#src/utils/Utils.js';
 import { fetchConnection, updateConnection } from '#utils/ConnectedListUtils.js';
 import { CustomID } from '#utils/CustomID.js';
 import { InfoEmbed } from '#utils/EmbedUtils.js';
 import { t } from '#utils/Locale.js';
-import { fetchUserLocale } from '#src/utils/Utils.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 
 type extraOpts = {
   disconnectEmoji?: string;
@@ -62,22 +63,21 @@ export const buildConnectionButtons = (
 
 export default class InactiveConnectInteraction {
   @RegisterInteractionHandler('inactiveConnect', 'toggle')
-  async inactiveConnect(interaction: ButtonInteraction): Promise<void> {
-    await interaction.deferUpdate();
+  async inactiveConnect(ctx: ComponentContext): Promise<void> {
+    await ctx.deferUpdate();
 
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [channelId] = customId.args;
+    const [channelId] = ctx.customId.args;
 
     const connection = await fetchConnection(channelId);
     if (!connection) {
-      const locale = await fetchUserLocale(interaction.user.id);
+      const locale = await fetchUserLocale(ctx.user.id);
       const notFoundEmbed = new InfoEmbed().setDescription(
         t('connection.channelNotFound', locale, {
-          emoji: getEmoji('x_icon', interaction.client),
+          emoji: getEmoji('x_icon', ctx.client),
         }),
       );
 
-      await interaction.followUp({
+      await ctx.reply({
         embeds: [notFoundEmbed],
         flags: ['Ephemeral'],
       });
@@ -89,9 +89,9 @@ export default class InactiveConnectInteraction {
     const embed = new InfoEmbed()
       .removeTitle()
       .setDescription(
-        `### ${getEmoji('tick', interaction.client)} Connection Resumed\nConnection has been resumed. Have fun chatting!`,
+        `### ${getEmoji('tick', ctx.client)} Connection Resumed\nConnection has been resumed. Have fun chatting!`,
       );
 
-    await interaction.editReply({ embeds: [embed], components: [] });
+    await ctx.editReply({ embeds: [embed], components: [] });
   }
 }

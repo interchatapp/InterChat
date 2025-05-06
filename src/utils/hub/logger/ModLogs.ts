@@ -58,7 +58,7 @@ const getUnblacklistEmbed = (
         inline: true,
       },
     )
-    .setColor(Constants.Colors.interchat)
+    .setColor(Constants.Colors.primary)
     .setFooter({
       text: `Unblacklisted by: ${opts.mod.username}`,
       iconURL: opts.mod instanceof User ? opts.mod.displayAvatarURL() : undefined,

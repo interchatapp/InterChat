@@ -15,6 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import BlacklistManager from '#src/managers/BlacklistManager.js';
@@ -42,13 +43,10 @@ import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
   ButtonBuilder,
-  type ButtonInteraction,
   ButtonStyle,
   type Client,
   EmbedBuilder,
   type Interaction,
-  type ModalSubmitInteraction,
-  type RepliableInteraction,
   type Snowflake,
 } from 'discord.js';
 
@@ -71,46 +69,41 @@ export default class ModPanelHandler {
   };
 
   @RegisterInteractionHandler('modPanel')
-  async handleButtons(interaction: ButtonInteraction): Promise<void> {
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [userId, originalMsgId] = customId.args;
-    const locale = await fetchUserLocale(interaction.user.id);
+  async handleButtons(ctx: ComponentContext): Promise<void> {
+    const [userId, originalMsgId] = ctx.customId.args;
+    const locale = await fetchUserLocale(ctx.user.id);
 
-    if (!(await this.validateUser(interaction, userId, locale))) return;
+    if (!(await this.validateUser(ctx, userId, locale))) return;
 
-    const handler = this.modActionHandlers[customId.suffix as keyof typeof this.modActionHandlers];
+    const handler =
+      this.modActionHandlers[ctx.customId.suffix as keyof typeof this.modActionHandlers];
     if (handler) {
-      await handler.handle(interaction, originalMsgId, locale);
+      await handler.handle(ctx, originalMsgId, locale);
     }
   }
 
   @RegisterInteractionHandler('blacklist_duration')
-  async handleDurationSelect(interaction: ButtonInteraction): Promise<void> {
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [originalMsgId, duration] = customId.args;
-    const locale = await fetchUserLocale(interaction.user.id);
+  async handleDurationSelect(ctx: ComponentContext): Promise<void> {
+    const [originalMsgId, duration] = ctx.customId.args;
+    const locale = await fetchUserLocale(ctx.user.id);
 
     // Get the handler based on the type (user or server)
-    const handlerType = customId.suffix === 'user' ? 'blacklistUser' : 'blacklistServer';
+    const handlerType = ctx.customId.suffix === 'user' ? 'blacklistUser' : 'blacklistServer';
     const handler = this.modActionHandlers[handlerType];
 
     if (handler && 'handleDurationSelect' in handler) {
-      await handler.handleDurationSelect(interaction, originalMsgId, duration, locale);
+      await handler.handleDurationSelect(ctx, originalMsgId, duration, locale);
     }
   }
-  private async validateUser(
-    interaction: RepliableInteraction,
-    userId: string,
-    locale: supportedLocaleCodes,
-  ) {
-    if (interaction.user.id !== userId) {
+  private async validateUser(ctx: ComponentContext, userId: string, locale: supportedLocaleCodes) {
+    if (ctx.user.id !== userId) {
       const embed = new InfoEmbed().setDescription(
         t('errors.notYourAction', locale, {
-          emoji: getEmoji('x_icon', interaction.client),
+          emoji: getEmoji('x_icon', ctx.client),
         }),
       );
 
-      await interaction.reply({ embeds: [embed], flags: ['Ephemeral'] });
+      await ctx.reply({ embeds: [embed], flags: ['Ephemeral'] });
       return false;
     }
 
@@ -119,37 +112,38 @@ export default class ModPanelHandler {
 
   @RegisterInteractionHandler('blacklist_reason_modal')
   @RegisterInteractionHandler('blacklist_custom_modal')
-  async handleBlacklistModal(interaction: ModalSubmitInteraction): Promise<void> {
-    await interaction.deferUpdate();
+  async handleBlacklistModal(ctx: ComponentContext): Promise<void> {
+    await ctx.deferUpdate();
 
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [originalMsgId] = customId.args;
+    if (!ctx.isModalSubmit()) return;
+
+    const [originalMsgId] = ctx.customId.args;
     const originalMsg = await getOriginalMessage(originalMsgId);
-    const locale = await fetchUserLocale(interaction.user.id);
+    const locale = await fetchUserLocale(ctx.user.id);
 
-    if (!originalMsg || !(await this.validateMessage(interaction, originalMsg, locale))) {
+    if (!originalMsg || !(await this.validateMessage(ctx, originalMsg, locale))) {
       return;
     }
-    const handlerId = customId.suffix === 'user' ? 'blacklistUser' : 'blacklistServer';
+    const handlerId = ctx.customId.suffix === 'user' ? 'blacklistUser' : 'blacklistServer';
     const handler = this.modActionHandlers[handlerId];
     if (handler?.handleModal) {
-      await handler.handleModal(interaction, originalMsg, locale);
+      await handler.handleModal(ctx, originalMsg, locale);
     }
   }
   private async validateMessage(
-    interaction: RepliableInteraction,
+    ctx: ComponentContext,
     originalMsg: OriginalMessage,
     locale: supportedLocaleCodes,
   ) {
     const hubService = new HubService(db);
     const hub = await hubService.fetchHub(originalMsg.hubId);
-    if (!hub || !(await isStaffOrHubMod(interaction.user.id, hub))) {
+    if (!hub || !(await isStaffOrHubMod(ctx.user.id, hub))) {
       const embed = new InfoEmbed().setDescription(
         t('errors.messageNotSentOrExpired', locale, {
-          emoji: getEmoji('x_icon', interaction.client),
+          emoji: getEmoji('x_icon', ctx.client),
         }),
       );
-      await interaction.editReply({ embeds: [embed] });
+      await ctx.editReply({ embeds: [embed] });
       return false;
     }
 
@@ -254,9 +248,12 @@ function buildInfoEmbed(username: string, servername: string, client: Client, op
     ? '~~This user is already banned.~~'
     : 'Ban this user from the entire bot.';
 
-  return new EmbedBuilder().setColor(Constants.Colors.invisible).setFooter({
-    text: 'Target will be notified of the blacklist. Use /blacklist list to view all blacklists.',
-  }).setDescription(stripIndents`
+  return new EmbedBuilder()
+    .setColor(Constants.Colors.invisible)
+    .setFooter({
+      text: 'Target will be notified of the blacklist. Use /blacklist list to view all blacklists.',
+    })
+    .setDescription(stripIndents`
         ### ${getEmoji('clock_icon', client)} Moderation Actions
         **${getEmoji('person_icon', client)} Blacklist User**: ${userEmbedDesc}
         **${getEmoji('globe_icon', client)} Blacklist Server**: ${serverEmbedDesc}

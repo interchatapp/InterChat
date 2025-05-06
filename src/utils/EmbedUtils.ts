@@ -31,7 +31,7 @@ import Constants from '#utils/Constants.js';
 export class InfoEmbed extends EmbedBuilder {
   constructor(data?: EmbedData | APIEmbed) {
     super({
-      color: resolveColor(Constants.Colors.interchat),
+      color: resolveColor(Constants.Colors.primary),
       ...data,
     });
   }

@@ -42,7 +42,7 @@ export const logJoinToHub = async (
         ${dotBlueEmoji} **Member Count:** ${server.memberCount}
       `,
     )
-    .setColor(Constants.Colors.interchat)
+    .setColor(Constants.Colors.primary)
     .setThumbnail(server.iconURL())
     .setFooter({
       text: `We have ${opt?.totalConnections} server(s) connected to ${opt?.hubName} now!`,

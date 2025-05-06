@@ -22,7 +22,6 @@ import {
   EmbedBuilder,
   type Message,
   ModalBuilder,
-  type ModalSubmitInteraction,
   TextInputBuilder,
   TextInputStyle,
   type User,
@@ -31,6 +30,7 @@ import {
 /* eslint-disable complexity */
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import type { SerializedHubSettings } from '#src/modules/BitFields.js';
 import { HubService } from '#src/services/HubService.js';
@@ -118,19 +118,18 @@ export default class EditMessage extends BaseCommand {
   }
 
   @RegisterInteractionHandler('editMsg')
-  async handleModals(interaction: ModalSubmitInteraction): Promise<void> {
+  async handleModals(ctx: ComponentContext): Promise<void> {
     // Defer the reply to give the user feedback
-    await interaction.deferReply({ flags: ['Ephemeral'] });
+    await ctx.deferReply({ flags: ['Ephemeral'] });
 
     // Parse the custom ID to get the message ID
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [messageId] = customId.args;
+    const [messageId] = ctx.customId.args;
 
     // Fetch the original message
-    const target = await interaction.channel?.messages.fetch(messageId).catch(() => null);
+    const target = await ctx.channel?.messages.fetch(messageId).catch(() => null);
     if (!target) {
-      await replyWithUnknownMessage(interaction, {
-        locale: await fetchUserLocale(interaction.user.id),
+      await replyWithUnknownMessage(ctx, {
+        locale: await fetchUserLocale(ctx.user.id),
       });
       return;
     }
@@ -139,8 +138,8 @@ export default class EditMessage extends BaseCommand {
     const originalMsgData = await findOriginalMessage(target.id);
 
     if (!originalMsgData?.hubId) {
-      await replyWithUnknownMessage(interaction, {
-        locale: await fetchUserLocale(interaction.user.id),
+      await replyWithUnknownMessage(ctx, {
+        locale: await fetchUserLocale(ctx.user.id),
       });
       return;
     }
@@ -149,21 +148,21 @@ export default class EditMessage extends BaseCommand {
     const hubService = new HubService(db);
     const hub = await hubService.fetchHub(originalMsgData.hubId);
     if (!hub) {
-      await replyWithUnknownMessage(interaction, {
-        locale: await fetchUserLocale(interaction.user.id),
+      await replyWithUnknownMessage(ctx, {
+        locale: await fetchUserLocale(ctx.user.id),
       });
       return;
     }
 
     // Get the new message input from the user
-    const userInput = interaction.fields.getTextInputValue('newMessage');
+    const userInput = ctx.getModalFieldValue('newMessage') as string;
     const messageToEdit = this.sanitizeMessage(userInput, hub.settings.getAll());
 
     // Check if the message contains invite links
     if (hub.settings.has('BlockInvites') && containsInviteLinks(messageToEdit)) {
-      await interaction.editReply(
-        t('errors.inviteLinks', await fetchUserLocale(interaction.user.id), {
-          emoji: getEmoji('x_icon', interaction.client),
+      await ctx.editReply(
+        t('errors.inviteLinks', await fetchUserLocale(ctx.user.id), {
+          emoji: getEmoji('x_icon', ctx.client),
         }),
       );
       return;
@@ -183,7 +182,7 @@ export default class EditMessage extends BaseCommand {
     const newContent = this.getCompactContents(messageToEdit, imageURLs);
     const newEmbed = await this.buildEmbeds(target, mode, messageToEdit, {
       guildId: originalMsgData.guildId,
-      user: interaction.user,
+      user: ctx.user,
       imageURLs,
     });
 
@@ -198,11 +197,11 @@ export default class EditMessage extends BaseCommand {
       const connection = channelSettingsArr.find((c) => c.channelId === msg.channelId);
       if (!connection) continue;
 
-      const webhook = await interaction.client
+      const webhook = await ctx.client
         .fetchWebhook(connection.webhookURL.split('/')[connection.webhookURL.split('/').length - 2])
         .catch(() => null);
 
-      if (webhook?.owner?.id !== interaction.client.user.id) continue;
+      if (webhook?.owner?.id !== ctx.client.user.id) continue;
 
       let content: string | null = null;
       let embeds: EmbedBuilder[] = [];
@@ -226,12 +225,12 @@ export default class EditMessage extends BaseCommand {
     }
 
     // Update the reply with the edit results
-    await interaction
+    await ctx
       .editReply(
-        t('network.editSuccess', await fetchUserLocale(interaction.user.id), {
+        t('network.editSuccess', await fetchUserLocale(ctx.user.id), {
           edited: counter.toString(),
           total: broadcastedMsgs.length.toString(),
-          emoji: getEmoji('tick_icon', interaction.client),
+          emoji: getEmoji('tick_icon', ctx.client),
           user: userMention(originalMsgData.authorId),
         }),
       )

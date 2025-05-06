@@ -15,19 +15,17 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { ComponentInteraction } from '#src/core/CommandContext/ComponentContext.js';
+import Context from '#src/core/CommandContext/Context.js';
 import type { Tutorial, UserTutorialProgress } from '#src/generated/prisma/client/client.js';
 import { Pagination } from '#src/modules/Pagination.js';
 import TutorialService from '#src/services/TutorialService.js';
 import {
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonInteraction,
   ContainerBuilder,
-  ModalSubmitInteraction,
-  RepliableInteraction,
   type Client,
 } from 'discord.js';
-import Context from '#src/core/CommandContext/Context.js';
 import { TutorialUIBuilder } from './TutorialUIBuilder.js';
 
 /**
@@ -71,11 +69,11 @@ export class TutorialListBuilder {
    * Create a container for the tutorial list with pagination
    */
   public async createTutorialListView(
-    interaction: ButtonInteraction | Context,
+    ctx: ComponentInteraction | Context,
     page: number = 0,
   ): Promise<{ container: ContainerBuilder; actionRow: ActionRowBuilder<ButtonBuilder> }> {
     const container = new ContainerBuilder();
-    const userId = interaction.user.id;
+    const userId = ctx.user.id;
 
     // Add header
     container.addTextDisplayComponents(this.uiBuilder.createListHeader());
@@ -115,9 +113,9 @@ export class TutorialListBuilder {
    * Use the Pagination module to create a paginated tutorial list
    */
   public async createPaginatedTutorialList(
-    interaction: ModalSubmitInteraction | RepliableInteraction | Context,
+    ctx: Context,
   ): Promise<void> {
-    const userId = interaction.user.id;
+    const userId = ctx.user.id;
 
     // Get all tutorials and user progress
     const tutorials = await this.tutorialService.getAllTutorials();
@@ -129,7 +127,7 @@ export class TutorialListBuilder {
       container.addTextDisplayComponents(this.uiBuilder.createListHeader());
       container.addTextDisplayComponents(this.uiBuilder.createNoTutorialsMessage());
 
-      await interaction.reply({
+      await ctx.reply({
         components: [container],
         flags: ['IsComponentsV2'],
       });
@@ -175,7 +173,7 @@ export class TutorialListBuilder {
     }
 
     // Run the paginator
-    await paginator.run(interaction, {
+    await paginator.run(ctx, {
       idle: 300000, // 5 minutes
       isComponentsV2: true,
     });

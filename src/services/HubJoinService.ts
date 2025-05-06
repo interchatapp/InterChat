@@ -19,47 +19,40 @@ import BlacklistManager from '#src/managers/BlacklistManager.js';
 import HubManager from '#src/managers/HubManager.js';
 import { HubService } from '#src/services/HubService.js';
 import { type EmojiKeys, getEmoji } from '#src/utils/EmojiUtils.js';
-import Context from '#src/core/CommandContext/Context.js';
 import type { TranslationKeys } from '#types/TranslationKeys.d.ts';
 import { createConnection } from '#utils/ConnectedListUtils.js';
 import db from '#utils/Db.js';
 import { type supportedLocaleCodes, t } from '#utils/Locale.js';
-import { getOrCreateWebhook, getReplyMethod } from '#utils/Utils.js';
+import { getOrCreateWebhook } from '#utils/Utils.js';
 import { logJoinToHub } from '#utils/hub/logger/JoinLeave.js';
 import { sendToHub } from '#utils/hub/utils.js';
 import { stripIndents } from 'common-tags';
-import type {
-  ChatInputCommandInteraction,
-  GuildTextBasedChannel,
-  MessageComponentInteraction,
-} from 'discord.js';
-// eslint-disable-next-line no-duplicate-imports
-import type { CacheContext } from '#src/core/CommandContext/Context.js';
+import type { GuildTextBasedChannel } from 'discord.js';
+
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
+import Context from '#src/core/CommandContext/Context.js';
 import { checkRule } from '#src/utils/network/antiSwearChecks.js';
 
 export class HubJoinService {
-  private readonly interaction:
-    | ChatInputCommandInteraction<'cached'>
-    | MessageComponentInteraction<'cached'>
-    | Context<CacheContext>;
   private readonly locale: supportedLocaleCodes;
   private readonly hubService: HubService;
+  // Add a property to store the guild ID which is guaranteed to be non-null
+  private readonly guildId: string;
 
   constructor(
-    interaction:
-      | ChatInputCommandInteraction<'cached'>
-      | MessageComponentInteraction<'cached'>
-      | Context<CacheContext>,
+    private readonly ctx: Context | ComponentContext,
     locale: supportedLocaleCodes,
     hubService: HubService = new HubService(),
   ) {
-    this.interaction = interaction;
     this.locale = locale;
     this.hubService = hubService;
+    // Since we're using CacheContext or cached interactions, guildId is guaranteed to be non-null
+    // But TypeScript doesn't recognize this, so we need to assert it
+    this.guildId = ctx.guildId as string;
   }
 
   private getEmoji(name: EmojiKeys) {
-    return getEmoji(name, this.interaction.client);
+    return getEmoji(name, this.ctx.client);
   }
 
   async joinRandomHub(channel: GuildTextBasedChannel) {
@@ -83,10 +76,8 @@ export class HubJoinService {
       hubId?: string;
     },
   ) {
-    if (!this.interaction.deferred && !this.interaction.replied) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      await this.interaction.deferReply({ flags: ['Ephemeral'] });
+    if (!this.ctx.deferred && !this.ctx.replied) {
+      await this.ctx.deferReply({ flags: ['Ephemeral'] });
     }
 
     const hub = hubId
@@ -94,7 +85,7 @@ export class HubJoinService {
       : await this.fetchHub(hubInviteOrName);
 
     if (!hub) {
-      await this.interaction.editReply({
+      await this.ctx.editReply({
         content: t('hub.notFound', this.locale, {
           emoji: this.getEmoji('x_icon'),
         }),
@@ -133,7 +124,9 @@ export class HubJoinService {
   }
 
   private async runChecks(channel: GuildTextBasedChannel, hub: HubManager) {
-    if (!channel.permissionsFor(this.interaction.member).has('ManageMessages', true)) {
+    if (!this.ctx.inGuild()) return false;
+
+    if (!this.ctx.member?.permissions.has('ManageMessages', true)) {
       await this.replyError('errors.missingPermissions', {
         permissions: 'Manage Messages',
         emoji: this.getEmoji('x_icon'),
@@ -190,8 +183,8 @@ export class HubJoinService {
   }
 
   private async isBlacklisted(hub: HubManager) {
-    const userBlManager = new BlacklistManager('user', this.interaction.user.id);
-    const serverBlManager = new BlacklistManager('server', this.interaction.guildId);
+    const userBlManager = new BlacklistManager('user', this.ctx.user.id);
+    const serverBlManager = new BlacklistManager('server', this.guildId);
 
     const userBlacklist = await userBlManager.fetchBlacklist(hub.id);
     const serverBlacklist = await serverBlManager.fetchBlacklist(hub.id);
@@ -229,13 +222,7 @@ export class HubJoinService {
       components: [],
     } as const;
 
-    if (this.interaction instanceof Context) {
-      await this.interaction.reply(replyData);
-    }
-    else {
-      const replyMethod = getReplyMethod(this.interaction);
-      await this.interaction[replyMethod](replyData);
-    }
+    await this.ctx.reply(replyData);
 
     // Announce join with custom welcome message
     await this.announceJoin(hub);
@@ -253,19 +240,30 @@ export class HubJoinService {
         ? 'There are no other servers connected to this hub yet. *cricket noises* 🦗'
         : `We now have ${totalConnections} servers in this hub! 🎉`;
 
+    // Since we're using CacheContext or cached interactions, guild is guaranteed to be non-null
+    // But we need to get a reference to it
+    const guild = this.ctx.guild;
+    // This assertion is safe because of our constructor's type constraints
+    if (!guild) {
+      throw new Error('Guild is null despite using cached context. This should never happen.');
+    }
+
+    const serverName = guild.name;
+    const memberCount = guild.memberCount;
+
     // Custom welcome message if set
     const welcomeMessage =
       hub.data.welcomeMessage
-        ?.replace('{user}', this.interaction.user.username)
+        ?.replace('{user}', this.ctx.user.username)
         ?.replace('{hubName}', hub.data.name)
-        ?.replace('{serverName}', this.interaction.guild.name)
-        ?.replace('{memberCount}', this.interaction.guild.memberCount.toString())
+        ?.replace('{serverName}', serverName)
+        ?.replace('{memberCount}', memberCount.toString())
         ?.replace('{totalConnections}', totalConnections.toString()) ??
       stripIndents`
         A new server has joined the hub! ${this.getEmoji('clipart')}
 
-        **Server Name:** __${this.interaction.guild.name}__
-        **Member Count:** __${this.interaction.guild.memberCount}__
+        **Server Name:** __${serverName}__
+        **Member Count:** __${memberCount}__
 
         ${serverCountMessage}
       `;
@@ -277,8 +275,8 @@ export class HubJoinService {
       content: welcomeMessage,
     });
 
-    // Send log
-    await logJoinToHub(hub.id, this.interaction.guild, {
+    // Send log - guild is guaranteed to be non-null here
+    await logJoinToHub(hub.id, guild, {
       totalConnections,
       hubName: hub.data.name,
     });
@@ -290,12 +288,6 @@ export class HubJoinService {
   ) {
     const content = t(key, this.locale, options);
 
-    if (this.interaction instanceof Context) {
-      await this.interaction.reply({ content, flags: ['Ephemeral'] });
-      return;
-    }
-
-    const replyMethod = getReplyMethod(this.interaction);
-    await this.interaction[replyMethod]({ content, flags: ['Ephemeral'] });
+    await this.ctx.reply({ content, flags: ['Ephemeral'] });
   }
 }

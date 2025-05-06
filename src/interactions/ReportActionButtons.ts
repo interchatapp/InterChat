@@ -18,7 +18,6 @@
 import {
   ActionRowBuilder,
   ButtonBuilder,
-  type ButtonInteraction,
   ButtonStyle,
   EmbedBuilder,
   type MessageActionRowComponentBuilder,
@@ -30,6 +29,7 @@ import getRedis from '#utils/Redis.js';
 import { handleError } from '#src/utils/Utils.js';
 import { HubService } from '#src/services/HubService.js';
 import HubManager from '#src/managers/HubManager.js';
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 
 export const markResolvedButton = (hubId: string) =>
   new ButtonBuilder()
@@ -48,15 +48,15 @@ export default class MarkResolvedButton {
    * Updates button components in a message
    */
   private async updateButtonComponents(
-    interaction: ButtonInteraction,
+    ctx: ComponentContext,
     updateFn: (
       component: ButtonBuilder,
       row: ActionRowBuilder<MessageActionRowComponentBuilder>,
-      buttonCustomId: string
+      buttonCustomId: string,
     ) => void,
   ): Promise<ActionRowBuilder<MessageActionRowComponentBuilder>[]> {
-    await interaction.deferUpdate();
-    const components = interaction.message.components;
+    await ctx.deferUpdate();
+    const components = ctx.originalInteraction.message?.components;
     if (!components) return [];
 
     const rows = components.map((row) =>
@@ -74,20 +74,19 @@ export default class MarkResolvedButton {
       }
     }
 
-    await interaction.editReply({ components: rows });
+    await ctx.editReply({ components: rows });
     return rows;
   }
 
   @RegisterInteractionHandler('markResolved')
-  async markResolvedHandler(interaction: ButtonInteraction): Promise<void> {
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [hubId] = customId.args;
+  async markResolvedHandler(ctx: ComponentContext): Promise<void> {
+    const [hubId] = ctx.customId.args;
 
     try {
-      await this.updateButtonComponents(interaction, (component, _, buttonCustomId) => {
-        if (buttonCustomId === interaction.customId) {
+      await this.updateButtonComponents(ctx, (component, _, buttonCustomId) => {
+        if (buttonCustomId === ctx.originalInteraction.customId) {
           component
-            .setLabel(`Resolved by @${interaction.user.username}`)
+            .setLabel(`Resolved by @${ctx.user.username}`)
             .setDisabled(true)
             .setStyle(ButtonStyle.Secondary);
         }
@@ -95,20 +94,20 @@ export default class MarkResolvedButton {
 
       // Check if we need to send a DM to the reporter
       const hub = await new HubService().fetchHub(hubId);
-      await this.notifyReporter(interaction, hub);
+      await this.notifyReporter(ctx, hub);
     }
     catch (e) {
-      handleError(e, { repliable: interaction, comment: 'Failed to mark the message as resolved' });
+      handleError(e, { repliable: ctx.originalInteraction, comment: 'Failed to mark the message as resolved' });
     }
   }
 
   @RegisterInteractionHandler('ignoreReport')
-  async markIgnoredHandler(interaction: ButtonInteraction): Promise<void> {
+  async markIgnoredHandler(ctx: ComponentContext): Promise<void> {
     try {
-      await this.updateButtonComponents(interaction, (component, _, buttonCustomId) => {
-        if (buttonCustomId === interaction.customId) {
+      await this.updateButtonComponents(ctx, (component, _, buttonCustomId) => {
+        if (buttonCustomId === ctx.originalInteraction.customId) {
           component
-            .setLabel(`Ignored by @${interaction.user.username}`)
+            .setLabel(`Ignored by @${ctx.user.username}`)
             .setDisabled(true)
             .setStyle(ButtonStyle.Secondary);
         }
@@ -119,22 +118,18 @@ export default class MarkResolvedButton {
       });
     }
     catch (e) {
-      handleError(e, { repliable: interaction, comment: 'Failed to ignore the report' });
+      handleError(e, { repliable: ctx.originalInteraction, comment: 'Failed to ignore the report' });
     }
   }
 
   /**
    * Notifies the original reporter that their report has been resolved
-   * @param interaction The button interaction that triggered the resolution
+   * @param ctx The button ctx that triggered the resolution
    */
-  private async notifyReporter(
-    interaction: ButtonInteraction,
-    hub: HubManager | null,
-  ): Promise<void> {
+  private async notifyReporter(ctx: ComponentContext, hub: HubManager | null): Promise<void> {
     try {
-      const client = interaction.client;
       const redis = getRedis();
-      const reportMessageId = interaction.message.id;
+      const reportMessageId = ctx.originalInteraction.message?.id;
       const redisKey = `${RedisKeys.ReportReporter}:${reportMessageId}`;
 
       // Check if the reporter's ID is still in Redis (within 48 hours)
@@ -145,7 +140,7 @@ export default class MarkResolvedButton {
       }
 
       // Fetch the reporter user
-      const reporter = await client.users.fetch(reporterId).catch(() => null);
+      const reporter = await ctx.client.users.fetch(reporterId).catch(() => null);
       if (!reporter) {
         return;
       }

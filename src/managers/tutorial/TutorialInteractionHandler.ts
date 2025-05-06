@@ -15,21 +15,20 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import TutorialService from '#src/services/TutorialService.js';
-import { CustomID } from '#src/utils/CustomID.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import {
-  ButtonInteraction,
   ContainerBuilder,
   MessageFlags,
   TextDisplayBuilder,
   type Client,
 } from 'discord.js';
-import { TutorialUIBuilder } from './TutorialUIBuilder.js';
 import { TutorialListBuilder } from './TutorialListBuilder.js';
+import { TutorialUIBuilder } from './TutorialUIBuilder.js';
 
 /**
- * Handles interactions with tutorial UI components
+ * Handles ctxs with tutorial UI components
  */
 export class TutorialInteractionHandler {
   private readonly tutorialService: TutorialService;
@@ -45,17 +44,16 @@ export class TutorialInteractionHandler {
   /**
    * Handle the "next" button in a tutorial
    */
-  public async handleNextButton(interaction: ButtonInteraction): Promise<void> {
-    await interaction.deferUpdate();
+  public async handleNextButton(ctx: ComponentContext): Promise<void> {
+    await ctx.deferUpdate();
 
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [tutorialId, currentIndexStr] = customId.args;
+    const [tutorialId, currentIndexStr] = ctx.customId.args;
     const currentIndex = parseInt(currentIndexStr, 10);
 
     const tutorial = await this.tutorialService.getTutorialById(tutorialId);
     if (!tutorial) {
-      await interaction.followUp({
-        content: `${getEmoji('x_icon', interaction.client)} Tutorial not found.`,
+      await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} Tutorial not found.`,
         flags: ['Ephemeral'],
       });
       return;
@@ -66,13 +64,13 @@ export class TutorialInteractionHandler {
 
     // If we're at the last step, complete the tutorial
     if (nextIndex >= steps.length) {
-      await this.tutorialService.completeTutorial(interaction.user.id, tutorialId);
+      await this.tutorialService.completeTutorial(ctx.user.id, tutorialId);
       const nextTutorial = await this.tutorialService.getNextRecommendedTutorial(
-        interaction.user.id,
+        ctx.user.id,
       );
       const container = await this.uiBuilder.createCompletionContainer(tutorial, nextTutorial);
 
-      await interaction.editReply({
+      await ctx.editReply({
         components: [container],
         flags: [MessageFlags.IsComponentsV2],
       });
@@ -80,7 +78,7 @@ export class TutorialInteractionHandler {
     }
 
     // Update progress and show next step
-    await this.tutorialService.updateProgress(interaction.user.id, tutorialId, {
+    await this.tutorialService.updateProgress(ctx.user.id, tutorialId, {
       currentStepIndex: nextIndex,
     });
 
@@ -91,7 +89,7 @@ export class TutorialInteractionHandler {
       steps.length,
     );
 
-    await interaction.editReply({
+    await ctx.editReply({
       components: [container],
       flags: [MessageFlags.IsComponentsV2],
     });
@@ -100,17 +98,16 @@ export class TutorialInteractionHandler {
   /**
    * Handle the "previous" button in a tutorial
    */
-  public async handlePrevButton(interaction: ButtonInteraction): Promise<void> {
-    await interaction.deferUpdate();
+  public async handlePrevButton(ctx: ComponentContext): Promise<void> {
+    await ctx.deferUpdate();
 
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [tutorialId, currentIndexStr] = customId.args;
+    const [tutorialId, currentIndexStr] = ctx.customId.args;
     const currentIndex = parseInt(currentIndexStr, 10);
 
     const tutorial = await this.tutorialService.getTutorialById(tutorialId);
     if (!tutorial) {
-      await interaction.followUp({
-        content: `${getEmoji('x_icon', interaction.client)} Tutorial not found.`,
+      await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} Tutorial not found.`,
         flags: ['Ephemeral'],
       });
       return;
@@ -120,7 +117,7 @@ export class TutorialInteractionHandler {
     const prevIndex = Math.max(0, currentIndex - 1);
 
     // Update progress and show previous step
-    await this.tutorialService.updateProgress(interaction.user.id, tutorialId, {
+    await this.tutorialService.updateProgress(ctx.user.id, tutorialId, {
       currentStepIndex: prevIndex,
     });
 
@@ -131,7 +128,7 @@ export class TutorialInteractionHandler {
       steps.length,
     );
 
-    await interaction.editReply({
+    await ctx.editReply({
       components: [container],
       flags: [MessageFlags.IsComponentsV2],
     });
@@ -140,15 +137,15 @@ export class TutorialInteractionHandler {
   /**
    * Handle the "skip" button in a tutorial
    */
-  public async handleSkipButton(interaction: ButtonInteraction): Promise<void> {
-    await interaction.deferUpdate();
+  public async handleSkipButton(ctx: ComponentContext): Promise<void> {
+    await ctx.deferUpdate();
 
     const textComponent = new TextDisplayBuilder().setContent(
-      `## ${getEmoji('tick_icon', interaction.client)} Tutorial skipped.\nYou can resume it later with \`/tutorial resume\`.`,
+      `## ${getEmoji('tick_icon', ctx.client)} Tutorial skipped.\nYou can resume it later with \`/tutorial resume\`.`,
     );
     const container = new ContainerBuilder().addTextDisplayComponents(textComponent);
 
-    await interaction.editReply({
+    await ctx.editReply({
       components: [container],
     });
   }
@@ -156,19 +153,18 @@ export class TutorialInteractionHandler {
   /**
    * Handle the page navigation button in the tutorial list
    */
-  public async handlePageButton(interaction: ButtonInteraction): Promise<void> {
-    await interaction.deferUpdate();
+  public async handlePageButton(ctx: ComponentContext): Promise<void> {
+    await ctx.deferUpdate();
 
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const pageStr = customId.args[0];
+    const pageStr = ctx.customId.args[0];
     const page = parseInt(pageStr, 10);
 
     const { container, actionRow } = await this.listBuilder.createTutorialListView(
-      interaction,
+      ctx,
       page,
     );
 
-    await interaction.editReply({
+    await ctx.editReply({
       components: [container, actionRow],
       flags: [MessageFlags.IsComponentsV2],
     });
@@ -177,43 +173,41 @@ export class TutorialInteractionHandler {
   /**
    * Handle the "review-next" button in tutorial review mode
    */
-  public async handleReviewNextButton(interaction: ButtonInteraction): Promise<void> {
-    await interaction.deferUpdate();
+  public async handleReviewNextButton(ctx: ComponentContext): Promise<void> {
+    await ctx.deferUpdate();
 
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [tutorialId, currentIndexStr] = customId.args;
+    const [tutorialId, currentIndexStr] = ctx.customId.args;
     const currentIndex = parseInt(currentIndexStr, 10);
     const nextIndex = currentIndex + 1;
 
-    await this.showReviewStep(interaction, tutorialId, nextIndex);
+    await this.showReviewStep(ctx, tutorialId, nextIndex);
   }
 
   /**
    * Handle the "review-prev" button in tutorial review mode
    */
-  public async handleReviewPrevButton(interaction: ButtonInteraction): Promise<void> {
-    await interaction.deferUpdate();
+  public async handleReviewPrevButton(ctx: ComponentContext): Promise<void> {
+    await ctx.deferUpdate();
 
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [tutorialId, currentIndexStr] = customId.args;
+    const [tutorialId, currentIndexStr] = ctx.customId.args;
     const currentIndex = parseInt(currentIndexStr, 10);
     const prevIndex = Math.max(0, currentIndex - 1);
 
-    await this.showReviewStep(interaction, tutorialId, prevIndex);
+    await this.showReviewStep(ctx, tutorialId, prevIndex);
   }
 
   /**
    * Show a specific step in review mode
    */
   private async showReviewStep(
-    interaction: ButtonInteraction,
+    ctx: ComponentContext,
     tutorialId: string,
     stepIndex: number,
   ): Promise<void> {
     const tutorial = await this.tutorialService.getTutorialById(tutorialId);
     if (!tutorial) {
-      await interaction.followUp({
-        content: `${getEmoji('x_icon', interaction.client)} Tutorial not found.`,
+      await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} Tutorial not found.`,
         flags: ['Ephemeral'],
       });
       return;
@@ -221,8 +215,8 @@ export class TutorialInteractionHandler {
 
     const steps = await this.tutorialService.getTutorialSteps(tutorialId);
     if (steps.length === 0) {
-      await interaction.followUp({
-        content: `${getEmoji('x_icon', interaction.client)} This tutorial has no steps.`,
+      await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} This tutorial has no steps.`,
         flags: ['Ephemeral'],
       });
       return;
@@ -240,7 +234,7 @@ export class TutorialInteractionHandler {
       steps.length,
     );
 
-    await interaction.editReply({
+    await ctx.editReply({
       components: [container],
       flags: [MessageFlags.IsComponentsV2],
     });

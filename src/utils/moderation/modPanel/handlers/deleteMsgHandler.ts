@@ -22,39 +22,40 @@ import { logMsgDelete } from '#src/utils/hub/logger/ModLogs.js';
 import { type ModAction, replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
 import { getBroadcasts, getOriginalMessage } from '#src/utils/network/messageUtils.js';
 
-import type { ButtonInteraction, Snowflake } from 'discord.js';
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
+import { fetchUserLocale } from '#src/utils/Utils.js';
 import { InfoEmbed } from '#utils/EmbedUtils.js';
 import { type supportedLocaleCodes, t } from '#utils/Locale.js';
 import { deleteMessageFromHub, isDeleteInProgress } from '#utils/moderation/deleteMessage.js';
-import { fetchUserLocale } from '#src/utils/Utils.js';
+import type { Snowflake } from 'discord.js';
 
 export default class DeleteMessageHandler implements ModAction {
   async handle(
-    interaction: ButtonInteraction,
+    ctx: ComponentContext,
     originalMsgId: Snowflake,
     locale: supportedLocaleCodes,
   ) {
     const originalMsg = await getOriginalMessage(originalMsgId);
     if (!originalMsg) {
-      await replyWithUnknownMessage(interaction, { locale });
+      await replyWithUnknownMessage(ctx, { locale });
       return;
     }
 
     const deleteInProgress = await isDeleteInProgress(originalMsg.messageId);
     if (deleteInProgress) {
-      const { embed, buttons } = await buildModPanel(interaction, originalMsg);
-      await interaction.update({ embeds: [embed], components: buttons });
+      const { embed, buttons } = await buildModPanel(ctx, originalMsg);
+      await ctx.editReply({ embeds: [embed], components: buttons });
 
       const errorEmbed = new InfoEmbed().setDescription(
-        `${getEmoji('neutral', interaction.client)} This message is already deleted or is being deleted by another moderator.`,
+        `${getEmoji('neutral', ctx.client)} This message is already deleted or is being deleted by another moderator.`,
       );
 
-      await interaction.followUp({ flags: ['Ephemeral'], embeds: [errorEmbed] });
+      await ctx.reply({ flags: ['Ephemeral'], embeds: [errorEmbed] });
       return;
     }
 
-    await interaction.reply({
-      content: `${getEmoji('loading', interaction.client)} Deleting messages... This may take a minute or so.`,
+    await ctx.reply({
+      content: `${getEmoji('loading', ctx.client)} Deleting messages... This may take a minute or so.`,
       flags: ['Ephemeral'],
     });
 
@@ -68,13 +69,13 @@ export default class DeleteMessageHandler implements ModAction {
       broadcastMsgs,
     );
 
-    await interaction
+    await ctx
       .editReply(
         t(
           'network.deleteSuccess',
-          await fetchUserLocale(interaction.user.id),
+          await fetchUserLocale(ctx.user.id),
           {
-            emoji: getEmoji('tick_icon', interaction.client),
+            emoji: getEmoji('tick_icon', ctx.client),
             user: `<@${originalMsg.authorId}>`,
             deleted: `${deletedCount}`,
             total: `${broadcastMsgs.length}`,
@@ -86,9 +87,9 @@ export default class DeleteMessageHandler implements ModAction {
     const hub = await new HubService().fetchHub(originalMsg.hubId);
     if (!hub) return;
 
-    await logMsgDelete(interaction.client, originalMsg, await hub.fetchLogConfig(), {
+    await logMsgDelete(ctx.client, originalMsg, await hub.fetchLogConfig(), {
       hubName: hub.data.name,
-      modName: interaction.user.username,
+      modName: ctx.user.username,
     });
   }
 }

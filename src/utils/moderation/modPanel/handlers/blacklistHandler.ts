@@ -15,6 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { buildModPanel } from '#src/interactions/ModPanel.js';
 import BlacklistManager from '#src/managers/BlacklistManager.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
@@ -27,43 +28,41 @@ import Logger from '#utils/Logger.js';
 import { sendBlacklistNotif } from '#utils/moderation/blacklistUtils.js';
 import {
   ActionRowBuilder,
-  type ButtonInteraction,
+  ButtonBuilder,
   ButtonStyle,
   type Client,
   EmbedBuilder,
   ModalBuilder,
-  type ModalSubmitInteraction,
   type Snowflake,
   TextInputBuilder,
   TextInputStyle,
   time,
-  ButtonBuilder,
 } from 'discord.js';
 import ms from 'ms';
 
 abstract class BaseBlacklistHandler implements ModAction {
   abstract handle(
-    interaction: ButtonInteraction,
+    ctx: ComponentContext,
     originalMsgId: Snowflake,
     locale: supportedLocaleCodes,
   ): Promise<void>;
 
   abstract handleModal(
-    interaction: ModalSubmitInteraction,
+    ctx: ComponentContext,
     originalMsg: OriginalMessage,
     locale: supportedLocaleCodes,
   ): Promise<void>;
 
   abstract handleDurationSelect(
-    interaction: ButtonInteraction,
+    ctx: ComponentContext,
     originalMsgId: Snowflake,
     duration: string,
     locale: supportedLocaleCodes,
   ): Promise<void>;
 
   /**
-	 * Builds a modal for blacklisting with reason field only
-	 */
+   * Builds a modal for blacklisting with reason field only
+   */
   buildReasonOnlyModal(
     title: string,
     type: 'user' | 'server',
@@ -92,8 +91,8 @@ abstract class BaseBlacklistHandler implements ModAction {
   }
 
   /**
-	 * Builds a modal for blacklisting with both reason and custom duration fields
-	 */
+   * Builds a modal for blacklisting with both reason and custom duration fields
+   */
   buildCustomDurationModal(
     title: string,
     type: 'user' | 'server',
@@ -130,8 +129,8 @@ abstract class BaseBlacklistHandler implements ModAction {
   }
 
   /**
-	 * Builds duration selection buttons for blacklisting
-	 */
+   * Builds duration selection buttons for blacklisting
+   */
   buildDurationButtons(type: 'user' | 'server', originalMsgId: Snowflake) {
     // First row: 10m, 30m, 1h, 2h, 6h
     const firstRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -257,13 +256,10 @@ abstract class BaseBlacklistHandler implements ModAction {
   }
 
   /**
-	 * Extracts data from a modal submission
-	 */
-  protected getModalData(
-    interaction: ModalSubmitInteraction,
-    predefinedDuration?: string,
-  ) {
-    const reason = interaction.fields.getTextInputValue('reason');
+   * Extracts data from a modal submission
+   */
+  protected getModalData(ctx: ComponentContext, predefinedDuration?: string) {
+    const reason = ctx.getModalFieldValue('reason') ?? 'No reason provided.';
     let expiresAt: Date | null = null;
 
     // If we have a predefined duration from the button
@@ -275,10 +271,8 @@ abstract class BaseBlacklistHandler implements ModAction {
       // If permanent, expiresAt remains null
     }
     // Otherwise get duration from the modal input
-    else if (interaction.fields.getTextInputValue('duration')) {
-      const duration = ms(
-        interaction.fields.getTextInputValue('duration') as ms.StringValue,
-      );
+    else if (ctx.getModalFieldValue('duration')) {
+      const duration = ms(ctx.getModalFieldValue('duration') as ms.StringValue);
       expiresAt = duration ? new Date(Date.now() + duration) : null;
     }
 
@@ -308,9 +302,7 @@ abstract class BaseBlacklistHandler implements ModAction {
         },
         {
           name: 'Expires',
-          value: expires
-            ? `${time(Math.round(expires.getTime() / 1000), 'R')}`
-            : 'Never.',
+          value: expires ? `${time(Math.round(expires.getTime() / 1000), 'R')}` : 'Never.',
           inline: true,
         },
       );
@@ -318,10 +310,10 @@ abstract class BaseBlacklistHandler implements ModAction {
 }
 
 export class BlacklistUserHandler extends BaseBlacklistHandler {
-  async handle(interaction: ButtonInteraction, originalMsgId: Snowflake) {
+  async handle(ctx: ComponentContext, originalMsgId: Snowflake) {
     // Show duration selection buttons instead of modal directly
     const durationButtons = this.buildDurationButtons('user', originalMsgId);
-    await interaction.reply({
+    await ctx.reply({
       content: 'Select blacklist duration:',
       components: durationButtons,
       flags: ['Ephemeral'],
@@ -329,127 +321,104 @@ export class BlacklistUserHandler extends BaseBlacklistHandler {
   }
 
   /**
-	 * Handles the duration selection button click
-	 */
+   * Handles the duration selection button click
+   */
   async handleDurationSelect(
-    interaction: ButtonInteraction,
+    ctx: ComponentContext,
     originalMsgId: Snowflake,
     duration: string,
     locale: supportedLocaleCodes,
   ) {
     if (duration === 'custom') {
       // For custom duration, show the modal with both fields
-      await interaction.showModal(
-        this.buildCustomDurationModal(
-          'Blacklist User',
-          'user',
-          originalMsgId,
-          locale,
-        ),
+      await ctx.showModal(
+        this.buildCustomDurationModal('Blacklist User', 'user', originalMsgId, locale),
       );
     }
     else {
       // For predefined durations, show modal with only reason field
-      await interaction.showModal(
-        this.buildReasonOnlyModal(
-          'Blacklist User',
-          'user',
-          originalMsgId,
-          duration,
-          locale,
-        ),
+      await ctx.showModal(
+        this.buildReasonOnlyModal('Blacklist User', 'user', originalMsgId, duration, locale),
       );
     }
   }
 
   async handleModal(
-    interaction: ModalSubmitInteraction,
+    ctx: ComponentContext,
     originalMsg: OriginalMessage,
     locale: supportedLocaleCodes,
   ) {
     // Extract duration from customId if it's a reason-only modal
-    const customId = CustomID.parseCustomId(interaction.customId);
+    const customId = ctx.customId;
     const predefinedDuration =
-			customId.prefix === 'blacklist_reason_modal'
-			  ? customId.args[1]
-			  : undefined;
-    const user = await interaction.client.users
-      .fetch(originalMsg.authorId)
-      .catch(() => null);
+      customId.prefix === 'blacklist_reason_modal' ? customId.args[1] : undefined;
+    const user = await ctx.client.users.fetch(originalMsg.authorId).catch(() => null);
 
     if (!user) {
-      await interaction.reply({
-        content: `${getEmoji('neutral', interaction.client)} Unable to fetch user. They may have deleted their account?`,
+      await ctx.reply({
+        content: `${getEmoji('neutral', ctx.client)} Unable to fetch user. They may have deleted their account?`,
         flags: ['Ephemeral'],
       });
       return;
     }
 
     if (!originalMsg.hubId) {
-      await interaction.reply({
+      await ctx.reply({
         content: t('hub.notFound_mod', locale, {
-          emoji: getEmoji('x_icon', interaction.client),
+          emoji: getEmoji('x_icon', ctx.client),
         }),
         flags: ['Ephemeral'],
       });
       return;
     }
 
-    if (originalMsg.authorId === interaction.user.id) {
-      await interaction.followUp({
-        content:
-					'<a:nuhuh:1256859727158050838> Nuh uh! You can\'t blacklist yourself.',
+    if (originalMsg.authorId === ctx.user.id) {
+      await ctx.reply({
+        content: '<a:nuhuh:1256859727158050838> Nuh uh! You can\'t blacklist yourself.',
         flags: ['Ephemeral'],
       });
       return;
     }
 
-    const { reason, expiresAt } = this.getModalData(
-      interaction,
-      predefinedDuration,
-    );
+    const { reason, expiresAt } = this.getModalData(ctx, predefinedDuration);
     const blacklistManager = new BlacklistManager('user', user.id);
 
     await blacklistManager.addBlacklist({
       hubId: originalMsg.hubId,
-      moderatorId: interaction.user.id,
+      moderatorId: ctx.user.id,
       reason,
       expiresAt,
     });
 
-    await blacklistManager.log(originalMsg.hubId, interaction.client, {
-      mod: interaction.user,
+    await blacklistManager.log(originalMsg.hubId, ctx.client, {
+      mod: ctx.user,
       reason,
       expiresAt,
     });
 
     Logger.info(
-      `User ${user?.username} blacklisted by ${interaction.user.username} in ${originalMsg.hubId}`,
+      `User ${user?.username} blacklisted by ${ctx.user.username} in ${originalMsg.hubId}`,
     );
 
-    const { embed, buttons } = await buildModPanel(interaction, originalMsg);
-    await interaction.editReply({ embeds: [embed], components: buttons });
+    const { embed, buttons } = await buildModPanel(ctx, originalMsg);
+    await ctx.editReply({ embeds: [embed], components: buttons });
 
     const successEmbed = this.buildSuccessEmbed(
       user.username,
       reason,
       expiresAt,
-      interaction.client,
+      ctx.client,
       locale,
     );
-    await interaction.followUp({
-      embeds: [successEmbed],
-      components: [],
-      flags: ['Ephemeral'],
-    });
+    await ctx.reply({ embeds: [successEmbed], components: [], flags: ['Ephemeral'] });
   }
 }
 
 export class BlacklistServerHandler extends BaseBlacklistHandler {
-  async handle(interaction: ButtonInteraction, originalMsgId: Snowflake) {
+  async handle(ctx: ComponentContext, originalMsgId: Snowflake) {
     // Show duration selection buttons instead of modal directly
     const durationButtons = this.buildDurationButtons('server', originalMsgId);
-    await interaction.reply({
+    await ctx.reply({
       content: 'Select blacklist duration:',
       components: durationButtons,
       flags: ['Ephemeral'],
@@ -457,54 +426,41 @@ export class BlacklistServerHandler extends BaseBlacklistHandler {
   }
 
   /**
-	 * Handles the duration selection button click
-	 */
+   * Handles the duration selection button click
+   */
   async handleDurationSelect(
-    interaction: ButtonInteraction,
+    ctx: ComponentContext,
     originalMsgId: Snowflake,
     duration: string,
     locale: supportedLocaleCodes,
   ) {
     if (duration === 'custom') {
       // For custom duration, show the modal with both fields
-      await interaction.showModal(
-        this.buildCustomDurationModal(
-          'Blacklist Server',
-          'server',
-          originalMsgId,
-          locale,
-        ),
+      await ctx.showModal(
+        this.buildCustomDurationModal('Blacklist Server', 'server', originalMsgId, locale),
       );
     }
     else {
       // For predefined durations, show modal with only reason field
-      await interaction.showModal(
-        this.buildReasonOnlyModal(
-          'Blacklist Server',
-          'server',
-          originalMsgId,
-          duration,
-          locale,
-        ),
+      await ctx.showModal(
+        this.buildReasonOnlyModal('Blacklist Server', 'server', originalMsgId, duration, locale),
       );
     }
   }
 
   async handleModal(
-    interaction: ModalSubmitInteraction,
+    ctx: ComponentContext,
     originalMsg: OriginalMessage,
     locale: supportedLocaleCodes,
   ) {
     // Extract duration from customId if it's a reason-only modal
-    const customId = CustomID.parseCustomId(interaction.customId);
+    const customId = ctx.customId;
     const predefinedDuration =
-			customId.prefix === 'blacklist_reason_modal'
-			  ? customId.args[1]
-			  : undefined;
-    const client = interaction.client;
+      customId.prefix === 'blacklist_reason_modal' ? customId.args[1] : undefined;
+    const client = ctx.client;
 
     if (!originalMsg.hubId) {
-      await interaction.reply({
+      await ctx.reply({
         content: t('hub.notFound_mod', locale, {
           emoji: getEmoji('x_icon', client),
         }),
@@ -513,9 +469,9 @@ export class BlacklistServerHandler extends BaseBlacklistHandler {
       return;
     }
 
-    const server = await interaction.client.fetchGuild(originalMsg.guildId);
+    const server = await ctx.client.fetchGuild(originalMsg.guildId);
     if (!server) {
-      await interaction.reply({
+      await ctx.reply({
         content: t('errors.unknownServer', locale, {
           emoji: getEmoji('x_icon', client),
         }),
@@ -524,25 +480,19 @@ export class BlacklistServerHandler extends BaseBlacklistHandler {
       return;
     }
 
-    const { reason, expiresAt } = this.getModalData(
-      interaction,
-      predefinedDuration,
-    );
-    const blacklistManager = new BlacklistManager(
-      'server',
-      originalMsg.guildId,
-    );
+    const { reason, expiresAt } = this.getModalData(ctx, predefinedDuration);
+    const blacklistManager = new BlacklistManager('server', originalMsg.guildId);
 
     await blacklistManager.addBlacklist({
       reason,
       expiresAt,
       hubId: originalMsg.hubId,
       serverName: server?.name ?? 'Unknown Server',
-      moderatorId: interaction.user.id,
+      moderatorId: ctx.user.id,
     });
 
     // Notify server of blacklist
-    await sendBlacklistNotif('server', interaction.client, {
+    await sendBlacklistNotif('server', ctx.client, {
       target: { id: originalMsg.guildId },
       hubId: originalMsg.hubId,
       expiresAt,
@@ -558,28 +508,18 @@ export class BlacklistServerHandler extends BaseBlacklistHandler {
 
     if (server) {
       await blacklistManager
-        .log(originalMsg.hubId, interaction.client, {
-          mod: interaction.user,
+        .log(originalMsg.hubId, ctx.client, {
+          mod: ctx.user,
           reason,
           expiresAt,
         })
         .catch(() => null);
     }
 
-    const successEmbed = this.buildSuccessEmbed(
-      server.name,
-      reason,
-      expiresAt,
-      client,
-      locale,
-    );
+    const successEmbed = this.buildSuccessEmbed(server.name, reason, expiresAt, client, locale);
 
-    const { embed, buttons } = await buildModPanel(interaction, originalMsg);
-    await interaction.editReply({ embeds: [embed], components: buttons });
-    await interaction.followUp({
-      embeds: [successEmbed],
-      components: [],
-      flags: ['Ephemeral'],
-    });
+    const { embed, buttons } = await buildModPanel(ctx, originalMsg);
+    await ctx.editReply({ embeds: [embed], components: buttons });
+    await ctx.reply({ embeds: [successEmbed], components: [], flags: ['Ephemeral'] });
   }
 }

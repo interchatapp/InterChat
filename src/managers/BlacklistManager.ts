@@ -209,7 +209,7 @@ export default class BlacklistManager {
           inline: true,
         },
       )
-      .setColor(Constants.Colors.interchat)
+      .setColor(Constants.Colors.primary)
       .setFooter({
         text: `Blacklisted by: ${mod.username}`,
         iconURL: mod.displayAvatarURL(),

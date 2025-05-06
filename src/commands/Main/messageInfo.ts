@@ -17,12 +17,14 @@
 
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { buildReportReasonDropdown } from '#src/interactions/ReportMessage.js';
 import { modPanelButton } from '#src/interactions/ShowModPanel.js';
 import type ConnectionManager from '#src/managers/ConnectionManager.js';
 import HubLogManager from '#src/managers/HubLogManager.js';
 import type HubManager from '#src/managers/HubManager.js';
 import { HubService } from '#src/services/HubService.js';
+import { createComponentContext } from '#src/utils/ContextUtils.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { buildProfileEmbed } from '#src/utils/ProfileUtils.js';
 import { fetchUserLocale } from '#src/utils/Utils.js';
@@ -43,7 +45,6 @@ import {
   ApplicationCommandType,
   ButtonBuilder,
   type ButtonComponent,
-  type ButtonInteraction,
   ButtonStyle,
   type Client,
   ComponentType,
@@ -135,18 +136,19 @@ export default class MessageInfo extends BaseCommand {
         );
       }
 
+      const componentCtx = createComponentContext(i, this);
       // button responses
       switch (customId.suffix) {
         case 'serverInfo':
-          this.handleServerInfoButton(i, newComponents, { server, locale, connection });
+          this.handleServerInfoButton(componentCtx, newComponents, { server, locale, connection });
           break;
 
         case 'userInfo':
-          this.handleUserInfoButton(i, newComponents, { author, locale });
+          this.handleUserInfoButton(componentCtx, newComponents, { author, locale });
           break;
 
         case 'msgInfo':
-          this.handleMsgInfoButton(i, newComponents, {
+          this.handleMsgInfoButton(componentCtx, newComponents, {
             author,
             server,
             locale,
@@ -156,7 +158,7 @@ export default class MessageInfo extends BaseCommand {
           break;
 
         case 'report':
-          this.handleReportButton(i, { hub, locale, messageId: targetId });
+          this.handleReportButton(componentCtx, { hub, locale, messageId: targetId });
           break;
 
         default:
@@ -171,14 +173,14 @@ export default class MessageInfo extends BaseCommand {
   }
 
   private async handleServerInfoButton(
-    interaction: ButtonInteraction,
+    ctx: ComponentContext,
     components: ActionRowBuilder<ButtonBuilder>[],
     { server, locale, connection }: ServerInfoOpts,
   ) {
     if (!server) {
-      await interaction.update({
+      await ctx.editReply({
         content: t('errors.unknownServer', locale, {
-          emoji: getEmoji('x_icon', interaction.client),
+          emoji: getEmoji('x_icon', ctx.client),
         }),
         embeds: [],
         components: [],
@@ -186,7 +188,7 @@ export default class MessageInfo extends BaseCommand {
       return;
     }
 
-    const owner = await interaction.client.users.fetch(server.ownerId);
+    const owner = await ctx.client.users.fetch(server.ownerId);
     const createdAt = Math.round(server.createdTimestamp / 1000);
     const inviteString = connection?.data.invite ?? 'Not Set.';
     const ownerName = `${owner.username}#${
@@ -200,7 +202,7 @@ export default class MessageInfo extends BaseCommand {
       : null;
 
     const serverEmbed = new InfoEmbed()
-      .setDescription(`### ${getEmoji('info_icon', interaction.client)} ${server.name}`)
+      .setDescription(`### ${getEmoji('info_icon', ctx.client)} ${server.name}`)
       .addFields([
         { name: 'Owner', value: codeBlock(ownerName), inline: true },
         { name: 'Member Count', value: codeBlock(String(server.memberCount)), inline: true },
@@ -210,24 +212,24 @@ export default class MessageInfo extends BaseCommand {
       ])
       .setThumbnail(iconUrl)
       .setImage(bannerUrL)
-      .setColor(Constants.Colors.interchat);
+      .setColor(Constants.Colors.primary);
 
     // disable the server info button
     greyOutButton(components[0], 1);
 
-    await interaction.update({ embeds: [serverEmbed], components, files: [] });
+    await ctx.editReply({ embeds: [serverEmbed], components, files: [] });
   }
 
   private async handleUserInfoButton(
-    interaction: ButtonInteraction,
+    ctx: ComponentContext,
     components: ActionRowBuilder<ButtonBuilder>[],
     { author }: UserInfoOpts,
   ) {
-    await interaction.deferUpdate();
+    await ctx.deferUpdate();
 
-    const profileEmbed = await buildProfileEmbed(author, interaction.client);
+    const profileEmbed = await buildProfileEmbed(author, ctx.client);
     if (!profileEmbed) {
-      await interaction.editReply({
+      await ctx.editReply({
         content: 'Failed to fetch user profile.',
         embeds: [],
         components: [],
@@ -238,23 +240,23 @@ export default class MessageInfo extends BaseCommand {
     // disable the user info button
     greyOutButton(components[0], 1);
 
-    await interaction.editReply({
+    await ctx.editReply({
       embeds: [profileEmbed],
       components,
     });
   }
 
   private async handleMsgInfoButton(
-    interaction: ButtonInteraction,
+    ctx: ComponentContext,
     components: ActionRowBuilder<ButtonBuilder>[],
     { author, server, locale, hub, messageId }: MsgInfoOpts,
   ) {
-    const message = await interaction.channel?.messages.fetch(messageId).catch(() => null);
+    const message = await ctx.channel?.messages.fetch(messageId).catch(() => null);
 
     if (!message || !hub) {
-      await interaction.update({
+      await ctx.editReply({
         content: t('errors.unknownNetworkMessage', locale, {
-          emoji: getEmoji('x_icon', interaction.client),
+          emoji: getEmoji('x_icon', ctx.client),
         }),
         embeds: [],
         components: [],
@@ -263,7 +265,7 @@ export default class MessageInfo extends BaseCommand {
     }
 
     const embed = new InfoEmbed()
-      .setDescription(`### ${getEmoji('info_icon', interaction.client)} Message Info`)
+      .setDescription(`### ${getEmoji('info_icon', ctx.client)} Message Info`)
       .addFields([
         { name: 'Sender', value: codeBlock(author.username), inline: true },
         { name: 'From Server', value: codeBlock(`${server?.name}`), inline: true },
@@ -276,25 +278,25 @@ export default class MessageInfo extends BaseCommand {
 
     greyOutButton(components[0], 2);
 
-    await interaction.update({ embeds: [embed], components, files: [] });
+    await ctx.editReply({ embeds: [embed], components, files: [] });
   }
 
   private async handleReportButton(
-    interaction: ButtonInteraction,
+    ctx: ComponentContext,
     { hub, locale, messageId }: ReportOpts,
   ) {
     if (!hub || !(await HubLogManager.create(hub.id)).config.reportsChannelId) {
       const notEnabledEmbed = new InfoEmbed().setDescription(
-        t('msgInfo.report.notEnabled', locale, { emoji: getEmoji('x_icon', interaction.client) }),
+        t('msgInfo.report.notEnabled', locale, { emoji: getEmoji('x_icon', ctx.client) }),
       );
 
-      await interaction.reply({ embeds: [notEnabledEmbed], flags: ['Ephemeral'] });
+      await ctx.reply({ embeds: [notEnabledEmbed], flags: ['Ephemeral'] });
       return;
     }
 
     const selectMenu = buildReportReasonDropdown(messageId, locale);
 
-    await interaction.reply({
+    await ctx.reply({
       components: [selectMenu],
       flags: ['Ephemeral'],
     });

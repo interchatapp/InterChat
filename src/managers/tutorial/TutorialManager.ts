@@ -16,17 +16,10 @@
  */
 
 import type Context from '#src/core/CommandContext/Context.js';
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import TutorialService from '#src/services/TutorialService.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
-import {
-  ButtonInteraction,
-  MessageFlags,
-  ModalSubmitInteraction,
-  RepliableInteraction,
-  type Client,
-  type InteractionResponse,
-  type Message,
-} from 'discord.js';
+import { MessageFlags, type Client, type InteractionResponse, type Message } from 'discord.js';
 import { TutorialInteractionHandler } from './TutorialInteractionHandler.js';
 import { TutorialListBuilder } from './TutorialListBuilder.js';
 import { TutorialUIBuilder } from './TutorialUIBuilder.js';
@@ -37,7 +30,7 @@ import { TutorialUIBuilder } from './TutorialUIBuilder.js';
 export class TutorialManager {
   private readonly tutorialService: TutorialService;
   private readonly uiBuilder: TutorialUIBuilder;
-  private readonly interactionHandler: TutorialInteractionHandler;
+  private readonly ctxHandler: TutorialInteractionHandler;
   private readonly listBuilder: TutorialListBuilder;
   private readonly client: Client<true>;
 
@@ -45,7 +38,7 @@ export class TutorialManager {
     this.client = client;
     this.tutorialService = new TutorialService();
     this.uiBuilder = new TutorialUIBuilder(client);
-    this.interactionHandler = new TutorialInteractionHandler(client);
+    this.ctxHandler = new TutorialInteractionHandler(client);
     this.listBuilder = new TutorialListBuilder(client, this.tutorialService);
   }
 
@@ -53,143 +46,103 @@ export class TutorialManager {
    * Start a tutorial for a user
    */
   public async startTutorial(
-    interaction: RepliableInteraction | ModalSubmitInteraction | Context,
+    ctx: ComponentContext | Context,
     tutorialId: string,
   ): Promise<InteractionResponse | Message | null> {
     const tutorial = await this.tutorialService.getTutorialById(tutorialId);
 
     if (!tutorial) {
-      if (interaction instanceof ButtonInteraction) {
-        return await interaction.followUp({
-          content: `${getEmoji('x_icon', interaction.client)} Tutorial not found.`,
-          ephemeral: true,
-        });
-      }
-      else {
-        return await interaction.reply({
-          content: `${getEmoji('x_icon', interaction.client)} Tutorial not found.`,
-          flags: ['Ephemeral'],
-        });
-      }
+      return await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} Tutorial not found.`,
+        flags: ['Ephemeral'],
+      });
     }
 
     // Check prerequisites
     const hasPrereqs = await this.tutorialService.hasCompletedPrerequisites(
-      interaction.user.id,
+      ctx.user.id,
       tutorialId,
     );
 
     if (!hasPrereqs) {
-      if (interaction instanceof ButtonInteraction) {
-        return await interaction.followUp({
-          content: `${getEmoji('x_icon', interaction.client)} You need to complete the prerequisite tutorials first.`,
-          ephemeral: true,
-        });
-      }
-      else {
-        return await interaction.reply({
-          content: `${getEmoji('x_icon', interaction.client)} You need to complete the prerequisite tutorials first.`,
-          flags: ['Ephemeral'],
-        });
-      }
+      return await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} You need to complete the prerequisite tutorials first.`,
+        flags: ['Ephemeral'],
+      });
     }
 
     // Start or resume the tutorial
-    const progress = await this.tutorialService.startTutorial(interaction.user.id, tutorialId);
+    const progress = await this.tutorialService.startTutorial(ctx.user.id, tutorialId);
 
     // Show the first step
-    return await this.showTutorialStep(interaction, tutorial.id, progress.currentStepIndex);
+    return await this.showTutorialStep(ctx, tutorial.id, progress.currentStepIndex);
   }
 
   /**
    * Resume a tutorial for a user
    */
   public async resumeTutorial(
-    interaction: RepliableInteraction | ModalSubmitInteraction | Context,
+    ctx: Context | ComponentContext,
     tutorialId: string,
   ): Promise<InteractionResponse | Message | null> {
     const tutorial = await this.tutorialService.getTutorialById(tutorialId);
 
     if (!tutorial) {
-      if (interaction instanceof ButtonInteraction) {
-        return await interaction.followUp({
-          content: `${getEmoji('x_icon', interaction.client)} Tutorial not found.`,
-          ephemeral: true,
-        });
-      }
-      else {
-        return await interaction.reply({
-          content: `${getEmoji('x_icon', interaction.client)} Tutorial not found.`,
-          flags: ['Ephemeral'],
-        });
-      }
+      return await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} Tutorial not found.`,
+        flags: ['Ephemeral'],
+      });
     }
 
     // Get user's progress
-    const progress = await this.tutorialService.getUserProgress(interaction.user.id, tutorialId);
+    const progress = await this.tutorialService.getUserProgress(ctx.user.id, tutorialId);
 
     if (!progress) {
-      return await this.startTutorial(interaction, tutorialId);
+      return await this.startTutorial(ctx, tutorialId);
     }
 
     // Show the current step
-    return await this.showTutorialStep(interaction, tutorialId, progress.currentStepIndex);
+    return await this.showTutorialStep(ctx, tutorialId, progress.currentStepIndex);
   }
 
   /**
    * Show a specific step of a tutorial
    */
   private async showTutorialStep(
-    interaction: RepliableInteraction | ModalSubmitInteraction | Context,
+    ctx: Context | ComponentContext,
     tutorialId: string,
     stepIndex: number,
   ): Promise<InteractionResponse | Message | null> {
     const tutorial = await this.tutorialService.getTutorialById(tutorialId);
 
     if (!tutorial) {
-      if (interaction instanceof ButtonInteraction) {
-        return await interaction.followUp({
-          content: `${getEmoji('x_icon', this.client)} Tutorial not found.`,
-          ephemeral: true,
-        });
-      }
-      else {
-        return await interaction.reply({
-          content: `${getEmoji('x_icon', this.client)} Tutorial not found.`,
-          flags: ['Ephemeral'],
-        });
-      }
+      return await ctx.reply({
+        content: `${getEmoji('x_icon', this.client)} Tutorial not found.`,
+        flags: ['Ephemeral'],
+      });
     }
 
     const steps = await this.tutorialService.getTutorialSteps(tutorialId);
 
     if (steps.length === 0) {
-      if (interaction instanceof ButtonInteraction) {
-        return await interaction.followUp({
-          content: `${getEmoji('x_icon', this.client)} This tutorial has no steps.`,
-          ephemeral: true,
-        });
-      }
-      else {
-        return await interaction.reply({
-          content: `${getEmoji('x_icon', this.client)} This tutorial has no steps.`,
-          flags: ['Ephemeral'],
-        });
-      }
+      return await ctx.reply({
+        content: `${getEmoji('x_icon', this.client)} This tutorial has no steps.`,
+        flags: ['Ephemeral'],
+      });
     }
 
     // Get user progress
-    const progress = await this.tutorialService.getUserProgress(interaction.user.id, tutorialId);
+    const progress = await this.tutorialService.getUserProgress(ctx.user.id, tutorialId);
 
     // If the tutorial is completed, show a completion message
     if (progress?.completed) {
-      return await this.showTutorialCompletion(interaction, tutorialId);
+      return await this.showTutorialCompletion(ctx, tutorialId);
     }
 
     // If we're past the last step, mark as completed
     if (stepIndex >= steps.length) {
-      await this.tutorialService.completeTutorial(interaction.user.id, tutorialId);
-      return await this.showTutorialCompletion(interaction, tutorialId);
+      await this.tutorialService.completeTutorial(ctx.user.id, tutorialId);
+      return await this.showTutorialCompletion(ctx, tutorialId);
     }
 
     // Get the current step
@@ -203,95 +156,49 @@ export class TutorialManager {
       steps.length,
     );
 
-    if (interaction instanceof ButtonInteraction) {
-      return await interaction.editReply({
-        components: [container],
-        flags: [MessageFlags.IsComponentsV2],
-      });
-    }
-    else {
-      return await interaction.reply({
-        components: [container],
-        flags: [MessageFlags.IsComponentsV2],
-      });
-    }
+    return await ctx.editOrReply({ components: [container] }, ['IsComponentsV2']);
   }
 
   /**
    * Show tutorial completion message
    */
   private async showTutorialCompletion(
-    interaction: RepliableInteraction | ModalSubmitInteraction | Context,
+    ctx: Context | ComponentContext,
     tutorialId: string,
   ): Promise<InteractionResponse | Message | null> {
     const tutorial = await this.tutorialService.getTutorialById(tutorialId);
 
     if (!tutorial) {
-      if (interaction instanceof ButtonInteraction) {
-        return await interaction.followUp({
-          content: `${getEmoji('x_icon', this.client)} Tutorial not found.`,
-          ephemeral: true,
-        });
-      }
-      else {
-        return await interaction.reply({
-          content: `${getEmoji('x_icon', this.client)} Tutorial not found.`,
-          flags: ['Ephemeral'],
-        });
-      }
+      return await ctx.reply({
+        content: `${getEmoji('x_icon', this.client)} Tutorial not found.`,
+        flags: ['Ephemeral'],
+      });
     }
 
-    const nextTutorial = await this.tutorialService.getNextRecommendedTutorial(interaction.user.id);
+    const nextTutorial = await this.tutorialService.getNextRecommendedTutorial(ctx.user.id);
     const container = await this.uiBuilder.createCompletionContainer(tutorial, nextTutorial);
 
-    if (interaction instanceof ButtonInteraction) {
-      return await interaction.editReply({
-        components: [container],
-        flags: [MessageFlags.IsComponentsV2],
-      });
-    }
-    else {
-      return await interaction.reply({
-        components: [container],
-        flags: [MessageFlags.IsComponentsV2],
-      });
-    }
-  }
-
-  /**
-   * Show the tutorial list
-   */
-  public async showTutorialList(
-    interaction: RepliableInteraction | ModalSubmitInteraction | Context,
-  ): Promise<InteractionResponse | Message | null> {
-    // Use the paginated list builder
-    await this.listBuilder.createPaginatedTutorialList(interaction);
-    return null;
+    return await ctx.reply({
+      components: [container],
+      flags: [MessageFlags.IsComponentsV2],
+    });
   }
 
   /**
    * Review a tutorial's steps without changing progress
    */
   public async reviewTutorial(
-    interaction: ButtonInteraction | Context,
+    ctx: Context | ComponentContext,
     tutorialId: string,
     stepIndex: number = 0,
   ): Promise<void> {
     const tutorial = await this.tutorialService.getTutorialById(tutorialId);
 
     if (!tutorial) {
-      if (interaction instanceof ButtonInteraction) {
-        await interaction.followUp({
-          content: `${getEmoji('x_icon', interaction.client)} Tutorial not found.`,
-          ephemeral: true,
-        });
-      }
-      else {
-        await interaction.reply({
-          content: `${getEmoji('x_icon', interaction.client)} Tutorial not found.`,
-          ephemeral: true,
-        });
-      }
+      await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} Tutorial not found.`,
+        flags: ['Ephemeral'],
+      });
       return;
     }
 
@@ -299,18 +206,10 @@ export class TutorialManager {
     const steps = await this.tutorialService.getTutorialSteps(tutorialId);
 
     if (steps.length === 0) {
-      if (interaction instanceof ButtonInteraction) {
-        await interaction.followUp({
-          content: `${getEmoji('x_icon', interaction.client)} This tutorial has no steps.`,
-          ephemeral: true,
-        });
-      }
-      else {
-        await interaction.reply({
-          content: `${getEmoji('x_icon', interaction.client)} This tutorial has no steps.`,
-          ephemeral: true,
-        });
-      }
+      await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} This tutorial has no steps.`,
+        flags: ['Ephemeral'],
+      });
       return;
     }
 
@@ -327,53 +226,42 @@ export class TutorialManager {
     );
 
     // Show the review container
-    if (interaction instanceof ButtonInteraction) {
-      await interaction.editReply({
-        components: [container],
-        flags: [MessageFlags.IsComponentsV2],
-      });
-    }
-    else {
-      await interaction.reply({
-        components: [container],
-        flags: [MessageFlags.IsComponentsV2],
-      });
-    }
+    await ctx.reply({
+      components: [container],
+      flags: [MessageFlags.IsComponentsV2],
+    });
   }
 
-  // Button handlers - delegate to the interaction handler
-  public async handleNextButton(interaction: ButtonInteraction): Promise<void> {
-    await this.interactionHandler.handleNextButton(interaction);
+  // Button handlers - delegate to the ctx handler
+  public async handleNextButton(ctx: ComponentContext): Promise<void> {
+    await this.ctxHandler.handleNextButton(ctx);
   }
 
-  public async handlePrevButton(interaction: ButtonInteraction): Promise<void> {
-    await this.interactionHandler.handlePrevButton(interaction);
+  public async handlePrevButton(ctx: ComponentContext): Promise<void> {
+    await this.ctxHandler.handlePrevButton(ctx);
   }
 
-  public async handleSkipButton(interaction: ButtonInteraction): Promise<void> {
-    await this.interactionHandler.handleSkipButton(interaction);
+  public async handleSkipButton(ctx: ComponentContext): Promise<void> {
+    await this.ctxHandler.handleSkipButton(ctx);
   }
 
-  public async handlePageButton(interaction: ButtonInteraction): Promise<void> {
-    await this.interactionHandler.handlePageButton(interaction);
+  public async handlePageButton(ctx: ComponentContext): Promise<void> {
+    await this.ctxHandler.handlePageButton(ctx);
   }
 
-  public async handleReviewNextButton(interaction: ButtonInteraction): Promise<void> {
-    await this.interactionHandler.handleReviewNextButton(interaction);
+  public async handleReviewNextButton(ctx: ComponentContext): Promise<void> {
+    await this.ctxHandler.handleReviewNextButton(ctx);
   }
 
-  public async handleReviewPrevButton(interaction: ButtonInteraction): Promise<void> {
-    await this.interactionHandler.handleReviewPrevButton(interaction);
+  public async handleReviewPrevButton(ctx: ComponentContext): Promise<void> {
+    await this.ctxHandler.handleReviewPrevButton(ctx);
   }
 
   /**
    * Create a container for the tutorial list with pagination
    * This is a wrapper around the listBuilder's createTutorialListView method
    */
-  public async createTutorialListContainer(
-    interaction: ButtonInteraction | Context,
-    page: number = 0,
-  ) {
-    return await this.listBuilder.createTutorialListView(interaction, page);
+  public async createTutorialListContainer(ctx: Context | Context, page: number = 0) {
+    return await this.listBuilder.createTutorialListView(ctx, page);
   }
 }

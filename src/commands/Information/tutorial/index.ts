@@ -19,10 +19,10 @@ import ListCommand from '#src/commands/Information/tutorial/list.js';
 import ResumeCommand from '#src/commands/Information/tutorial/resume.js';
 import SetupCommand from '#src/commands/Information/tutorial/setup.js';
 import StartCommand from '#src/commands/Information/tutorial/start.js';
-import BaseTutorialCommand from '#src/modules/BaseCommands/BaseTutorialCommand.js';
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
-import { CustomID } from '#src/utils/CustomID.js';
-import { ButtonInteraction, MessageFlags } from 'discord.js';
+import BaseTutorialCommand from '#src/modules/BaseCommands/BaseTutorialCommand.js';
+import { MessageFlags } from 'discord.js';
 
 export default class TutorialCommand extends BaseTutorialCommand {
   constructor() {
@@ -40,102 +40,97 @@ export default class TutorialCommand extends BaseTutorialCommand {
   }
 
   @RegisterInteractionHandler('tutorial', 'start')
-  async handleStartButton(interaction: ButtonInteraction): Promise<void> {
-    await interaction.deferUpdate();
+  async handleStartButton(ctx: ComponentContext): Promise<void> {
+    await ctx.deferUpdate();
 
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [tutorialId] = customId.args;
+    const [tutorialId] = ctx.customId.args;
 
-    const tutorialManager = this.getTutorialManager(interaction.client);
-    await tutorialManager.startTutorial(interaction, tutorialId);
+    const tutorialManager = this.getTutorialManager(ctx.client);
+    await tutorialManager.startTutorial(ctx, tutorialId);
   }
 
   @RegisterInteractionHandler('tutorial', 'resume')
-  async handleResumeButton(interaction: ButtonInteraction): Promise<void> {
-    await interaction.deferUpdate();
+  async handleResumeButton(ctx: ComponentContext): Promise<void> {
+    await ctx.deferUpdate();
 
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [tutorialId] = customId.args;
+    const [tutorialId] = ctx.customId.args;
 
-    const tutorialManager = this.getTutorialManager(interaction.client);
-    await tutorialManager.resumeTutorial(interaction, tutorialId);
+    const tutorialManager = this.getTutorialManager(ctx.client);
+    await tutorialManager.resumeTutorial(ctx, tutorialId);
   }
 
   @RegisterInteractionHandler('tutorial', 'list')
-  async handleListButton(interaction: ButtonInteraction): Promise<void> {
-    await interaction.deferUpdate();
+  async handleListButton(ctx: ComponentContext): Promise<void> {
+    await ctx.deferUpdate();
 
-    const tutorialManager = this.getTutorialManager(interaction.client);
+    const tutorialManager = this.getTutorialManager(ctx.client);
     const { container, actionRow } = await tutorialManager.createTutorialListContainer(
-      interaction,
+      ctx,
       0,
     );
 
-    await interaction.editReply({
+    await ctx.editReply({
       components: [container, ...(actionRow ? [actionRow] : [])],
       flags: [MessageFlags.IsComponentsV2],
     });
   }
 
   @RegisterInteractionHandler('tutorial', 'page')
-  async handlePageButton(interaction: ButtonInteraction): Promise<void> {
-    const tutorialManager = this.getTutorialManager(interaction.client);
-    await tutorialManager.handlePageButton(interaction);
+  async handlePageButton(ctx: ComponentContext): Promise<void> {
+    const tutorialManager = this.getTutorialManager(ctx.client);
+    await tutorialManager.handlePageButton(ctx);
   }
 
   @RegisterInteractionHandler('tutorial', 'review')
-  async handleReviewButton(interaction: ButtonInteraction): Promise<void> {
-    await interaction.deferUpdate();
+  async handleReviewButton(ctx: ComponentContext): Promise<void> {
+    await ctx.deferUpdate();
 
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const tutorialId = customId.args[0];
+    const tutorialId = ctx.customId.args[0];
 
-    const tutorialManager = this.getTutorialManager(interaction.client);
-    await tutorialManager.reviewTutorial(interaction, tutorialId, 0);
+    const tutorialManager = this.getTutorialManager(ctx.client);
+    await tutorialManager.reviewTutorial(ctx, tutorialId, 0);
   }
 
   @RegisterInteractionHandler('tutorial', 'review-prev')
-  async handleReviewPrevButton(interaction: ButtonInteraction): Promise<void> {
-    await interaction.deferUpdate();
+  async handleReviewPrevButton(ctx: ComponentContext): Promise<void> {
+    await ctx.deferUpdate();
 
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [tutorialId, currentStepStr] = customId.args;
+    const [tutorialId, currentStepStr] = ctx.customId.args;
     const currentStep = parseInt(currentStepStr, 10);
 
-    const tutorialManager = this.getTutorialManager(interaction.client);
-    await tutorialManager.reviewTutorial(interaction, tutorialId, currentStep - 1);
+    const tutorialManager = this.getTutorialManager(ctx.client);
+    await tutorialManager.reviewTutorial(ctx, tutorialId, currentStep - 1);
   }
 
   @RegisterInteractionHandler('tutorial', 'review-next')
-  async handleReviewNextButton(interaction: ButtonInteraction): Promise<void> {
-    await interaction.deferUpdate();
+  async handleReviewNextButton(ctx: ComponentContext): Promise<void> {
+    await ctx.deferUpdate();
 
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [tutorialId, currentStepStr] = customId.args;
+    const [tutorialId, currentStepStr] = ctx.customId.args;
     const currentStep = parseInt(currentStepStr, 10);
 
-    const tutorialManager = this.getTutorialManager(interaction.client);
-    await tutorialManager.reviewTutorial(interaction, tutorialId, currentStep + 1);
+    const tutorialManager = this.getTutorialManager(ctx.client);
+    await tutorialManager.reviewTutorial(ctx, tutorialId, currentStep + 1);
   }
 
   @RegisterInteractionHandler('tutorial', 'next')
-  async handleNextButton(interaction: ButtonInteraction): Promise<void> {
+  async handleNextButton(ctx: ComponentContext): Promise<void> {
     // Note: We don't need to call deferUpdate() here because it's already called in the handler
-    const tutorialManager = this.getTutorialManager(interaction.client);
-    await tutorialManager.handleNextButton(interaction);
+    const tutorialManager = this.getTutorialManager(ctx.client);
+    await tutorialManager.handleNextButton(ctx);
   }
 
   @RegisterInteractionHandler('tutorial', 'prev')
-  async handlePrevButton(interaction: ButtonInteraction): Promise<void> {
+  async handlePrevButton(ctx: ComponentContext): Promise<void> {
     // Note: We don't need to call deferUpdate() here because it's already called in the handler
-    const tutorialManager = this.getTutorialManager(interaction.client);
-    await tutorialManager.handlePrevButton(interaction);
+    const tutorialManager = this.getTutorialManager(ctx.client);
+    await tutorialManager.handlePrevButton(ctx);
   }
 
   @RegisterInteractionHandler('tutorial', 'skip')
-  async handleSkipButton(interaction: ButtonInteraction): Promise<void> {
+  async handleSkipButton(ctx: ComponentContext): Promise<void> {
     // Note: We don't need to call deferUpdate() here because it's already called in the handler
-    const tutorialManager = this.getTutorialManager(interaction.client);
-    await tutorialManager.handleSkipButton(interaction);
+    const tutorialManager = this.getTutorialManager(ctx.client);
+    await tutorialManager.handleSkipButton(ctx);
   }
 }

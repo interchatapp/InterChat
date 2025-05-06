@@ -138,7 +138,11 @@ export const getReplyMethod = (
     It will send an error message to the user and log the error to the system.
   */
 export const sendErrorEmbed = async (
-  repliable: RepliableInteraction | Message | ContextMenuCommandInteraction,
+  repliable:
+    | RepliableInteraction
+    | Message
+    | ContextMenuCommandInteraction
+    | MessageComponentInteraction,
   errorCode: string,
   comment?: string,
 ) => {

@@ -15,32 +15,33 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { ButtonInteraction, Snowflake } from 'discord.js';
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import InfractionManager from '#src/managers/InfractionManager.js';
 import { Pagination } from '#src/modules/Pagination.js';
 import { type ModAction, replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
 import { getOriginalMessage } from '#src/utils/network/messageUtils.js';
 import type { supportedLocaleCodes } from '#utils/Locale.js';
 import { buildInfractionListEmbeds } from '#utils/moderation/infractionUtils.js';
+import type { Snowflake } from 'discord.js';
 
 export default class ViewInfractionsHandler implements ModAction {
   async handle(
-    interaction: ButtonInteraction,
+    ctx: ComponentContext,
     originalMsgId: Snowflake,
     locale: supportedLocaleCodes,
   ) {
-    await interaction.deferReply({ flags: ['Ephemeral'] });
+    await ctx.deferReply({ flags: ['Ephemeral'] });
 
     const originalMsg = await getOriginalMessage(originalMsgId);
 
     if (!originalMsg) {
-      await replyWithUnknownMessage(interaction, { locale });
+      await replyWithUnknownMessage(ctx, { locale });
       return;
     }
 
-    const user = await interaction.client.users.fetch(originalMsg.authorId).catch(() => null);
+    const user = await ctx.client.users.fetch(originalMsg.authorId).catch(() => null);
     if (!user) {
-      await replyWithUnknownMessage(interaction, { locale });
+      await replyWithUnknownMessage(ctx, { locale });
       return;
     }
 
@@ -50,13 +51,13 @@ export default class ViewInfractionsHandler implements ModAction {
     const iconURL = user.displayAvatarURL();
 
     const embeds = await buildInfractionListEmbeds(
-      interaction.client,
+      ctx.client,
       targetName,
       infractions,
       'user',
       iconURL,
     );
 
-    new Pagination(interaction.client).addPages(embeds).run(interaction, { deleteOnEnd: true });
+    new Pagination(ctx.client).addPages(embeds).run(ctx, { deleteOnEnd: true });
   }
 }

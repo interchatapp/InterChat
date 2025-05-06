@@ -1,17 +1,17 @@
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import { handleBan } from '#src/utils/BanUtils.js';
-import { CustomID } from '#src/utils/CustomID.js';
-import { ModalSubmitInteraction } from 'discord.js';
 
 export default class WarnModalHandler {
   @RegisterInteractionHandler('userBanModal')
-  async handleModal(interaction: ModalSubmitInteraction): Promise<void> {
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [userId] = customId.args;
+  async handleModal(ctx: ComponentContext): Promise<void> {
+    if (!ctx.isModalSubmit()) return;
 
-    const user = await interaction.client.users.fetch(userId).catch(() => null);
-    const reason = interaction.fields.getTextInputValue('reason');
+    const [userId] = ctx.customId.args;
 
-    await handleBan(interaction, userId, user, reason);
+    const user = await ctx.client.users.fetch(userId).catch(() => null);
+    const reason = ctx.getModalFieldValue('reason');
+
+    await handleBan(ctx, userId, user, reason);
   }
 }

@@ -1,5 +1,6 @@
 import BaseCommand from '#src/core/BaseCommand.js';
 import Context from '#src/core/CommandContext/Context.js';
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import { Pagination } from '#src/modules/Pagination.js';
 import UserDbService from '#src/services/UserDbService.js';
@@ -7,7 +8,7 @@ import { CustomID } from '#src/utils/CustomID.js';
 import db from '#src/utils/Db.js';
 import { InfoEmbed } from '#src/utils/EmbedUtils.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, RepliableInteraction } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 
 export default class InboxCommand extends BaseCommand {
   private readonly userDbService = new UserDbService();
@@ -25,8 +26,8 @@ export default class InboxCommand extends BaseCommand {
   }
 
   @RegisterInteractionHandler('inbox', 'viewOlder')
-  async handleViewOlder(interaction: RepliableInteraction) {
-    await showInbox(interaction, {
+  async handleViewOlder(ctx: ComponentContext) {
+    await showInbox(ctx, {
       userDbService: this.userDbService,
       showOlder: true,
       ephemeral: true,
@@ -35,11 +36,11 @@ export default class InboxCommand extends BaseCommand {
 }
 
 export async function showInbox(
-  interaction: Context | RepliableInteraction,
+  ctx: Context | ComponentContext,
   opts?: { userDbService?: UserDbService; showOlder?: boolean; ephemeral?: boolean },
 ) {
   const userDbService = opts?.userDbService ?? new UserDbService();
-  const userData = await userDbService.getUser(interaction.user.id);
+  const userData = await userDbService.getUser(ctx.user.id);
   const inboxLastRead = userData?.inboxLastReadDate || new Date();
 
   const announcements = !opts?.showOlder
@@ -69,13 +70,13 @@ export async function showInbox(
     const embed = new InfoEmbed()
       .setTitle(':tada: All caught up!')
       .setDescription(
-        `I'll let you know when there's more. But for now, there's only Chipi here: ${getEmoji('chipi_smile', interaction.client)}`,
+        `I'll let you know when there's more. But for now, there's only Chipi here: ${getEmoji('chipi_smile', ctx.client)}`,
       );
-    await interaction.reply({ embeds: [embed], components });
+    await ctx.reply({ embeds: [embed], components });
     return;
   }
 
-  new Pagination(interaction.client, { hiddenButtons: ['search', 'select'] })
+  new Pagination(ctx.client, { hiddenButtons: ['search', 'select'] })
     .addPages(
       announcements.map((announcement) => ({
         components,
@@ -89,11 +90,11 @@ export async function showInbox(
         ],
       })),
     )
-    .run(interaction, { ephemeral: opts?.ephemeral });
+    .run(ctx, { ephemeral: opts?.ephemeral });
 
-  await userDbService.updateUser(interaction.user.id, {
+  await userDbService.updateUser(ctx.user.id, {
     inboxLastReadDate: new Date(),
-    name: interaction.user.username,
-    image: interaction.user.avatarURL(),
+    name: ctx.user.username,
+    image: ctx.user.avatarURL(),
   });
 }

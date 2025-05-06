@@ -15,42 +15,35 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import type HubManager from '#src/managers/HubManager.js';
 import { HubService } from '#src/services/HubService.js';
 import db from '#src/utils/Db.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { type OriginalMessage, findOriginalMessage } from '#src/utils/network/messageUtils.js';
-import { CustomID, type ParsedCustomId } from '#utils/CustomID.js';
 import { t } from '#utils/Locale.js';
 import { fetchUserLocale } from '#utils/Utils.js';
+import { checkBlacklists } from '#utils/reaction/helpers.js';
 import {
+  addNativeReactions,
   addReaction,
-  removeReaction,
-  updateReactions,
-  storeReactions,
   createReactionEmbed,
   createReactionSelectMenu,
-  addNativeReactions,
+  removeReaction,
+  storeReactions,
+  updateReactions,
 } from '#utils/reaction/reactions.js';
-import { checkBlacklists } from '#utils/reaction/helpers.js';
 import sortReactions from '#utils/reaction/sortReactions.js';
-import {
-  type AnySelectMenuInteraction,
-  type ButtonInteraction,
-  type Snowflake,
-  time,
-} from 'discord.js';
+import { type Snowflake, time } from 'discord.js';
 
 export default class NetworkReactionInteraction {
   @RegisterInteractionHandler('reaction_')
-  async listenForReactionButton(
-    interaction: ButtonInteraction | AnySelectMenuInteraction,
-  ): Promise<void> {
-    await interaction.deferUpdate();
-    if (!interaction.inCachedGuild()) return;
+  async listenForReactionButton(ctx: ComponentContext): Promise<void> {
+    await ctx.deferUpdate();
+    if (!ctx.inGuild()) return;
 
-    const { customId, messageId } = this.getInteractionDetails(interaction);
+    const { messageId } = this.getInteractionDetails(ctx);
     const originalMessage = await findOriginalMessage(messageId);
 
     const hubService = new HubService(db);
@@ -58,71 +51,58 @@ export default class NetworkReactionInteraction {
 
     if (!originalMessage || !hub?.settings.has('Reactions')) return;
 
-    const { userBlacklisted, serverBlacklisted } = await this.checkUserPermissions(
-      hub,
-      interaction,
-    );
+    const { userBlacklisted, serverBlacklisted } = await this.checkUserPermissions(hub, ctx);
     if (userBlacklisted || serverBlacklisted) {
-      await this.handleBlacklistedUser(interaction, userBlacklisted);
+      await this.handleBlacklistedUser(ctx, userBlacklisted);
       return;
     }
 
-    if (await this.isUserOnCooldown(interaction)) return;
+    if (await this.isUserOnCooldown(ctx)) return;
 
-    if (customId.suffix === 'view_all') {
-      await this.handleViewAllReactions(interaction, messageId);
+    if (ctx.customId.suffix === 'view_all') {
+      await this.handleViewAllReactions(ctx, messageId);
     }
     else {
-      await this.handleReactionToggle(interaction, originalMessage, customId);
+      await this.handleReactionToggle(ctx, originalMessage);
     }
   }
 
-  private getInteractionDetails(interaction: ButtonInteraction | AnySelectMenuInteraction) {
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const messageId = interaction.isButton() ? interaction.message.id : customId.args[0];
-    return { customId, messageId };
+  private getInteractionDetails(ctx: ComponentContext) {
+    const messageId = ctx.isButton() ? ctx.interaction.message.id : ctx.customId.args[0];
+    return { messageId };
   }
 
-  private async checkUserPermissions(
-    hub: HubManager,
-    interaction: ButtonInteraction | AnySelectMenuInteraction,
-  ) {
-    return await checkBlacklists(hub.id, interaction.guildId, interaction.user.id);
+  private async checkUserPermissions(hub: HubManager, ctx: ComponentContext) {
+    return await checkBlacklists(hub.id, ctx.guildId, ctx.user.id);
   }
 
-  private async handleBlacklistedUser(
-    interaction: ButtonInteraction | AnySelectMenuInteraction,
-    userBlacklisted: boolean,
-  ) {
-    const locale = await fetchUserLocale(interaction.user.id);
+  private async handleBlacklistedUser(ctx: ComponentContext, userBlacklisted: boolean) {
+    const locale = await fetchUserLocale(ctx.user.id);
     const phrase = userBlacklisted ? 'errors.userBlacklisted' : 'errors.serverBlacklisted';
-    await interaction.followUp({
-      content: t(phrase, locale, { emoji: getEmoji('no', interaction.client) }),
+    await ctx.reply({
+      content: t(phrase, locale, { emoji: getEmoji('no', ctx.client) }),
       flags: ['Ephemeral'],
     });
   }
 
-  private async isUserOnCooldown(interaction: ButtonInteraction | AnySelectMenuInteraction) {
-    const cooldown = interaction.client.reactionCooldowns.get(interaction.user.id);
+  private async isUserOnCooldown(ctx: ComponentContext) {
+    const cooldown = ctx.client.reactionCooldowns.get(ctx.user.id);
     if (cooldown && cooldown > Date.now()) {
       const timeString = time(Math.round(cooldown / 1000), 'R');
-      await interaction.followUp({
+      await ctx.reply({
         content: `A little quick there! You can react again ${timeString}!`,
         flags: ['Ephemeral'],
       });
       return true;
     }
-    interaction.client.reactionCooldowns.set(interaction.user.id, Date.now() + 3000);
+    ctx.client.reactionCooldowns.set(ctx.user.id, Date.now() + 3000);
     return false;
   }
 
-  private async handleViewAllReactions(
-    interaction: ButtonInteraction | AnySelectMenuInteraction,
-    messageId: string,
-  ) {
+  private async handleViewAllReactions(ctx: ComponentContext, messageId: string) {
     const originalMessage = await findOriginalMessage(messageId);
     if (!originalMessage?.reactions || !originalMessage.hubId) {
-      await interaction.followUp({
+      await ctx.reply({
         content: 'There are no more reactions to view.',
         flags: ['Ephemeral'],
       });
@@ -141,24 +121,20 @@ export default class NetworkReactionInteraction {
     }
 
     // Create the reaction select menu
-    const selectMenu = createReactionSelectMenu(sortedReactions, messageId, interaction.user.id);
+    const selectMenu = createReactionSelectMenu(sortedReactions, messageId, ctx.user.id);
 
     // Create the reaction embed
     const embed = createReactionEmbed(sortedReactions, totalReactions);
 
     // Send the ephemeral message with the embed and select menu
-    await interaction.followUp({
+    await ctx.reply({
       embeds: [embed],
       components: [selectMenu],
       flags: ['Ephemeral'],
     });
   }
 
-  private async handleReactionToggle(
-    interaction: ButtonInteraction | AnySelectMenuInteraction,
-    originalMessage: OriginalMessage,
-    customId: ParsedCustomId,
-  ) {
+  private async handleReactionToggle(ctx: ComponentContext, originalMessage: OriginalMessage) {
     // Parse reactions from JSON string or default to empty object
     let dbReactions: { [key: string]: Snowflake[] } = {};
 
@@ -172,50 +148,52 @@ export default class NetworkReactionInteraction {
       dbReactions = {};
     }
 
-    const reactedEmoji = interaction.isStringSelectMenu() ? interaction.values[0] : customId.suffix;
+    const reactedEmoji = ctx.isStringSelectMenu() && ctx.values && ctx.values.length > 0
+      ? ctx.values[0]
+      : ctx.customId.suffix;
 
     // For select menu, we might be adding a new emoji that doesn't exist yet
     const emojiAlreadyReacted = dbReactions[reactedEmoji] || [];
 
-    // If it's a button interaction and the emoji doesn't exist, show an error
-    if (interaction.isButton() && emojiAlreadyReacted.length === 0) {
-      await interaction.followUp({
-        content: `${getEmoji('no', interaction.client)} This reaction doesn't exist.`,
+    // If it's a button ctx and the emoji doesn't exist, show an error
+    if (ctx.isButton() && emojiAlreadyReacted.length === 0) {
+      await ctx.reply({
+        content: `${getEmoji('no', ctx.client)} This reaction doesn't exist.`,
         flags: ['Ephemeral'],
       });
       return;
     }
 
     // Toggle the reaction
-    if (emojiAlreadyReacted.includes(interaction.user.id)) {
-      removeReaction(dbReactions, interaction.user.id, reactedEmoji);
+    if (emojiAlreadyReacted.includes(ctx.user.id)) {
+      removeReaction(dbReactions, ctx.user.id, reactedEmoji);
     }
     else {
-      addReaction(dbReactions, interaction.user.id, reactedEmoji);
+      addReaction(dbReactions, ctx.user.id, reactedEmoji);
     }
 
     // Store the updated reactions
     await storeReactions(originalMessage, dbReactions);
 
     // Send confirmation to the user
-    await this.sendReactionConfirmation(interaction, emojiAlreadyReacted, reactedEmoji);
+    await this.sendReactionConfirmation(ctx, emojiAlreadyReacted, reactedEmoji);
 
     // Update all broadcast messages with the new reactions
     await updateReactions(originalMessage, dbReactions);
 
     // Add native reactions to the original message
-    await addNativeReactions(interaction.client, originalMessage, dbReactions);
+    await addNativeReactions(ctx.client, originalMessage, dbReactions);
   }
 
   private async sendReactionConfirmation(
-    interaction: ButtonInteraction | AnySelectMenuInteraction,
+    ctx: ComponentContext,
     emojiAlreadyReacted: Snowflake[],
     reactedEmoji: string,
   ) {
-    if (interaction.isStringSelectMenu()) {
-      const action = emojiAlreadyReacted.includes(interaction.user.id) ? 'unreacted' : 'reacted';
-      await interaction
-        .followUp({
+    if (ctx.isStringSelectMenu()) {
+      const action = emojiAlreadyReacted.includes(ctx.user.id) ? 'unreacted' : 'reacted';
+      await ctx
+        .reply({
           content: `You have ${action} with ${reactedEmoji}!`,
           flags: ['Ephemeral'],
         })

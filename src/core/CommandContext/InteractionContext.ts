@@ -30,7 +30,6 @@ import type {
 
 export default class InteractionContext extends Context<{
   interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction;
-  ctx: InteractionContext;
   responseType: Message | InteractionResponse;
 }> {
 

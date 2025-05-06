@@ -15,6 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import BlacklistManager from '#src/managers/BlacklistManager.js';
 import { HubService } from '#src/services/HubService.js';
@@ -26,11 +27,9 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  type ButtonInteraction,
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
-  type ModalSubmitInteraction,
 } from 'discord.js';
 import ms from 'ms';
 
@@ -232,8 +231,8 @@ export function buildCustomDurationModal(
 /**
  * Extracts data from a modal submission
  */
-export function getModalData(interaction: ModalSubmitInteraction, predefinedDuration?: string) {
-  const reason = interaction.fields.getTextInputValue('reason');
+export function getModalData(ctx: ComponentContext, predefinedDuration?: string) {
+  const reason = ctx.getModalFieldValue('reason') ?? 'No reason provided.';
   let expiresAt: Date | null = null;
 
   // If we have a predefined duration from the button
@@ -245,10 +244,8 @@ export function getModalData(interaction: ModalSubmitInteraction, predefinedDura
     // If permanent, expiresAt remains null
   }
   // Otherwise get duration from the modal input
-  else if (interaction.fields.getTextInputValue('duration')) {
-    const duration = ms(
-      interaction.fields.getTextInputValue('duration') as ms.StringValue,
-    );
+  else if (ctx.getModalFieldValue('duration')) {
+    const duration = ms(ctx.getModalFieldValue('duration') as ms.StringValue);
     expiresAt = duration ? new Date(Date.now() + duration) : null;
   }
 
@@ -259,148 +256,151 @@ export default class BlacklistCommandHandler {
   private readonly hubService = new HubService();
 
   @RegisterInteractionHandler('blacklist_cmd_duration', 'user')
-  async handleUserDurationSelect(interaction: ButtonInteraction): Promise<void> {
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [hubId, userId, duration] = customId.args;
+  async handleUserDurationSelect(ctx: ComponentContext): Promise<void> {
+    const [hubId, userId, duration] = ctx.customId.args;
 
     if (duration === 'custom') {
       // For custom duration, show the modal with both fields
-      await interaction.showModal(buildCustomDurationModal('Blacklist User', 'user', hubId, userId));
+      await ctx.showModal(
+        buildCustomDurationModal('Blacklist User', 'user', hubId, userId),
+      );
     }
     else {
       // For predefined durations, show modal with only reason field
-      await interaction.showModal(buildReasonOnlyModal('Blacklist User', 'user', hubId, userId, duration));
+      await ctx.showModal(
+        buildReasonOnlyModal('Blacklist User', 'user', hubId, userId, duration),
+      );
     }
   }
 
   @RegisterInteractionHandler('blacklist_cmd_reason_modal', 'user')
   @RegisterInteractionHandler('blacklist_cmd_custom_modal', 'user')
-  async handleUserModal(interaction: ModalSubmitInteraction): Promise<void> {
-    await interaction.deferUpdate();
+  async handleUserModal(ctx: ComponentContext): Promise<void> {
+    await ctx.deferUpdate();
 
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [hubId, userId, predefinedDuration] = customId.args;
+    const [hubId, userId, predefinedDuration] = ctx.customId.args;
 
     const hub = await this.hubService.fetchHub(hubId);
     if (!hub) {
-      await interaction.followUp({
-        content: `${getEmoji('x_icon', interaction.client)} Hub not found.`,
+      await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} Hub not found.`,
         flags: ['Ephemeral'],
       });
       return;
     }
 
-    const user = await interaction.client.users.fetch(userId).catch(() => null);
+    const user = await ctx.client.users.fetch(userId).catch(() => null);
     if (!user) {
-      await interaction.followUp({
-        content: `${getEmoji('x_icon', interaction.client)} User not found.`,
+      await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} User not found.`,
         flags: ['Ephemeral'],
       });
       return;
     }
 
-    if (userId === interaction.user.id) {
-      await interaction.followUp({
+    if (userId === ctx.user.id) {
+      await ctx.reply({
         content: '<a:nuhuh:1256859727158050838> Nuh uh! You can\'t blacklist yourself.',
         flags: ['Ephemeral'],
       });
       return;
     }
 
-    const { reason, expiresAt } = getModalData(interaction, predefinedDuration);
+    const { reason, expiresAt } = getModalData(ctx, predefinedDuration);
     const blacklistManager = new BlacklistManager('user', userId);
 
     await blacklistManager.addBlacklist({
       hubId,
-      moderatorId: interaction.user.id,
+      moderatorId: ctx.user.id,
       reason,
       expiresAt,
     });
 
-    await blacklistManager.log(hubId, interaction.client, {
-      mod: interaction.user,
+    await blacklistManager.log(hubId, ctx.client, {
+      mod: ctx.user,
       reason,
       expiresAt,
     });
 
-    await interaction.followUp({
-      content: `${getEmoji('tick_icon', interaction.client)} Successfully blacklisted ${user.username}.`,
+    await ctx.reply({
+      content: `${getEmoji('tick_icon', ctx.client)} Successfully blacklisted ${user.username}.`,
       flags: ['Ephemeral'],
     });
   }
 
   @RegisterInteractionHandler('blacklist_cmd_duration', 'server')
-  async handleServerDurationSelect(interaction: ButtonInteraction): Promise<void> {
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [hubId, serverId, duration] = customId.args;
+  async handleServerDurationSelect(ctx: ComponentContext): Promise<void> {
+    const [hubId, serverId, duration] = ctx.customId.args;
 
     if (duration === 'custom') {
       // For custom duration, show the modal with both fields
-      await interaction.showModal(buildCustomDurationModal('Blacklist Server', 'server', hubId, serverId));
+      await ctx.showModal(
+        buildCustomDurationModal('Blacklist Server', 'server', hubId, serverId),
+      );
     }
     else {
       // For predefined durations, show modal with only reason field
-      await interaction.showModal(buildReasonOnlyModal('Blacklist Server', 'server', hubId, serverId, duration));
+      await ctx.showModal(
+        buildReasonOnlyModal('Blacklist Server', 'server', hubId, serverId, duration),
+      );
     }
   }
 
   @RegisterInteractionHandler('blacklist_cmd_reason_modal', 'server')
   @RegisterInteractionHandler('blacklist_cmd_custom_modal', 'server')
-  async handleServerModal(interaction: ModalSubmitInteraction): Promise<void> {
-    await interaction.deferUpdate();
+  async handleServerModal(ctx: ComponentContext): Promise<void> {
+    await ctx.deferUpdate();
 
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [hubId, serverId, predefinedDuration] = customId.args;
+    const [hubId, serverId, predefinedDuration] = ctx.customId.args;
 
     const hub = await this.hubService.fetchHub(hubId);
     if (!hub) {
-      await interaction.followUp({
-        content: `${getEmoji('x_icon', interaction.client)} Hub not found.`,
+      await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} Hub not found.`,
         flags: ['Ephemeral'],
       });
       return;
     }
 
-    const server = await interaction.client.fetchGuild(serverId).catch(() => null);
+    const server = await ctx.client.fetchGuild(serverId).catch(() => null);
     if (!server) {
-      await interaction.followUp({
-        content: `${getEmoji('x_icon', interaction.client)} Server not found.`,
+      await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} Server not found.`,
         flags: ['Ephemeral'],
       });
       return;
     }
 
-    const { reason, expiresAt } = getModalData(interaction, predefinedDuration);
+    const { reason, expiresAt } = getModalData(ctx, predefinedDuration);
     const blacklistManager = new BlacklistManager('server', serverId);
 
     await blacklistManager.addBlacklist({
       hubId,
-      moderatorId: interaction.user.id,
+      moderatorId: ctx.user.id,
       reason,
       expiresAt,
       serverName: server.name,
     });
 
-    await blacklistManager.log(hubId, interaction.client, {
-      mod: interaction.user,
+    await blacklistManager.log(hubId, ctx.client, {
+      mod: ctx.user,
       reason,
       expiresAt,
     });
 
     // Notify server of blacklist
-    await sendBlacklistNotif('server', interaction.client, {
+    await sendBlacklistNotif('server', ctx.client, {
       target: { id: serverId },
       hubId,
       expiresAt,
       reason,
     });
 
-    await deleteConnection({
-      hubId_serverId: { hubId, serverId },
-    });
+    // Disconnect the server
+    await deleteConnection({ hubId_serverId: { hubId, serverId } });
 
-    await interaction.followUp({
-      content: `${getEmoji('tick_icon', interaction.client)} Successfully blacklisted ${server.name}.`,
+    await ctx.reply({
+      content: `${getEmoji('tick_icon', ctx.client)} Successfully blacklisted ${server.name}.`,
       flags: ['Ephemeral'],
     });
   }

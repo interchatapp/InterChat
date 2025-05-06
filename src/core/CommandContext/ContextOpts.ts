@@ -19,6 +19,7 @@ import type Context from '#src/core/CommandContext/Context.js';
 // eslint-disable-next-line no-duplicate-imports
 import type { ValidContextInteractions } from '#src/core/CommandContext/Context.js';
 import type PrefixContext from '#src/core/CommandContext/PrefixContext.js';
+import { CustomID } from '#src/utils/CustomID.js';
 import Logger from '#src/utils/Logger.js';
 import {
   ApplicationCommandOptionType,
@@ -28,6 +29,8 @@ import {
   Message,
   type Attachment,
   type Channel,
+  type MessageComponentInteraction,
+  type ModalSubmitInteraction,
   type Role,
   type User,
 } from 'discord.js';
@@ -96,6 +99,24 @@ function isContextMenuInteraction(
     interaction.type === InteractionType.ApplicationCommand &&
     interaction.isMessageContextMenuCommand()
   );
+}
+
+/**
+ * Type guard to check if an interaction is a MessageComponentInteraction
+ */
+function isMessageComponentInteraction(
+  interaction: ValidContextInteractions,
+): interaction is MessageComponentInteraction {
+  return interaction.type === InteractionType.MessageComponent;
+}
+
+/**
+ * Type guard to check if an interaction is a ModalSubmitInteraction
+ */
+function isModalSubmitInteraction(
+  interaction: ValidContextInteractions,
+): interaction is ModalSubmitInteraction {
+  return interaction.type === InteractionType.ModalSubmit;
 }
 
 /**
@@ -209,6 +230,86 @@ class ContextMenuOptionResolver implements OptionResolver {
 }
 
 /**
+ * Resolver for component interactions (buttons, select menus, etc.)
+ */
+class ComponentOptionResolver implements OptionResolver {
+  private readonly interaction: MessageComponentInteraction | ModalSubmitInteraction;
+  private readonly customId: ReturnType<typeof CustomID.parseCustomId>;
+
+  constructor(interaction: MessageComponentInteraction | ModalSubmitInteraction) {
+    this.interaction = interaction;
+    this.customId = CustomID.parseCustomId(interaction.customId);
+  }
+
+  /**
+   * Gets an option value from component interactions
+   * For components, options are stored in the customId args
+   * @param name The index or name of the argument to retrieve
+   * @param type The expected type of the option
+   * @param required Whether the option is required
+   * @returns The option value or null if not found
+   */
+  getOption<T>(name: string, type: SupportedOptionTypes, required: boolean): T | null {
+    try {
+      // If name is a number, treat it as an index
+      const index = Number(name);
+      if (!isNaN(index) && index >= 0) {
+        const value = this.customId.args[index];
+        if (required && value === undefined) {
+          throw new OptionError(`Missing required argument at index ${index}`, name);
+        }
+        return this.convertValue(value, type) as T;
+      }
+
+      // Otherwise, try to find a named argument in the format "name=value"
+      for (const arg of this.customId.args) {
+        if (arg.startsWith(`${name}=`)) {
+          const value = arg.substring(name.length + 1);
+          return this.convertValue(value, type) as T;
+        }
+      }
+
+      if (required) {
+        throw new OptionError(`Missing required argument: ${name}`, name);
+      }
+
+      return null;
+    }
+    catch (error) {
+      if (error instanceof OptionError) throw error;
+      Logger.error(`Error retrieving option '${name}'`, error);
+      throw new OptionError(`Failed to retrieve option: ${error.message}`, name);
+    }
+  }
+
+  /**
+   * Convert a string value to the appropriate type
+   * @param value The string value to convert
+   * @param type The target type
+   * @returns The converted value or null if conversion failed
+   */
+  private convertValue(value: string | undefined, type: SupportedOptionTypes): unknown {
+    if (value === undefined) return null;
+
+    switch (type) {
+      case ApplicationCommandOptionType.String:
+        return value;
+      case ApplicationCommandOptionType.Number:
+        const num = Number(value);
+        return isNaN(num) ? null : num;
+      case ApplicationCommandOptionType.Boolean:
+        return value === 'true' || value === '1' || value === 'yes';
+      case ApplicationCommandOptionType.User:
+      case ApplicationCommandOptionType.Channel:
+      case ApplicationCommandOptionType.Role:
+        return value;
+      default:
+        return null;
+    }
+  }
+}
+
+/**
  * The main ContextOptions class that provides a unified interface for retrieving
  * command options across different Discord interaction types.
  */
@@ -232,6 +333,10 @@ export default class ContextOptions {
     }
     else if (isContextMenuInteraction(ctx.originalInteraction)) {
       this.resolver = new ContextMenuOptionResolver(ctx.originalInteraction);
+    }
+    else if (isMessageComponentInteraction(ctx.originalInteraction) ||
+             isModalSubmitInteraction(ctx.originalInteraction)) {
+      this.resolver = new ComponentOptionResolver(ctx.originalInteraction);
     }
     else {
       throw new OptionError('Unsupported interaction type for options', 'context_type');
@@ -369,6 +474,7 @@ export default class ContextOptions {
 
     try {
       if (isChatInputCommandInteraction(this.ctx.originalInteraction)) {
+        if (!this.ctx.originalInteraction.inCachedGuild()) return null;
         return this.ctx.originalInteraction.options.getChannel(name, required);
       }
 
@@ -421,6 +527,7 @@ export default class ContextOptions {
 
     try {
       if (isChatInputCommandInteraction(this.ctx.originalInteraction)) {
+        if (!this.ctx.originalInteraction.inCachedGuild()) return null;
         return this.ctx.originalInteraction.options.getRole(name, required);
       }
 

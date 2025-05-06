@@ -15,23 +15,24 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { ButtonInteraction, Snowflake } from 'discord.js';
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { type ModAction, replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
 import { getOriginalMessage } from '#src/utils/network/messageUtils.js';
+import { fetchUserLocale } from '#src/utils/Utils.js';
 import type { ReactionArray } from '#types/Utils.d.ts';
 import { updateReactions } from '#utils/reaction/reactions.js';
 import sortReactions from '#utils/reaction/sortReactions.js';
-import { fetchUserLocale } from '#src/utils/Utils.js';
+import type { Snowflake } from 'discord.js';
 
 export default class RemoveReactionsHandler implements ModAction {
-  async handle(interaction: ButtonInteraction, originalMsgId: Snowflake): Promise<void> {
-    await interaction.deferReply({ flags: ['Ephemeral'] });
+  async handle(ctx: ComponentContext, originalMsgId: Snowflake) {
+    await ctx.deferReply({ flags: ['Ephemeral'] });
 
     const originalMsg = await getOriginalMessage(originalMsgId);
     if (!originalMsg) {
-      await replyWithUnknownMessage(interaction, {
-        locale: await fetchUserLocale(interaction.user.id),
+      await replyWithUnknownMessage(ctx, {
+        locale: await fetchUserLocale(ctx.user.id),
       });
       return;
     }
@@ -47,8 +48,8 @@ export default class RemoveReactionsHandler implements ModAction {
     }
 
     if (!sortReactions(reactions).length) {
-      await interaction.followUp({
-        content: `${getEmoji('slash', interaction.client)} No reactions to remove.`,
+      await ctx.reply({
+        content: `${getEmoji('slash', ctx.client)} No reactions to remove.`,
         flags: ['Ephemeral'],
       });
       return;
@@ -56,8 +57,8 @@ export default class RemoveReactionsHandler implements ModAction {
 
     await updateReactions(originalMsg, {});
 
-    await interaction.followUp({
-      content: `${getEmoji('tick_icon', interaction.client)} Reactions removed.`,
+    await ctx.reply({
+      content: `${getEmoji('tick_icon', ctx.client)} Reactions removed.`,
       flags: ['Ephemeral'],
     });
   }

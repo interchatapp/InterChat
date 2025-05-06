@@ -15,6 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import { buildModPanel } from '#src/interactions/ModPanel.js';
 import { HubService } from '#src/services/HubService.js';
@@ -24,7 +25,7 @@ import { InfoEmbed } from '#src/utils/EmbedUtils.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { isStaffOrHubMod } from '#src/utils/hub/utils.js';
 import { findOriginalMessage } from '#src/utils/network/messageUtils.js';
-import { ButtonBuilder, type ButtonInteraction, ButtonStyle } from 'discord.js';
+import { ButtonBuilder, ButtonStyle } from 'discord.js';
 
 export const modPanelButton = (targetMsgId: string, emoji: string, opts?: { label?: string }) =>
   new ButtonBuilder()
@@ -35,23 +36,22 @@ export const modPanelButton = (targetMsgId: string, emoji: string, opts?: { labe
 
 export default class ModActionsButton {
   @RegisterInteractionHandler('showModPanel')
-  async handler(interaction: ButtonInteraction): Promise<void> {
-    await interaction.deferUpdate();
+  async handler(ctx: ComponentContext): Promise<void> {
+    await ctx.deferUpdate();
 
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [messageId] = customId.args;
+    const [messageId] = ctx.customId.args;
 
     const originalMessage = await findOriginalMessage(messageId);
 
     const hubService = new HubService(db);
     const hub = originalMessage ? await hubService.fetchHub(originalMessage?.hubId) : null;
 
-    if (!originalMessage || !hub || !(await isStaffOrHubMod(interaction.user.id, hub))) {
-      await interaction.editReply({ components: [] });
-      await interaction.followUp({
+    if (!originalMessage || !hub || !(await isStaffOrHubMod(ctx.user.id, hub))) {
+      await ctx.editReply({ components: [] });
+      await ctx.reply({
         embeds: [
           new InfoEmbed({
-            description: `${getEmoji('slash', interaction.client)} Message was deleted.`,
+            description: `${getEmoji('slash', ctx.client)} Message was deleted.`,
           }),
         ],
         flags: ['Ephemeral'],
@@ -59,10 +59,10 @@ export default class ModActionsButton {
       return;
     }
 
-    if (!(await isStaffOrHubMod(interaction.user.id, hub))) return;
+    if (!(await isStaffOrHubMod(ctx.user.id, hub))) return;
 
-    const panel = await buildModPanel(interaction, originalMessage);
-    await interaction.followUp({
+    const panel = await buildModPanel(ctx, originalMessage);
+    await ctx.reply({
       embeds: [panel.embed],
       components: panel.buttons,
       flags: ['Ephemeral'],

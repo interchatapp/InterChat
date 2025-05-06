@@ -17,6 +17,7 @@
 
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import { donateButton } from '#src/utils/ComponentUtils.js';
 import { CustomID } from '#src/utils/CustomID.js';
@@ -27,7 +28,6 @@ import { getCredits } from '#utils/Utils.js';
 import { stripIndents } from 'common-tags';
 import {
   ButtonBuilder,
-  type ButtonInteraction,
   ButtonStyle,
   type Client,
   ContainerBuilder,
@@ -134,43 +134,43 @@ export default class About extends BaseCommand {
   }
 
   @RegisterInteractionHandler('about', 'credits')
-  public async handleCreditsButton(interaction: ButtonInteraction) {
-    await interaction.deferReply({ flags: ['Ephemeral'] });
+  public async handleCreditsButton(ctx: ComponentContext) {
+    await ctx.deferReply({ flags: ['Ephemeral'] });
 
-    const usernames = await this.getUsernames(interaction.client);
-    const creditsDivider = `${getEmoji('blueLine', interaction.client).repeat(9)} **CREDITS** ${getEmoji('blueLine', interaction.client).repeat(9)}`;
-    const dotBlue = getEmoji('dot', interaction.client);
+    const usernames = await this.getUsernames(ctx.client);
+    const creditsDivider = `${getEmoji('blueLine', ctx.client).repeat(9)} **CREDITS** ${getEmoji('blueLine', ctx.client).repeat(9)}`;
+    const dotBlue = getEmoji('dot', ctx.client);
 
     const creditsEmbed = new InfoEmbed()
       .setDescription(
         stripIndents`
 
         ${creditsDivider}
-        ${getEmoji('developer_badge', interaction.client)} **Developers:**
+        ${getEmoji('developer_badge', ctx.client)} **Developers:**
         ${dotBlue} @${usernames[0]}
 
-        ${getEmoji('staff_badge', interaction.client)} **Staff: ([Check Applications!](${Constants.Links.Website}/apply))**
+        ${getEmoji('staff_badge', ctx.client)} **Staff: ([Check Applications!](${Constants.Links.Website}/apply))**
         ${dotBlue} @${usernames[1]}
         ${dotBlue} @${usernames[2]}
         ${dotBlue} @${usernames[3]}
         ${dotBlue} @${usernames[4]}
 
-        ${getEmoji('translator_badge', interaction.client)} **Translators:**
+        ${getEmoji('translator_badge', ctx.client)} **Translators:**
         ${dotBlue} @${usernames[5]}
         ${dotBlue} @${usernames[6]}
         ${dotBlue} @${usernames[7]}
 
         ✨ **Deserving Mentions:**
-        ${dotBlue} @${usernames[8]} (maker of our cute mascot chipi ${getEmoji('chipi_smile', interaction.client)})
-        ${dotBlue} @${usernames[9]} ([top voter](${Constants.Links.Vote}) of all time ${getEmoji('topggSparkles', interaction.client)})
+        ${dotBlue} @${usernames[8]} (maker of our cute mascot chipi ${getEmoji('chipi_smile', ctx.client)})
+        ${dotBlue} @${usernames[9]} ([top voter](${Constants.Links.Vote}) of all time ${getEmoji('topggSparkles', ctx.client)})
         ${creditsDivider}
       `,
       )
       .setFooter({
-        text: ` InterChat v${interaction.client.version} • Made with ❤️ by the InterChat Team`,
+        text: ` InterChat v${ctx.client.version} • Made with ❤️ by the InterChat Team`,
       });
 
-    await interaction.editReply({ embeds: [creditsEmbed] });
+    await ctx.editReply({ embeds: [creditsEmbed] });
   }
 
   private async getUsernames(client: Client): Promise<string[]> {

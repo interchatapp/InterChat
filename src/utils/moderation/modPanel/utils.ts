@@ -15,27 +15,21 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type {
-  ButtonInteraction,
-  ModalSubmitInteraction,
-  RepliableInteraction,
-  Snowflake,
-} from 'discord.js';
-import { getEmoji } from '#src/utils/EmojiUtils.js';
-import { getReplyMethod } from '#src/utils/Utils.js';
-import type { OriginalMessage } from '#src/utils/network/messageUtils.js';
-import { InfoEmbed } from '#utils/EmbedUtils.js';
-import { type supportedLocaleCodes, t } from '#utils/Locale.js';
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import Context from '#src/core/CommandContext/Context.js';
+import { getEmoji } from '#src/utils/EmojiUtils.js';
+import type { OriginalMessage } from '#src/utils/network/messageUtils.js';
+import { type supportedLocaleCodes } from '#utils/Locale.js';
+import type { Snowflake } from 'discord.js';
 
 export interface ModAction {
   handle(
-    interaction: ButtonInteraction,
+    ctx: ComponentContext,
     originalMsgId: Snowflake,
     locale: supportedLocaleCodes,
   ): Promise<void>;
   handleModal?(
-    interaction: ModalSubmitInteraction,
+    ctx: ComponentContext,
     originalMsg: OriginalMessage,
     locale: supportedLocaleCodes,
   ): Promise<void>;
@@ -46,40 +40,16 @@ interface ReplyWithUnknownMessageOpts {
   edit?: boolean;
 }
 
-export async function replyWithUnknownMessage<T extends Context>(
-  interaction: T,
-  opts?: ReplyWithUnknownMessageOpts,
-): Promise<void>;
-export async function replyWithUnknownMessage<T extends RepliableInteraction>(
-  interaction: T,
-  opts: ReplyWithUnknownMessageOpts & { locale: supportedLocaleCodes },
-): Promise<void>;
-export async function replyWithUnknownMessage<T extends Context | RepliableInteraction>(
-  interaction: T,
+export async function replyWithUnknownMessage(
+  ctx: Context,
   opts: ReplyWithUnknownMessageOpts = {},
 ) {
-  const { locale, edit = false } = opts;
+  const { edit = false } = opts;
 
-  const emoji = getEmoji('x_icon', interaction.client);
-  if (interaction instanceof Context) {
-    await interaction.replyEmbed('errors.unknownNetworkMessage', {
-      t: { emoji },
-      flags: ['Ephemeral'],
-      edit,
-    });
-  }
-  else {
-    if (!locale) {
-      throw new Error('locale is required when interaction is not a Context');
-    }
-
-    const embed = new InfoEmbed().setDescription(
-      t('errors.unknownNetworkMessage', locale, { emoji }),
-    );
-
-    if (edit) await interaction.editReply({ embeds: [embed], components: [] });
-
-    const replyMethod = getReplyMethod(interaction);
-    await interaction[replyMethod]({ embeds: [embed], flags: ['Ephemeral'] });
-  }
+  const emoji = getEmoji('x_icon', ctx.client);
+  await ctx.replyEmbed('errors.unknownNetworkMessage', {
+    t: { emoji },
+    flags: ['Ephemeral'],
+    edit,
+  });
 }

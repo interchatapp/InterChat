@@ -143,8 +143,24 @@ export default {
       'NotQuiteBlack',
       'Random',
     ] as (keyof typeof Colors)[],
-    interchat: '#9172D8' as HexColorString,
-    invisible: '#2b2d31' as HexColorString,
+    // InterChat v5 Design System Colors
+    primary: '#9172D8' as HexColorString, // Primary brand color
+    secondary: '#57F287' as HexColorString, // Secondary brand color
+    tertiary: '#EB459E' as HexColorString, // Accent color
+
+    // Semantic colors
+    success: '#57F287' as HexColorString, // Success messages and actions
+    warning: '#FEE75C' as HexColorString, // Warning messages and caution states
+    error: '#ED4245' as HexColorString, // Error messages and destructive actions
+    info: '#5865F2' as HexColorString, // Informational messages
+
+    // UI colors
+    background: '#2F3136' as HexColorString, // color for containers
+    foreground: '#FFFFFF' as HexColorString, // Text color (to match website)
+    muted: '#B9BBBE' as HexColorString, // Subdued text color (to match website)
+    invisible: '#2b2d31' as HexColorString, // Invisible embed color
+
+    // Seasonal colors
     christmas: ['#00B32C', '#D6001C', '#FFFFFF'] as HexColorString[],
   },
 } as const;

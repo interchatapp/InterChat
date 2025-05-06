@@ -15,6 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { type ModAction, replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
 import { getOriginalMessage } from '#src/utils/network/messageUtils.js';
 import { checkIfStaff } from '#src/utils/Utils.js';
@@ -22,7 +23,6 @@ import { CustomID } from '#utils/CustomID.js';
 import type { supportedLocaleCodes } from '#utils/Locale.js';
 import {
   ActionRowBuilder,
-  type ButtonInteraction,
   ModalBuilder,
   type Snowflake,
   TextInputBuilder,
@@ -31,27 +31,27 @@ import {
 
 export default class UserBanHandler implements ModAction {
   async handle(
-    interaction: ButtonInteraction,
+    ctx: ComponentContext,
     originalMsgId: Snowflake,
     locale: supportedLocaleCodes,
   ) {
     const originalMsg = await getOriginalMessage(originalMsgId);
 
     if (!originalMsg) {
-      await replyWithUnknownMessage(interaction, { locale });
+      await replyWithUnknownMessage(ctx, { locale });
       return;
     }
 
-    if (originalMsg.authorId === interaction.user.id) {
-      await interaction.reply({
+    if (originalMsg.authorId === ctx.user.id) {
+      await ctx.reply({
         content: 'Let\'s not go there. <:bruhcat:1256859727158050838>',
         flags: ['Ephemeral'],
       });
       return;
     }
 
-    if (!checkIfStaff(interaction.user.id)) {
-      await interaction.reply({
+    if (!checkIfStaff(ctx.user.id)) {
+      await ctx.reply({
         content: 'You do not have permission to ban users.',
         flags: ['Ephemeral'],
       });
@@ -74,7 +74,7 @@ export default class UserBanHandler implements ModAction {
         ),
       );
 
-    await interaction.showModal(modal);
+    await ctx.showModal(modal);
     // modal will be handled by UserBanModalHandler in interactions/UserBanModal.ts
   }
 }

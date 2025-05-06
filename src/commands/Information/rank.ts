@@ -22,11 +22,7 @@ import Constants from '#src/utils/Constants.js';
 import { drawRankProgressBar } from '#src/utils/ImageUtils.js';
 import { handleError } from '#src/utils/Utils.js';
 import { type CanvasRenderingContext2D, createCanvas, loadImage } from 'canvas';
-import {
-  ApplicationCommandOptionType,
-  AttachmentBuilder,
-  type User,
-} from 'discord.js';
+import { ApplicationCommandOptionType, AttachmentBuilder, type User } from 'discord.js';
 import { join } from 'node:path';
 
 interface RankCardDimensions {
@@ -97,13 +93,17 @@ export default class RankCommand extends BaseCommand {
       //   targetUser.username,
       // );
       // const rankCard = await this.createRankCard(targetUser, stats);
-
       // await ctx.editReply({ files: [rankCard] });
     }
     catch (error) {
       handleError(error, {
         comment: 'Failed to create rank card',
-        repliable: ctx.originalInteraction,
+      });
+
+      // Try to reply with an error message
+      await ctx.reply({
+        content: 'Failed to create rank card. Please try again later.',
+        flags: ['Ephemeral'],
       });
     }
   }
@@ -160,7 +160,7 @@ export default class RankCommand extends BaseCommand {
 
     // Level
     ctx.font = RankCommand.FONTS.LEVEL;
-    ctx.fillStyle = Constants.Colors.interchat;
+    ctx.fillStyle = Constants.Colors.primary;
     ctx.fillText(`Level ${stats.level}`, textX, avatarY + 80);
 
     // Rank

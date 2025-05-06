@@ -15,14 +15,14 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { RepliableInteraction, User } from 'discord.js';
+import type Context from '#src/core/CommandContext/Context.js';
+import UserDbService from '#src/services/UserDbService.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import Logger from '#utils/Logger.js';
-import UserDbService from '#src/services/UserDbService.js';
-import type Context from '#src/core/CommandContext/Context.js';
+import type { User } from 'discord.js';
 
 export const handleBan = async (
-  interaction: RepliableInteraction | Context,
+  interaction: Context,
   targetId: string,
   target: User | null,
   reason: string,

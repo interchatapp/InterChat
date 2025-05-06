@@ -163,6 +163,7 @@ export class CallService {
   }
 
   async hangup(channelId: string): Promise<{
+    callId?: string;
     success: boolean;
     message: string;
     components?: ActionRowBuilder<ButtonBuilder>[];
@@ -217,6 +218,7 @@ export class CallService {
 
     // Return message for the channel that initiated the hangup
     return {
+      callId: activeCall.callId,
       success: true,
       message: content,
       components,

@@ -21,7 +21,7 @@ import BaseCommand from '#src/core/BaseCommand.js';
 export default class Support extends BaseCommand {
   constructor() {
     super({
-      name: 'support',
+      name: 'zupport',
       description: 'Send reports/suggestions to InterChat staff/developers.',
       types: { slash: true, prefix: true },
       subcommands: {

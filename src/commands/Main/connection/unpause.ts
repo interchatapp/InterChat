@@ -48,8 +48,21 @@ export default class ConnectionUnpauseSubcommand extends BaseCommand {
   }
 
   override async execute(ctx: Context): Promise<void> {
-    const channelId = ctx.options.getString('channel') ?? ctx.channelId;
-    const connected = await db.connection.findFirst({ where: { channelId } });
+    const channelIdInput = ctx.options.getString('channel') ?? ctx.channelId;
+
+    // Ensure channelId is not null
+    if (!channelIdInput) {
+      await ctx.replyEmbed(
+        `${ctx.getEmoji('x_icon')} Invalid channel!`,
+        { flags: ['Ephemeral'] },
+      );
+      return;
+    }
+
+    const channelId = channelIdInput;
+    const connected = await db.connection.findFirst({
+      where: { channelId },
+    });
 
     const locale = await fetchUserLocale(ctx.user.id);
 
@@ -69,9 +82,15 @@ export default class ConnectionUnpauseSubcommand extends BaseCommand {
       return;
     }
 
-    const channel = await ctx.guild?.channels
-      .fetch(channelId)
-      .catch(() => null);
+    if (!ctx.guild) {
+      await ctx.replyEmbed(
+        `${ctx.getEmoji('x_icon')} This command can only be used in a server.`,
+        { flags: ['Ephemeral'] },
+      );
+      return;
+    }
+
+    const channel = await ctx.guild.channels.fetch(channelId).catch(() => null);
 
     if (!channel?.isThread() && channel?.type !== ChannelType.GuildText) {
       await ctx.replyEmbed(

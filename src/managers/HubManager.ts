@@ -92,6 +92,9 @@ export default class HubManager {
       where: { id: this.hub.id },
       data,
     });
+
+    // Update the cache with the new hub data
+    await this.components.hubService.updateHubCache(this.hub);
   }
 
   public async delete(): Promise<void> {
@@ -145,6 +148,9 @@ export default class HubManager {
       where: { id: this.hub.id },
       data: { rules },
     });
+
+    // Update the cache with the new hub data
+    await this.components.hubService.updateHubCache(this.hub);
   }
 
   public getRules(): string[] {

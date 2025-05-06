@@ -17,6 +17,7 @@
 
 import BaseCommand from '#src/core/BaseCommand.js';
 import Context from '#src/core/CommandContext/Context.js';
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import Constants from '#src/utils/Constants.js';
 import { CustomID } from '#src/utils/CustomID.js';
@@ -26,7 +27,6 @@ import { isDev } from '#src/utils/Utils.js';
 import {
   ActionRowBuilder,
   ModalBuilder,
-  ModalSubmitInteraction,
   TextInputBuilder,
   TextInputStyle,
 } from 'discord.js';
@@ -88,11 +88,13 @@ export default class DevAnnounceCommand extends BaseCommand {
   }
 
   @RegisterInteractionHandler('devAnnounceModal')
-  async handleModal(interaction: ModalSubmitInteraction) {
-    const title = interaction.fields.getTextInputValue('title');
-    const content = interaction.fields.getTextInputValue('content');
-    const thumbnailUrlInput = interaction.fields.getTextInputValue('thumbnailUrl');
-    const imageUrlInput = interaction.fields.getTextInputValue('bannerUrl');
+  async handleModal(ctx: ComponentContext) {
+    if (!ctx.isModalSubmit()) return;
+
+    const title = ctx.getModalFieldValue('title');
+    const content = ctx.getModalFieldValue('content');
+    const thumbnailUrlInput = ctx.getModalFieldValue('thumbnailUrl');
+    const imageUrlInput = ctx.getModalFieldValue('bannerUrl');
 
     const thumbnailUrl = thumbnailUrlInput.length > 0 ? thumbnailUrlInput : null;
     const imageUrl = imageUrlInput.length > 0 ? imageUrlInput : null;
@@ -103,8 +105,8 @@ export default class DevAnnounceCommand extends BaseCommand {
       imageUrlInput.length > 0 ? Constants.Regex.ImageURL.test(imageUrlInput) : true;
 
     if (!testThumbnail || !testImage) {
-      await interaction.reply({
-        content: `${getEmoji('x_icon', interaction.client)} Thumbnail or Icon URL is invalid.`,
+      await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} Thumbnail or Icon URL is invalid.`,
         flags: ['Ephemeral'],
       });
       return;
@@ -114,8 +116,8 @@ export default class DevAnnounceCommand extends BaseCommand {
       data: { title, content, thumbnailUrl, imageUrl },
     });
 
-    await interaction.reply(
-      `${getEmoji('tick_icon', interaction.client)} Announcement has been recorded. View using \`/inbox\``,
+    await ctx.reply(
+      `${getEmoji('tick_icon', ctx.client)} Announcement has been recorded. View using \`/inbox\``,
     );
   }
 }

@@ -59,7 +59,7 @@ export const buildBlacklistNotifEmbed = (
   return new EmbedBuilder()
     .setTitle(`${getEmoji('hammer_icon', client)} You have been blacklisted!`)
     .setDescription(`${targetStr} been blacklisted from talking in hub **${opts.hubName}**.`)
-    .setColor(Constants.Colors.interchat)
+    .setColor(Constants.Colors.primary)
     .setFields(
       {
         name: 'Reason',

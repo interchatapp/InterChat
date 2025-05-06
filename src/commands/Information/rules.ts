@@ -40,7 +40,7 @@ export default class Rules extends BaseCommand {
           guidelines_link: `${Constants.Links.Website}/guidelines`,
         }),
       )
-      .setColor(Constants.Colors.interchat);
+      .setColor(Constants.Colors.primary);
 
     await ctx.reply({ embeds: [rulesEmbed] });
   }

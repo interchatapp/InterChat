@@ -110,7 +110,7 @@ export default class ConnectionListSubcommand extends BaseCommand {
 
   private getEmbed(fields: EmbedField[], description: string) {
     return new EmbedBuilder()
-      .setColor(Constants.Colors.interchat)
+      .setColor(Constants.Colors.primary)
       .setDescription(description)
       .addFields(fields);
   }

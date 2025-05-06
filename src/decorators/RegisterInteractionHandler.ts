@@ -15,14 +15,24 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import type ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import type { Awaitable, MessageComponentInteraction, ModalSubmitInteraction } from 'discord.js';
 import 'reflect-metadata';
 
+/**
+ * Function signature for interaction handlers
+ * Supports both the new ComponentContext and the legacy raw interaction
+ */
 export type InteractionFunction = (
-  interaction: MessageComponentInteraction | ModalSubmitInteraction,
+  contextOrInteraction: ComponentContext,
+  rawInteraction?: MessageComponentInteraction | ModalSubmitInteraction,
 ) => Awaitable<unknown>;
 
-/** Decorator to call a specified method when an interaction is created (ie. interactionCreate event) */
+/**
+ * Decorator to call a specified method when an interaction is created (ie. interactionCreate event)
+ * @param prefix The prefix for the custom ID
+ * @param suffix The suffix for the custom ID (optional)
+ */
 export function RegisterInteractionHandler(prefix: string, suffix = ''): MethodDecorator {
   return (targetClass, propertyKey: string | symbol) => {
     const realSuffix = suffix ? `:${suffix}` : '';

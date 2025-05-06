@@ -199,7 +199,7 @@ export class VoteManager {
         .setURL(Constants.Links.Vote),
     );
 
-    // Try to send a DM to the user through one of the clusters
+    // Try to send a DM to the user through one of the shards
     await this.clusterManager.broadcastEval(
       async (client, ctx) => {
         const user = await client.users.fetch(ctx.userId).catch(() => null);
@@ -216,6 +216,7 @@ export class VoteManager {
           voteEmbed: voteEmbed.toJSON(),
           voteButton: voteButton.toJSON(),
         },
+        shard: 0,
       },
     );
   }

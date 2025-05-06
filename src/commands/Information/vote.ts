@@ -47,7 +47,7 @@ export default class Vote extends BaseCommand {
     const locale = userData ? await fetchUserLocale(userData) : 'en';
     const hasVoted = await new UserDbService().userVotedToday(id, userData ?? undefined);
 
-    const voteStatusEmoji = ctx.getEmoji(hasVoted ? 'tick_icon' : 'x_icon');
+    const voteStatusEmoji = ctx.getEmoji(hasVoted ? 'tick_icon' : 'slash');
 
     const perksEmbed = new EmbedBuilder()
       .setAuthor({ name: 'Vote for InterChat' })
@@ -66,18 +66,14 @@ export default class Vote extends BaseCommand {
           inline: true,
         },
         {
-          name: '\u200B',
-          value: '\u200B',
-        },
-        {
-          name: '🎁 Voter Perks',
+          name: 'Voter Perks',
           value: stripIndents`
-            - ${voteStatusEmoji} Increased message length (2000 characters)
-            - ${voteStatusEmoji} Send stickers in hubs
-            - ${voteStatusEmoji} Create up to 4 hubs
-            - ${voteStatusEmoji} Custom welcome messages
-            - ${voteStatusEmoji} Voter role in support server
-            - ${voteStatusEmoji} Exclusive voter badge in /profile
+            ${voteStatusEmoji} Increased message length (2000 characters)
+            ${voteStatusEmoji} Send stickers in hubs
+            ${voteStatusEmoji} Create up to 4 hubs
+            ${voteStatusEmoji} Custom welcome messages
+            ${voteStatusEmoji} Voter role in support server
+            ${voteStatusEmoji} Exclusive voter badge in /profile
             -# ${t('vote.perks.moreComingSoon', locale, { support_invite: Constants.Links.SupportInvite })}
             `,
         },

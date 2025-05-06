@@ -15,7 +15,8 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import Context, { CacheContext } from '#src/core/CommandContext/Context.js';
+import Context from '#src/core/CommandContext/Context.js';
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import type { Connection, Prisma } from '#src/generated/prisma/client/client.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { supportedLocaleCodes, t } from '#src/utils/Locale.js';
@@ -90,7 +91,7 @@ export const updateConnections = async (where: whereInput, data: dataInput) => {
 };
 
 export const sendInviteCreatedResponse = async (
-  interaction: RepliableInteraction | Context | MessageComponentInteraction,
+  interaction: RepliableInteraction | Context | ComponentContext | MessageComponentInteraction,
   success: boolean,
   locale: supportedLocaleCodes,
 ): Promise<void> => {
@@ -114,12 +115,15 @@ export const sendInviteCreatedResponse = async (
  */
 export const handleConnectionInviteCreation = async (
   interaction:
+    | Context
+    | ComponentContext
     | RepliableInteraction<'cached'>
-    | Context<CacheContext>
     | MessageComponentInteraction<'cached'>,
   connection: Connection,
   locale: supportedLocaleCodes,
 ): Promise<string | undefined> => {
+  if (!interaction.guild) return undefined;
+
   const { channelId } = connection;
   const { success, inviteUrl: invite } = await createServerInvite(
     channelId,

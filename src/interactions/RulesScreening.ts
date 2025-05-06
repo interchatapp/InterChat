@@ -16,6 +16,7 @@
  */
 
 import Context from '#src/core/CommandContext/Context.js';
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import HubManager from '#src/managers/HubManager.js';
 import { HubService } from '#src/services/HubService.js';
@@ -35,7 +36,6 @@ import {
   ActionRowBuilder,
   type BaseMessageOptions,
   ButtonBuilder,
-  type ButtonInteraction,
   ButtonStyle,
   Message,
   type MessageComponentInteraction,
@@ -143,16 +143,16 @@ export default class RulesScreeningInteraction {
   private readonly redis = getRedis();
 
   @RegisterInteractionHandler('rulesScreen', 'continue')
-  async showRules(interaction: ButtonInteraction): Promise<void> {
-    await interaction.deferUpdate();
+  async showRules(ctx: ComponentContext): Promise<void> {
+    await ctx.deferUpdate();
 
-    const customId = CustomID.parseCustomId(interaction.customId);
+    const customId = ctx.customId;
     const [userId] = customId.args;
-    const locale = await fetchUserLocale(interaction.user.id);
+    const locale = await fetchUserLocale(ctx.user.id);
 
-    if (interaction.user.id !== userId) {
-      await interaction.followUp({
-        content: `${getEmoji('x_icon', interaction.client)} These rules are not for you!`,
+    if (ctx.user.id !== userId) {
+      await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} These rules are not for you!`,
         flags: ['Ephemeral'],
       });
       return;
@@ -160,7 +160,7 @@ export default class RulesScreeningInteraction {
 
     const rulesContent = stripIndents`
       ${t('rules.rules', locale, {
-        emoji: getEmoji('rules_icon', interaction.client),
+        emoji: getEmoji('rules_icon', ctx.client),
         guidelines_link: `${Constants.Links.Website}/guidelines`,
       })}
       ${t('rules.agreementNote', locale)}
@@ -171,88 +171,84 @@ export default class RulesScreeningInteraction {
         .setCustomId(new CustomID('rulesScreen:accept').setArgs(userId).toString())
         .setLabel(t('rules.accept', locale))
         .setStyle(ButtonStyle.Success)
-        .setEmoji(getEmoji('tick_icon', interaction.client)),
+        .setEmoji(getEmoji('tick_icon', ctx.client)),
       new ButtonBuilder()
         .setCustomId(new CustomID('rulesScreen:decline').setArgs(userId).toString())
         .setLabel(t('rules.decline', locale))
         .setStyle(ButtonStyle.Danger)
-        .setEmoji(getEmoji('x_icon', interaction.client)),
+        .setEmoji(getEmoji('x_icon', ctx.client)),
     );
 
     const rulesEmbed = new InfoEmbed()
       .setDescription(rulesContent)
       .setColor(Constants.Colors.invisible);
 
-    await interaction.editReply({ content: null, embeds: [rulesEmbed], components: [components] });
+    await ctx.editReply({ content: null, embeds: [rulesEmbed], components: [components] });
   }
 
   @RegisterInteractionHandler('rulesScreen', 'accept')
-  async handleBotRulesAccept(interaction: ButtonInteraction): Promise<void> {
-    await interaction.deferUpdate();
+  async handleBotRulesAccept(ctx: ComponentContext): Promise<void> {
+    await ctx.deferUpdate();
 
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [userId] = customId.args;
+    const [userId] = ctx.customId.args;
 
     // Add security check
-    if (interaction.user.id !== userId) {
-      await interaction.followUp({
-        content: `${getEmoji('x_icon', interaction.client)} You cannot accept rules for other users!`,
+    if (ctx.user.id !== userId) {
+      await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} You cannot accept rules for other users!`,
         flags: ['Ephemeral'],
       });
       return;
     }
 
     const userService = new UserDbService();
-    await userService.upsertUser(interaction.user.id, {
+    await userService.upsertUser(ctx.user.id, {
       acceptedRules: true,
-      name: interaction.user.username,
-      image: interaction.user.avatarURL(),
+      name: ctx.user.username,
+      image: ctx.user.avatarURL(),
     });
 
     // Check if there's a pending hub rules acceptance needed
-    const locale = await fetchUserLocale(interaction.user.id);
+    const locale = await fetchUserLocale(ctx.user.id);
 
-    // Try to get hub context from MessageProcessor
-    const hubContext = await db.connection.findFirst({
-      where: { channelId: interaction.channelId },
-      include: { hub: { include: { rulesAcceptances: { where: { userId } } } } },
-    });
+    if (ctx.channelId) {
+      // Try to get hub context from MessageProcessor
+      const hubContext = await db.connection.findFirst({
+        where: { channelId: ctx.channelId },
+        include: { hub: { include: { rulesAcceptances: { where: { userId } } } } },
+      });
 
-    if (
-      hubContext?.hub &&
-      hubContext.hub.rules.length > 0 &&
-      hubContext.hub.rulesAcceptances.length === 0
-    ) {
       // Show hub rules immediately after accepting bot rules
-      await showHubRules(interaction, userId, new HubManager(hubContext.hub), locale);
-      return;
+      if (hubContext?.hub.rulesAcceptances.length === 0 && hubContext.hub.rules.length > 0) {
+        await showHubRules(ctx, userId, new HubManager(hubContext.hub), locale);
+        return;
+      }
     }
 
-    await interaction.deleteReply();
+    await ctx.deleteReply();
 
     // If no hub rules to show, display success message
     const embed = new InfoEmbed().setDescription(
       t('rules.accepted', locale, {
         support_invite: Constants.Links.SupportInvite,
         donateLink: Constants.Links.Donate,
-        emoji: getEmoji('tick_icon', interaction.client),
+        emoji: getEmoji('tick_icon', ctx.client),
       }),
     );
 
-    await interaction.followUp({ embeds: [embed], components: [], flags: ['Ephemeral'] });
+    await ctx.reply({ embeds: [embed], components: [], flags: ['Ephemeral'] });
   }
 
   @RegisterInteractionHandler('rulesScreen', 'acceptHub')
-  async handleHubRulesAccept(interaction: ButtonInteraction): Promise<void> {
-    await interaction.deferUpdate();
+  async handleHubRulesAccept(ctx: ComponentContext): Promise<void> {
+    await ctx.deferUpdate();
 
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [userId, hubId] = customId.args;
+    const [userId, hubId] = ctx.customId.args;
 
     // Add security check
-    if (interaction.user.id !== userId) {
-      await interaction.followUp({
-        content: `${getEmoji('x_icon', interaction.client)} You cannot accept rules for other users!`,
+    if (ctx.user.id !== userId) {
+      await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} You cannot accept rules for other users!`,
         flags: ['Ephemeral'],
       });
       return;
@@ -265,54 +261,54 @@ export default class RulesScreeningInteraction {
       },
     });
 
-    await interaction.deleteReply();
+    await ctx.deleteReply();
 
-    const locale = await fetchUserLocale(interaction.user.id);
+    const locale = await fetchUserLocale(ctx.user.id);
     const embed = new InfoEmbed().setDescription(
       t('rules.hubAccepted', locale, {
-        emoji: getEmoji('tick_icon', interaction.client),
+        emoji: getEmoji('tick_icon', ctx.client),
       }),
     );
 
-    await interaction.followUp({ embeds: [embed], components: [], flags: ['Ephemeral'] });
-    await this.redis.del(`${RedisKeys.RulesShown}:${interaction.user.id}:${hubId}`);
+    await ctx.reply({ embeds: [embed], components: [], flags: ['Ephemeral'] });
+    await this.redis.del(`${RedisKeys.RulesShown}:${ctx.user.id}:${hubId}`);
   }
 
   @RegisterInteractionHandler('rulesScreen', 'decline')
-  async handleBotRulesDecline(interaction: ButtonInteraction): Promise<void> {
-    await interaction.deferUpdate();
-    const locale = await fetchUserLocale(interaction.user.id);
+  async handleBotRulesDecline(ctx: ComponentContext): Promise<void> {
+    await ctx.deferUpdate();
+    const locale = await fetchUserLocale(ctx.user.id);
 
     const embed = new InfoEmbed()
       .setDescription(
         t('rules.declined', locale, {
-          emoji: getEmoji('x_icon', interaction.client),
+          emoji: getEmoji('x_icon', ctx.client),
         }),
       )
       .setColor('Red');
 
-    await interaction.editReply({ embeds: [embed], components: [] });
+    await ctx.editReply({ embeds: [embed], components: [] });
   }
 
   @RegisterInteractionHandler('rulesScreen', 'declineHub')
-  async handleHubRulesDecline(interaction: ButtonInteraction): Promise<void> {
-    await interaction.deferUpdate();
-    const customId = CustomID.parseCustomId(interaction.customId);
+  async handleHubRulesDecline(ctx: ComponentContext): Promise<void> {
+    await ctx.deferUpdate();
+    const customId = ctx.customId;
     const [, hubId] = customId.args;
 
-    const locale = await fetchUserLocale(interaction.user.id);
+    const locale = await fetchUserLocale(ctx.user.id);
     const hub = await new HubService().fetchHub(hubId);
 
     const embed = new InfoEmbed()
       .setDescription(
         t('rules.hubDeclined', locale, {
-          emoji: getEmoji('x_icon', interaction.client),
+          emoji: getEmoji('x_icon', ctx.client),
           hubName: hub?.data.name ?? 'this hub',
         }),
       )
       .setColor('Red');
 
-    await interaction.editReply({ embeds: [embed], components: [] });
-    await this.redis.del(`${RedisKeys.RulesShown}:${interaction.user.id}:${hubId}`);
+    await ctx.editReply({ embeds: [embed], components: [] });
+    await this.redis.del(`${RedisKeys.RulesShown}:${ctx.user.id}:${hubId}`);
   }
 }

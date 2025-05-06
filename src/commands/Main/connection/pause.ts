@@ -48,8 +48,21 @@ export default class ConnectionPauseSubcommand extends BaseCommand {
     });
   }
   override async execute(ctx: Context): Promise<void> {
-    const channelId = ctx.options.getString('channel') ?? ctx.channelId;
-    const connected = await db.connection.findFirst({ where: { channelId } });
+    const channelIdInput = ctx.options.getString('channel') ?? ctx.channelId;
+
+    // Ensure channelId is not null
+    if (!channelIdInput) {
+      await ctx.reply({
+        content: `${ctx.getEmoji('x_icon')} Invalid channel!`,
+        flags: ['Ephemeral'],
+      });
+      return;
+    }
+
+    const channelId = channelIdInput;
+    const connected = await db.connection.findFirst({
+      where: { channelId },
+    });
 
     const locale = await fetchUserLocale(ctx.user.id);
 
