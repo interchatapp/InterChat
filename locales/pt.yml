@@ -34,6 +34,8 @@ rules:
   accepted: |
     {emoji} You're all set! Welcome to the InterChat community.
 
+    {emoji} You're all set! Welcome to the InterChat community.
+
     ### Get Started Quickly:
     - Visit `/hub browse` to find active communities
     - Join discussions that interest you or create your own through our __dashboard__
@@ -55,10 +57,10 @@ rules:
   hubRules: Regras do Hub
 vote:
   description: |
-    Ajude mais comunidades a descobrir o InterChat! Seu voto no top.gg:
-    - Ajuda outros a encontrar comunidades ativas
-    - Desbloqueia recursos especiais para você
-    - Apoia nosso desenvolvimento independente
+    Help more communities discover InterChat! Your vote on top.gg:
+    - Helps others find active communities
+    - Unlocks special features for you
+    - Supports our independent development
   footer: "Os votos são atualizados a cada 12 horas • Obrigado por apoiar o InterChat!"
   button:
     label: "Vote no top.gg"
@@ -296,7 +298,7 @@ hub:
       notAllowed: "{emoji} Somente os gerentes do hub podem atualizar a posição de um moderador."
       notOwner: "{emoji} Somente o proprietário deste hub pode atualizar a posição de um gerente."
   manage:
-    dashboardTip: '**🛠️ NEW Dashboard:** Better interface and more features! Use the dashboard to manage your hub: {url}'
+    dashboardTip: "**🛠️ NEW Dashboard:** Improved interface and more features! Try it out at [your hub's dashboard page]({url})."
     enterImgurUrl: Insira uma URL de imagem Imgur válida que não seja uma galeria ou álbum.
     icon:
       changed: Ícone do Hub alterado com sucesso.
