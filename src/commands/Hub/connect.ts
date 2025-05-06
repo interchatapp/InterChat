@@ -44,7 +44,7 @@ import HubCommand, { hubOption } from '#src/commands/Hub/hub/index.js';
 /**
  * Redesigned connect command using the InterChat v5 design system
  */
-export default class ConnectCommandV5 extends BaseCommand {
+export default class ConnectCommand extends BaseCommand {
   private readonly hubService = new HubService();
 
   constructor() {

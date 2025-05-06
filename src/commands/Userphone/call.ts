@@ -22,11 +22,10 @@ import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionH
 import { CallService } from '#src/services/CallService.js';
 import { UIComponents } from '#src/utils/DesignSystem.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
-import { formatServerLeaderboard, formatUserLeaderboard, getCallLeaderboard } from '#src/utils/Leaderboard.js';
+import { formatUserLeaderboard, getCallLeaderboard } from '#src/utils/Leaderboard.js';
 import { CustomID } from '#utils/CustomID.js';
 import {
   ActionRowBuilder,
-  ApplicationCommandOptionType,
   ButtonBuilder,
   ButtonStyle,
   ContainerBuilder,
@@ -38,34 +37,19 @@ import {
 /**
  * Redesigned call command using the InterChat v5 design system
  */
-export default class CallCommandV5 extends BaseCommand {
+export default class CallCommand extends BaseCommand {
   constructor() {
     super({
       name: 'call',
       description: '📞 Start a call with another server',
       types: { slash: true, prefix: true },
       contexts: { guildOnly: true },
-      options: [
-        {
-          name: 'private',
-          description: 'Create a private call that requires an invite code',
-          type: ApplicationCommandOptionType.Boolean,
-          required: false,
-        },
-      ],
     });
   }
 
   async execute(ctx: Context) {
     const ui = new UIComponents(ctx.client);
-    const isPrivate = ctx.options.getBoolean('private') ?? false;
 
-    // If private call is requested, show the private call UI
-    if (isPrivate) {
-      return this.showPrivateCallUI(ctx, ui);
-    }
-
-    // Otherwise, initiate a regular call
     await ctx.deferReply();
 
     const callService = new CallService(ctx.client);
@@ -135,43 +119,6 @@ export default class CallCommandV5 extends BaseCommand {
     }
 
     await ctx.editOrReply({ components: [container] }, ['IsComponentsV2']);
-  }
-
-  /**
-   * Show the private call UI
-   */
-  private async showPrivateCallUI(ctx: Context, ui: UIComponents) {
-    // Create container for private call
-    const container = new ContainerBuilder();
-
-    // Add header
-    container.addTextDisplayComponents(
-      ui.createHeader(
-        'Private Call',
-        'Generate a code, share it, and connect with another server',
-        'call_icon',
-      ),
-    );
-
-    // Add generate button
-    ui.createActionButtons(
-      container,
-      {
-        label: 'Generate Code',
-        customId: new CustomID().setIdentifier('call', 'generate').toString(),
-        emoji: 'key_icon',
-      },
-      {
-        label: 'Join With Code',
-        customId: new CustomID().setIdentifier('call', 'join-prompt').toString(),
-        emoji: 'enter_icon',
-      },
-    );
-
-    await ctx.reply({
-      components: [container],
-      flags: [MessageFlags.IsComponentsV2],
-    });
   }
 
   @RegisterInteractionHandler('call', 'cancel')
@@ -325,71 +272,6 @@ export default class CallCommandV5 extends BaseCommand {
     }
   }
 
-  @RegisterInteractionHandler('call', 'generate')
-  async handleGenerateButton(ctx: ComponentContext) {
-    await ctx.deferUpdate();
-
-    // Generate a random code
-    const code = `${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 6)}`;
-
-    const ui = new UIComponents(ctx.client);
-    const container = ui.createSuccessMessage(
-      'Code Generated',
-      `**${code}** • Share with another server • They join with \`/join-call code:${code}\``,
-    );
-
-    // Add copy button
-    ui.createActionButtons(
-      container,
-      {
-        label: 'Copy Code',
-        customId: new CustomID().setIdentifier('call', 'copy').setArgs(code).toString(),
-        emoji: 'clipboard_icon',
-      },
-      {
-        label: 'Cancel',
-        customId: new CustomID()
-          .setIdentifier('call', 'cancel-private')
-          .setArgs(code)
-          .toString(),
-        emoji: 'hangup_icon',
-      },
-    );
-
-    await ctx.editReply({
-      components: [container],
-      flags: [MessageFlags.IsComponentsV2],
-    });
-
-    // In a real implementation, you would store this code in Redis and associate it with the channel
-  }
-
-  @RegisterInteractionHandler('call', 'copy')
-  async handleCopyButton(ctx: ComponentContext) {
-    const code = ctx.customId.args[0];
-
-    await ctx.reply({
-      content: `\`${code}\``,
-      flags: ['Ephemeral'],
-    });
-  }
-
-  @RegisterInteractionHandler('call', 'join-prompt')
-  async handleJoinPromptButton(ctx: ComponentContext) {
-    await ctx.deferUpdate();
-
-    const ui = new UIComponents(ctx.client);
-    const container = ui.createInfoMessage(
-      'Join Private Call',
-      'Use `/join-call code:abcd-1234` with the code you received',
-    );
-
-    await ctx.editReply({
-      components: [container],
-      flags: [MessageFlags.IsComponentsV2],
-    });
-  }
-
   @RegisterInteractionHandler('call', 'leaderboard')
   async handleLeaderboardButton(ctx: ComponentContext) {
     await ctx.deferUpdate();
@@ -425,54 +307,6 @@ export default class CallCommandV5 extends BaseCommand {
           .setCustomId(new CustomID('calls_lb:server').toString())
           .setLabel('Server Leaderboard')
           .setStyle(ButtonStyle.Secondary),
-      ),
-    );
-
-    await ctx.editReply({
-      components: [container],
-      flags: [MessageFlags.IsComponentsV2],
-    });
-  }
-
-  @RegisterInteractionHandler('calls_lb')
-  async handleLeaderboardSwitch(ctx: ComponentContext) {
-    await ctx.deferUpdate();
-
-    const currentType = ctx.customId.suffix as 'user' | 'server';
-
-    const leaderboard = await getCallLeaderboard(currentType, 10);
-    const leaderboardFormatted = currentType === 'user'
-      ? await formatUserLeaderboard(leaderboard, ctx.client, 'calls')
-      : await formatServerLeaderboard(leaderboard, ctx.client, 'calls');
-
-    const ui = new UIComponents(ctx.client);
-    const container = new ContainerBuilder();
-
-    // Add header
-    container.addTextDisplayComponents(
-      ui.createHeader('Global Calls Leaderboard', 'Shows data from the last 30 days', 'call_icon'),
-    );
-
-    // Add leaderboard content
-    container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        leaderboardFormatted.length > 0 ? leaderboardFormatted : 'No data available.',
-      ),
-    );
-
-    // Add toggle buttons
-    container.addActionRowComponents((row) =>
-      row.addComponents(
-        new ButtonBuilder()
-          .setCustomId(new CustomID('calls_lb:user').toString())
-          .setLabel('User Leaderboard')
-          .setStyle(currentType === 'user' ? ButtonStyle.Primary : ButtonStyle.Secondary)
-          .setDisabled(currentType === 'user'),
-        new ButtonBuilder()
-          .setCustomId(new CustomID('calls_lb:server').toString())
-          .setLabel('Server Leaderboard')
-          .setStyle(currentType === 'server' ? ButtonStyle.Primary : ButtonStyle.Secondary)
-          .setDisabled(currentType === 'server'),
       ),
     );
 

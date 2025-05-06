@@ -35,7 +35,7 @@ import {
 /**
  * Redesigned hangup command using the InterChat v5 design system
  */
-export default class HangupCommandV5 extends BaseCommand {
+export default class HangupCommand extends BaseCommand {
   constructor() {
     super({
       name: 'hangup',
