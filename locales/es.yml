@@ -34,16 +34,16 @@ rules:
 
     ⚠️ **No puedes enviar mensajes en este centro hasta que aceptes estas reglas.**
   accepted: |
-    {emoji} ¡Listo! Bienvenido a la comunidad del InterChat.
+    {emoji} You're all set! Welcome to the InterChat community.
 
-    {emoji} ¡Listo! Bienvenido a la comunidad del InterChat.
+    {emoji} You're all set! Welcome to the InterChat community.
 
-    ### Empieza Rápidamente:
-    - Visita `/hub browse` para encontrar comunidades activas
-    - Únete a discusiones que te interesan o crea las tuyas propias a través de nuestra __dashboard__
-    - Usa nuestro nuevo comando `/call` para conectar con un solo servidor
+    ### Get Started Quickly:
+    - Visit `/hub browse` to find active communities
+    - Join discussions that interest you or create your own through our __dashboard__
+    - Use our new `/call` command to connect with single servers
 
-    ¿Necesitas ayuda? Únete a nuestra [comunidad]({support_invite}) - ¡Nos encantaría ayudarte! Considera apoyarnos con una [donación]({donateLink}) para ayudar a que InterChat crezca y prospere.
+    Need help? Join our [community]({support_invite}) - we're happy to help! Please consider supporting us by [donating]({donateLink}) to help InterChat grow and thrive.
   declined: |
     {emoji} Has rechazado las reglas de InterChat.
     -# ⚠️ **No podrás usar InterChat ni chatear con otros servidores hasta que aceptes las reglas.**
@@ -59,10 +59,10 @@ rules:
   hubRules: Reglas del centro
 vote:
   description: |
-    ¡Ayuda a más comunidades a descubrir InterChat! Tu voto en top.gg: 
-    • Ayuda a otros a encontrar comunidades activas. 
-    • Desbloquea funciones especiales para ti. 
-    • Apoya nuestro desarrollo independiente.
+    Help more communities discover InterChat! Your vote on top.gg:
+    - Helps others find active communities
+    - Unlocks special features for you
+    - Supports our independent development
   footer: "Los votos se actualizan cada 12 horas • ¡Gracias por apoyar InterChat!"
   button:
     label: "Vota en top.gg"
@@ -307,7 +307,7 @@ hub:
       notAllowed: "{emoji} Solo los administradores de centros pueden actualizar la posición de un moderador."
       notOwner: "{emoji} Solo el propietario de este centro puede actualizar la posición de un administrador."
   manage:
-    dashboardTip: '**🛠️ NUEVO panel:** ¡Mejor interfaz y más características! Usa el panel de control para administrar tu centro: {url}'
+    dashboardTip: "**🛠️ NEW Dashboard:** Improved interface and more features! Try it out at [your hub's dashboard page]({url})."
     enterImgurUrl: Ingrese una URL de imagen de Imgur válida que no sea una galería o álbum.
     icon:
       changed: El icono del centro cambió con éxito.
