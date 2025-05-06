@@ -476,7 +476,7 @@ export default class CallCommandV5 extends BaseCommand {
       ),
     );
 
-    await ctx.editReply({
+    await ctx.reply({
       components: [container],
       flags: [MessageFlags.IsComponentsV2],
     });
