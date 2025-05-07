@@ -16,27 +16,27 @@
  */
 
 import BlacklistManager from '#src/managers/BlacklistManager.js';
-
-import { type BlockWord, BlockWordAction } from '#src/generated/prisma/client/client.js';
-import type { ActionRowBuilder, Awaitable, ButtonBuilder, Message } from 'discord.js';
+import AntiSwearManager from '#src/managers/AntiSwearManager.js';
+import { BlockWordAction } from '#src/generated/prisma/client/client.js';
+import type { Awaitable, Message } from 'discord.js';
 import Logger from '#src/utils/Logger.js';
-import { logBlockwordAlert } from '#src/utils/hub/logger/BlockWordAlert.js';
+import { logAntiSwearAlert, type AntiSwearRule } from '#src/utils/hub/logger/AntiSwearAlert.js';
 import { sendBlacklistNotif } from '#src/utils/moderation/blacklistUtils.js';
-import { createRegexFromWords } from '#utils/moderation/antiSwear.js';
 import type { CheckResult } from '#src/utils/network/runChecks.js';
 
 // Interface for action handler results
 interface ActionResult {
   success: boolean;
   shouldBlock: boolean;
-  components?: ActionRowBuilder<ButtonBuilder>[];
   message?: string;
 }
 
 // Action handler type
 type ActionHandler = (
   message: Message<true>,
-  rule: BlockWord,
+  ruleId: string,
+  hubId: string,
+  ruleName: string,
   matches: string[],
 ) => Awaitable<ActionResult>;
 
@@ -48,82 +48,123 @@ const actionHandlers: Record<BlockWordAction, ActionHandler> = {
     message: 'Message blocked due to containing prohibited words.',
   }),
 
-  [BlockWordAction.SEND_ALERT]: async (message, rule, matches) => {
-    // Send alert to moderators
-    await logBlockwordAlert(message, rule, matches);
-    return { success: true, shouldBlock: false };
+  [BlockWordAction.SEND_ALERT]: async (message, ruleId, hubId, ruleName, matches) => {
+    try {
+      // Create a rule object with the required properties for the alert system
+      const ruleObject: AntiSwearRule = {
+        id: ruleId,
+        hubId,
+        name: ruleName,
+        actions: [BlockWordAction.SEND_ALERT],
+      };
+
+      // Send alert to moderators
+      await logAntiSwearAlert(message, ruleObject, matches);
+      return { success: true, shouldBlock: false };
+    }
+    catch (error) {
+      Logger.error('Failed to send anti-swear alert:', error);
+      return { success: false, shouldBlock: false };
+    }
   },
 
-  [BlockWordAction.BLACKLIST]: async (message, rule) => {
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-    const reason = `Auto-blacklisted for using blocked words (Rule: ${rule.name})`;
-    const target = message.author;
-    const mod = message.client.user;
+  [BlockWordAction.BLACKLIST]: async (message, _ruleId, hubId, ruleName) => {
+    try {
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+      const reason = `Auto-blacklisted for using prohibited words (Rule: ${ruleName})`;
+      const target = message.author;
+      const mod = message.client.user;
 
-    const blacklistManager = new BlacklistManager('user', target.id);
-    await blacklistManager.addBlacklist({
-      hubId: rule.hubId,
-      reason,
-      expiresAt,
-      moderatorId: mod.id,
-    });
+      const blacklistManager = new BlacklistManager('user', target.id);
+      await blacklistManager.addBlacklist({
+        hubId,
+        reason,
+        expiresAt,
+        moderatorId: mod.id,
+      });
 
-    await blacklistManager.log(rule.hubId, message.client, {
-      mod,
-      reason,
-      expiresAt,
-    });
-    await sendBlacklistNotif('user', message.client, {
-      target,
-      hubId: rule.hubId,
-      expiresAt,
-      reason,
-    }).catch(() => null);
+      await blacklistManager.log(hubId, message.client, {
+        mod,
+        reason,
+        expiresAt,
+      });
 
-    return {
-      success: true,
-      shouldBlock: true,
-      message: 'You have been blacklisted for using prohibited words.',
-    };
+      await sendBlacklistNotif('user', message.client, {
+        target,
+        hubId,
+        expiresAt,
+        reason,
+      }).catch(() => null);
+
+      return {
+        success: true,
+        shouldBlock: true,
+        message: 'You have been blacklisted for using prohibited words.',
+      };
+    }
+    catch (error) {
+      Logger.error('Failed to blacklist user for anti-swear violation:', error);
+      return { success: false, shouldBlock: true };
+    }
   },
 };
 
-interface ActionResult {
-  success: boolean;
-  shouldBlock: boolean;
-  message?: string;
-}
-
-interface BlockResult {
-  shouldBlock: boolean;
-  reason?: string;
-}
-
-export async function checkBlockedWords(
+/**
+ * Check if a message contains prohibited words and execute appropriate actions
+ */
+export async function checkAntiSwear(
   message: Message<true>,
-  msgBlockList: BlockWord[],
+  hubId: string,
 ): Promise<CheckResult> {
-  if (msgBlockList.length === 0) return { passed: true };
+  // Skip empty messages
+  if (!message.content.trim()) {
+    return { passed: true };
+  }
 
-  for (const rule of msgBlockList) {
-    const { shouldBlock, reason } = await checkRuleAndExecuteAction(message, rule);
-    if (shouldBlock) return { passed: false, reason };
+  const antiSwearManager = AntiSwearManager.getInstance();
+  const { blocked, rule, matches } = await antiSwearManager.checkMessage(message.content, hubId);
+
+  if (blocked && rule) {
+    // Process actions for the matched rule
+    let shouldBlock = false;
+    let blockReason: string | undefined;
+
+    // Execute all actions for the rule
+    for (const action of rule.actions) {
+      const result = await executeAction(action, message, rule.id, rule.hubId, rule.name, matches);
+
+      if (result.success && result.shouldBlock) {
+        shouldBlock = true;
+        blockReason = result.message;
+      }
+    }
+
+    if (shouldBlock) {
+      return { passed: false, reason: blockReason };
+    }
   }
 
   return { passed: true };
 }
 
+/**
+ * Execute a specific action for an anti-swear rule
+ */
 async function executeAction(
-  action: keyof typeof actionHandlers,
+  action: BlockWordAction,
   message: Message<true>,
-  rule: BlockWord,
-  matches: RegExpMatchArray,
+  ruleId: string,
+  hubId: string,
+  ruleName: string,
+  matches: string[],
 ): Promise<ActionResult> {
   const handler = actionHandlers[action];
-  if (!handler) return { success: false, shouldBlock: false };
+  if (!handler) {
+    return { success: false, shouldBlock: false };
+  }
 
   try {
-    return await handler(message, rule, matches);
+    return await handler(message, ruleId, hubId, ruleName, matches);
   }
   catch (error) {
     Logger.error(`Failed to execute action ${action}:`, error);
@@ -131,42 +172,20 @@ async function executeAction(
   }
 }
 
-async function processActions(
-  message: Message<true>,
-  triggeredRule: BlockWord,
-  matches: RegExpMatchArray,
-): Promise<BlockResult> {
-  if (!triggeredRule.actions.length) return { shouldBlock: false };
-
-  let shouldBlock = false;
-  // the final reason for blocking.
-  // TODO: (should we have priority for the last action?)
-  let reason;
-
-  for (const actionToTake of triggeredRule.actions) {
-    const result = await executeAction(actionToTake, message, triggeredRule, matches);
-    if (result.success && result.shouldBlock) {
-      shouldBlock = true;
-      reason = result.message;
-      continue; // We dont break here to ensure all actions are executed (eg. block, blacklist and then alert)
-    }
+/**
+ * Check if a string contains prohibited words
+ * Used for checking server names, etc.
+ */
+export async function checkStringForAntiSwear(
+  content: string,
+  hubId: string,
+): Promise<boolean> {
+  if (!content.trim()) {
+    return false;
   }
 
-  return { shouldBlock, reason };
-}
+  const antiSwearManager = AntiSwearManager.getInstance();
+  const { blocked } = await antiSwearManager.checkMessage(content, hubId);
 
-async function checkRuleAndExecuteAction(
-  message: Message<true>,
-  rule: BlockWord,
-): Promise<BlockResult> {
-  const matches = checkRule(message.content, rule);
-  if (!matches) return { shouldBlock: false };
-
-  return await processActions(message, rule, matches);
-}
-
-export function checkRule(content: string, rule: BlockWord) {
-  const regex = createRegexFromWords(rule.words);
-  const matches = content.match(regex);
-  return matches;
+  return blocked;
 }

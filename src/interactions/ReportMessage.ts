@@ -15,6 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import HubLogManager from '#src/managers/HubLogManager.js';
 import { InfoEmbed } from '#src/utils/EmbedUtils.js';
@@ -32,7 +33,6 @@ import { type supportedLocaleCodes, t } from '#utils/Locale.js';
 import {
   ActionRowBuilder,
   StringSelectMenuBuilder,
-  type StringSelectMenuInteraction,
 } from 'discord.js';
 
 export const buildReportReasonDropdown = (messageId: string, locale: supportedLocaleCodes) =>
@@ -45,36 +45,44 @@ export const buildReportReasonDropdown = (messageId: string, locale: supportedLo
 
 export default class ReportMessageHandler {
   @RegisterInteractionHandler('report', 'reason')
-  async handleReportReasonSelect(interaction: StringSelectMenuInteraction) {
-    await interaction.deferUpdate();
+  async handleReportReasonSelect(ctx: ComponentContext) {
+    await ctx.deferUpdate();
 
-    const customId = CustomID.parseCustomId(interaction.customId);
-    const [messageId] = customId.args;
+    if (!ctx.isStringSelectMenu()) return;
+
+    const [messageId] = ctx.customId.args;
     const originalMsg = await findOriginalMessage(messageId);
-    const locale = await fetchUserLocale(interaction.user.id);
+    const locale = await fetchUserLocale(ctx.user.id);
 
     if (
       !originalMsg?.hubId ||
       !(await HubLogManager.create(originalMsg?.hubId)).config.reportsChannelId
     ) {
       const notEnabledEmbed = new InfoEmbed().setDescription(
-        t('msgInfo.report.notEnabled', locale, { emoji: getEmoji('x_icon', interaction.client) }),
+        t('msgInfo.report.notEnabled', locale, { emoji: getEmoji('x_icon', ctx.client) }),
       );
 
-      await interaction.followUp({ embeds: [notEnabledEmbed], flags: ['Ephemeral'] });
+      await ctx.reply({ embeds: [notEnabledEmbed], flags: ['Ephemeral'] });
       return;
     }
 
     const { authorId, guildId, content } = originalMsg;
 
     // Get the selected reason from the dropdown
-    const selectedReason = interaction.values[0] as ReportReason;
+    const selectedReason = ctx.values?.[0] as ReportReason | undefined;
+    if (!selectedReason) {
+      await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} No reason selected. Please try again.`,
+        flags: ['Ephemeral'],
+      });
+      return;
+    }
 
     // Get the translated reason
     const reason = getReasonFromKey(selectedReason, locale);
 
     await this.submitReport({
-      interaction,
+      ctx,
       hubId: originalMsg.hubId,
       messageId,
       authorId,
@@ -85,7 +93,7 @@ export default class ReportMessageHandler {
   }
 
   private async submitReport(opts: {
-    interaction: StringSelectMenuInteraction;
+    ctx: ComponentContext;
     hubId: string;
     messageId: string;
     authorId: string;
@@ -93,26 +101,26 @@ export default class ReportMessageHandler {
     reason: string;
     content: string;
   }) {
-    const { interaction, hubId, messageId, authorId, guildId, reason, content } = opts;
-    const locale = await fetchUserLocale(interaction.user.id);
+    const { ctx, hubId, messageId, authorId, guildId, reason, content } = opts;
+    const locale = await fetchUserLocale(ctx.user.id);
 
-    const message = await interaction.channel?.messages.fetch(messageId).catch(() => null);
+    const message = await ctx.channel?.messages.fetch(messageId).catch(() => null);
     const attachmentUrl =
       content?.match(/https?:\/\/\S+\.(?:png|jpg|jpeg|gif|webp)/i)?.at(0) ??
       message?.embeds[0]?.image?.url;
 
-    await sendHubReport(hubId, interaction.client, {
+    await sendHubReport(hubId, ctx.client, {
       userId: authorId,
       serverId: guildId,
       reason,
-      reportedBy: interaction.user,
+      reportedBy: ctx.user,
       evidence: { content, attachmentUrl, messageId },
     });
 
     const successEmbed = new InfoEmbed().setDescription(
-      t('msgInfo.report.success', locale, { emoji: getEmoji('tick_icon', interaction.client) }),
+      t('msgInfo.report.success', locale, { emoji: getEmoji('tick_icon', ctx.client) }),
     );
 
-    await interaction.editReply({ components: [], embeds: [successEmbed] });
+    await ctx.editReply({ components: [], embeds: [successEmbed] });
   }
 }

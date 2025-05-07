@@ -80,7 +80,7 @@ interface OptionResolver {
  * Type guard to check if a context is a PrefixContext
  */
 function isPrefixContext(ctx: Context): ctx is PrefixContext {
-  return ctx.originalInteraction instanceof Message;
+  return ctx.interaction instanceof Message;
 }
 
 /**
@@ -328,15 +328,15 @@ export default class ContextOptions {
     if (isPrefixContext(ctx)) {
       this.resolver = new MessageOptionResolver(ctx);
     }
-    else if (isChatInputCommandInteraction(ctx.originalInteraction)) {
-      this.resolver = new ChatInputOptionResolver(ctx.originalInteraction);
+    else if (isChatInputCommandInteraction(ctx.interaction)) {
+      this.resolver = new ChatInputOptionResolver(ctx.interaction);
     }
-    else if (isContextMenuInteraction(ctx.originalInteraction)) {
-      this.resolver = new ContextMenuOptionResolver(ctx.originalInteraction);
+    else if (isContextMenuInteraction(ctx.interaction)) {
+      this.resolver = new ContextMenuOptionResolver(ctx.interaction);
     }
-    else if (isMessageComponentInteraction(ctx.originalInteraction) ||
-             isModalSubmitInteraction(ctx.originalInteraction)) {
-      this.resolver = new ComponentOptionResolver(ctx.originalInteraction);
+    else if (isMessageComponentInteraction(ctx.interaction) ||
+             isModalSubmitInteraction(ctx.interaction)) {
+      this.resolver = new ComponentOptionResolver(ctx.interaction);
     }
     else {
       throw new OptionError('Unsupported interaction type for options', 'context_type');
@@ -436,8 +436,8 @@ export default class ContextOptions {
   public async getUser(name: string, required?: boolean): Promise<User | null>;
   public async getUser(name: string, required = false): Promise<User | null> {
     try {
-      if (isChatInputCommandInteraction(this.ctx.originalInteraction)) {
-        const user = this.ctx.originalInteraction.options.getUser(name, required);
+      if (isChatInputCommandInteraction(this.ctx.interaction)) {
+        const user = this.ctx.interaction.options.getUser(name, required);
         return user;
       }
 
@@ -473,9 +473,9 @@ export default class ContextOptions {
     }
 
     try {
-      if (isChatInputCommandInteraction(this.ctx.originalInteraction)) {
-        if (!this.ctx.originalInteraction.inCachedGuild()) return null;
-        return this.ctx.originalInteraction.options.getChannel(name, required);
+      if (isChatInputCommandInteraction(this.ctx.interaction)) {
+        if (!this.ctx.interaction.inCachedGuild()) return null;
+        return this.ctx.interaction.options.getChannel(name, required);
       }
 
       const channelId = this.getOption<string>(
@@ -526,9 +526,9 @@ export default class ContextOptions {
     }
 
     try {
-      if (isChatInputCommandInteraction(this.ctx.originalInteraction)) {
-        if (!this.ctx.originalInteraction.inCachedGuild()) return null;
-        return this.ctx.originalInteraction.options.getRole(name, required);
+      if (isChatInputCommandInteraction(this.ctx.interaction)) {
+        if (!this.ctx.interaction.inCachedGuild()) return null;
+        return this.ctx.interaction.options.getRole(name, required);
       }
 
       const roleId = this.getRoleId(name, required);
@@ -549,12 +549,12 @@ export default class ContextOptions {
    */
   public getAttachment(name: string): Attachment | null {
     try {
-      if (this.ctx.originalInteraction instanceof Message) {
-        return this.ctx.originalInteraction.attachments.first() ?? null;
+      if (this.ctx.interaction instanceof Message) {
+        return this.ctx.interaction.attachments.first() ?? null;
       }
 
-      if (isChatInputCommandInteraction(this.ctx.originalInteraction)) {
-        return this.ctx.originalInteraction.options.getAttachment(name) ?? null;
+      if (isChatInputCommandInteraction(this.ctx.interaction)) {
+        return this.ctx.interaction.options.getAttachment(name) ?? null;
       }
 
       return null;

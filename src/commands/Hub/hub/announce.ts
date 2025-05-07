@@ -26,7 +26,6 @@ import {
   type AutocompleteInteraction,
   EmbedBuilder,
   ModalBuilder,
-  type ModalSubmitInteraction,
   TextInputBuilder,
   TextInputStyle,
 } from 'discord.js';
@@ -35,6 +34,7 @@ import type Context from '#src/core/CommandContext/Context.js';
 import BaseCommand from '#src/core/BaseCommand.js';
 import HubCommand, { hubOption } from '#src/commands/Hub/hub/index.js';
 import { escapeRegexChars } from '#src/utils/Utils.js';
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 
 export default class AnnounceCommand extends BaseCommand {
   private readonly hubService = new HubService();
@@ -103,26 +103,28 @@ export default class AnnounceCommand extends BaseCommand {
   }
 
   @RegisterInteractionHandler('hub_announce')
-  async handleAnnounceModal(interaction: ModalSubmitInteraction) {
-    const announcement = interaction.fields.getTextInputValue('announcement');
+  async handleAnnounceModal(ctx: ComponentContext) {
+    if (!ctx.isModalSubmit()) return;
+
+    const announcement = ctx.getModalFieldValue('announcement');
 
     if (announcement.length > 4000) {
-      await interaction.reply({
-        content: `${getEmoji('x_icon', interaction.client)} Announcement cannot exceed 4000 characters.`,
+      await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} Announcement cannot exceed 4000 characters.`,
         flags: ['Ephemeral'],
       });
       return;
     }
 
-    await interaction.reply(
-      `${getEmoji('loading', interaction.client)} Sending announcement to all connected servers...`,
+    await ctx.reply(
+      `${getEmoji('loading', ctx.client)} Sending announcement to all connected servers...`,
     );
-    const [hubId] = CustomID.parseCustomId(interaction.customId).args;
+    const [hubId] = ctx.customId.args;
     const hubService = new HubService(db);
     const hub = await hubService.fetchHub(hubId);
 
     if (!hub) {
-      await interaction.editReply(`${getEmoji('x_icon', interaction.client)} Hub not found.`);
+      await ctx.editReply(`${getEmoji('x_icon', ctx.client)} Hub not found.`);
       return;
     }
 
@@ -138,8 +140,8 @@ export default class AnnounceCommand extends BaseCommand {
       ],
     });
 
-    await interaction.editReply(
-      `${getEmoji('tick_icon', interaction.client)} Announcement sent to all connected servers.`,
+    await ctx.editReply(
+      `${getEmoji('tick_icon', ctx.client)} Announcement sent to all connected servers.`,
     );
   }
 }

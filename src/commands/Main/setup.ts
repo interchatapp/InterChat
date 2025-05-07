@@ -762,8 +762,8 @@ export default class SetupCommand extends BaseCommand {
 
         // Register a one-time collector for the copy command button
         // Check if the interaction is a MessageComponentInteraction which has a message property
-        if ('message' in ctx.originalInteraction) {
-          const message = ctx.originalInteraction.message;
+        if ('message' in ctx.interaction) {
+          const message = ctx.interaction.message;
           const collector = message?.createMessageComponentCollector({
             filter: (i: MessageComponentInteraction) => i.customId.startsWith('copy_invite_command'),
             time: 300000,

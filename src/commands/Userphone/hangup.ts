@@ -142,13 +142,13 @@ export default class HangupCommand extends BaseCommand {
 
   @RegisterInteractionHandler('hangup', 'new-call')
   async handleNewCallButton(ctx: ComponentContext) {
-    if (!ctx.inGuild() || !ctx.originalInteraction.channel?.isTextBased()) {
+    if (!ctx.inGuild() || !ctx.interaction.channel?.isTextBased()) {
       return;
     }
 
     // Since we've already checked inGuild(), we know we're in a guild
     // Now we need to ensure the channel is a text-based channel in a guild
-    const channel = ctx.originalInteraction.channel;
+    const channel = ctx.interaction.channel;
 
     // Check if this is a guild channel (has guildId)
     if (!('guildId' in channel)) {

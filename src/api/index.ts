@@ -24,7 +24,6 @@ import {
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import { ZodError } from 'zod';
-import { errorHandler } from '#src/api/middleware/error-handler.js';
 import { validateBody } from '#src/api/middleware/validation.js';
 import { reactionsUpdateSchema } from '#src/api/schemas/reactions.js';
 import { toWebhookPayload, votePayloadSchema } from '#src/api/schemas/vote.js';
@@ -80,8 +79,6 @@ export const startApi = (
       message: 'Internal Server Error',
     }, 500);
   });
-
-  app.use('*', errorHandler);
 
   if (clusterManager) {
     voteManager.setClusterManager(clusterManager);

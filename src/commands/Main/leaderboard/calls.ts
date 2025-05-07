@@ -32,7 +32,7 @@ export default class CallsLeaderboardCommand extends BaseCommand {
       .setTitle(`${ctx.getEmoji('call_icon')} Global Calls Leaderboard`)
       .setDescription(userLeaderboardFormatted.length > 0 ? userLeaderboardFormatted : 'No data available.')
       .setColor(resolveColor(Constants.Colors.invisible))
-      .setFooter({ text: 'Shows data from the last 30 days' });
+      .setFooter({ text: 'Shows data from this month' });
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
@@ -65,7 +65,7 @@ export default class CallsLeaderboardCommand extends BaseCommand {
       .setTitle(`${getEmoji('call_icon', ctx.client)} Global Calls Leaderboard`)
       .setDescription(leaderboardFormatted.length > 0 ? leaderboardFormatted : 'No data available.')
       .setColor(resolveColor(Constants.Colors.invisible))
-      .setFooter({ text: 'Shows data from the last 30 days' });
+      .setFooter({ text: 'Shows data from this month' });
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()

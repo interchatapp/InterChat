@@ -15,7 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { BlockWord } from '#src/generated/prisma/client/client.js';
+import type { BlockWordAction } from '#src/generated/prisma/client/client.js';
 import { stripIndents } from 'common-tags';
 import { EmbedBuilder, type Message } from 'discord.js';
 import HubLogManager from '#src/managers/HubLogManager.js';
@@ -23,11 +23,26 @@ import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { sendLog } from '#src/utils/hub/logger/Default.js';
 import { ACTION_LABELS, createRegexFromWords } from '#utils/moderation/antiSwear.js';
 
+/**
+ * Rule interface for the antiswear alert system
+ * Contains only the properties needed for alert logging
+ */
+export interface AntiSwearRule {
+  id: string;
+  hubId: string;
+  name: string;
+  actions: BlockWordAction[];
+}
+
 const boldANSIText = (text: string) => `\u001b[1;2m${text}\u001b[0m`;
 
-export const logBlockwordAlert = async (
+/**
+ * Log an alert when a prohibited word is detected
+ * Uses the antiswear system format
+ */
+export const logAntiSwearAlert = async (
   message: Message<true>,
-  rule: BlockWord,
+  rule: AntiSwearRule,
   matches: string[],
 ) => {
   const logManager = await HubLogManager.create(rule.hubId);
@@ -36,10 +51,10 @@ export const logBlockwordAlert = async (
   const content = message.content.replace(createRegexFromWords(matches), boldANSIText);
   const embed = new EmbedBuilder()
     .setColor('Yellow')
-    .setTitle(`${getEmoji('exclamation', message.client)} Blocked Word Alert`)
+    .setTitle(`${getEmoji('exclamation', message.client)} Prohibited Word Alert`)
     .setDescription(
       stripIndents`
-        A message containing blocked words was detected:
+        A message containing prohibited words was detected:
 
         **Rule Triggered:** ${rule.name}
         **Author:** ${message.author.tag} (${message.author.id})

@@ -287,7 +287,7 @@ export default class HubEditSubcommand extends BaseCommand {
       );
 
       // Update the message with Components v2
-      await ctx.originalInteraction.message
+      await ctx.interaction.message
         ?.edit({
           components: [container],
           flags: [MessageFlags.IsComponentsV2],
@@ -493,7 +493,7 @@ export default class HubEditSubcommand extends BaseCommand {
       );
 
       // Update the message with Components v2
-      await ctx.originalInteraction.message
+      await ctx.interaction.message
         ?.edit({
           components: [container],
           flags: [MessageFlags.IsComponentsV2],

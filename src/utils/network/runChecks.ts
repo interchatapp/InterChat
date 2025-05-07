@@ -15,19 +15,18 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import type { User as DbUser } from '#src/generated/prisma/client/client.js';
 import BlacklistManager from '#src/managers/BlacklistManager.js';
 import type HubManager from '#src/managers/HubManager.js';
 import type HubSettingsManager from '#src/managers/HubSettingsManager.js';
-
 import NSFWDetector from '#src/modules/NSFWDetection.js';
 import UserDbService from '#src/services/UserDbService.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { sendBlacklistNotif } from '#src/utils/moderation/blacklistUtils.js';
-import { checkBlockedWords } from '#src/utils/network/antiSwearChecks.js';
+import { checkAntiSwear as checkAntiSwearFunction } from '#src/utils/network/antiSwearChecks.js';
 import Constants from '#utils/Constants.js';
 import { t } from '#utils/Locale.js';
 import { containsInviteLinks, fetchUserLocale, replaceLinks } from '#utils/Utils.js';
-import type { User as DbUser } from '#src/generated/prisma/client/client.js';
 import { stripIndents } from 'common-tags';
 import { type Awaitable, EmbedBuilder, type Message } from 'discord.js';
 
@@ -138,7 +137,9 @@ async function checkAntiSwear(
   message: Message<true>,
   { hub }: HubCheckFunctionOpts,
 ): Promise<CheckResult> {
-  return await checkBlockedWords(message, await hub.fetchAntiSwearRules());
+  // Check with the antiswear system
+  const result = await checkAntiSwearFunction(message, hub.id);
+  return result;
 }
 
 async function checkBanAndBlacklist(

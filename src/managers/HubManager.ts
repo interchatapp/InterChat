@@ -15,7 +15,8 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { BlockWord, Hub } from '#src/generated/prisma/client/client.js';
+import type { AntiSwearRule, BlockWordAction, Hub } from '#src/generated/prisma/client/client.js';
+import AntiSwearManager from '#src/managers/AntiSwearManager.js';
 import HubConnectionsManager from '#src/managers/HubConnectionsManager.js';
 import HubLogManager from '#src/managers/HubLogManager.js';
 import HubModeratorManager from '#src/managers/HubModeratorManager.js';
@@ -110,11 +111,97 @@ export default class HubManager {
     });
   }
 
-  public async fetchAntiSwearRules(): Promise<BlockWord[]> {
-    return await db.blockWord.findMany({ where: { hubId: this.hub.id } });
+  // New anti-swear methods
+  public async fetchAntiSwearRules(): Promise<AntiSwearRule[]> {
+    return await db.antiSwearRule.findMany({
+      where: { hubId: this.hub.id },
+      include: { patterns: true },
+    });
   }
-  public async fetchAntiSwearRule(ruleId: string): Promise<BlockWord | null> {
-    return await db.blockWord.findUnique({ where: { id: ruleId } });
+
+  public async fetchAntiSwearRule(ruleId: string): Promise<AntiSwearRule | null> {
+    return await db.antiSwearRule.findUnique({
+      where: { id: ruleId },
+      include: { patterns: true },
+    });
+  }
+
+  public async createAntiSwearRule(data: {
+    name: string,
+    createdBy: string,
+    patterns: string[],
+    actions: BlockWordAction[]
+  }): Promise<AntiSwearRule> {
+    // Create the rule
+    const rule = await db.antiSwearRule.create({
+      data: {
+        hubId: this.hub.id,
+        name: data.name,
+        createdBy: data.createdBy,
+        actions: data.actions,
+      },
+      include: { patterns: true },
+    });
+
+    await db.antiSwearPattern.createMany({
+      data: data.patterns.map((pattern) => ({
+        ruleId: rule.id,
+        pattern,
+        isRegex: pattern.includes('*'),
+      })),
+    });
+
+    // Invalidate cache
+    AntiSwearManager.getInstance().invalidateCache(this.hub.id);
+
+    return await this.fetchAntiSwearRule(rule.id) as AntiSwearRule;
+  }
+
+  public async updateAntiSwearRule(ruleId: string, data: {
+    name?: string,
+    patterns?: string[],
+    actions?: BlockWordAction[]
+  }): Promise<AntiSwearRule> {
+    // Update the rule
+    const updateData: { name?: string; actions?: BlockWordAction[] } = {};
+    if (data.name) updateData.name = data.name;
+    if (data.actions) updateData.actions = data.actions;
+
+    await db.antiSwearRule.update({
+      where: { id: ruleId },
+      data: updateData,
+    });
+
+    // Update patterns if provided
+    if (data.patterns) {
+      // Delete existing patterns
+      await db.antiSwearPattern.deleteMany({
+        where: { ruleId },
+      });
+
+      // Add new patterns
+      await db.antiSwearPattern.createMany({
+        data: data.patterns.map((pattern) => ({
+          ruleId,
+          pattern,
+          isRegex: pattern.includes('*'),
+        })),
+      });
+    }
+
+    // Invalidate cache
+    AntiSwearManager.getInstance().invalidateCache(this.hub.id);
+
+    return await this.fetchAntiSwearRule(ruleId) as AntiSwearRule;
+  }
+
+  public async deleteAntiSwearRule(ruleId: string): Promise<void> {
+    await db.antiSwearRule.delete({
+      where: { id: ruleId },
+    });
+
+    // Invalidate cache
+    AntiSwearManager.getInstance().invalidateCache(this.hub.id);
   }
 
   public async fetchInvites() {

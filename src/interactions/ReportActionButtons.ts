@@ -56,7 +56,7 @@ export default class MarkResolvedButton {
     ) => void,
   ): Promise<ActionRowBuilder<MessageActionRowComponentBuilder>[]> {
     await ctx.deferUpdate();
-    const components = ctx.originalInteraction.message?.components;
+    const components = ctx.interaction.message?.components;
     if (!components) return [];
 
     const rows = components.map((row) =>
@@ -84,7 +84,7 @@ export default class MarkResolvedButton {
 
     try {
       await this.updateButtonComponents(ctx, (component, _, buttonCustomId) => {
-        if (buttonCustomId === ctx.originalInteraction.customId) {
+        if (buttonCustomId === ctx.interaction.customId) {
           component
             .setLabel(`Resolved by @${ctx.user.username}`)
             .setDisabled(true)
@@ -97,7 +97,7 @@ export default class MarkResolvedButton {
       await this.notifyReporter(ctx, hub);
     }
     catch (e) {
-      handleError(e, { repliable: ctx.originalInteraction, comment: 'Failed to mark the message as resolved' });
+      handleError(e, { repliable: ctx.interaction, comment: 'Failed to mark the message as resolved' });
     }
   }
 
@@ -105,7 +105,7 @@ export default class MarkResolvedButton {
   async markIgnoredHandler(ctx: ComponentContext): Promise<void> {
     try {
       await this.updateButtonComponents(ctx, (component, _, buttonCustomId) => {
-        if (buttonCustomId === ctx.originalInteraction.customId) {
+        if (buttonCustomId === ctx.interaction.customId) {
           component
             .setLabel(`Ignored by @${ctx.user.username}`)
             .setDisabled(true)
@@ -118,7 +118,7 @@ export default class MarkResolvedButton {
       });
     }
     catch (e) {
-      handleError(e, { repliable: ctx.originalInteraction, comment: 'Failed to ignore the report' });
+      handleError(e, { repliable: ctx.interaction, comment: 'Failed to ignore the report' });
     }
   }
 
@@ -129,7 +129,7 @@ export default class MarkResolvedButton {
   private async notifyReporter(ctx: ComponentContext, hub: HubManager | null): Promise<void> {
     try {
       const redis = getRedis();
-      const reportMessageId = ctx.originalInteraction.message?.id;
+      const reportMessageId = ctx.interaction.message?.id;
       const redisKey = `${RedisKeys.ReportReporter}:${reportMessageId}`;
 
       // Check if the reporter's ID is still in Redis (within 48 hours)

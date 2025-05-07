@@ -31,7 +31,7 @@ import type { GuildTextBasedChannel } from 'discord.js';
 
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import Context from '#src/core/CommandContext/Context.js';
-import { checkRule } from '#src/utils/network/antiSwearChecks.js';
+import { checkStringForAntiSwear } from '#src/utils/network/antiSwearChecks.js';
 
 export class HubJoinService {
   private readonly locale: supportedLocaleCodes;
@@ -134,13 +134,10 @@ export class HubJoinService {
       return false;
     }
 
-    // Rest of the checks...
-    for (const rule of await hub.fetchAntiSwearRules()) {
-      const match = checkRule(channel.guild.name, rule);
-      if (match) {
-        await this.replyError('errors.serverNameInappropriate', { emoji: this.getEmoji('x_icon') });
-        return false;
-      }
+    // Check server name against anti-swear rules
+    if (await checkStringForAntiSwear(channel.guild.name, hub.id)) {
+      await this.replyError('errors.serverNameInappropriate', { emoji: this.getEmoji('x_icon') });
+      return false;
     }
 
     return true;

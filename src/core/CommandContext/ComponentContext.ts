@@ -176,17 +176,14 @@ export default class ComponentContext extends Context<ContextT<ComponentInteract
   /**
    * Get a value from a modal field
    * @param fieldId The ID of the field to get the value from
-   * @returns The value of the field, guaranteed to be non-null when called in a modal context
+   * @returns The value of the field, or null if this isn't a modal interaction
    */
-  public getModalFieldValue(fieldId: string): string;
-  /**
-   * Get a value from a modal field
-   * @param fieldId The ID of the field to get the value from
-   * @returns The value of the field, or null if the field doesn't exist or this isn't a modal interaction
-   */
-  public getModalFieldValue(fieldId: string): string | null;
-  public getModalFieldValue(fieldId: string): string | null {
-    return this.isModalSubmit() ? this.interaction.fields.getTextInputValue(fieldId) : null;
+  public getModalFieldValue<C extends this['interaction']>(
+    fieldId: string,
+  ): C extends ModalSubmitInteraction ? string : null {
+    return (
+      this.isModalSubmit() ? this.interaction.fields.getTextInputValue(fieldId) : null
+    ) as C extends ModalSubmitInteraction ? string : null;
   }
 
   /**

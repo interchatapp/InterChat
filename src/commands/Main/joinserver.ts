@@ -256,12 +256,12 @@ export default class JoinServerCommand extends BaseCommand {
     ctx: ComponentContext,
     action: 'accept' | 'reject',
   ) {
-    if (!ctx.originalInteraction.message) return;
+    if (!ctx.interaction.message) return;
 
     const updatedButton = this.createUpdatedButton(ctx, action);
     try {
-      const webhook = await ctx.originalInteraction.message.fetchWebhook();
-      await webhook.editMessage(ctx.originalInteraction.message, { components: [updatedButton] });
+      const webhook = await ctx.interaction.message.fetchWebhook();
+      await webhook.editMessage(ctx.interaction.message, { components: [updatedButton] });
     }
     catch {
       // Fail silently if button update fails.
@@ -282,7 +282,7 @@ export default class JoinServerCommand extends BaseCommand {
 
     return new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
-        .setCustomId(ctx.originalInteraction.customId)
+        .setCustomId(ctx.interaction.customId)
         .setStyle(buttonStyle)
         .setLabel(statusLabel)
         .setEmoji(emoji)

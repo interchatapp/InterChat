@@ -285,7 +285,7 @@ export default class CallCommand extends BaseCommand {
 
     // Add header
     container.addTextDisplayComponents(
-      ui.createHeader('Global Calls Leaderboard', 'Shows data from the last 30 days', 'call_icon'),
+      ui.createHeader('Global Calls Leaderboard', 'Shows data from this month', 'call_icon'),
     );
 
     // Add leaderboard content

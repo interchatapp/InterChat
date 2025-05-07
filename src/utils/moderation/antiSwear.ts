@@ -41,18 +41,31 @@ export const ACTION_LABELS = {
 export function createRegexFromWords(words: string | string[]) {
   if (Array.isArray(words)) return createRegexFromWords(words.join(','));
 
-  const formattedWords = words.split(',').map((w) => `\\b${w}\\b`);
+  const formattedWords = words.split(',').map((w) => {
+    // Handle wildcards
+    if (w.includes('*')) {
+      // First escape all special regex characters
+      let pattern = w.replace(/[-/\\^$+?.()|[\]{}]/g, '\\$&');
+
+      // Then replace * with .* for wildcard matching
+      pattern = pattern.replace(/\\\*/g, '.*').replace(/\*/g, '.*');
+
+      return `\\b${pattern}\\b`;
+    }
+
+    // Regular word
+    return `\\b${w}\\b`;
+  });
+
   return new RegExp(formattedWords.join('|'), 'gi');
 }
 
 export const sanitizeWords = (words: string) =>
   words
-    // Escape special regex characters, except '*' and ','
-    .replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
-    // Replace '*' with '.*' for wildcards
-    .replace(/\\\*/g, '.*')
+    // Only trim each word, no regex conversion
     .split(',')
     .map((word) => word.trim())
+    .filter((word) => word.length > 0)
     .join(',');
 
 export const buildAntiSpamListEmbed = (
@@ -118,7 +131,7 @@ export const buildAntiSwearModal = (
   if (presetRule) {
     modal.setCustomId(customId.setArgs(hubId, presetRule.id).toString());
     modal.components[0].components[0].setValue(presetRule.name);
-    modal.components[1].components[0].setValue(presetRule.words.replace(/\.\*/g, '*'));
+    modal.components[1].components[0].setValue(presetRule.words);
   }
 
   return modal;

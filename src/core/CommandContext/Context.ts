@@ -88,7 +88,7 @@ export interface ContextT<T = ValidContextInteractions, R = Message | Interactio
  * Abstract base class for all context types
  */
 export default abstract class Context<T extends ContextT = ContextT> {
-  protected readonly interaction: T['interaction'];
+  public readonly interaction: T['interaction'];
   protected readonly command: BaseCommand;
   protected readonly _options: ContextOptions;
 
@@ -118,13 +118,6 @@ export default abstract class Context<T extends ContextT = ContextT> {
    */
   public get options() {
     return this._options;
-  }
-
-  /**
-   * Get the original interaction object
-   */
-  public get originalInteraction() {
-    return this.interaction;
   }
 
   /**
