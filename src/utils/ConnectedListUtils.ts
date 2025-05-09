@@ -45,7 +45,7 @@ export const fetchConnection = async (channelId: string, hubId?: string) => {
 };
 
 export const deleteConnection = async (where: whereUniuqeInput) => {
-  const connection = await db.connection.findFirst({ where });
+  const connection = await db.connection.findUnique({ where });
   if (!connection) return null;
 
   const deleted = await db.connection.delete({ where });
