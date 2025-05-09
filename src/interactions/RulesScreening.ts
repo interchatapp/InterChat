@@ -159,10 +159,9 @@ export default class RulesScreeningInteraction {
     }
 
     const rulesContent = stripIndents`
-      ${t('rules.rules', locale, {
-        emoji: getEmoji('rules_icon', ctx.client),
-        guidelines_link: `${Constants.Links.Website}/guidelines`,
-      })}
+      ${t('rules.header', locale)}
+      ${t('rules.botRulesNote', locale)}
+      ${t('rules.rules', locale, { guidelines_link: `${Constants.Links.Website}/guidelines` })}
       ${t('rules.agreementNote', locale)}
     `;
 

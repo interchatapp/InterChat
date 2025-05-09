@@ -1,8 +1,7 @@
 rules:
+  header: 'InterChati reeglid'
+  botRulesNote: 'Need reeglid on paigas, et tagada nauditav ja turvaline kogemus kõigile. Loe need läbi ja järgi neid hoolega:'
   rules: |
-    ### {emoji} Reeglid
-    Need reeglid on paigas, et tagada nauditav ja turvaline kogemus kõigile. Loe need läbi ja järgi neid hoolega.
-
     1. **Ei mingit vihakõne ega ahistamist**
     -# > **Kaasaarvatud:** rassiliste laimusõnade või vihakõnega kellegi ründamine, [ja muud] ({guidelines_link}).
     2. **Ei mingit illegaalset sisu**

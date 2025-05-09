@@ -1,8 +1,7 @@
 rules:
+  header: 'Regras do InterChat'
+  botRulesNote: 'Estas regras existem para garantir uma experiência segura e agradável para todos. Leia e siga-as com atenção:'
   rules: |
-    ### {emoji} Regras
-    Estas regras existem para garantir uma experiência segura e agradável para todos. Leia e siga-as com atenção:
-
     1. **Sem Discurso de Ódio ou Assédio**
     -# > **Inclui:** Usar insultos ou discurso de ódio para atacar outros, [e mais]({guidelines_link}).
     2. **Sem Conteúdo Ilegal**

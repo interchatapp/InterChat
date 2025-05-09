@@ -304,7 +304,12 @@ export class HubService {
    */
   async findHubsByName(
     name: string,
-    opts?: { insensitive?: boolean; ownerId?: string; take?: number },
+    opts?: {
+      insensitive?: boolean;
+      searchType?: 'contains' | 'equals' | 'startsWith' | 'endsWith';
+      ownerId?: string;
+      take?: number;
+    },
   ): Promise<HubManager[]> {
     // Generate a cache key based on the search parameters
     const cacheKey = `search:${name}:${opts?.insensitive ? 'i' : 's'}:${opts?.ownerId || 'all'}:${opts?.take || 'all'}`;
@@ -325,7 +330,7 @@ export class HubService {
       where: {
         name: {
           mode: opts?.insensitive ? 'insensitive' : 'default',
-          equals: name,
+          [opts?.searchType ?? 'equals']: name,
         },
         ownerId: opts?.ownerId,
       },

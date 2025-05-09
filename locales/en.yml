@@ -1,8 +1,7 @@
 rules:
+  header: 'InterChat Rules'
+  botRulesNote: 'These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:'
   rules: |
-    ### {emoji} Rules
-    These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:
-
     1. **No Hate Speech or Harassment**
     -# > **Includes:** Using slurs or hate speech to attack others, [and more]({guidelines_link}).
     2. **No Illegal Content**
@@ -55,6 +54,7 @@ rules:
     -# To try again, send another message in this hub.
   noHubRules: This hub has not set any specific rules yet. However, the [general InterChat rules]({rules_link}) still apply.
   hubRules: Hub Rules
+  viewbotRules: "View Bot Rules"
 vote:
   description: |
     Help more communities discover InterChat! Your vote on top.gg:
