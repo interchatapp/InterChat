@@ -1,8 +1,7 @@
 rules:
+  header: 'InterChat 规则'
+  botRulesNote: '这些规则的制定是为了给每个人带来安全且愉快的体验。请仔细阅读并遵守以下规则：'
   rules: |
-    ### {emoji} 规则
-    这些规则的制定是为了给每个人带来安全且愉快的体验。请仔细阅读并遵守以下规则：
-
     1. **禁止仇恨言论或骚扰行为**
     -# > **包括：** 使用侮辱性言论或仇恨言论攻击他人，[及其他行为]({guidelines_link})。
     2. **禁止非法内容**
@@ -31,16 +30,16 @@ rules:
 
     ⚠️ **只有接受这些规则，您才能在此中心发送消息。**
   accepted: |
-    {emoji} You're all set! Welcome to the InterChat community.
+    {emoji} 准备完毕！欢迎来到InterChat社区。
 
-    {emoji} You're all set! Welcome to the InterChat community.
+    快速入门提示：
+    - 使用“/浏览中心”查找活跃社区
+    - 加入您感兴趣的讨论
+    - 使用我们新的“/呼叫”指令以连接单个服务器
 
-    ### Get Started Quickly:
-    - Visit `/hub browse` to find active communities
-    - Join discussions that interest you or create your own through our __dashboard__
-    - Use our new `/call` command to connect with single servers
+    需要帮助吗？加入我们的 [社区]({support_invite}) - 我们很乐意提供帮助！
 
-    Need help? Join our [community]({support_invite}) - we're happy to help! Please consider supporting us by [donating]({donateLink}) to help InterChat grow and thrive.
+    喜欢我们的平台吗？请考虑一下 [支持我们]({donateLink}) ，助力InterChat持续发展。
   declined: |
     {emoji} 您已拒绝InterChat的规则。
     -# ⚠️ **只有接受规则后，您才能使用InterChat或者进行跨服务器聊天。**
@@ -53,12 +52,13 @@ rules:
     -# 如重试，请在此中心另发送一条消息。
   noHubRules: 此中心尚未设置任何细则。但是 [InterChat通用规则]({rules_link}) 仍然适用。
   hubRules: 中心规则
+  viewbotRules: "View Bot Rules"
 vote:
   description: |
-    Help more communities discover InterChat! Your vote on top.gg:
-    - Helps others find active communities
-    - Unlocks special features for you
-    - Supports our independent development
+    帮助更多社区发现InterChat！您在top.gg的投票将:
+    - 帮助其他人找到活跃社区
+    - 为您解锁特殊功能
+    - 支持我们的独立发展
   footer: "每隔12小时刷新一轮投票 • 感谢您对InterChat的支持！"
   button:
     label: "在top.gg进行投票"
