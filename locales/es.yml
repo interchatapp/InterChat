@@ -1,24 +1,23 @@
 rules:
+  header: 'InterChat Rules'
+  botRulesNote: 'These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:'
   rules: |
-    ### {emoji} Reglas
-    Estas reglas están en su lugar para garantizar una experiencia segura y agradable para todos. Léelas y síguelas cuidadosamente:
+    1. **No Hate Speech or Harassment**
+    -# > **Includes:** Using slurs or hate speech to attack others, [and more]({guidelines_link}).
+    2. **No Illegal Content**
+    -# > **Includes:** Sharing links to illegal content, Encouraging violence, [and more]({guidelines_link}).
+    3. **No Severe NSFW or Gore**
+    -# > **Includes:** Posting gore or extreme gore in InterChat, Posting sexual content in non-NSFW hubs, [and more]({guidelines_link}).
+    4. **No Spamming or Flooding**
+    -# > **Includes:** Mass spamming or bot floods, [and more]({guidelines_link})
+    5. **No Impersonation or Fraud**
+    -# > **Includes:** Impersonating InterChat staff or hub moderators, Running cryptocurrency or NFT scams, [and more]({guidelines_link}).
+    6. **No Exploitation or Abuse**
+    -# > **Includes:** Grooming or predatory behavior towards minors, Sharing, Requesting, Blackmailing or threatening to  Encouraging self-harm, [and more]({guidelines_link}).
+    7. **No Sharing Malicious Software**
+    -# > **Includes:** Sharing malware, viruses, 'free nitro' links, harmful scripts [and more]({guidelines_link}).
 
-    1. **Nada de discurso de odio o acoso**  
-    -# > **Incluye:** Usar insultos o lenguaje de odio para atacar a otros, [y más]({guidelines_link}).
-    2. **Nada de contenido ilegal**  
-    -# > **Incluye:** Compartir enlaces a contenido ilegal, Fomentar la violencia, [y más]({guidelines_link}).
-    3. **Nada de contenido NSFW severo o gore**  
-    -# > **Incluye:** Publicar gore o gore extremo en InterChat, Publicar contenido sexual en hubs que no sean NSFW, [y más]({guidelines_link}).
-    4. **Nada de spam o flooding**  
-    -# > **Incluye:** Enviar spam masivo o floods de bots, [y más]({guidelines_link}).
-    5. **Nada de suplantación o fraude**  
-    -# > **Incluye:** Hacerse pasar por el personal de InterChat o moderadores de hubs, Realizar estafas con criptomonedas o NFT, [y más]({guidelines_link}).
-    6. **Nada de explotación o abuso**  
-    -# > **Incluye:** Acoso o comportamiento depredador hacia menores, Compartir, Solicitar, Extorsionar o amenazar con fomentar autolesiones, [y más]({guidelines_link}).
-    7. **Nada de compartir software malicioso**  
-    -# > **Incluye:** Compartir malware, virus, enlaces de 'nitro gratis', scripts dañinos, [y más]({guidelines_link}).
-
-    También aceptas seguir los [Términos de Servicio de Discord](https://discord.com/terms) y las [Normas de la Comunidad](https://discord.com/guidelines). Consulta la [lista completa de reglas]({guidelines_link}).
+    You also agree to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines). Check out the [full list of rules]({guidelines_link}).
   welcome: |
     {emoji} ¡Hola {user}! ¿Listo para conectarte con otras comunidades?
     Antes de que comiences a chatear entre servidores, repasemos rápidamente nuestras normas comunitarias.
@@ -57,6 +56,7 @@ rules:
     -# Para intentarlo dé nuevo, envía otro mensaje en este centro.
   noHubRules: Este centro aún no ha establecido reglas específicas. Sin embargo, siguen aplicando las [reglas generales de InterChat]({rules_link}).
   hubRules: Reglas del centro
+  viewbotRules: "View Bot Rules"
 vote:
   description: |
     Help more communities discover InterChat! Your vote on top.gg:
