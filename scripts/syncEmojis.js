@@ -69,7 +69,7 @@ async function initialize() {
     const updatedAt = new Date(data.updatedAt || Date.now());
 
     if (emoji && getTimestampFromSnowflake(emoji.id) < updatedAt) {
-      spinner.update(
+      spinner.edit(
         `${indexStr} ${orangeText(`⚠️ Deleting and re-creating emoji ${emoji.name} - ${getEmojiUrl(emoji)} since it already exists.`)}`,
       );
       await deleteEmoji(emoji.id);
@@ -78,7 +78,7 @@ async function initialize() {
 
     if (!emoji) {
       try {
-        spinner.update(`${indexStr} Creating emoji ${name}...`);
+        spinner.edit(`${indexStr} Creating emoji ${name}...`);
 
         const createdEmoji = await createEmoji({
           name,
@@ -97,7 +97,7 @@ async function initialize() {
       }
     }
 
-    spinner.update(`${indexStr} ${greyText(`Skipping emoji ${name} creation, already exists.`)}`);
+    spinner.edit(`${indexStr} ${greyText(`Skipping emoji ${name} creation, already exists.`)}`);
   }
 
   if (erroredEmojis) {
