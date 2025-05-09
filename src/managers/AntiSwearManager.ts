@@ -232,9 +232,6 @@ export default class AntiSwearManager {
           // 'i' flag for case-insensitivity. Global 'g' is not used here as we
           // often want to stop at the first match within a rule.
           // If specific patterns need global, it should be part of the patternString definition.
-          Logger.info(
-            `Compiling regex pattern: "${patternString}" for rule "${rule.name}" (ID: ${rule.id})`,
-          );
           return new RegExp(patternString, 'i');
         }
         catch (error) {
