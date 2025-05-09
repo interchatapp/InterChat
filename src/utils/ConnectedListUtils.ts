@@ -18,6 +18,7 @@
 import Context from '#src/core/CommandContext/Context.js';
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import type { Connection, Prisma } from '#src/generated/prisma/client/client.js';
+import { MessageProcessor } from '#src/services/MessageProcessor.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { supportedLocaleCodes, t } from '#src/utils/Locale.js';
 import { createServerInvite, getReplyMethod } from '#src/utils/Utils.js';
@@ -48,6 +49,12 @@ export const deleteConnection = async (where: whereUniuqeInput) => {
   if (!connection) return null;
 
   const deleted = await db.connection.delete({ where });
+
+  // Invalidate cache for this connection
+  if (connection.channelId) {
+    await MessageProcessor.onConnectionModified(connection.channelId);
+  }
+
   return deleted;
 };
 
@@ -65,9 +72,17 @@ export const deleteConnections = async (where: whereInput) => {
     return [await deleteConnection({ id: connections[0].id })];
   }
 
+  // Store channelIds for cache invalidation
+  const channelIds = connections.map((c) => c.channelId).filter(Boolean);
+
   await db.connection.deleteMany({
     where: { id: { in: connections.map((i) => i.id) } },
   });
+
+  // Invalidate cache for all deleted connections
+  for (const channelId of channelIds) {
+    await MessageProcessor.onConnectionModified(channelId);
+  }
 
   return connections;
 };
@@ -79,13 +94,33 @@ export const updateConnection = async (where: whereUniuqeInput, data: dataInput)
   // Update in database
   const connection = await db.connection.update({ where, data });
 
+  // Invalidate cache for this connection
+  if (connection.channelId) {
+    await MessageProcessor.onConnectionModified(connection.channelId);
+  }
+
+  // If channelId was changed, also invalidate the old channelId
+  if (data.channelId && typeof data.channelId === 'string' && data.channelId !== conn.channelId) {
+    await MessageProcessor.onConnectionModified(conn.channelId);
+  }
+
   return connection;
 };
 
 // TODO: test this function
 export const updateConnections = async (where: whereInput, data: dataInput) => {
+  // First get all affected connections to invalidate their caches
+  const connections = await db.connection.findMany({ where });
+
   // Update in database
   const updated = await db.connection.updateMany({ where, data });
+
+  // Invalidate cache for all affected connections
+  for (const connection of connections) {
+    if (connection.channelId) {
+      await MessageProcessor.onConnectionModified(connection.channelId);
+    }
+  }
 
   return updated;
 };

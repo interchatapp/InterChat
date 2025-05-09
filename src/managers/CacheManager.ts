@@ -21,20 +21,25 @@ import getRedis from '#utils/Redis.js';
 import type { Redis } from 'ioredis';
 
 export interface CacheConfig {
-  expirationMs?: number;
-  prefix?: string;
+  expirationMs?: number; // Default expiration for keys in milliseconds
+  prefix?: string; // Prefix for all keys managed by this instance
 }
 
+/**
+ * A generic manager for interacting with a Redis cache.
+ * It simplifies common caching patterns like get-or-set, and operations on
+ * various Redis data types (strings, sets, hashes).
+ */
 export class CacheManager {
   public readonly redis: Redis;
-  private readonly config: Required<CacheConfig>;
-  private static readonly DEFAULT_EXPIRATION = 5 * 60 * 1000; // 5 minutes
+  private readonly config: Required<CacheConfig>; // All config options will have a value
+  private static readonly DEFAULT_EXPIRATION_MS = 5 * 60 * 1000; // 5 minutes
 
-  constructor(redis?: Redis, config: CacheConfig = {}) {
-    this.redis = redis ?? getRedis();
+  constructor(redisInstance?: Redis, config: CacheConfig = {}) {
+    this.redis = redisInstance ?? getRedis();
     this.config = {
-      expirationMs: config.expirationMs ?? CacheManager.DEFAULT_EXPIRATION,
-      prefix: config.prefix ?? '',
+      expirationMs: config.expirationMs ?? CacheManager.DEFAULT_EXPIRATION_MS,
+      prefix: config.prefix ?? '', // Default to no prefix
     };
   }
 
@@ -43,61 +48,78 @@ export class CacheManager {
   }
 
   /**
-   * Gets a value from cache, falling back to the provider function if not found
+   * Gets a value from the cache. If the key is not found and a `provider` function
+   * is supplied, it calls the provider, stores its result in the cache, and returns it.
+   * @param key The cache key.
+   * @param provider An optional async function to fetch the value if not in cache.
+   * @returns The cached or freshly fetched value, or null.
    */
   public async get<T>(
     key: string,
     provider?: () => Promise<T | null>,
   ): Promise<ConvertDatesToString<T> | null> {
     const fullKey = this.getFullKey(key);
-    const cached = await this.redis.get(fullKey);
+    const cachedValue = await this.redis.get(fullKey);
 
-    if (cached) {
+    if (cachedValue !== null) {
+      // Check for null specifically, as empty string is a valid value
       try {
-        return JSON.parse(cached) as ConvertDatesToString<T>;
+        return JSON.parse(cachedValue) as ConvertDatesToString<T>;
       }
       catch (error) {
-        handleError(error, { comment: `Failed to parse cached value for key ${fullKey}` });
+        handleError(error, {
+          comment: `Failed to parse cached JSON for key ${fullKey}. Raw: "${cachedValue}"`,
+        });
+        // Optionally, delete the corrupted cache entry
+        // and fall through to provider if it exists.
+        await this.delete(key);
       }
     }
 
     if (!provider) return null;
 
-    const value = await provider();
-    if (value !== null) {
-      await this.set(key, value);
+    const valueFromProvider = await provider();
+    if (valueFromProvider !== null) {
+      await this.set(key, valueFromProvider); // Uses default expiration
     }
-    return value as ConvertDatesToString<T>;
+    // Ensure Date objects are handled as strings
+    return valueFromProvider as ConvertDatesToString<T>;
   }
 
   /**
-   * Sets a value in cache with optional expiration
+   * Sets a value in the cache.
+   * @param key The cache key.
+   * @param value The value to store (will be JSON.stringify'd).
+   * @param expirationSecs Optional expiration time in seconds for this specific key.
+   *                       Overrides the default expiration.
    */
   public async set(key: string, value: unknown, expirationSecs?: number): Promise<void> {
     const fullKey = this.getFullKey(key);
-    const serialized = JSON.stringify(value);
+    const serializedValue = JSON.stringify(value);
 
-    if (expirationSecs) {
-      await this.redis.setex(fullKey, expirationSecs, serialized);
+    if (expirationSecs !== undefined) {
+      await this.redis.setex(fullKey, expirationSecs, serializedValue);
     }
-    else if (this.config.expirationMs) {
-      await this.redis.psetex(fullKey, this.config.expirationMs, serialized);
+    else if (this.config.expirationMs > 0) {
+      // Use psetex if default expiration is set
+      await this.redis.psetex(fullKey, this.config.expirationMs, serializedValue);
     }
     else {
-      await this.redis.set(fullKey, serialized);
+      // No expiration
+      await this.redis.set(fullKey, serializedValue);
     }
   }
 
   /**
-   * Deletes a value from cache
+   * Deletes a key (and its value) from the cache.
+   * @param key The cache key to delete.
    */
   public async delete(key: string): Promise<void> {
     await this.redis.del(this.getFullKey(key));
   }
 
-  /**
-   * Gets all members of a set from cache, falling back to provider if not found
-   */
+  // --- Set Operations ---
+
   public async getSetMembers<T>(key: string, provider?: () => Promise<T[]>): Promise<T[]> {
     const fullKey = this.getFullKey(key);
     const members = await this.redis.smembers(fullKey);
@@ -110,75 +132,78 @@ export class CacheManager {
         handleError(error, { comment: `Failed to parse cached set members for key ${fullKey}` });
       }
     }
-
     if (!provider) return [];
-
     const values = await provider();
-    if (values.length > 0) {
-      await this.setSetMembers(key, values);
-    }
+    if (values.length > 0) await this.setSetMembers(key, values);
     return values;
   }
 
-  /**
-   * Sets members of a set in cache
-   */
   public async setSetMembers<T>(key: string, members: T[], expirationSecs?: number): Promise<void> {
     const fullKey = this.getFullKey(key);
     const pipeline = this.redis.pipeline();
+    pipeline.del(fullKey); // Clear existing set first
 
-    // Clear existing set
-    pipeline.del(fullKey);
-
-    // Add new members
     if (members.length > 0) {
-      const serialized = members.map((m) => JSON.stringify(m));
-      pipeline.sadd(fullKey, ...serialized);
+      const serializedMembers = members.map((m) => JSON.stringify(m));
+      pipeline.sadd(fullKey, ...serializedMembers);
 
-      if (expirationSecs) {
+      if (expirationSecs !== undefined) {
         pipeline.expire(fullKey, expirationSecs);
       }
-      else if (this.config.expirationMs) {
+      else if (this.config.expirationMs > 0) {
         pipeline.pexpire(fullKey, this.config.expirationMs);
       }
     }
-
-    await pipeline.exec();
+    try {
+      await pipeline.exec();
+    }
+    catch (error) {
+      handleError(error, { comment: `Failed to set set members for key ${fullKey}` });
+    }
   }
 
-  /**
-   * Adds a member to a set in cache
-   */
   public async addSetMember<T>(key: string, member: T): Promise<void> {
-    const fullKey = this.getFullKey(key);
-    await this.redis.sadd(fullKey, JSON.stringify(member));
+    await this.redis.sadd(this.getFullKey(key), JSON.stringify(member));
   }
+
+  public async removeSetMember<T>(key: string, member: T): Promise<void> {
+    await this.redis.srem(this.getFullKey(key), JSON.stringify(member));
+  }
+
+  // --- Hash Operations ---
 
   /**
-   * Removes a member from a set in cache
+   * Sets a field in a hash.
+   * @param key The cache key (for the hash).
+   * @param field The field in the hash to set.
+   * @param value The value to store (will be JSON.stringify'd).
+   * @param expirationSecs Optional expiration time in seconds for the entire hash.
+   *                       Overrides the default expiration.
    */
-  public async removeSetMember<T>(key: string, member: T): Promise<void> {
-    const fullKey = this.getFullKey(key);
-    await this.redis.srem(fullKey, JSON.stringify(member));
-  }
-
   public async setHashField<T>(
     key: string,
     field: string,
     value: T,
-    expirationSecs?: number,
+    expirationSecs?: number, // Expiration for the entire hash key, not just the field
   ): Promise<void> {
     const fullKey = this.getFullKey(key);
-    const serialized = JSON.stringify(value);
-
     const pipeline = this.redis.pipeline();
-    pipeline.hset(fullKey, field, serialized);
+    pipeline.hset(fullKey, field, JSON.stringify(value));
 
-    if (expirationSecs || this.config.expirationMs) {
-      pipeline.pexpire(fullKey, expirationSecs || this.config.expirationMs);
+    if (expirationSecs !== undefined) {
+      pipeline.expire(fullKey, expirationSecs);
     }
-
-    await pipeline.exec();
+    else if (this.config.expirationMs > 0 && (await this.redis.ttl(fullKey)) === -1) {
+      // Only set default expiration if an explicit one isn't given AND the key has no TTL
+      // This prevents overriding a specific TTL set elsewhere on the hash.
+      pipeline.pexpire(fullKey, this.config.expirationMs);
+    }
+    try {
+      await pipeline.exec();
+    }
+    catch (error) {
+      handleError(error, { comment: `Failed to set hash field ${field} for key ${fullKey}` });
+    }
   }
 
   public async getHashField<T>(
@@ -195,17 +220,13 @@ export class CacheManager {
       }
       catch (error) {
         handleError(error, {
-          comment: `Failed to parse cached hash field for key ${fullKey}:${field}`,
+          comment: `Failed to parse cached hash field ${field} for key ${fullKey}`,
         });
       }
     }
-
     if (!provider) return null;
-
     const value = await provider();
-    if (value !== null) {
-      await this.setHashField(key, field, value);
-    }
+    if (value !== null) await this.setHashField(key, field, value); // Uses default expiration logic for hash
     return value;
   }
 
@@ -222,19 +243,21 @@ export class CacheManager {
 
     if (Object.keys(fields).length > 0) {
       try {
-        return Object.fromEntries(Object.entries(fields).map(([k, v]) => [k, JSON.parse(v) as T]));
+        const parsedFields: Record<string, T> = {};
+        for (const [k, v] of Object.entries(fields)) {
+          parsedFields[k] = JSON.parse(v) as T;
+        }
+        return parsedFields;
       }
       catch (error) {
-        handleError(error, { comment: `Failed to parse cached hash fields for key ${fullKey}:` });
+        handleError(error, {
+          comment: `Failed to parse one or more cached hash fields for key ${fullKey}`,
+        });
       }
     }
-
     if (!provider) return {};
-
     const values = await provider();
-    if (Object.keys(values).length > 0) {
-      await this.setHashFields(key, values);
-    }
+    if (Object.keys(values).length > 0) await this.setHashFields(key, values);
     return values;
   }
 
@@ -244,51 +267,65 @@ export class CacheManager {
     expirationSecs?: number,
   ): Promise<void> {
     const fullKey = this.getFullKey(key);
-    const serialized = Object.fromEntries(
-      Object.entries(fields).map(([k, v]) => [k, JSON.stringify(v)]),
-    );
+    if (Object.keys(fields).length === 0) return; // Nothing to set
+
+    const serializedFields: Record<string, string> = {};
+    for (const [k, v] of Object.entries(fields)) {
+      serializedFields[k] = JSON.stringify(v);
+    }
 
     const pipeline = this.redis.pipeline();
-    pipeline.hset(fullKey, serialized);
+    pipeline.hmset(fullKey, serializedFields); // set multiple hash fields in one go
 
-    if (expirationSecs) {
+    if (expirationSecs !== undefined) {
       pipeline.expire(fullKey, expirationSecs);
     }
-    else if (this.config.expirationMs) {
+    else if (this.config.expirationMs > 0) {
       pipeline.pexpire(fullKey, this.config.expirationMs);
     }
-
     await pipeline.exec();
   }
 
   public async deleteHashFields(key: string, ...fields: string[]): Promise<void> {
+    if (fields.length === 0) return;
     await this.redis.hdel(this.getFullKey(key), ...fields);
   }
 
   /**
-   * Clears all cached data with the configured prefix
+   * Clears all cached data that matches the configured prefix.
    */
   public async clear(): Promise<void> {
     if (!this.config.prefix) {
+      // To prevent accidental clearing of non-prefixed keys if prefix is empty.
       throw new Error('Cannot clear cache without a prefix configured');
     }
 
-    const keys = await this.redis.keys(`${this.config.prefix}:*`);
-    if (keys.length > 0) {
-      await this.redis.del(...keys);
-    }
+    let cursor = '0';
+    do {
+      const [nextCursor, keysInBatch] = await this.redis.scan(
+        cursor,
+        'MATCH',
+        `${this.config.prefix}:*`,
+        'COUNT',
+        100,
+      );
+      if (keysInBatch.length > 0) await this.redis.del(...keysInBatch);
+      cursor = nextCursor;
+    } while (cursor !== '0');
   }
 
   /**
-   * Gets the remaining time to live in milliseconds for a key
-   * @param key The cache key
-   * @returns The remaining TTL in milliseconds, or null if key doesn't exist
+   * Gets the remaining time to live in milliseconds for a key.
+   * @param key The cache key.
+   * @returns The TTL in milliseconds, or null if the key doesn't exist or has no expiry.
    */
   public async getTTL(key: string): Promise<number | null> {
     const fullKey = this.getFullKey(key);
     const ttl = await this.redis.pttl(fullKey);
-
-    // Redis returns -2 if the key doesn't exist, and -1 if the key exists but has no expiry
-    return ttl < 0 ? null : ttl;
+    // PTTL returns:
+    // - positive number: remaining time in ms
+    // - -1: key exists but has no associated expire
+    // - -2: key does not exist
+    return ttl > 0 ? ttl : null;
   }
 }

@@ -15,11 +15,11 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Connection, User } from '#src/generated/prisma/client/client.js';
-import type ConnectionManager from '#src/managers/ConnectionManager.js';
+import type { User } from '#src/generated/prisma/client/client.js';
 import type HubManager from '#src/managers/HubManager.js';
 import type HubSettingsManager from '#src/managers/HubSettingsManager.js';
 import MessageFormattingService from '#src/services/MessageFormattingService.js';
+import { RequiredConnectionData } from '#src/services/MessageProcessor.js';
 import { getVisibleBadges } from '#src/utils/BadgeUtils.js';
 import Logger from '#src/utils/Logger.js';
 import type { BroadcastOpts, ReferredMsgData } from '#src/utils/network/Types.d.ts';
@@ -43,8 +43,8 @@ export class BroadcastService {
   async broadcastMessage(
     message: Message<true>,
     hub: HubManager,
-    hubConnections: ConnectionManager[],
-    connection: ConnectionManager,
+    hubConnections: RequiredConnectionData[],
+    connection: RequiredConnectionData,
     attachmentURL: string | undefined,
     userData: User | null,
   ) {
@@ -54,7 +54,7 @@ export class BroadcastService {
 
     // Sort connections by last active first
     const sortedHubConnections = hubConnections.sort(
-      (a, b) => b.data.lastActive.getTime() - a.data.lastActive.getTime(),
+      (a, b) => b.lastActive.getTime() - a.lastActive.getTime(),
     );
 
     Logger.debug(`Broadcasting message to ${sortedHubConnections.length} connections`);
@@ -64,7 +64,7 @@ export class BroadcastService {
         this.sendToConnection(message, hub, conn, {
           attachmentURL,
           referredMsgData,
-          embedColor: connection.data.embedColor as HexColorString,
+          embedColor: connection.embedColor as HexColorString,
           username,
           userData,
         }),
@@ -104,7 +104,7 @@ export class BroadcastService {
   private async sendToConnection(
     message: Message<true>,
     hub: HubManager,
-    connection: ConnectionManager,
+    connection: RequiredConnectionData,
     opts: BroadcastOpts & {
       username: string;
       userData: User | null;
@@ -112,7 +112,7 @@ export class BroadcastService {
     },
   ): Promise<NetworkWebhookSendResult> {
     try {
-      const { webhookURL } = connection.data;
+      const { webhookURL } = connection;
 
       if (webhookURL.length < 1) {
         return { error: 'No webhook URL', channelId: connection.channelId, webhookURL };
@@ -123,7 +123,7 @@ export class BroadcastService {
         webhookURL,
         messageFormat,
       );
-      const mode = connection.data.compact ? ConnectionMode.Compact : ConnectionMode.Embed;
+      const mode = connection.compact ? ConnectionMode.Compact : ConnectionMode.Embed;
 
       if (error || !messageRes) {
         return { error: `${error}`, channelId: connection.channelId, webhookURL };
@@ -133,13 +133,13 @@ export class BroadcastService {
     }
     catch (e) {
       Logger.error(
-        `Failed to send message to ${connection.channelId} in server ${connection.data.serverId}`,
+        `Failed to send message to ${connection.channelId} in server ${connection.serverId}`,
         e,
       );
       return {
         error: e.message,
         channelId: connection.channelId,
-        webhookURL: connection.data.webhookURL,
+        webhookURL: connection.webhookURL,
       };
     }
   }
@@ -147,7 +147,7 @@ export class BroadcastService {
   private async formatMessage(
     message: Message<true>,
     hub: HubManager,
-    connection: ConnectionManager,
+    connection: RequiredConnectionData,
     opts: BroadcastOpts & {
       username: string;
       userData: User | null;
@@ -162,7 +162,7 @@ export class BroadcastService {
     };
     const jumpButton = this.getJumpButton(
       referredAuthor?.username ?? 'Unknown',
-      connection.data,
+      connection,
       dbReferrence,
       message.client,
     );
@@ -172,7 +172,7 @@ export class BroadcastService {
     const badges = await getVisibleBadges(message.author.id, message.client, hub.id, opts.userData);
     const badgeText = badges ? `-# ${badges}\n` : '';
 
-    const messageFormatter = new MessageFormattingService(connection.data);
+    const messageFormatter = new MessageFormattingService(connection);
     return messageFormatter.format(message, {
       ...opts,
       author,
@@ -186,7 +186,7 @@ export class BroadcastService {
 
   private getJumpButton(
     username: string,
-    { channelId, serverId }: Connection,
+    { channelId, serverId }: RequiredConnectionData,
     dbReferrence: ReferredMsgData['dbReferrence'],
     client: Client,
   ) {

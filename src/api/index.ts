@@ -154,15 +154,13 @@ export const startApi = (
     }
   });
 
-  // Use the imported webhook schema
-
   app.post('/webhook', validateBody(webhookSchema), async (c) => {
     const body = c.req.valid('json');
-    Logger.debug(`[webhook] Processing webhook request with URL: ${body.webhookUrl.substring(0, 20)}...`);
+    Logger.debug(`[webhook] Processing webhook request with ID: ${body.webhookUrl.split('/').at(-2)}...`);
 
     let client = webhookMap.get(body.webhookUrl);
     if (!client) {
-      Logger.debug(`[webhook] Creating new WebhookClient for URL: ${body.webhookUrl.substring(0, 20)}...`);
+      Logger.debug(`[webhook] Creating new WebhookClient ID: ${body.webhookUrl.split('/').at(-2)}...`);
       client = new WebhookClient({ url: body.webhookUrl });
       webhookMap.set(body.webhookUrl, client);
     }

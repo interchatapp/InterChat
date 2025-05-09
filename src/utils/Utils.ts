@@ -296,8 +296,18 @@ export const hasUnreadDevAlert = async (userData: User) => {
 
 export const createUnreadDevAlertEmbed = (emoji: string) =>
   new EmbedBuilder()
-    .setTitle(`${emoji} You have a new message from the developers!`)
+    .setTitle(`${emoji} You have a new alert!`)
     .setColor(Constants.Colors.invisible)
     .setDescription(
       'Use </inbox:1342837854933618822> or `c!inbox` to read the latest alert and dismiss this message.',
     );
+// Simple string hashing function
+export const hashString = (str: string): string => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return hash.toString(16);
+};

@@ -122,7 +122,9 @@ export async function checkAntiSwear(
   }
 
   const antiSwearManager = AntiSwearManager.getInstance();
+  const start = performance.now();
   const { blocked, rule, matches } = await antiSwearManager.checkMessage(message.content, hubId);
+  Logger.debug(`Anti-swear check for message ${message.id} took ${performance.now() - start}ms`);
 
   if (blocked && rule) {
     // Process actions for the matched rule

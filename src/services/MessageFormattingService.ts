@@ -15,7 +15,9 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Connection, Hub } from '#src/generated/prisma/client/client.js';
+import type { Hub } from '#src/generated/prisma/client/client.js';
+import { RequiredConnectionData } from '#src/services/MessageProcessor.js';
+import type { BroadcastOpts, ReferredMsgData } from '#utils/network/Types.js';
 import {
   type ActionRowBuilder,
   type ButtonBuilder,
@@ -23,14 +25,13 @@ import {
   type WebhookMessageCreateOptions,
   userMention,
 } from 'discord.js';
-import type { BroadcastOpts, ReferredMsgData } from '#utils/network/Types.js';
 import { CompactMessageFormatter } from './formatters/CompactMsgFormatter.js';
 import { EmbedMessageFormatter } from './formatters/EmbedMsgFormatter.js';
 
 export interface MessageFormatterStrategy {
   format(
     message: Message<true>,
-    connection: Connection,
+    connection: RequiredConnectionData,
     opts: DefaultFormaterOpts,
   ): WebhookMessageCreateOptions;
 }
@@ -50,9 +51,9 @@ export type DefaultFormaterOpts = BroadcastOpts & {
 
 export default class MessageFormattingService {
   private readonly strategy: MessageFormatterStrategy;
-  private readonly connection: Connection;
+  private readonly connection: RequiredConnectionData;
 
-  constructor(connection: Connection) {
+  constructor(connection: RequiredConnectionData) {
     this.strategy = connection.compact
       ? new CompactMessageFormatter()
       : new EmbedMessageFormatter();
@@ -65,7 +66,7 @@ export default class MessageFormattingService {
   }
   private addReplyMention(
     messageFormat: WebhookMessageCreateOptions,
-    connection: Connection,
+    connection: RequiredConnectionData,
     referredMsgData?: ReferredMsgData,
   ): WebhookMessageCreateOptions {
     if (referredMsgData && connection.serverId === referredMsgData.dbReferrence?.guildId) {

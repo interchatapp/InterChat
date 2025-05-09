@@ -24,9 +24,11 @@ import UserDbService from '#src/services/UserDbService.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { sendBlacklistNotif } from '#src/utils/moderation/blacklistUtils.js';
 import { checkAntiSwear as checkAntiSwearFunction } from '#src/utils/network/antiSwearChecks.js';
-import Constants from '#utils/Constants.js';
+import Constants, { RedisKeys } from '#utils/Constants.js';
 import { t } from '#utils/Locale.js';
-import { containsInviteLinks, fetchUserLocale, replaceLinks } from '#utils/Utils.js';
+import Logger from '#utils/Logger.js';
+import { getRedis } from '#utils/Redis.js';
+import { containsInviteLinks, fetchUserLocale, hashString, replaceLinks } from '#utils/Utils.js';
 import { stripIndents } from 'common-tags';
 import { type Awaitable, EmbedBuilder, type Message } from 'discord.js';
 
@@ -105,12 +107,23 @@ export const runChecks = async (
     attachmentURL?: string | null;
   },
 ): Promise<boolean> => {
+  Logger.debug(`Starting message checks for message ${message.id}`);
+
   for (const check of checks) {
+    const checkStartTime = performance.now();
     const result = await check(message, { ...opts, hub });
+    const checkDuration = performance.now() - checkStartTime;
+
     if (!result.passed) {
-      if (result.reason) await replyToMsg(message, { content: result.reason });
+      // Log failed check with timing information
+      Logger.debug(`Message ${message.id} failed check: ${check.name} (${checkDuration}ms)`);
+
+      if (result.reason) {
+        await replyToMsg(message, { content: result.reason });
+      }
       return false;
     }
+    Logger.debug(`Message ${message.id} passed check: ${check.name} in ${checkDuration}ms`);
   }
 
   return true;
@@ -124,34 +137,120 @@ export const runCallChecks = async (
   },
 ): Promise<boolean> => {
   for (const check of callChecks) {
+    const checkStartTime = performance.now();
     const result = await check(message, opts);
+    const checkDuration = performance.now() - checkStartTime;
+
     if (!result.passed) {
-      if (result.reason) await replyToMsg(message, { content: result.reason });
+      // Log failed check with timing information
+      Logger.debug(`Call message ${message.id} failed check: ${check.name} (${checkDuration}ms)`);
+
+      if (result.reason) {
+        await replyToMsg(message, { content: result.reason });
+      }
+
       return false;
     }
+    Logger.debug(`Call message ${message.id} passed check: ${check.name} in ${checkDuration}ms`);
   }
+
   return true;
 };
+
+// Redis cache prefix for anti-swear check results
+const ANTI_SWEAR_CACHE_PREFIX = `${RedisKeys.AntiSwear}:check`;
+const ANTI_SWEAR_CACHE_TTL = 30; // 30 seconds in seconds (short TTL since content varies)
 
 async function checkAntiSwear(
   message: Message<true>,
   { hub }: HubCheckFunctionOpts,
 ): Promise<CheckResult> {
-  // Check with the antiswear system
+  // Skip empty messages
+  if (!message.content.trim()) {
+    return { passed: true };
+  }
+
+  // Create a cache key that includes message content hash and hub ID
+  // Using a simple hash of the content to avoid storing the full message content
+  const contentHash = hashString(message.content);
+  const cacheKey = `${ANTI_SWEAR_CACHE_PREFIX}:${contentHash}:${hub.id}`;
+  const redis = getRedis();
+
+  // Check Redis cache first
+  const cachedResult = await redis.get(cacheKey);
+
+  if (cachedResult !== null) {
+    try {
+      // Parse the cached result
+      const cached = JSON.parse(cachedResult);
+      return cached as CheckResult;
+    }
+    catch (error) {
+      // If there's an error parsing the cached data, log it and continue to check
+      Logger.error('Error parsing cached anti-swear check result:', error);
+    }
+  }
+
+  // Cache miss - check with the antiswear system
   const result = await checkAntiSwearFunction(message, hub.id);
+
+  // Store result in Redis cache
+  await redis.set(
+    cacheKey,
+    JSON.stringify(result),
+    'EX',
+    ANTI_SWEAR_CACHE_TTL,
+  );
+
   return result;
 }
+
+// Redis cache prefix for blacklist check results
+const BLACKLIST_CHECK_CACHE_PREFIX = `${RedisKeys.Infraction}:blacklist_check`;
+const BLACKLIST_CHECK_CACHE_TTL = 120; // 2 minutes in seconds
 
 async function checkBanAndBlacklist(
   message: Message<true>,
   opts: HubCheckFunctionOpts,
 ): Promise<CheckResult> {
+  // Quick check for ban reason in userData first
+  if (opts.userData?.banReason) {
+    return { passed: false };
+  }
+
+  // Create a cache key that includes user ID and hub ID
+  const cacheKey = `${BLACKLIST_CHECK_CACHE_PREFIX}:user:${message.author.id}:${opts.hub.id}`;
+  const redis = getRedis();
+
+  // Check Redis cache first
+  const cachedResult = await redis.get(cacheKey);
+
+  if (cachedResult !== null) {
+    try {
+      const isBlacklisted = cachedResult === '1';
+      return { passed: !isBlacklisted };
+    }
+    catch (error) {
+      // If there's an error parsing the cached data, log it and continue to fetch
+      Logger.error('Error parsing cached blacklist check result:', error);
+    }
+  }
+
+  // Cache miss - check blacklist
   const blacklistManager = new BlacklistManager('user', message.author.id);
   const blacklisted = await blacklistManager.fetchBlacklist(opts.hub.id);
 
-  if (opts.userData?.banReason || blacklisted) {
+  // Store result in Redis cache (using '1' for true and '0' for false to save space)
+  await redis.set(
+    cacheKey,
+    blacklisted ? '1' : '0',
+    'EX',
+    BLACKLIST_CHECK_CACHE_TTL,
+  );
+
+  if (blacklisted) {
     // If blacklisted, send notification
-    if (blacklisted && !blacklisted.notified) {
+    if (!blacklisted.notified) {
       await sendBlacklistNotif('user', message.client, {
         target: message.author,
         hubId: opts.hub.id,
@@ -194,40 +293,45 @@ function checkLinks(message: Message<true>, opts: HubCheckFunctionOpts): CheckRe
 
 async function checkSpam(message: Message<true>, opts: HubCheckFunctionOpts): Promise<CheckResult> {
   const { settings, hub } = opts;
-  const result = await message.client.antiSpamManager.handleMessage(message);
 
-  if (settings.has('SpamFilter') && result) {
-    if (result.messageCount >= 6) {
-      const expiresAt = new Date(Date.now() + 60 * 5000);
-      const reason = 'Auto-blacklisted for spamming.';
-      const target = message.author;
-      const mod = message.client.user;
-
-      const blacklistManager = new BlacklistManager('user', target.id);
-      await blacklistManager.addBlacklist({
-        hubId: hub.id,
-        reason,
-        expiresAt,
-        moderatorId: mod.id,
-      });
-
-      await blacklistManager.log(hub.id, message.client, {
-        mod,
-        reason,
-        expiresAt,
-      });
-      await sendBlacklistNotif('user', message.client, {
-        target,
-        hubId: hub.id,
-        expiresAt,
-        reason,
-      }).catch(() => null);
-    }
-
-    await message.react(getEmoji('timeout', message.client)).catch(() => null);
-    return { passed: false };
+  // If spam filter is not enabled, skip the check
+  if (!settings.has('SpamFilter')) {
+    return { passed: true };
   }
-  return { passed: true };
+
+  // check with the anti-spam system
+  const result = await message.client.antiSpamManager.handleMessage(message);
+  if (!result) return { passed: true };
+
+  if (result.messageCount >= 6) {
+    const expiresAt = new Date(Date.now() + 60 * 5000);
+    const reason = 'Auto-blacklisted for spamming.';
+    const target = message.author;
+    const mod = message.client.user;
+
+    const blacklistManager = new BlacklistManager('user', target.id);
+    await blacklistManager.addBlacklist({
+      hubId: hub.id,
+      reason,
+      expiresAt,
+      moderatorId: mod.id,
+    });
+
+    await blacklistManager.log(hub.id, message.client, {
+      mod,
+      reason,
+      expiresAt,
+    });
+    await sendBlacklistNotif('user', message.client, {
+      target,
+      hubId: hub.id,
+      expiresAt,
+      reason,
+    }).catch(() => null);
+  }
+
+  await message.react(getEmoji('timeout', message.client)).catch(() => null);
+  return { passed: false };
 }
 
 async function checkNewUser(

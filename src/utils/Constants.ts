@@ -28,6 +28,8 @@ export const enum RedisKeys {
   ReportReporter = 'report:reporter', // Stores reporter ID for report resolution notifications
   tutorialData = 'tutorialData', // Base prefix for all tutorial-related keys
   tutorialProgress = 'tutorialProgress', // Stores user progress in tutorials
+  AntiSwear = 'antiswear', // Base prefix for all anti-swear related keys
+  HubRules = 'rules', // Base prefix for all hub rules related keys
 }
 
 export const enum ConnectionMode {

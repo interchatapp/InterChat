@@ -16,12 +16,12 @@
  */
 
 import type { BlockWordAction } from '#src/generated/prisma/client/client.js';
-import { stripIndents } from 'common-tags';
-import { EmbedBuilder, type Message } from 'discord.js';
 import HubLogManager from '#src/managers/HubLogManager.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { sendLog } from '#src/utils/hub/logger/Default.js';
-import { ACTION_LABELS, createRegexFromWords } from '#utils/moderation/antiSwear.js';
+import { ACTION_LABELS } from '#utils/moderation/antiSwear.js';
+import { stripIndents } from 'common-tags';
+import { EmbedBuilder, type Message } from 'discord.js';
 
 /**
  * Rule interface for the antiswear alert system
@@ -48,7 +48,11 @@ export const logAntiSwearAlert = async (
   const logManager = await HubLogManager.create(rule.hubId);
   if (!logManager.config.networkAlertsChannelId) return;
 
-  const content = message.content.replace(createRegexFromWords(matches), boldANSIText);
+  let content = message.content;
+  matches.forEach((match) => {
+    content = content.replaceAll(match, boldANSIText(match));
+  });
+
   const embed = new EmbedBuilder()
     .setColor('Yellow')
     .setTitle(`${getEmoji('exclamation', message.client)} Prohibited Word Alert`)

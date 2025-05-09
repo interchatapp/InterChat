@@ -18,6 +18,7 @@
 import type { HexColorString } from 'discord.js';
 import type { Connection, Prisma } from '#src/generated/prisma/client/client.js';
 import { HubService } from '#src/services/HubService.js';
+import { MessageProcessor } from '#src/services/MessageProcessor.js';
 import db from '#src/utils/Db.js';
 
 export default class ConnectionManager {
@@ -69,6 +70,8 @@ export default class ConnectionManager {
     await db.connection.delete({
       where: { id: this.connection.id },
     });
+
+    await MessageProcessor.onConnectionModified(this.channelId);
   }
 
   async setInvite(invite: string): Promise<void> {
@@ -90,9 +93,11 @@ export default class ConnectionManager {
   }
 
   private async connectionExists(): Promise<boolean> {
-    return (await db.connection.findFirst({
-      where: { id: this.connection.id },
-    })) !== null;
+    return (
+      (await db.connection.findFirst({
+        where: { id: this.connection.id },
+      })) !== null
+    );
   }
 
   private async updateConnectionIfExists(data: Prisma.ConnectionUpdateInput): Promise<void> {
@@ -107,5 +112,13 @@ export default class ConnectionManager {
       where: { id: this.connection.id },
       data,
     });
+
+    // Invalidate cache for this connection
+    await MessageProcessor.onConnectionModified(this.channelId);
+
+    // If the channelId is being changed, invalidate new channelId
+    if (data.channelId && typeof data.channelId === 'string' && data.channelId !== this.channelId) {
+      await MessageProcessor.onConnectionModified(data.channelId);
+    }
   }
 }

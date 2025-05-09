@@ -149,6 +149,9 @@ model Connection {
   @@unique([channelId, serverId])
   @@unique([hubId, serverId])
   @@index([hubId, channelId])
+  @@index([channelId, connected]) // for getHubAndConnections
+  @@index([hubId, connected]) // for finding other connections in the same hub
+  @@index([lastActive]) // for sorting by lastActive
 }
 
 model Infraction {
@@ -277,6 +280,7 @@ model HubRulesAcceptance {
   acceptedAt DateTime @default(now())
 
   @@unique([userId, hubId])
+  @@index([hubId, userId]) // for finding rule acceptances for a user in a hub
 }
 
 model User {

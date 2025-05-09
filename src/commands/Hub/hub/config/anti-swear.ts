@@ -21,7 +21,6 @@ import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import { BlockWordAction, type AntiSwearRule } from '#src/generated/prisma/client/client.js';
-import AntiSwearManager from '#src/managers/AntiSwearManager.js';
 import Logger from '#src/utils/Logger.js';
 import { HubService } from '#src/services/HubService.js';
 import { numberEmojis } from '#src/utils/Constants.js';
@@ -304,9 +303,6 @@ export default class HubConfigAntiSwearSubcommand extends BaseCommand {
 
     await hub.deleteAntiSwearRule(ruleId);
 
-    // Invalidate cache
-    AntiSwearManager.getInstance().invalidateCache(hubId);
-
     const locale = await fetchUserLocale(ctx.user.id);
     await ctx.editReply(
       t('hub.blockwords.deleted', locale, {
@@ -433,9 +429,6 @@ export default class HubConfigAntiSwearSubcommand extends BaseCommand {
 
     await hub.updateAntiSwearRule(ruleId, { actions: selectedActions });
 
-    // Invalidate cache
-    AntiSwearManager.getInstance().invalidateCache(hubId);
-
     const actionLabels = selectedActions.map((action) => ACTION_LABELS[action]).join(', ');
 
     await ctx.reply({
@@ -476,7 +469,7 @@ export default class HubConfigAntiSwearSubcommand extends BaseCommand {
             .setCustomId('name')
             .setStyle(TextInputStyle.Short)
             .setLabel(t('hub.blockwords.modal.ruleNameLabel', locale))
-            // .setMinLength(3)
+            .setMinLength(3)
             .setMaxLength(40)
             .setRequired(true),
         ),

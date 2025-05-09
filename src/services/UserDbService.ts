@@ -28,7 +28,10 @@ export default class UserDbService {
   private readonly VOTE_COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 hours
 
   constructor() {
-    this.cacheManager = new CacheManager(getRedis(), { prefix: RedisKeys.userData });
+    this.cacheManager = new CacheManager(getRedis(), {
+      prefix: RedisKeys.userData,
+      expirationMs: 5 * 60 * 1000, // 5 minutes
+    });
   }
 
   private serializeUserDates(user: ConvertDatesToString<User>): User {

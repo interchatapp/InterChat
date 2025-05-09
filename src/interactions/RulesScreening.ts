@@ -270,8 +270,8 @@ export default class RulesScreeningInteraction {
       }),
     );
 
-    await ctx.reply({ embeds: [embed], components: [], flags: ['Ephemeral'] });
-    await this.redis.del(`${RedisKeys.RulesShown}:${ctx.user.id}:${hubId}`);
+    await ctx.reply({ embeds: [embed], components: [], flags: ['Ephemeral'] }).catch(() => null);
+    await this.redis.del(`${RedisKeys.HubRules}:shown:${hubId}:${ctx.user.id}`);
   }
 
   @RegisterInteractionHandler('rulesScreen', 'decline')
@@ -309,6 +309,6 @@ export default class RulesScreeningInteraction {
       .setColor('Red');
 
     await ctx.editReply({ embeds: [embed], components: [] });
-    await this.redis.del(`${RedisKeys.RulesShown}:${ctx.user.id}:${hubId}`);
+    await this.redis.del(`${RedisKeys.HubRules}:shown:${hubId}:${ctx.user.id}`);
   }
 }

@@ -19,6 +19,7 @@ import type { Message } from 'discord.js';
 import getRedis from '#src/utils/Redis.js';
 import { CacheManager } from '#src/managers/CacheManager.js';
 import { RedisKeys } from '#src/utils/Constants.js';
+import Logger from '#src/utils/Logger.js';
 
 interface UserMessageInfo {
   messageCount: number;
@@ -43,6 +44,11 @@ export default class AntiSpamManager {
     });
   }
 
+  /**
+   * Handle a message and check if it's spam
+   * @param message The message to check
+   * @returns User message info if spam detected, null otherwise
+   */
   public async handleMessage(message: Message): Promise<UserMessageInfo | null> {
     const userId = message.author.id;
     const currentTime = Date.now();
@@ -51,7 +57,7 @@ export default class AntiSpamManager {
     if (currentTime - userInfo.lastMessage < this.config.timeWindow) {
       userInfo.messageCount++;
       if (userInfo.messageCount >= this.config.spamThreshold) {
-        this.setUserInfo(userId, { ...userInfo, lastMessage: currentTime });
+        await this.setUserInfo(userId, { ...userInfo, lastMessage: currentTime });
         return userInfo;
       }
     }
@@ -63,12 +69,36 @@ export default class AntiSpamManager {
     return null;
   }
 
+  /**
+   * Get user message info from Redis
+   * @param userId The user ID to get info for
+   * @returns The user message info
+   */
   private async getUserInfo(userId: string): Promise<UserMessageInfo> {
-    const data = await this.cache.get<UserMessageInfo>(userId);
-    return data ?? { messageCount: 0, lastMessage: 0 };
+    try {
+      // Get data directly from Redis cache
+      const data = await this.cache.get<UserMessageInfo>(userId);
+      return data ?? { messageCount: 0, lastMessage: 0 };
+    }
+    catch (error) {
+      Logger.error('Error getting user info from Redis:', error);
+      // Return default values in case of error
+      return { messageCount: 0, lastMessage: 0 };
+    }
   }
 
+  /**
+   * Set user message info in Redis
+   * @param userId The user ID to set info for
+   * @param info The user message info to set
+   */
   private async setUserInfo(userId: string, info: UserMessageInfo): Promise<void> {
-    await this.cache.set(userId, info);
+    try {
+      // Set data directly in Redis with the configured TTL
+      await this.cache.set(userId, info);
+    }
+    catch (error) {
+      Logger.error('Error setting user info in Redis:', error);
+    }
   }
 }

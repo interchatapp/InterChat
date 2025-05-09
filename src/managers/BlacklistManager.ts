@@ -25,9 +25,12 @@ import type {
 import InfractionManager from '#src/managers/InfractionManager.js';
 import { HubService } from '#src/services/HubService.js';
 import UserDbService from '#src/services/UserDbService.js';
-import Constants from '#src/utils/Constants.js';
+import { ConvertDatesToString } from '#src/types/Utils.js';
+import Constants, { RedisKeys } from '#src/utils/Constants.js';
 import db from '#src/utils/Db.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
+import Logger from '#src/utils/Logger.js';
+import { getRedis } from '#src/utils/Redis.js';
 import { resolveEval } from '#src/utils/Utils.js';
 import { sendLog } from '#src/utils/hub/logger/Default.js';
 import { stripIndents } from 'common-tags';
@@ -81,6 +84,41 @@ export default class BlacklistManager {
     this.infractions = new InfractionManager(type, targetId);
   }
 
+  private convertBlacklistDates(
+    blacklist: ConvertDatesToString<BlacklistWithAppeal>,
+  ): BlacklistWithAppeal {
+    return {
+      ...blacklist,
+      createdAt: new Date(blacklist.createdAt),
+      updatedAt: new Date(blacklist.updatedAt),
+      expiresAt: blacklist.expiresAt ? new Date(blacklist.expiresAt) : null,
+      appeal: blacklist.appeal
+        ? {
+          ...blacklist.appeal,
+          createdAt: new Date(blacklist.appeal.createdAt),
+          updatedAt: new Date(blacklist.appeal.updatedAt),
+          user: blacklist.appeal.user
+            ? {
+              ...blacklist.appeal.user,
+              createdAt: new Date(blacklist.appeal.user.createdAt),
+              updatedAt: new Date(blacklist.appeal.user.updatedAt),
+              lastMessageAt: new Date(blacklist.appeal.user.lastMessageAt),
+              lastVoted: blacklist.appeal.user.lastVoted
+                ? new Date(blacklist.appeal.user.lastVoted)
+                : null,
+              inboxLastReadDate: blacklist.appeal.user.inboxLastReadDate
+                ? new Date(blacklist.appeal.user.inboxLastReadDate)
+                : null,
+              emailVerified: blacklist.appeal.user.emailVerified
+                ? new Date(blacklist.appeal.user.emailVerified)
+                : null,
+            }
+            : null,
+        }
+        : null,
+    };
+  }
+
   /**
    * Adds a blacklist for the target in the specified hub
    * @param opts - Blacklist options including hub, reason, moderator, and expiration
@@ -100,7 +138,12 @@ export default class BlacklistManager {
     }
 
     // Create the new blacklist infraction
-    return await this.infractions.addInfraction('BLACKLIST', opts);
+    const result = await this.infractions.addInfraction('BLACKLIST', opts);
+
+    // Invalidate cache for this target and hub
+    await this.invalidateCache(opts.hubId);
+
+    return result;
   }
 
   /**
@@ -116,7 +159,12 @@ export default class BlacklistManager {
     const exists = await this.fetchBlacklist(hubId);
     if (!exists) return null;
 
-    return await this.infractions.revokeInfraction('BLACKLIST', hubId, status);
+    const result = await this.infractions.revokeInfraction('BLACKLIST', hubId, status);
+
+    // Invalidate cache for this target and hub
+    await this.invalidateCache(hubId);
+
+    return result;
   }
 
   /**
@@ -138,6 +186,10 @@ export default class BlacklistManager {
     );
   }
 
+  // Redis cache prefix for blacklist data
+  private static readonly REDIS_CACHE_PREFIX = `${RedisKeys.Infraction}:blacklist`;
+  private static readonly REDIS_CACHE_TTL = 120; // 2 minutes in seconds
+
   /**
    * Fetches an active blacklist for the target in the specified hub
    * @param hubId - The ID of the hub
@@ -148,11 +200,58 @@ export default class BlacklistManager {
     hubId: string,
     include: { appeal: boolean } = { appeal: false },
   ): Promise<BlacklistWithAppeal | null> {
-    // Get the active blacklist infraction
+    // Create a cache key that includes target type, target ID, and hub ID
+    const cacheKey = `${BlacklistManager.REDIS_CACHE_PREFIX}:${this.type}:${this.targetId}:${hubId}`;
+    const redis = getRedis();
+
+    // Check Redis cache first
+    const cachedData = await redis.get(cacheKey);
+
+    if (cachedData) {
+      try {
+        const cached = JSON.parse(cachedData) as ConvertDatesToString<BlacklistWithAppeal> | null;
+
+        // If no blacklist found in cache, return null
+        if (!cached) return null;
+
+        // If appeal is requested but not in cached data, fetch it separately
+        if (include.appeal && !cached.appeal) {
+          const appeal = await db.appeal.findFirst({
+            where: { infractionId: cached.id },
+            include: { user: true },
+            orderBy: { createdAt: 'desc' },
+          });
+
+          // Update cache with appeal information
+          const updatedData = { ...cached, appeal };
+          await redis.set(
+            cacheKey,
+            JSON.stringify(updatedData),
+            'EX',
+            BlacklistManager.REDIS_CACHE_TTL,
+          );
+
+          return this.convertBlacklistDates(
+            updatedData as ConvertDatesToString<BlacklistWithAppeal>,
+          );
+        }
+
+        return this.convertBlacklistDates(cached);
+      }
+      catch (error) {
+        // log error and continue to fetch from database
+        Logger.error('Error parsing cached blacklist data:', error);
+      }
+    }
+
+    // Cache miss - fetch from database
     const blacklist = await this.infractions.fetchInfraction('BLACKLIST', hubId, 'ACTIVE');
 
-    // If no blacklist found, return null
-    if (!blacklist) return null;
+    // If no blacklist found, cache null result and return
+    if (!blacklist) {
+      await redis.set(cacheKey, JSON.stringify(null), 'EX', BlacklistManager.REDIS_CACHE_TTL);
+      return null;
+    }
 
     // Fetch appeal information if requested
     let appeal: BlacklistWithAppeal['appeal'] = null;
@@ -164,8 +263,23 @@ export default class BlacklistManager {
       });
     }
 
-    // Return blacklist with appeal information
-    return { ...blacklist, appeal };
+    // Create result with blacklist and appeal information
+    const result = { ...blacklist, appeal };
+
+    // Store in Redis cache
+    await redis.set(cacheKey, JSON.stringify(result), 'EX', BlacklistManager.REDIS_CACHE_TTL);
+
+    return result;
+  }
+
+  /**
+   * Invalidates the cache for a specific target and hub
+   * @param hubId - The ID of the hub
+   */
+  public async invalidateCache(hubId: string): Promise<void> {
+    const cacheKey = `${BlacklistManager.REDIS_CACHE_PREFIX}:${this.type}:${this.targetId}:${hubId}`;
+    await getRedis().del(cacheKey);
+    Logger.debug(`Invalidated blacklist cache for ${this.type} ${this.targetId} in hub ${hubId}`);
   }
 
   /**

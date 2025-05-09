@@ -152,7 +152,7 @@ export default class HubManager {
     });
 
     // Invalidate cache
-    AntiSwearManager.getInstance().invalidateCache(this.hub.id);
+    await AntiSwearManager.getInstance().invalidateCache(this.hub.id);
 
     return await this.fetchAntiSwearRule(rule.id) as AntiSwearRule;
   }
@@ -190,7 +190,7 @@ export default class HubManager {
     }
 
     // Invalidate cache
-    AntiSwearManager.getInstance().invalidateCache(this.hub.id);
+    await AntiSwearManager.getInstance().invalidateCache(this.hub.id);
 
     return await this.fetchAntiSwearRule(ruleId) as AntiSwearRule;
   }
@@ -201,7 +201,7 @@ export default class HubManager {
     });
 
     // Invalidate cache
-    AntiSwearManager.getInstance().invalidateCache(this.hub.id);
+    await AntiSwearManager.getInstance().invalidateCache(this.hub.id);
   }
 
   public async fetchInvites() {

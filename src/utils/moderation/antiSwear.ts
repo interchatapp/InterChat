@@ -38,28 +38,6 @@ export const ACTION_LABELS = {
   [BlockWordAction.BLACKLIST]: '⛔ Blacklist User/Server',
 } as const;
 
-export function createRegexFromWords(words: string | string[]) {
-  if (Array.isArray(words)) return createRegexFromWords(words.join(','));
-
-  const formattedWords = words.split(',').map((w) => {
-    // Handle wildcards
-    if (w.includes('*')) {
-      // First escape all special regex characters
-      let pattern = w.replace(/[-/\\^$+?.()|[\]{}]/g, '\\$&');
-
-      // Then replace * with .* for wildcard matching
-      pattern = pattern.replace(/\\\*/g, '.*').replace(/\*/g, '.*');
-
-      return `\\b${pattern}\\b`;
-    }
-
-    // Regular word
-    return `\\b${w}\\b`;
-  });
-
-  return new RegExp(formattedWords.join('|'), 'gi');
-}
-
 export const sanitizeWords = (words: string) =>
   words
     // Only trim each word, no regex conversion
