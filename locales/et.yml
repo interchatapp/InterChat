@@ -1,8 +1,7 @@
 rules:
+  header: 'InterChati reeglid'
+  botRulesNote: 'Need reeglid on paigas, et tagada nauditav ja turvaline kogemus kõigile. Loe need läbi ja järgi neid hoolega:'
   rules: |
-    ### {emoji} Reeglid
-    Need reeglid on paigas, et tagada nauditav ja turvaline kogemus kõigile. Loe need läbi ja järgi neid hoolega.
-
     1. **Ei mingit vihakõne ega ahistamist**
     -# > **Kaasaarvatud:** rassiliste laimusõnade või vihakõnega kellegi ründamine, [ja muud] ({guidelines_link}).
     2. **Ei mingit illegaalset sisu**
@@ -32,16 +31,16 @@ rules:
 
     ⚠️ **Te ei saa selles keskuses sõnumeid saata enne, kui nõustute nende reeglitega.**
   accepted: |
-    {emoji} You're all set! Welcome to the InterChat community.
+    {emoji} Kõik on valmis! Tere tulemast InterChat'i.
 
-    {emoji} You're all set! Welcome to the InterChat community.
+    Kiired näpunäited alustamiseks:
+    - Aktiivsete keskuste leidmiseks kasutage käsku `/hub browse`.
+    - Liituge teid huvitavate aruteludega
+    - Kasutage üksikute serveritega ühenduse loomiseks meie uut käsku `/call`.
 
-    ### Get Started Quickly:
-    - Visit `/hub browse` to find active communities
-    - Join discussions that interest you or create your own through our __dashboard__
-    - Use our new `/call` command to connect with single servers
+    Vajad abi? Liituge meie [tugiserveriga]({support_invite}) – aitame hea meelega!
 
-    Need help? Join our [community]({support_invite}) - we're happy to help! Please consider supporting us by [donating]({donateLink}) to help InterChat grow and thrive.
+    Meeldib mis me loome? Kaaluge [meie toetamist]({donateLink}), et aidata InterChat'i töös hoida.
   declined: |
     {emoji} Te keeldusite InterChat'i reeglitest.
     -# ⚠️ **Te ei saa InterChat'i kasutada ega teiste serveritega vestelda enne, kui nõustute reeglitega.**
@@ -53,12 +52,13 @@ rules:
     .....
   noHubRules: See keskus ei ole veel konkreetseid reegleid kehtestanud. Siiski kehtivad [InterChat'i üldreeglid]({rules_link}).
   hubRules: Keskuse reeglid
+  viewbotRules: "View Bot Rules"
 vote:
   description: |
-    Help more communities discover InterChat! Your vote on top.gg:
-    - Helps others find active communities
-    - Unlocks special features for you
-    - Supports our independent development
+    Aidake rohkematel kogukondadel avastada InterChat! Sinu hääl saidil top.gg:
+    - Aitab teistel leida aktiivseid kogukondi
+    - Avab teie jaoks erilised funktsioonid
+    - Toetab meie iseseisvat arengut
   footer: "Hääl taastub iga 12 tunni järel • Täname InterChat'i toetamise eest!"
   button:
     label: "Hääletage saidil top.gg"
