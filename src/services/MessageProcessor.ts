@@ -15,8 +15,8 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import type { Hub, Prisma, User } from '#src/generated/prisma/client/client.js';
 import { showRulesScreening } from '#src/interactions/RulesScreening.js';
-import ConnectionManager from '#src/managers/ConnectionManager.js';
 import HubManager from '#src/managers/HubManager.js';
 import { CallService } from '#src/services/CallService.js';
 import { RedisKeys } from '#src/utils/Constants.js';
@@ -28,21 +28,37 @@ import { getRedis } from '#src/utils/Redis.js';
 import { fetchUserData, getOrCreateWebhook, handleError } from '#src/utils/Utils.js';
 import type { Client, GuildTextBasedChannel, Message } from 'discord.js';
 import { BroadcastService } from './BroadcastService.js';
-import type { Hub, User } from '#src/generated/prisma/client/client.js';
+import { ConvertDatesToString } from '#src/types/Utils.js';
 
 /**
  * Result of processing a message in a hub channel
  */
 type MessageProcessingResult = { handled: false; hub: null } | { handled: true; hub: HubManager };
 
+export type RequiredConnectionData = {
+  id: string;
+  channelId: string;
+  connected: boolean;
+  compact: boolean;
+  webhookURL: string;
+  parentId: string | null;
+  hubId: string;
+  embedColor: string | null;
+  serverId: string;
+  lastActive: Date;
+};
+
 /**
  * Data structure returned when retrieving hub and connections
  */
-interface HubConnectionData {
+export interface HubConnectionData {
   hub: HubManager;
-  hubRaw: Hub & { rulesAcceptances: { userId: string }[]; connections: { channelId: string }[] };
-  connection: ConnectionManager;
-  hubConnections: ConnectionManager[];
+  hubRaw: Hub & {
+    rulesAcceptances: { acceptedAt: Date }[];
+    connections: RequiredConnectionData[];
+  };
+  connection: RequiredConnectionData;
+  hubConnections: RequiredConnectionData[];
 }
 
 /**
@@ -52,6 +68,10 @@ export class MessageProcessor {
   private readonly broadcastService: BroadcastService;
   private readonly callService: CallService;
 
+  // Redis cache manager
+  private static readonly redis = getRedis();
+  private static readonly REDIS_CACHE_TTL = 300; // 5 minutes in seconds
+
   /**
    * Creates a new MessageProcessor instance
    * @param client Discord client instance
@@ -59,6 +79,41 @@ export class MessageProcessor {
   constructor(client: Client) {
     this.broadcastService = new BroadcastService();
     this.callService = new CallService(client);
+  }
+
+  /**
+   * Invalidates the cache for a specific channel
+   * @param channelId The channel ID to invalidate cache for
+   */
+  static async invalidateCache(channelId: string): Promise<void> {
+    // Clear Redis cache for this channel
+    const cacheKeys = await MessageProcessor.redis.keys(
+      `${RedisKeys.Hub}:connections:${channelId}:*`,
+    );
+
+    if (cacheKeys.length > 0) {
+      await MessageProcessor.redis.del(...cacheKeys);
+    }
+
+    Logger.debug(`Invalidated cache for channel ${channelId}`);
+  }
+
+  /**
+   * Hooks into connection updates to invalidate cache
+   * This should be called whenever a connection is updated or deleted
+   * @param channelId The channel ID of the connection that was modified
+   */
+  static async onConnectionModified(channelId: string): Promise<void> {
+    await MessageProcessor.invalidateCache(channelId);
+  }
+
+  static convertConnectionDates(
+    connection: ConvertDatesToString<RequiredConnectionData>,
+  ): RequiredConnectionData {
+    return {
+      ...connection,
+      lastActive: new Date(connection.lastActive),
+    };
   }
 
   /**
@@ -71,31 +126,142 @@ export class MessageProcessor {
     channelId: string,
     userId: string,
   ): Promise<HubConnectionData | null> {
-    // Get the hub ID associated with this channel
+    const startTime = performance.now();
+
+    // Create a cache key that includes both channelId and userId
+    // We need userId in the key because rulesAcceptances are user-specific
+    const cacheKey = `${channelId}:${userId}`;
+    const redisKey = `${RedisKeys.Hub}:connections:${cacheKey}`;
+
+    // Check Redis cache first
+    const redisStartTime = performance.now();
+    const cachedData = await MessageProcessor.redis.get(redisKey);
+    Logger.debug(`Redis get took ${performance.now() - redisStartTime}ms for ${channelId}`);
+
+    // If we have a cache hit, use the cached data directly
+    if (cachedData) {
+      const cacheHitStartTime = performance.now();
+      try {
+        // Parse the cached data
+        const cached = JSON.parse(cachedData);
+
+        if (cached && cached.data) {
+          // Create manager objects from the cached raw data
+          const connection = cached.data.connection;
+          const hub = cached.data.hub;
+
+          if (connection && hub) {
+            // Create the result object
+            const result: HubConnectionData = {
+              hub: new HubManager(hub),
+              hubRaw: hub,
+              connection: MessageProcessor.convertConnectionDates(connection),
+              hubConnections: cached.data.hubConnections.map(
+                MessageProcessor.convertConnectionDates,
+              ),
+            };
+
+            Logger.debug(
+              `Cache hit processing took ${performance.now() - cacheHitStartTime}ms for ${channelId}`,
+            );
+            Logger.debug(
+              `Total getHubAndConnections took ${performance.now() - startTime}ms for ${channelId}:${userId} (cache hit)`,
+            );
+            return result;
+          }
+        }
+
+        // If we get here, the cached data is invalid
+        // Remove it from cache
+        await MessageProcessor.redis.del(redisKey);
+        Logger.debug(
+          `Invalid cache data processing took ${performance.now() - cacheHitStartTime}ms for ${channelId}`,
+        );
+      }
+      catch (error) {
+        // If there's an error parsing the cached data, log it and continue to fetch
+        Logger.error('Error parsing cached hub connection data:', error);
+        // Remove invalid data from cache
+        await MessageProcessor.redis.del(redisKey);
+        Logger.debug(
+          `Error cache processing took ${performance.now() - cacheHitStartTime}ms for ${channelId}`,
+        );
+      }
+    }
+
+    // Cache miss - fetch from database
+    const connectionSelect = {
+      id: true,
+      channelId: true,
+      connected: true,
+      compact: true,
+      webhookURL: true,
+      parentId: true,
+      hubId: true,
+      embedColor: true,
+      serverId: true,
+      lastActive: true,
+    } as Prisma.ConnectionSelect;
+
+    const dbFetchStartTime = performance.now();
     const connection = await db.connection.findFirst({
       where: { channelId, connected: true },
-      include: {
+      select: {
+        ...connectionSelect,
         hub: {
           include: {
-            connections: { where: { connected: true, channelId: { not: channelId } } },
-            rulesAcceptances: { where: { userId }, take: 1 },
+            connections: {
+              where: { connected: true, channelId: { not: channelId } },
+              select: connectionSelect,
+            },
+            rulesAcceptances: { where: { userId }, take: 1, select: { acceptedAt: true } },
           },
         },
       },
     });
-    if (!connection) return null;
+    Logger.debug(`Database fetch took ${performance.now() - dbFetchStartTime}ms for ${channelId}`);
 
-    // Fetch the hub with its connections and rule acceptances
-    const hub = connection.hub;
-    if (!hub) return null;
+    if (!connection || !connection.hub) {
+      Logger.debug(
+        `Total getHubAndConnections took ${performance.now() - startTime}ms for ${channelId}:${userId} (no connection found)`,
+      );
+      return null;
+    }
 
-    // Return the hub and connection data
-    return {
-      hub: new HubManager(hub),
-      hubRaw: hub,
-      connection: new ConnectionManager(connection),
-      hubConnections: hub.connections.map((c) => new ConnectionManager(c)),
+    // Create the result object
+    const createManagersStartTime = performance.now();
+    const result: HubConnectionData = {
+      hub: new HubManager(connection.hub),
+      hubRaw: connection.hub,
+      connection,
+      hubConnections: connection.hub.connections,
     };
+    Logger.debug(
+      `Creating managers took ${performance.now() - createManagersStartTime}ms for ${channelId}`,
+    );
+
+    // Store in Redis cache with TTL
+    const setCacheStartTime = performance.now();
+    await MessageProcessor.redis.set(
+      redisKey,
+      JSON.stringify({
+        timestamp: performance.now(),
+        data: {
+          // Store the raw data that can be serialized
+          connection,
+          hub: connection.hub,
+          hubConnections: connection.hub.connections,
+        },
+      }),
+      'EX',
+      MessageProcessor.REDIS_CACHE_TTL,
+    );
+    Logger.debug(`Setting cache took ${performance.now() - setCacheStartTime}ms for ${channelId}`);
+
+    Logger.debug(
+      `Total getHubAndConnections took ${performance.now() - startTime}ms for ${channelId}:${userId} (cache miss)`,
+    );
+    return result;
   }
 
   /**
@@ -105,45 +271,79 @@ export class MessageProcessor {
    */
   async processHubMessage(message: Message<true>): Promise<MessageProcessingResult> {
     try {
+      // Start performance tracking
+      const startTime = performance.now();
+      const timings: Record<string, number> = {};
+
       // Get hub and connection data for this channel
+      const hubStartTime = performance.now();
       const hubAndConnections = await MessageProcessor.getHubAndConnections(
         message.channelId,
         message.author.id,
       );
+      timings.getHubAndConnections = performance.now() - hubStartTime;
 
       if (!hubAndConnections) return { handled: false, hub: null };
       const { hub, hubRaw, hubConnections, connection } = hubAndConnections;
 
       // Ensure webhook URL is set (if connected through dashboard it might not be)
-      if (connection.data.webhookURL.length < 1) {
+      if (connection.webhookURL.length < 1) {
+        const webhookStartTime = performance.now();
         await this.setConnectionWebhookURL(connection, message.channel);
+        timings.setConnectionWebhookURL = performance.now() - webhookStartTime;
       }
 
-      // Get user data for rules checking and other operations
+      // Get user data for rules checking and other operations - this is now cached
+      const userDataStartTime = performance.now();
       const userData = await fetchUserData(message.author.id);
+      timings.fetchUserData = performance.now() - userDataStartTime;
 
       // Check if user has accepted the bot's global rules
-      if (!(await this.checkBotRulesAcceptance(message, userData))) {
+      const botRulesStartTime = performance.now();
+      const botRulesAccepted = await this.checkBotRulesAcceptance(message, userData);
+      timings.checkBotRulesAcceptance = performance.now() - botRulesStartTime;
+
+      if (!botRulesAccepted) {
         return { handled: false, hub: null };
       }
 
       // Check if user has accepted the hub's specific rules
-      if (!(await this.checkHubRulesAcceptance(message, userData, hub, hubRaw))) {
+      const hubRulesStartTime = performance.now();
+      const hubRulesAccepted = await this.checkHubRulesAcceptance(message, userData, hub, hubRaw);
+      timings.checkHubRulesAcceptance = performance.now() - hubRulesStartTime;
+
+      if (!hubRulesAccepted) {
         return { handled: false, hub: null };
       }
 
       // Resolve any attachments in the message
+      const attachmentStartTime = performance.now();
       const attachmentURL = await this.broadcastService.resolveAttachmentURL(message);
+      timings.resolveAttachmentURL = performance.now() - attachmentStartTime;
 
       // Run all message checks (ban, blacklist, NSFW, anti-swear, etc.)
-      if (
-        !(await this.runMessageChecks(message, hub, userData, attachmentURL, hubConnections.length))
-      ) {
+      const checksStartTime = performance.now();
+      const checksResult = await this.runMessageChecks(
+        message,
+        hub,
+        userData,
+        attachmentURL,
+        hubConnections.length,
+      );
+      timings.runMessageChecks = performance.now() - checksStartTime;
+
+      if (!checksResult) {
+        // Log performance metrics for failed checks
+        const totalTime = performance.now() - startTime;
+        Logger.debug(`Message ${message.id} processing failed at checks stage (${totalTime}ms)`);
+        Logger.debug('Timings: %O', timings);
         return { handled: false, hub: null };
       }
 
       // Indicate typing in the channel to show the message is being processed
       message.channel.sendTyping().catch(() => null);
+
+      const broadcastStartTime = performance.now();
 
       // Broadcast the message to all connected channels
       await this.broadcastService.broadcastMessage(
@@ -155,8 +355,17 @@ export class MessageProcessor {
         userData,
       );
 
+      timings.broadcastMessage = performance.now() - broadcastStartTime;
+
       // Update leaderboards and metrics
+      const statsStartTime = performance.now();
       this.updateStatsAfterBroadcast(message, hub);
+      timings.updateStatsAfterBroadcast = performance.now() - statsStartTime;
+
+      // Log performance metrics
+      const totalTime = performance.now() - startTime;
+      Logger.debug(`Message ${message.id} processed successfully in ${totalTime}ms`);
+      Logger.debug(`Timings: ${JSON.stringify(timings)}`);
 
       return { handled: true, hub };
     }
@@ -184,7 +393,7 @@ export class MessageProcessor {
   }
 
   /**
-   * Checks if a user has accepted the hub's specific rules
+   * Checks if a user has accepted the hub's rules
    * @param message The Discord message
    * @param userData The user's data from the database
    * @param hub The hub manager instance
@@ -195,7 +404,7 @@ export class MessageProcessor {
     message: Message<true>,
     userData: User | null,
     hub: HubManager,
-    hubRaw: Hub & { rulesAcceptances: { userId: string }[] },
+    hubRaw: HubConnectionData['hubRaw'],
   ): Promise<boolean> {
     // If the hub has no rules or the user has already accepted them, return true
     if (hubRaw.rulesAcceptances.length || hub.getRules().length === 0) {
@@ -203,7 +412,7 @@ export class MessageProcessor {
     }
 
     // Check if we've recently shown the rules to this user (cooldown)
-    const rulesShownKey = `${RedisKeys.RulesShown}:${message.author.id}:${hub.id}`;
+    const rulesShownKey = `${RedisKeys.HubRules}:shown:${hub.id}:${message.author.id}`;
     const redis = getRedis();
     const rulesShown = await redis.get(rulesShownKey);
 
@@ -243,7 +452,7 @@ export class MessageProcessor {
   }
 
   /**
-   * Updates statistics and metrics after a successful message broadcast
+   * Updates leaderboards and metrics after a message is broadcast
    * @param message The Discord message
    * @param hub The hub manager instance
    */
@@ -254,13 +463,13 @@ export class MessageProcessor {
   }
 
   /**
-   * Sets the webhook URL for a connection if it doesn't have one
+   * Sets the webhook URL for a connection if it's not already set
    * @param connection The connection manager instance
    * @param channel The Discord channel
    * @returns Result of the operation or void if successful
    */
   private async setConnectionWebhookURL(
-    connection: ConnectionManager,
+    connection: RequiredConnectionData,
     channel: GuildTextBasedChannel,
   ): Promise<MessageProcessingResult | void> {
     try {
@@ -285,28 +494,44 @@ export class MessageProcessor {
    */
   async processCallMessage(message: Message<true>): Promise<boolean> {
     try {
-      // Get active call data and user data
-      const activeCall = await this.callService.getActiveCallData(message.channelId);
-      const userData = await fetchUserData(message.author.id);
+      // Start performance tracking
+      const startTime = performance.now();
+      const timings: Record<string, number> = {};
+
+      // Get active call data and user data in parallel
+      const parallelStartTime = performance.now();
+      const [activeCall, userData] = await Promise.all([
+        this.callService.getActiveCallData(message.channelId),
+        fetchUserData(message.author.id),
+      ]);
+      timings.getParallelData = performance.now() - parallelStartTime;
 
       // Validate call and user data
       if (!activeCall || !userData) {
+        Logger.debug(
+          `Call message processing failed: ${!activeCall ? 'No active call' : 'No user data'}`,
+        );
         return false;
       }
 
       // Check if user has accepted the bot's rules
       if (!userData.acceptedRules) {
+        const rulesStartTime = performance.now();
         await showRulesScreening(message, userData);
+        timings.showRulesScreening = performance.now() - rulesStartTime;
         return false;
       }
 
       // Track this user as a participant in the call
+      const participantStartTime = performance.now();
       await this.callService.addParticipant(message.channelId, message.author.id);
+      timings.addParticipant = performance.now() - participantStartTime;
 
       // Find the other participant to send the message to
       const otherParticipant = activeCall.participants.find(
         (p) => p.channelId !== message.channelId,
       );
+
       if (!otherParticipant) {
         Logger.debug('No other participant found in call');
         return false;
@@ -314,31 +539,44 @@ export class MessageProcessor {
 
       const attachmentURL = message.attachments.first()?.url;
 
-      if (!userData) {
-        Logger.debug('Cannot run call checks: userData is null');
-        return false;
-      }
-
       // Run call-specific checks (spam, URLs, GIFs, NSFW, etc.)
+      const checksStartTime = performance.now();
       const checksPassed = await runCallChecks(message, {
         userData,
         attachmentURL,
       });
+      timings.runCallChecks = performance.now() - checksStartTime;
 
       if (!checksPassed) {
+        // Log performance metrics for failed checks
+        const totalTime = performance.now() - startTime;
+        Logger.debug(
+          `Call message ${message.id} processing failed at checks stage (${totalTime}ms)`,
+        );
+        Logger.debug(`Timings: ${JSON.stringify(timings)}`);
         return false;
       }
 
       // Send the message to the other participant
+      const webhookStartTime = performance.now();
       await BroadcastService.sendMessage(otherParticipant.webhookUrl, {
         content: message.content,
         username: message.author.username,
         avatarURL: message.author.displayAvatarURL(),
         allowedMentions: { parse: [] },
       });
+      timings.sendWebhook = performance.now() - webhookStartTime;
 
       // Update call participation after successful message send
+      const updateStartTime = performance.now();
       await this.callService.updateCallParticipant(message.channelId, message.author.id);
+      timings.updateCallParticipant = performance.now() - updateStartTime;
+
+      // Log performance metrics
+      const totalTime = performance.now() - startTime;
+      Logger.debug(`Call message ${message.id} processed successfully in ${totalTime}ms`);
+      Logger.debug(`Timings: ${JSON.stringify(timings)}`);
+
       return true;
     }
     catch (error) {
