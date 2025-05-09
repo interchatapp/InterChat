@@ -1,8 +1,7 @@
 rules:
+  header: 'Regras do InterChat'
+  botRulesNote: 'Estas regras existem para garantir uma experiência segura e agradável para todos. Leia e siga-as com atenção:'
   rules: |
-    ### {emoji} Regras
-    Estas regras existem para garantir uma experiência segura e agradável para todos. Leia e siga-as com atenção:
-
     1. **Sem Discurso de Ódio ou Assédio**
     -# > **Inclui:** Usar insultos ou discurso de ódio para atacar outros, [e mais]({guidelines_link}).
     2. **Sem Conteúdo Ilegal**
@@ -32,16 +31,16 @@ rules:
 
     ⚠️ **Você não pode enviar mensagens neste hub até aceitar estas
   accepted: |
-    {emoji} You're all set! Welcome to the InterChat community.
+    {emoji} Você está pronto! Bem-vindo à comunidade InterChat.
 
-    {emoji} You're all set! Welcome to the InterChat community.
+    Dicas rápidas para começar:
+    - Use `/hub browse` para encontrar comunidades ativas
+    - Participe das discussões que te interessam
+    - Use nosso novo comando `/call` para se conectar com servidores individuais
 
-    ### Get Started Quickly:
-    - Visit `/hub browse` to find active communities
-    - Join discussions that interest you or create your own through our __dashboard__
-    - Use our new `/call` command to connect with single servers
+    Precisa de ajuda? Entre na nossa [comunidade]({support_invite}) - estamos felizes em ajudar!
 
-    Need help? Join our [community]({support_invite}) - we're happy to help! Please consider supporting us by [donating]({donateLink}) to help InterChat grow and thrive.
+    Gostou do que estamos construindo? Considere [nos apoiar]({donateLink}) para ajudar a manter o InterChat funcionando.
   declined: |
     {emoji} Você recusou as regras do InterChat.
     -# ⚠️ **Você não poderá usar o InterChat ou bater papo com outros servidores até aceitar as regras.**
@@ -55,12 +54,13 @@ rules:
     -# Para tentar novamente, envie outra mensagem neste hub.
   noHubRules: Este hub ainda não definiu nenhuma regra específica. No entanto, as [regras gerais do InterChat]({rules_link}) ainda se aplicam.
   hubRules: Regras do Hub
+  viewbotRules: "View Bot Rules"
 vote:
   description: |
-    Help more communities discover InterChat! Your vote on top.gg:
-    - Helps others find active communities
-    - Unlocks special features for you
-    - Supports our independent development
+    Ajude mais comunidades a descobrir o InterChat! Seu voto no top.gg:
+    - Ajuda outros a encontrar comunidades ativas
+    - Desbloqueia recursos especiais para você
+    - Apoia nosso desenvolvimento independente
   footer: "Os votos são atualizados a cada 12 horas • Obrigado por apoiar o InterChat!"
   button:
     label: "Vote no top.gg"
