@@ -39,7 +39,6 @@ import {
   ChannelType,
   chatInputApplicationCommandMention,
   ContainerBuilder,
-  EmbedBuilder,
   MessageComponentInteraction,
   MessageFlags,
   ModalBuilder,
@@ -80,9 +79,18 @@ export default class SetupCommand extends BaseCommand {
 
   private validateSetupPrerequisites(ctx: Context): boolean {
     if (!ctx.inGuild()) {
+      // Create UI components helper
+      const ui = new UIComponents(ctx.client);
+
+      // Create error container
+      const container = ui.createErrorMessage(
+        'Server Only Command',
+        'This command can only be used in a server.',
+      );
+
       ctx.reply({
-        content: 'This command can only be used in a server.',
-        flags: ['Ephemeral'],
+        components: [container],
+        flags: [MessageFlags.IsComponentsV2, 'Ephemeral'],
       });
       return false;
     }
@@ -90,25 +98,27 @@ export default class SetupCommand extends BaseCommand {
     // After inGuild() check, we know guild is not null
     const botMember = ctx.guild!.members.me;
     if (!botMember?.permissions.has(SetupCommand.REQUIRED_PERMISSIONS)) {
-      ctx.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setTitle('❌ Missing Permissions')
-            .setDescription(
-              stripIndents`
-              I need the following permissions to work properly:
-              - Manage Webhooks
-              - Send Messages
-              - Manage Messages
-              - Embed Links
+      // Create UI components helper
+      const ui = new UIComponents(ctx.client);
 
-              Please give me these permissions and try again!
-              Need help? [Join our support server](${Constants.Links.SupportInvite})
-              `,
-            )
-            .setColor('Red'),
-        ],
-        flags: ['Ephemeral'],
+      // Create error container
+      const container = ui.createErrorMessage(
+        '❌ Missing Permissions',
+        stripIndents`
+        I need the following permissions to work properly:
+        - Manage Webhooks
+        - Send Messages
+        - Manage Messages
+        - Embed Links
+
+        Please give me these permissions and try again!
+        Need help? [Join our support server](${Constants.Links.SupportInvite})
+        `,
+      );
+
+      ctx.reply({
+        components: [container],
+        flags: [MessageFlags.IsComponentsV2, 'Ephemeral'],
       });
       return false;
     }
@@ -257,11 +267,19 @@ export default class SetupCommand extends BaseCommand {
 
       collector?.on('end', async (_, reason) => {
         if (reason === 'time') {
+          // Create UI components helper
+          const end_ui = new UIComponents(ctx.client);
+
+          // Create timeout message container
+          const end_container = end_ui.createWarningMessage(
+            'Setup Timed Out',
+            'The setup process has timed out. Please run the setup command again.',
+          );
+
           await ctx
             .editReply({
-              content: 'Setup timed out. Please run the setup command again.',
-              embeds: [],
-              components: [],
+              components: [end_container],
+              flags: [MessageFlags.IsComponentsV2],
             })
             .catch(() => null);
         }
@@ -272,10 +290,19 @@ export default class SetupCommand extends BaseCommand {
         comment: 'Error starting setup flow',
       });
 
+      // Create UI components helper
+      const ui = new UIComponents(ctx.client);
+
+      // Create error container
+      const container = ui.createErrorMessage(
+        'Setup Error',
+        'There was an error starting the setup process. Please try again later.',
+      );
+
       await ctx
         .reply({
-          content: `${getEmoji('x_icon', ctx.client)} There was an error starting the setup process. Please try again later.`,
-          flags: ['Ephemeral'],
+          components: [container],
+          flags: [MessageFlags.IsComponentsV2, 'Ephemeral'],
         })
         .catch(() => null);
     }
@@ -287,17 +314,35 @@ export default class SetupCommand extends BaseCommand {
 
       const selectedChannel = ctx.channels?.first();
       if (!selectedChannel) {
+        // Create UI components helper
+        const ui = new UIComponents(ctx.client);
+
+        // Create error container
+        const container = ui.createErrorMessage(
+          'No Channel Selected',
+          'No channel was selected. Please try again.',
+        );
+
         await ctx.reply({
-          content: `${getEmoji('x_icon', ctx.client)} No channel was selected. Please try again.`,
-          flags: ['Ephemeral'],
+          components: [container],
+          flags: [MessageFlags.IsComponentsV2, 'Ephemeral'],
         });
         return;
       }
 
       if (selectedChannel.type !== ChannelType.GuildText) {
+        // Create UI components helper
+        const ui = new UIComponents(ctx.client);
+
+        // Create error container
+        const container = ui.createErrorMessage(
+          'Invalid Channel Type',
+          'Please select a text channel. Voice channels, forums, and other channel types are not supported.',
+        );
+
         await ctx.reply({
-          content: `${getEmoji('x_icon', ctx.client)} Please select a text channel. Voice channels, forums, and other channel types are not supported.`,
-          flags: ['Ephemeral'],
+          components: [container],
+          flags: [MessageFlags.IsComponentsV2, 'Ephemeral'],
         });
         return;
       }
@@ -308,24 +353,26 @@ export default class SetupCommand extends BaseCommand {
           ?.permissionsIn(selectedChannel as TextChannel)
           .has(SetupCommand.REQUIRED_PERMISSIONS)
       ) {
-        await ctx.reply({
-          embeds: [
-            new EmbedBuilder()
-              .setTitle('❌ Missing Channel Permissions')
-              .setDescription(
-                stripIndents`
-                I need the following permissions in ${selectedChannel}:
-                - Manage Webhooks
-                - Send Messages
-                - Manage Messages
-                - Embed Links
+        // Create UI components helper
+        const ui = new UIComponents(ctx.client);
 
-                Please update the channel permissions and try again!
-                `,
-              )
-              .setColor('Red'),
-          ],
-          flags: ['Ephemeral'],
+        // Create error container
+        const container = ui.createErrorMessage(
+          '❌ Missing Channel Permissions',
+          stripIndents`
+          I need the following permissions in ${selectedChannel}:
+          - Manage Webhooks
+          - Send Messages
+          - Manage Messages
+          - Embed Links
+
+          Please update the channel permissions and try again!
+          `,
+        );
+
+        await ctx.reply({
+          components: [container],
+          flags: [MessageFlags.IsComponentsV2, 'Ephemeral'],
         });
         return;
       }
@@ -337,9 +384,18 @@ export default class SetupCommand extends BaseCommand {
       });
 
       if (existingConnection) {
+        // Create UI components helper
+        const ui = new UIComponents(ctx.client);
+
+        // Create error container
+        const container = ui.createErrorMessage(
+          'Channel Already Connected',
+          `This channel is already connected to the hub "${existingConnection.hub.name}". Please select a different channel.`,
+        );
+
         await ctx.reply({
-          content: `${getEmoji('x_icon', ctx.client)} This channel is already connected to the hub "${existingConnection.hub.name}". Please select a different channel.`,
-          flags: ['Ephemeral'],
+          components: [container],
+          flags: [MessageFlags.IsComponentsV2, 'Ephemeral'],
         });
         return;
       }
@@ -356,9 +412,16 @@ export default class SetupCommand extends BaseCommand {
           .map((conn) => `• **${conn.hub.name}** in <#${conn.channelId}>`)
           .join('\n');
 
-        const embed = new EmbedBuilder()
-          .setTitle('Existing Connections')
-          .setDescription(
+        // Create UI components helper
+        const ui = new UIComponents(ctx.client);
+
+        // Create info container
+        const container = new ContainerBuilder();
+
+        // Add header
+        container.addTextDisplayComponents(
+          ui.createHeader(
+            'Existing Connections',
             stripIndents`
             Your server is already connected to the following hubs:
 
@@ -366,12 +429,13 @@ export default class SetupCommand extends BaseCommand {
 
             You can continue to add more connections if you'd like.
             `,
-          )
-          .setColor(Constants.Colors.primary);
+            'info_icon',
+          ),
+        );
 
         await ctx.reply({
-          embeds: [embed],
-          flags: ['Ephemeral'],
+          components: [container],
+          flags: [MessageFlags.IsComponentsV2, 'Ephemeral'],
         });
 
         // Wait a moment before showing the hub choice screen
@@ -388,10 +452,19 @@ export default class SetupCommand extends BaseCommand {
         comment: 'Error in handleChannelSelection',
       });
 
+      // Create UI components helper
+      const ui = new UIComponents(ctx.client);
+
+      // Create error container
+      const container = ui.createErrorMessage(
+        'Error',
+        'There was an error processing your channel selection. Please try again.',
+      );
+
       await ctx
         .reply({
-          content: `${getEmoji('x_icon', ctx.client)} There was an error processing your channel selection. Please try again.`,
-          flags: ['Ephemeral'],
+          components: [container],
+          flags: [MessageFlags.IsComponentsV2, 'Ephemeral'],
         })
         .catch(() => null);
     }
@@ -428,7 +501,7 @@ export default class SetupCommand extends BaseCommand {
         // Add back button
         ui.createActionButtons(container, {
           label: 'Go Back',
-          customId: `back_to_hub_choice:${channelId}`,
+          customId: new CustomID(`back_to_hub_choice:${channelId}`).toString(),
           emoji: '⬅️',
         });
 
@@ -494,7 +567,7 @@ export default class SetupCommand extends BaseCommand {
       // Add back button
       ui.createActionButtons(container, {
         label: 'Go Back',
-        customId: `back_to_hub_choice:${channelId}`,
+        customId: new CustomID(`back_to_hub_choice:${channelId}`).toString(),
         emoji: '⬅️',
       });
 
@@ -508,10 +581,19 @@ export default class SetupCommand extends BaseCommand {
         comment: 'Error in handlePopularHubs',
       });
 
+      // Create UI components helper
+      const ui = new UIComponents(ctx.client);
+
+      // Create error container
+      const container = ui.createErrorMessage(
+        'Error Loading Hubs',
+        'There was an error loading popular hubs. Please try again.',
+      );
+
       await ctx
         .editReply({
-          content: `${getEmoji('x_icon', ctx.client)} There was an error loading popular hubs. Please try again.`,
-          components: [],
+          components: [container],
+          flags: [MessageFlags.IsComponentsV2],
         })
         .catch(() => null);
     }
@@ -527,9 +609,18 @@ export default class SetupCommand extends BaseCommand {
 
     const hub = await this.hubService.fetchHub(selectedHubId);
     if (!hub) {
+      // Create UI components helper
+      const ui = new UIComponents(ctx.client);
+
+      // Create error container
+      const container = ui.createErrorMessage(
+        'Hub Not Found',
+        'This hub no longer exists. Please choose another one.',
+      );
+
       await ctx.editReply({
-        content: 'This hub no longer exists. Please choose another one.',
-        components: [],
+        components: [container],
+        flags: [MessageFlags.IsComponentsV2],
       });
       return;
     }
@@ -587,9 +678,18 @@ export default class SetupCommand extends BaseCommand {
     const validationResult = await hubValidator.validateNewHub(hubData, existingHubs);
 
     if (!validationResult.isValid) {
+      // Create UI components helper
+      const ui = new UIComponents(ctx.client);
+
+      // Create error container
+      const container = ui.createErrorMessage(
+        'Validation Error',
+        validationResult.error || 'Invalid hub data provided. Please try again.',
+      );
+
       await ctx.reply({
-        content: validationResult.error,
-        flags: ['Ephemeral'],
+        components: [container],
+        flags: [MessageFlags.IsComponentsV2, 'Ephemeral'],
       });
       return;
     }
@@ -599,9 +699,18 @@ export default class SetupCommand extends BaseCommand {
       await this.showNextSteps(ctx, 'created', hubData.name, hub.id, channelId);
     }
     catch {
+      // Create UI components helper
+      const ui = new UIComponents(ctx.client);
+
+      // Create error container
+      const container = ui.createErrorMessage(
+        'Hub Creation Failed',
+        'Failed to create hub. Please try again.',
+      );
+
       await ctx.reply({
-        content: 'Failed to create hub. Please try again.',
-        flags: ['Ephemeral'],
+        components: [container],
+        flags: [MessageFlags.IsComponentsV2, 'Ephemeral'],
       });
     }
   }
@@ -765,7 +874,8 @@ export default class SetupCommand extends BaseCommand {
         if ('message' in ctx.interaction) {
           const message = ctx.interaction.message;
           const collector = message?.createMessageComponentCollector({
-            filter: (i: MessageComponentInteraction) => i.customId.startsWith('copy_invite_command'),
+            filter: (i: MessageComponentInteraction) =>
+              i.customId.startsWith('copy_invite_command'),
             time: 300000,
           });
 
@@ -847,10 +957,19 @@ export default class SetupCommand extends BaseCommand {
         comment: 'Error in showNextSteps',
       });
 
+      // Create UI components helper
+      const ui = new UIComponents(ctx.client);
+
+      // Create error container
+      const container = ui.createErrorMessage(
+        'Error',
+        'There was an error showing the next steps. Please try again.',
+      );
+
       await ctx
         .editReply({
-          content: `${getEmoji('x_icon', ctx.client)} There was an error showing the next steps. Please try again.`,
-          components: [],
+          components: [container],
+          flags: [MessageFlags.IsComponentsV2],
         })
         .catch(() => null);
     }
@@ -919,10 +1038,19 @@ export default class SetupCommand extends BaseCommand {
         comment: 'Failed to complete setup process',
       });
 
+      // Create UI components helper
+      const ui = new UIComponents(ctx.client);
+
+      // Create error container
+      const container = ui.createErrorMessage(
+        'Setup Error',
+        'There was an error completing the setup. Please try again or contact support if the issue persists.',
+      );
+
       await ctx
         .reply({
-          content: `${getEmoji('x_icon', ctx.client)} There was an error completing the setup. Please try again or contact support if the issue persists.`,
-          flags: ['Ephemeral'],
+          components: [container],
+          flags: [MessageFlags.IsComponentsV2, 'Ephemeral'],
         })
         .catch(() => null);
     }
@@ -932,10 +1060,18 @@ export default class SetupCommand extends BaseCommand {
     const channel = await ctx.guild?.channels.fetch(ctx.customId.args[0]).catch(() => null);
 
     if (channel?.type !== ChannelType.GuildText) {
+      // Create UI components helper
+      const ui = new UIComponents(ctx.client);
+
+      // Create error container
+      const container = ui.createErrorMessage(
+        'Channel Not Found',
+        'Selected channel no longer exists. Please run the setup command again.',
+      );
+
       await ctx.editReply({
-        content: 'Selected channel no longer exists. Please run the setup command again.',
-        embeds: [],
-        components: [],
+        components: [container],
+        flags: [MessageFlags.IsComponentsV2],
       });
       return;
     }
@@ -1006,15 +1142,15 @@ export default class SetupCommand extends BaseCommand {
       // Add hub choice buttons
       container.addActionRowComponents((row) => {
         const joinPopularButton = new ButtonBuilder()
-          .setCustomId(`join_popular:${channel.id}`)
+          .setCustomId(new CustomID(`join_popular:${channel.id}`).toString())
           .setLabel('Join Popular Hub')
-          .setEmoji('🌟')
+          .setEmoji({ name: '🌟' }) // Use emoji object format for Unicode emojis
           .setStyle(ButtonStyle.Primary);
 
         const createHubButton = new ButtonBuilder()
-          .setCustomId(`create_hub:${channel.id}`)
+          .setCustomId(new CustomID(`create_hub:${channel.id}`).toString())
           .setLabel('Create New Hub')
-          .setEmoji('🆕')
+          .setEmoji({ name: '🆕' }) // Use emoji object format for Unicode emojis
           .setStyle(ButtonStyle.Secondary);
 
         return row.addComponents(joinPopularButton, createHubButton);
@@ -1032,7 +1168,7 @@ export default class SetupCommand extends BaseCommand {
         {
           label: 'Learn More',
           url: `${Constants.Links.Website}/docs/hubs`,
-          emoji: 'book_icon',
+          emoji: 'info_icon', // Changed from book_icon to info_icon which exists
         },
       );
 
@@ -1043,10 +1179,19 @@ export default class SetupCommand extends BaseCommand {
         comment: 'Error in showHubChoiceScreen',
       });
 
+      // Create UI components helper
+      const ui = new UIComponents(ctx.client);
+
+      // Create error container
+      const container = ui.createErrorMessage(
+        'Error',
+        'There was an error showing the hub selection screen. Please try again.',
+      );
+
       await ctx
         .editReply({
-          content: `${getEmoji('x_icon', ctx.client)} There was an error showing the hub selection screen. Please try again.`,
-          components: [],
+          components: [container],
+          flags: [MessageFlags.IsComponentsV2],
         })
         .catch(() => null);
     }

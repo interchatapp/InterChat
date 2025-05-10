@@ -182,6 +182,7 @@ export default class Rules extends BaseCommand {
       take: 25,
       insensitive: true,
       searchType: 'contains',
+      private: false,
     });
 
     await interaction.respond(
