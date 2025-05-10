@@ -55,9 +55,7 @@ export class CustomID {
 
     const invalidChars = ['&'];
 
-    const isValid = values.every(
-      (value) => !invalidChars.some((char) => value.includes(char)),
-    );
+    const isValid = values.every((value) => !invalidChars.some((char) => value.includes(char)));
 
     if (isValid) this.customId += `&${values.filter((v) => v.length > 0).join('&')}`;
     else throw new TypeError('CustomID argument cannot contain "&".');
@@ -87,7 +85,7 @@ export class CustomID {
     const split = decoded.split('&');
 
     // Extract prefix and postfix
-    const [prefix, ...suffix] = split[0].split(':');
+    const [prefix, suffix] = split[0].split(':');
 
     // Extract expiry from arguments
     const expiryArg = split.slice(1).find((arg) => arg.startsWith('ex='));
@@ -96,14 +94,7 @@ export class CustomID {
     // Filter out 'ex=' arguments and store the rest in 'args'
     const args = split.slice(1).filter((arg) => !arg.startsWith('ex='));
 
-    const parsed: ParsedCustomId = {
-      prefix,
-      suffix: suffix.join(':'),
-      expiry,
-      args,
-    };
-
-    return parsed;
+    return { prefix, suffix, expiry, args };
   }
 
   /**

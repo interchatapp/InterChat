@@ -305,6 +305,7 @@ export class HubService {
   async findHubsByName(
     name: string,
     opts?: {
+      private?: boolean;
       insensitive?: boolean;
       searchType?: 'contains' | 'equals' | 'startsWith' | 'endsWith';
       ownerId?: string;
@@ -312,7 +313,9 @@ export class HubService {
     },
   ): Promise<HubManager[]> {
     // Generate a cache key based on the search parameters
-    const cacheKey = `search:${name}:${opts?.insensitive ? 'i' : 's'}:${opts?.ownerId || 'all'}:${opts?.take || 'all'}`;
+    const cacheKey = `search:${name}:${opts?.insensitive ? 'i' : 's'}:${
+      opts?.ownerId || 'all'
+    }:${opts?.private || 'all'}:${opts?.take || 'all'}`;
 
     // Try to get from cache first
     const cachedHubs = await this.cacheManager.get<ConvertDatesToString<Hub>[]>(cacheKey);
@@ -333,6 +336,7 @@ export class HubService {
           [opts?.searchType ?? 'equals']: name,
         },
         ownerId: opts?.ownerId,
+        private: opts?.private,
       },
       take: opts?.take,
     });

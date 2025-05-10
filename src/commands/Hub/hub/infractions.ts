@@ -372,6 +372,6 @@ export default class HubInfractionsSubcommand extends BaseCommand {
 
   private async displayPagination(ctx: Context, pages: BaseMessageOptions[]) {
     const paginator = new Pagination(ctx.client).addPages(pages);
-    await paginator.run(ctx);
+    await paginator.run(ctx.interaction);
   }
 }

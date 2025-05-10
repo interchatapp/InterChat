@@ -58,6 +58,6 @@ export default class ViewInfractionsHandler implements ModAction {
       iconURL,
     );
 
-    new Pagination(ctx.client).addPages(embeds).run(ctx, { deleteOnEnd: true });
+    new Pagination(ctx.client).addPages(embeds).run(ctx.interaction, { deleteOnEnd: true });
   }
 }

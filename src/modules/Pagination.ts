@@ -34,7 +34,7 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from 'discord.js';
-import Context from '#src/core/CommandContext/Context.js';
+import Context, { ValidContextInteractions } from '#src/core/CommandContext/Context.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import Logger from '#src/utils/Logger.js';
 import { getReplyMethod, handleError } from '#utils/Utils.js';
@@ -253,7 +253,10 @@ export class Pagination {
     }
   }
 
-  public async run(ctx: RepliableInteraction | Message | Context, options?: RunOptions) {
+  public async run(
+    ctx: RepliableInteraction | Message | ValidContextInteractions,
+    options?: RunOptions,
+  ) {
     if (this.pages.length < 1) {
       await this.sendReply(
         ctx,
@@ -269,7 +272,7 @@ export class Pagination {
 
     const listMessage = await this.sendReply(
       ctx,
-      { ...resp, content: resp.content },
+      { ...resp, content: resp.content, withResponse: true },
       {
         ephemeral: options?.ephemeral,
         flags: options?.isComponentsV2 ? [MessageFlags.IsComponentsV2] : [],
@@ -343,8 +346,8 @@ export class Pagination {
   }
 
   private async sendReply(
-    interaction: RepliableInteraction | Message | Context,
-    opts: BaseMessageOptions,
+    interaction: RepliableInteraction | Message | ValidContextInteractions,
+    opts: BaseMessageOptions & { withResponse?: boolean },
     interactionOpts?: {
       flags?: Exclude<SupportedFlags, MessageFlags.Ephemeral>[];
       ephemeral?: boolean;

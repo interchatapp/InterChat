@@ -354,7 +354,6 @@ export default abstract class Context<T extends ContextT = ContextT> {
 
       if (this.deferred || this.replied) {
         const supportedFlags = ['SuppressEmbeds', 'IsComponentsV2'] as const;
-
         return await this.editReply({
           ...data_,
           flags: supportedFlags.filter((flag) => flags.includes(flag)),

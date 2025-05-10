@@ -229,7 +229,7 @@ export default class HubServersSubcommand extends BaseCommand {
       });
     }
 
-    await paginator.run(ctx);
+    await paginator.run(ctx.interaction);
   }
 
   async autocomplete(interaction: AutocompleteInteraction): Promise<void> {

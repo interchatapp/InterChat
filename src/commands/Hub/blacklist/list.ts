@@ -118,7 +118,7 @@ export default class BlacklistListSubcommand extends BaseCommand {
       }
     }
 
-    await paginator.run(ctx, { isComponentsV2: true });
+    await paginator.run(ctx.interaction, { isComponentsV2: true });
   }
 
   private buildBlacklistContainer(

@@ -70,7 +70,7 @@ export default class ConnectionListSubcommand extends BaseCommand {
 
     const pages = this.createPaginatedEmbeds(connections, description, emojis);
 
-    new Pagination(ctx.client).addPages(pages).run(ctx);
+    new Pagination(ctx.client).addPages(pages).run(ctx.interaction);
   }
 
   async autocomplete(interaction: AutocompleteInteraction) {

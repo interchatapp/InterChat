@@ -173,7 +173,7 @@ export class TutorialListBuilder {
     }
 
     // Run the paginator
-    await paginator.run(ctx, {
+    await paginator.run(ctx.interaction, {
       idle: 300000, // 5 minutes
       isComponentsV2: true,
     });
