@@ -81,7 +81,7 @@ export default class ComponentContext extends Context<ContextT<ComponentInteract
    * @param opts Options for deferring
    */
   public async deferReply(opts?: { flags?: ['Ephemeral'] }): Promise<InteractionResponse> {
-    return await this.interaction.deferReply({ ephemeral: opts?.flags?.includes('Ephemeral') });
+    return await this.interaction.deferReply({ flags: opts?.flags });
   }
 
   /**

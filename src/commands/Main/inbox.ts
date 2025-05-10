@@ -271,8 +271,7 @@ export async function showInbox(
   if (container) {
     await ctx.reply({
       components: [container],
-      flags: [MessageFlags.IsComponentsV2],
-      ephemeral: opts?.ephemeral,
+      flags: [MessageFlags.IsComponentsV2, MessageFlags.Ephemeral],
     });
   }
 }
