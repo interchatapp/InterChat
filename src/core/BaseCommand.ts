@@ -75,6 +75,11 @@ export default abstract class BaseCommand {
   readonly options: APIApplicationCommandBasicOption[];
   readonly subcommands: CommandConfig['subcommands'];
 
+  // Metadata for command directory structure - private with getters
+  private _category?: string; // Top-level category folder (e.g., "Information")
+  private _categoryPath?: string; // Full path relative to commands directory
+  private _isSubcommand?: boolean; // Whether this is a subcommand
+
   constructor(opts: ContextMenuConfig | CommandConfig) {
     this.name = opts.name;
     this.description = opts.description;
@@ -84,6 +89,56 @@ export default abstract class BaseCommand {
     this.subcommands = 'subcommands' in opts ? opts.subcommands : undefined;
     this.defaultPermissions = opts.defaultPermissions;
     this.staffOnly = opts.staffOnly || false;
+
+    // Directory structure metadata will be set by the loader using setter methods
+  }
+
+  /**
+   * Get the category of the command (top-level folder)
+   */
+  get category(): string | undefined {
+    return this._category;
+  }
+
+  /**
+   * Get the full path to the command file relative to the commands directory
+   */
+  get categoryPath(): string | undefined {
+    return this._categoryPath;
+  }
+
+  /**
+   * Check if this command is a subcommand
+   */
+  get isSubcommand(): boolean | undefined {
+    return this._isSubcommand;
+  }
+
+  /**
+   * Set the category of the command (top-level folder)
+   * @param category The category name
+   */
+  setCategory(category: string): this {
+    this._category = category;
+    return this;
+  }
+
+  /**
+   * Set the full path to the command file relative to the commands directory
+   * @param path The relative path
+   */
+  setCategoryPath(path: string): this {
+    this._categoryPath = path;
+    return this;
+  }
+
+  /**
+   * Set whether this command is a subcommand
+   * @param isSubcommand Whether this is a subcommand
+   */
+  setIsSubcommand(isSubcommand: boolean): this {
+    this._isSubcommand = isSubcommand;
+    return this;
   }
 
   async execute?(ctx: Context): Promise<void>;

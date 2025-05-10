@@ -47,13 +47,48 @@ export const loadCommands = async (
   const path = join(__dirname, '..', `commands${dirName ? `/${dirName}` : ''}`);
   const files = await readdir(join(path));
 
+  // Extract category from dirName (top-level folder)
+  const category = dirName?.split('/')[0];
+
   for (const file of files) {
     if (file.endsWith('.js')) {
       const { default: Command } = await import(`${path}/${file}`);
       if (Command.prototype instanceof BaseCommand && !Command.abstract) {
         const command: BaseCommand = new Command();
+
+        // Set directory structure metadata using setter methods
+        if (dirName) {
+          command
+            .setCategoryPath(dirName)
+            .setCategory(category || '')
+            .setIsSubcommand(depth > 1);
+        }
+
         if (depth <= 1 || (depth > 1 && file === 'index.js')) {
           map.set(command.name, command);
+        }
+
+        // Also set metadata for subcommands if any
+        if (command.subcommands) {
+          for (const [, subCmd] of Object.entries(command.subcommands)) {
+            if (subCmd instanceof BaseCommand) {
+              // Use setter methods for subcommands
+              subCmd
+                .setCategory(category || '')
+                .setCategoryPath(dirName || '')
+                .setIsSubcommand(true);
+            }
+            else {
+              // Handle nested subcommands
+              for (const [, nestedCmd] of Object.entries(subCmd)) {
+                // Use setter methods for nested subcommands
+                nestedCmd
+                  .setCategory(category || '')
+                  .setCategoryPath(dirName || '')
+                  .setIsSubcommand(true);
+              }
+            }
+          }
         }
 
         if (interactionMap) loadInteractionsForCommand(command, interactionMap);

@@ -1168,7 +1168,7 @@ export default class SetupCommand extends BaseCommand {
         {
           label: 'Learn More',
           url: `${Constants.Links.Website}/docs/hubs`,
-          emoji: 'info_icon', // Changed from book_icon to info_icon which exists
+          emoji: 'info_icon',
         },
       );
 

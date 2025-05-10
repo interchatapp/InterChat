@@ -16,588 +16,512 @@
  */
 
 import BaseCommand from '#src/core/BaseCommand.js';
-import type Context from '#src/core/CommandContext/Context.js';
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
+import type Context from '#src/core/CommandContext/Context.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
-import { fetchCommands } from '#src/utils/CommandUtils.js';
-import { CustomID } from '#src/utils/CustomID.js';
-import { getEmoji } from '#src/utils/EmojiUtils.js';
-import Constants from '#utils/Constants.js';
-import {
-  ApplicationCommandOptionType,
-  chatInputApplicationCommandMention,
-  Collection,
-  AutocompleteInteraction,
-  ApplicationCommand,
-  ButtonBuilder,
-  ButtonStyle,
-  ContainerBuilder,
-  SectionBuilder,
-  TextDisplayBuilder,
-  MessageFlags,
-  SeparatorSpacingSize,
-} from 'discord.js';
+import { HelpCommandData, CategoryInfo } from '#src/modules/HelpCommand/DataManager.js';
+import { HelpCommandUI } from '#src/modules/HelpCommand/HelpCommandUI.js';
+import Logger from '#src/utils/Logger.js';
+import { PaginationManager } from '#src/utils/ui/PaginationManager.js';
+import { ApplicationCommandOptionType, AutocompleteInteraction, MessageFlags } from 'discord.js';
 
-interface CommandInfo {
-  name: string;
-  description: string;
-  subcommands?: Map<string, CommandInfo | Map<string, CommandInfo>>;
-}
+// Command identifier used for all custom IDs
+const HELP_COMMAND_BASE = 'help';
 
+/**
+ * Redesigned help command using the InterChat v5 design system
+ * Dynamically scans command folders to build categories and command lists
+ */
 export default class HelpCommand extends BaseCommand {
+  private readonly dataManager: HelpCommandData;
+  private uiManager: HelpCommandUI;
+
   constructor() {
     super({
       name: 'help',
-      description: '📚 List all commands or get detailed info about a specific command.',
+      description: '📚 Explore InterChat commands with our new help system',
       types: { slash: true, prefix: true },
       options: [
         {
           name: 'command',
-          description: 'The command to get info about.',
+          description: 'The command to get info about',
+          type: ApplicationCommandOptionType.String,
+          required: false,
+          autocomplete: true,
+        },
+        {
+          name: 'category',
+          description: 'View commands by category',
           type: ApplicationCommandOptionType.String,
           required: false,
           autocomplete: true,
         },
       ],
     });
+
+    // Initialize data manager
+    this.dataManager = new HelpCommandData();
+    // UI manager will be initialized in execute with the client
+    this.uiManager = null as unknown as HelpCommandUI;
   }
 
-  async autocomplete(interaction: AutocompleteInteraction): Promise<void> {
-    const focusedValue = interaction.options.getFocused().toLowerCase();
-    const commands = Array.from(interaction.client.commands.values());
-    const choices: { name: string; value: string }[] = [];
+  /**
+   * Execute the help command
+   * @param ctx The command context
+   */
+  async execute(ctx: Context): Promise<void> {
+    // Initialize UI manager with the current client
+    this.uiManager = new HelpCommandUI(ctx.client, this.dataManager);
 
-    const formatChoice = (name: string, description: string) => {
-      // Truncate description to fit within Discord's 100-character limit
-      const maxLength = 100;
-      const separator = ' - ';
-      let displayName = `${name}${separator}${description}`;
+    const commandName = ctx.options.getString('command');
+    const categoryId = ctx.options.getString('category');
 
-      if (displayName.length > maxLength) {
-        const nameLength = name.length;
-        const sepLength = separator.length;
-        const availableSpace = maxLength - nameLength - sepLength - 3; // 3 for "..."
-        displayName = `${name}${separator}${description.slice(0, availableSpace)}...`;
+    // Discover categories and commands
+    await this.dataManager.discoverCategories(ctx);
+
+    // Fetch and cache command mentions
+    await this.dataManager.fetchCommandMentions(ctx);
+
+    try {
+      // If a specific command was requested
+      if (commandName) {
+        return await this.showCommandHelp(ctx, commandName);
       }
 
-      return {
-        name: displayName,
-        value: name,
-      };
-    };
-
-    for (const cmd of commands) {
-      // Add main command
-      if (
-        cmd.name.toLowerCase().includes(focusedValue) ||
-        cmd.description.toLowerCase().includes(focusedValue)
-      ) {
-        choices.push(formatChoice(cmd.name, cmd.description));
+      // If a category was requested
+      if (categoryId) {
+        return await this.showCategoryHelp(ctx, categoryId);
       }
 
-      // Add subcommands
-      if (cmd.subcommands) {
-        for (const [subName, subCmd] of Object.entries(cmd.subcommands)) {
-          if (subCmd instanceof BaseCommand) {
-            const fullName = `${cmd.name} ${subName}`;
-            if (
-              fullName.toLowerCase().includes(focusedValue) ||
-              subCmd.description.toLowerCase().includes(focusedValue)
-            ) {
-              choices.push(formatChoice(fullName, subCmd.description));
-            }
-          }
-          else {
-            // Handle nested subcommands
-            for (const [nestedName, nestedCmd] of Object.entries(subCmd)) {
-              if (nestedCmd instanceof BaseCommand) {
-                const fullName = `${cmd.name} ${subName} ${nestedName}`;
-                if (
-                  fullName.toLowerCase().includes(focusedValue) ||
-                  nestedCmd.description.toLowerCase().includes(focusedValue)
-                ) {
-                  choices.push(formatChoice(fullName, nestedCmd.description));
-                }
-              }
-            }
-          }
-        }
-      }
+      // Show the main help menu with categories using pagination
+      await this.showMainHelpMenu(ctx);
     }
-
-    await interaction.respond(choices.slice(0, 25));
+    catch (error) {
+      Logger.error('Error executing help command', error);
+      await ctx.reply({
+        content: `${ctx.getEmoji('x_icon')} An error occurred while showing the help menu.`,
+        flags: [MessageFlags.Ephemeral],
+      });
+    }
   }
 
-  private async formatCommandPath(
-    command: CommandInfo,
-    emoji: string,
-    parentPath = '',
-    applicationCommands?: Collection<string, ApplicationCommand>,
-  ): Promise<string> {
-    const currentPath = parentPath ? `${parentPath} ${command.name}` : command.name;
-    const baseCommandName = currentPath.split(' ')[0];
-    const appCommand = applicationCommands?.find((cmd) => cmd.name === baseCommandName);
+  /**
+   * Show the main help menu with categories using pagination
+   * @param ctx The command context
+   */
+  private async showMainHelpMenu(ctx: Context | ComponentContext): Promise<void> {
+    try {
+      // Create pagination manager for categories
+      const pagination = new PaginationManager<CategoryInfo>({
+        client: ctx.client,
+        identifier: `${HELP_COMMAND_BASE}_main`,
+        items: this.dataManager.getCategories(),
+        itemsPerPage: 5, // 5 categories per page (to stay well under the 40 component limit)
+        contentGenerator: (_pageIndex, categoriesOnPage) =>
+          this.uiManager.generateMainHelpMenu(categoriesOnPage, true),
+        idleTimeout: 300000, // 5 minutes
+        ephemeral: false,
+        deleteOnEnd: false,
+      });
 
-    let output = '';
+      // Start pagination
+      await pagination.start(ctx);
+    }
+    catch (error) {
+      Logger.error('Error showing main help menu', error);
+      await ctx.reply({
+        content: `${ctx.getEmoji('x_icon')} An error occurred while showing the help menu.`,
+        flags: [MessageFlags.Ephemeral],
+      });
+    }
+  }
 
-    // If this is a subcommand, show the full path with mention
-    if (parentPath) {
-      if (appCommand) {
-        const pathParts = currentPath.split(' ');
-        if (pathParts.length === 2) {
-          // Single level subcommand
-          const mention = chatInputApplicationCommandMention(
-            baseCommandName,
-            command.name,
-            appCommand.id,
-          );
-          output = `### ${mention}\n${command.description}\n`;
+  /**
+   * Show commands for a specific category
+   * @param ctx The command context
+   * @param categoryId The category ID
+   */
+  private async showCategoryHelp(
+    ctx: Context | ComponentContext,
+    categoryId: string,
+  ): Promise<void> {
+    try {
+      const category = this.dataManager.findCategory(categoryId);
+
+      if (!category) {
+        const errorMessage = `${ctx.getEmoji('x_icon')} Category not found.`;
+
+        if (ctx instanceof ComponentContext) {
+          await ctx.editReply({
+            content: errorMessage,
+          });
         }
-        else if (pathParts.length === 3) {
-          // Nested subcommand
-          const mention = chatInputApplicationCommandMention(
-            baseCommandName,
-            pathParts[1],
-            command.name,
-            appCommand.id,
-          );
-          output = `### ${mention}\n${command.description}\n`;
+        else {
+          await ctx.reply({
+            content: errorMessage,
+            flags: [MessageFlags.Ephemeral],
+          });
         }
+        return;
+      }
+
+      // Generate category help container
+      const container = this.uiManager.generateCategoryHelp(category, ctx.client);
+
+      // Use editReply if it's a ComponentContext, otherwise use reply
+      if (ctx instanceof ComponentContext) {
+        await ctx.editReply({
+          components: [container],
+          flags: [MessageFlags.IsComponentsV2],
+        });
       }
       else {
-        output = `### \`/${currentPath}\`\n${command.description}\n`;
-      }
-    }
-    else {
-      // For base commands, use mention if possible
-      const cmdMention = appCommand
-        ? chatInputApplicationCommandMention(command.name, appCommand.id)
-        : `/${command.name}`;
-      output = `### ${cmdMention}\n${command.description}\n`;
-    }
-
-    if (command.subcommands?.size) {
-      output += '\n**Subcommands:**\n';
-      for (const [name, subCmd] of command.subcommands) {
-        if (subCmd instanceof Map) {
-          // Handle nested subcommands (e.g., hub config logging)
-          for (const [subName, subSubCmd] of subCmd) {
-            if (appCommand) {
-              const mention = chatInputApplicationCommandMention(
-                baseCommandName,
-                name,
-                subName,
-                appCommand.id,
-              );
-              output += `${emoji} ${mention} - ${subSubCmd.description}\n`;
-            }
-            else {
-              output += `${emoji} \`/${currentPath} ${name} ${subName}\` - ${subSubCmd.description}\n`;
-            }
-          }
-        }
-        // Handle single-level subcommands
-        else if (appCommand) {
-          const mention = chatInputApplicationCommandMention(baseCommandName, name, appCommand.id);
-          output += `${emoji} ${mention} - ${subCmd.description}\n`;
-        }
-        else {
-          output += `${emoji} \`/${currentPath} ${name}\` - ${subCmd.description}\n`;
-        }
-      }
-    }
-
-    return output;
-  }
-
-  private getCommandInfo(command: BaseCommand): CommandInfo {
-    const info: CommandInfo = {
-      name: command.name,
-      description: command.description,
-    };
-
-    if (command.subcommands) {
-      info.subcommands = new Map();
-      for (const [name, subCmd] of Object.entries(command.subcommands)) {
-        if (subCmd instanceof BaseCommand) {
-          info.subcommands.set(name, this.getCommandInfo(subCmd));
-        }
-        else {
-          const nestedSubcommands = new Map();
-          for (const [subName, subSubCmd] of Object.entries(subCmd)) {
-            if (subSubCmd instanceof BaseCommand) {
-              nestedSubcommands.set(subName, this.getCommandInfo(subSubCmd));
-            }
-          }
-          info.subcommands.set(name, nestedSubcommands);
-        }
-      }
-    }
-
-    return info;
-  }
-
-  private getSubcommandFromPath(command: BaseCommand, path: string[]): BaseCommand | null {
-    if (path.length === 0) return command;
-    if (!command.subcommands) return null;
-
-    const [next, ...rest] = path;
-    const subCmd = command.subcommands[next];
-
-    if (!subCmd) return null;
-    if (subCmd instanceof BaseCommand) return rest.length === 0 ? subCmd : null;
-
-    const nestedCmd = subCmd[rest[0]];
-    return nestedCmd instanceof BaseCommand ? nestedCmd : null;
-  }
-
-  async execute(ctx: Context) {
-    const applicationCommands = await fetchCommands(ctx.client);
-    const commandPath = ctx.options.getString('command')?.split(' ') ?? [];
-
-    if (commandPath.length > 0) {
-      // Handle specific command help with Components v2
-      const baseCommand = ctx.client.commands.get(commandPath[0]);
-      if (!baseCommand) {
         await ctx.reply({
-          content: `${ctx.getEmoji('x_icon')} Command \`${commandPath[0]}\` not found.`,
-          flags: ['Ephemeral'],
+          components: [container],
+          flags: [MessageFlags.IsComponentsV2],
         });
+      }
+    }
+    catch (error) {
+      Logger.error('Error showing category help', error);
+      const errorMessage = `${ctx.getEmoji('x_icon')} An error occurred while showing the category.`;
+
+      if (ctx instanceof ComponentContext) {
+        await ctx.editReply({
+          content: errorMessage,
+        });
+      }
+      else {
+        await ctx.reply({
+          content: errorMessage,
+          flags: [MessageFlags.Ephemeral],
+        });
+      }
+    }
+  }
+
+  /**
+   * Show help for a specific command
+   * @param ctx The command context
+   * @param commandName The command name
+   */
+  private async showCommandHelp(
+    ctx: Context | ComponentContext,
+    commandName: string,
+  ): Promise<void> {
+    try {
+      // Generate command help container
+      const container = this.uiManager.generateCommandHelp(commandName, ctx.client);
+
+      if (!container) {
+        const errorMessage = `${ctx.getEmoji('x_icon')} Command \`${commandName.split(' ')[0]}\` not found.`;
+
+        await ctx.reply({
+          content: errorMessage,
+          flags: [MessageFlags.Ephemeral],
+        });
+
         return;
       }
 
-      const command = this.getSubcommandFromPath(baseCommand, commandPath.slice(1));
-      if (!command) {
-        await ctx.reply({
-          content: `${ctx.getEmoji('x_icon')} Subcommand \`${commandPath.join(' ')}\` not found.`,
-          flags: ['Ephemeral'],
-        });
-        return;
-      }
-
-      // Create Components v2 container for command details
-      const container = new ContainerBuilder();
-
-      // Add header
-      const headerText = new TextDisplayBuilder().setContent(
-        `# ${ctx.getEmoji('wand_icon')} Command Help: /${commandPath.join(' ')}`,
-      );
-      container.addTextDisplayComponents(headerText);
-
-      // Add command description and usage
-      const commandInfo = this.getCommandInfo(command);
-      const commandDetailsText = new TextDisplayBuilder().setContent(
-        await this.formatCommandPath(
-          commandInfo,
-          ctx.getEmoji('dot'),
-          commandPath.slice(0, -1).join(' '),
-          applicationCommands,
-        ),
-      );
-      container.addTextDisplayComponents(commandDetailsText);
-
-      // Add options if available
-      if (command.options?.length) {
-        const optionsText = new TextDisplayBuilder().setContent(
-          `## Options\n${command.options.map((opt) => `\`${opt.name}\` - ${opt.description}`).join('\n')}`,
-        );
-        container.addTextDisplayComponents(optionsText);
-      }
-
-      // Add dashboard button
-      const dashboardButton = new ButtonBuilder()
-        .setStyle(ButtonStyle.Link)
-        .setLabel('Open Dashboard')
-        .setURL(`${Constants.Links.Website}/dashboard`)
-        .setEmoji(ctx.getEmoji('wand_icon'));
-
-      const dashboardSection = new SectionBuilder()
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent('Need a visual interface? Check out our dashboard:'),
-        )
-        .setButtonAccessory(dashboardButton);
-
-      container.addSectionComponents(dashboardSection);
-
-      // Send the response
       await ctx.reply({
         components: [container],
         flags: [MessageFlags.IsComponentsV2],
       });
-      return;
     }
+    catch (error) {
+      Logger.error('Error showing command help', error);
+      const errorMessage = `${ctx.getEmoji('x_icon')} An error occurred while showing the command help.`;
 
-    // Handle general help menu with Components v2
-    const commands = Array.from(ctx.client.commands.values());
-    const commandsPerPage = 5;
-    const totalPages = Math.ceil(commands.length / commandsPerPage);
-
-    // Get current page commands
-    const currentPage = 0; // Start with first page
-    const pageCommands = commands.slice(
-      currentPage * commandsPerPage,
-      (currentPage + 1) * commandsPerPage,
-    );
-
-    // Create container for help menu
-    const container = new ContainerBuilder();
-
-    // Add header
-    const headerText = new TextDisplayBuilder().setContent(
-      `# ${ctx.getEmoji('wand_icon')} InterChat Commands\nWelcome to InterChat's help menu! Below you'll find all available commands.`,
-    );
-    container.addTextDisplayComponents(headerText);
-
-    // Add separator
-    container.addSeparatorComponents();
-
-    // Add command sections with buttons
-    for (const cmd of pageCommands) {
-      // Create a brief description of the command
-      const commandDescription = `### /${cmd.name}\n${cmd.description}`;
-
-      // Create a "View Details" button for this command
-      const detailsButton = new ButtonBuilder()
-        .setCustomId(new CustomID().setIdentifier('help', 'details').setArgs(cmd.name).toString())
-        .setLabel('View Details')
-        .setStyle(ButtonStyle.Secondary)
-        .setEmoji(ctx.getEmoji('info'));
-
-      // Create a section for this command
-      const commandSection = new SectionBuilder()
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent(commandDescription))
-        .setButtonAccessory(detailsButton);
-
-      container.addSectionComponents(commandSection);
+      if (ctx instanceof ComponentContext) {
+        await ctx.editReply({
+          content: errorMessage,
+        });
+      }
+      else {
+        await ctx.reply({
+          content: errorMessage,
+          flags: [MessageFlags.Ephemeral],
+        });
+      }
     }
-
-    // Add page indicator
-    const pageIndicatorText = new TextDisplayBuilder().setContent(
-      `Page ${currentPage + 1}/${totalPages} • Click on a button to view command details`,
-    );
-    container.addTextDisplayComponents(pageIndicatorText);
-
-    // Add navigation buttons
-    const prevButton = new ButtonBuilder()
-      .setCustomId(new CustomID().setIdentifier('help', 'prev').setArgs('0').toString())
-      .setStyle(ButtonStyle.Secondary)
-      .setEmoji(ctx.getEmoji('arrow_left'))
-      .setDisabled(currentPage === 0);
-
-    const nextButton = new ButtonBuilder()
-      .setCustomId(new CustomID().setIdentifier('help', 'next').setArgs('0').toString())
-      .setStyle(ButtonStyle.Secondary)
-      .setEmoji(ctx.getEmoji('arrow_right'))
-      .setDisabled(currentPage === totalPages - 1);
-
-    const dashboardButton = new ButtonBuilder()
-      .setStyle(ButtonStyle.Link)
-      .setLabel('Open Dashboard')
-      .setURL(`${Constants.Links.Website}/dashboard`)
-      .setEmoji(ctx.getEmoji('wand_icon'));
-
-    container.addActionRowComponents((row) =>
-      row.addComponents(prevButton, nextButton, dashboardButton),
-    );
-
-    // Send the response
-    await ctx.reply({
-      components: [container],
-      flags: [MessageFlags.IsComponentsV2],
-    });
   }
 
   /**
-   * Creates a help container for the specified page
+   * Handle autocomplete requests for the help command
+   * @param interaction The autocomplete interaction
    */
-  private async createHelpContainer(
-    ctx: ComponentContext,
-    currentPage: number,
-    totalPages: number,
-    commands: BaseCommand[],
-  ) {
-    const commandsPerPage = 5;
-    const pageCommands = commands.slice(
-      currentPage * commandsPerPage,
-      (currentPage + 1) * commandsPerPage,
-    );
+  async autocomplete(interaction: AutocompleteInteraction): Promise<void> {
+    try {
+      // Get the focused option
+      const focusedOption = interaction.options.getFocused(true);
+      const focusedValue = focusedOption.value.toString().toLowerCase();
 
-    // Create container for help menu
-    const container = new ContainerBuilder();
+      // Ensure categories are discovered
+      await this.dataManager.discoverCategories(interaction);
 
-    // Add header
-    const headerText = new TextDisplayBuilder().setContent(
-      `## ${getEmoji('wand_icon', ctx.client)} InterChat Commands\nWelcome to InterChat's help menu! Below you'll find all available commands.`,
-    );
-    container.addTextDisplayComponents(headerText);
+      // Fetch and cache command mentions
+      await this.dataManager.fetchCommandMentions(interaction);
 
-    // Add separator
-    container.addSeparatorComponents((separator) =>
-      separator.setDivider(true).setSpacing(SeparatorSpacingSize.Large),
-    );
-
-    // Add command sections with buttons
-    for (const cmd of pageCommands) {
-      // Create a brief description of the command
-      const commandDescription = `### /${cmd.name}\n${cmd.description}`;
-
-      // Create a "View Details" button for this command
-      const detailsButton = new ButtonBuilder()
-        .setCustomId(new CustomID().setIdentifier('help', 'details').setArgs(cmd.name).toString())
-        .setLabel('View Details')
-        .setStyle(ButtonStyle.Secondary)
-        .setEmoji(getEmoji('info', ctx.client));
-
-      // Create a section for this command
-      const commandSection = new SectionBuilder()
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent(commandDescription))
-        .setButtonAccessory(detailsButton);
-
-      container.addSectionComponents(commandSection);
+      // Handle different option types
+      if (focusedOption.name === 'command') {
+        await this.handleCommandAutocomplete(interaction, focusedValue);
+      }
+      else if (focusedOption.name === 'category') {
+        await this.handleCategoryAutocomplete(interaction, focusedValue);
+      }
     }
+    catch (error) {
+      // Log the error but don't crash
+      Logger.error('Error in help command autocomplete', error);
 
-    // Add page indicator
-    const pageIndicatorText = new TextDisplayBuilder().setContent(
-      `Page ${currentPage + 1}/${totalPages} • Click on a button to view command details`,
-    );
-    container.addTextDisplayComponents(pageIndicatorText);
+      // Respond with an empty array to prevent the autocomplete from breaking
+      await interaction.respond([]);
+    }
+  }
 
-    // Add navigation buttons
-    const prevButton = new ButtonBuilder()
-      .setCustomId(
-        new CustomID().setIdentifier('help', 'prev').setArgs(currentPage.toString()).toString(),
-      )
-      .setStyle(ButtonStyle.Secondary)
-      .setEmoji(getEmoji('arrow_left', ctx.client))
-      .setDisabled(currentPage === 0);
+  /**
+   * Handle autocomplete for the command option
+   * @param interaction The autocomplete interaction
+   * @param focusedValue The current input value
+   */
+  private async handleCommandAutocomplete(
+    interaction: AutocompleteInteraction,
+    focusedValue: string,
+  ): Promise<void> {
+    // Get all commands from all categories
+    const allCommands = this.dataManager.getCategories().flatMap((category) => category.commands);
 
-    const nextButton = new ButtonBuilder()
-      .setCustomId(
-        new CustomID().setIdentifier('help', 'next').setArgs(currentPage.toString()).toString(),
-      )
-      .setStyle(ButtonStyle.Secondary)
-      .setEmoji(getEmoji('arrow_right', ctx.client))
-      .setDisabled(currentPage === totalPages - 1);
-
-    const dashboardButton = new ButtonBuilder()
-      .setStyle(ButtonStyle.Link)
-      .setLabel('Open Dashboard')
-      .setURL(`${Constants.Links.Website}/dashboard`)
-      .setEmoji(getEmoji('wand_icon', ctx.client));
-
-    container.addActionRowComponents((row) =>
-      row.addComponents(prevButton, nextButton, dashboardButton),
+    // Filter commands based on the input
+    let filteredCommands = allCommands.filter((command) =>
+      command.toLowerCase().includes(focusedValue),
     );
 
-    return container;
-  }
-
-  @RegisterInteractionHandler('help', 'prev')
-  async handlePrevButton(ctx: ComponentContext) {
-    await ctx.deferUpdate();
-
-    const currentPage = Number.parseInt(ctx.customId.args[0] || '0');
-    const newPage = Math.max(0, currentPage - 1);
-
-    const commands = Array.from(ctx.client.commands.values());
-    const totalPages = Math.ceil(commands.length / 5);
-
-    const container = await this.createHelpContainer(ctx, newPage, totalPages, commands);
-
-    await ctx.editReply({
-      components: [container],
-      flags: [MessageFlags.IsComponentsV2],
-    });
-  }
-
-  @RegisterInteractionHandler('help', 'next')
-  async handleNextButton(ctx: ComponentContext) {
-    await ctx.deferUpdate();
-
-    const currentPage = Number.parseInt(ctx.customId.args[0] || '0');
-    const commands = Array.from(ctx.client.commands.values());
-    const totalPages = Math.ceil(commands.length / 5);
-    const newPage = Math.min(totalPages - 1, currentPage + 1);
-
-    const container = await this.createHelpContainer(ctx, newPage, totalPages, commands);
-
-    await ctx.editReply({
-      components: [container],
-      flags: [MessageFlags.IsComponentsV2],
-    });
-  }
-
-  @RegisterInteractionHandler('help', 'details')
-  async handleDetailsButton(ctx: ComponentContext) {
-    await ctx.deferReply({ flags: ['Ephemeral'] });
-
-    // Get the command name from the button's custom ID
-    const commandName = ctx.customId.args[0];
-    if (!commandName) {
-      await ctx.editReply({
-        content: `${getEmoji('x_icon', ctx.client)} Command not found.`,
-      });
+    // If no commands match, return a helpful message
+    if (filteredCommands.length === 0 && focusedValue.length > 0) {
+      await interaction.respond([
+        {
+          name: `No commands found matching "${focusedValue}"`,
+          value: focusedValue,
+        },
+      ]);
       return;
     }
 
-    // Find the command
-    const baseCommand = ctx.client.commands.get(commandName);
-    if (!baseCommand) {
-      await ctx.editReply({
-        content: `${getEmoji('x_icon', ctx.client)} Command \`${commandName}\` not found.`,
-      });
-      return;
-    }
+    // Sort commands alphabetically
+    filteredCommands.sort((a, b) => a.localeCompare(b));
 
-    // Create Components v2 container for command details
-    const container = new ContainerBuilder();
+    // Limit to 25 results
+    filteredCommands = filteredCommands.slice(0, 25);
 
-    // Add header
-    const headerText = new TextDisplayBuilder().setContent(
-      `# ${getEmoji('wand_icon', ctx.client)} Command Help: /${commandName}`,
-    );
-    container.addTextDisplayComponents(headerText);
+    // Format the results
+    const results = filteredCommands.map((command) => {
+      // Get the base command name (first part before any spaces)
+      const baseCommandName = command.split(' ')[0];
 
-    // Add command description and usage
-    const applicationCommands = await fetchCommands(ctx.client);
-    const commandInfo = this.getCommandInfo(baseCommand);
-    const commandDetailsText = new TextDisplayBuilder().setContent(
-      await this.formatCommandPath(
-        commandInfo,
-        getEmoji('dot', ctx.client),
-        '',
-        applicationCommands,
-      ),
-    );
-    container.addTextDisplayComponents(commandDetailsText);
+      // Find the category for this command
+      const category = this.dataManager.findCategoryForCommand(baseCommandName);
 
-    // Add options if available
-    if (baseCommand.options?.length) {
-      const optionsText = new TextDisplayBuilder().setContent(
-        `## Options\n${baseCommand.options.map((opt) => `\`${opt.name}\` - ${opt.description}`).join('\n')}`,
+      // Format the display name with category if available
+      const displayName = category ? `${command} (${category.name})` : command;
+
+      return {
+        name: displayName,
+        value: command,
+      };
+    });
+
+    // Respond with the results
+    await interaction.respond(results);
+  }
+
+  /**
+   * Handle autocomplete for the category option
+   * @param interaction The autocomplete interaction
+   * @param focusedValue The current input value
+   */
+  private async handleCategoryAutocomplete(
+    interaction: AutocompleteInteraction,
+    focusedValue: string,
+  ): Promise<void> {
+    // Filter categories based on the input
+    let filteredCategories = this.dataManager
+      .getCategories()
+      .filter(
+        (category) =>
+          category.name.toLowerCase().includes(focusedValue) ||
+          category.id.toLowerCase().includes(focusedValue) ||
+          (category.description && category.description.toLowerCase().includes(focusedValue)),
       );
-      container.addTextDisplayComponents(optionsText);
+
+    // If no categories match, return a helpful message
+    if (filteredCategories.length === 0 && focusedValue.length > 0) {
+      await interaction.respond([
+        {
+          name: `No categories found matching "${focusedValue}"`,
+          value: focusedValue,
+        },
+      ]);
+      return;
     }
 
-    // Add dashboard button
-    const dashboardButton = new ButtonBuilder()
-      .setStyle(ButtonStyle.Link)
-      .setLabel('Open Dashboard')
-      .setURL(`${Constants.Links.Website}/dashboard`)
-      .setEmoji(getEmoji('wand_icon', ctx.client));
+    // Sort categories alphabetically
+    filteredCategories.sort((a, b) => a.name.localeCompare(b.name));
 
-    const dashboardSection = new SectionBuilder()
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('Need a visual interface? Check out our dashboard:'),
-      )
-      .setButtonAccessory(dashboardButton);
+    // Limit to 25 results
+    filteredCategories = filteredCategories.slice(0, 25);
 
-    container.addSectionComponents(dashboardSection);
+    // Format the results
+    const results = filteredCategories.map((category) => {
+      // Get the most popular commands in this category (up to 3)
+      const popularCommands = category.commands
+        .filter((cmd) => !cmd.includes(' ')) // Only base commands, not subcommands
+        .slice(0, 3)
+        .map((cmd) => cmd.split(' ')[0]) // Get just the base command name
+        .join(', ');
 
-    // Send the response
-    await ctx.editReply({
-      components: [container],
-      flags: [MessageFlags.IsComponentsV2],
+      // Format with command count and popular commands
+      const displayName = `${category.name} (${category.commands.length} commands${popularCommands ? `: ${popularCommands}...` : ''})`;
+
+      return {
+        name: displayName,
+        value: category.id,
+      };
     });
+
+    // Respond with the results
+    await interaction.respond(results);
+  }
+
+  /**
+   * Handler for the main help button
+   */
+  @RegisterInteractionHandler(HELP_COMMAND_BASE, 'main')
+  async handleMainButton(ctx: ComponentContext): Promise<void> {
+    try {
+      await ctx.deferUpdate();
+
+      // Discover categories and commands
+      await this.dataManager.discoverCategories(ctx);
+
+      // Fetch and cache command mentions
+      await this.dataManager.fetchCommandMentions(ctx);
+
+      // Generate main help menu
+      const container = this.uiManager.generateMainHelpMenu(this.dataManager.getCategories());
+
+      // Update the message
+      await ctx.editReply({
+        components: [container],
+        flags: [MessageFlags.IsComponentsV2],
+      });
+    }
+    catch (error) {
+      Logger.error('Error handling main button', error);
+      const errorContainer = this.uiManager.generateErrorContainer(
+        'Error',
+        `${ctx.getEmoji('x_icon')} An error occurred while showing the help menu.`,
+      );
+      await ctx.editReply({
+        components: [errorContainer],
+        flags: [MessageFlags.IsComponentsV2],
+      });
+    }
+  }
+
+  /**
+   * Handler for category buttons
+   */
+  @RegisterInteractionHandler(HELP_COMMAND_BASE, 'category')
+  async handleCategoryButton(ctx: ComponentContext): Promise<void> {
+    try {
+      await ctx.deferUpdate();
+
+      // Discover categories and commands
+      await this.dataManager.discoverCategories(ctx);
+
+      // Fetch and cache command mentions
+      await this.dataManager.fetchCommandMentions(ctx);
+
+      const categoryId = ctx.customId.args[0];
+      await this.showCategoryHelp(ctx, categoryId);
+    }
+    catch (error) {
+      Logger.error('Error handling category button', error);
+      const errorContainer = this.uiManager.generateErrorContainer(
+        'Error',
+        `${ctx.getEmoji('x_icon')} An error occurred while showing the category.`,
+      );
+      await ctx.editReply({
+        components: [errorContainer],
+        flags: [MessageFlags.IsComponentsV2],
+      });
+    }
+  }
+
+  /**
+   * Handler for command buttons
+   */
+  @RegisterInteractionHandler(HELP_COMMAND_BASE, 'command')
+  async handleCommandButton(ctx: ComponentContext): Promise<void> {
+    try {
+      await ctx.deferUpdate();
+
+      // Discover categories and commands
+      await this.dataManager.discoverCategories(ctx);
+
+      // Fetch and cache command mentions
+      await this.dataManager.fetchCommandMentions(ctx);
+
+      const commandName = ctx.customId.args[0];
+      await this.showCommandHelp(ctx, commandName);
+    }
+    catch (error) {
+      Logger.error('Error handling command button', error);
+      const errorContainer = this.uiManager.generateErrorContainer(
+        'Error',
+        `${ctx.getEmoji('x_icon')} An error occurred while showing the command help.`,
+      );
+      await ctx.editReply({
+        components: [errorContainer],
+        flags: [MessageFlags.IsComponentsV2],
+      });
+    }
+  }
+
+  /**
+   * Handler for search buttons
+   */
+  @RegisterInteractionHandler(HELP_COMMAND_BASE, 'search')
+  async handleSearchButton(ctx: ComponentContext): Promise<void> {
+    try {
+      await ctx.deferUpdate();
+
+      // Discover categories and commands
+      await this.dataManager.discoverCategories(ctx);
+
+      // Fetch and cache command mentions
+      await this.dataManager.fetchCommandMentions(ctx);
+
+      // Generate search help container
+      const container = this.uiManager.generateSearchHelp();
+
+      // Update the message
+      await ctx.editReply({
+        components: [container],
+        flags: [MessageFlags.IsComponentsV2],
+      });
+    }
+    catch (error) {
+      Logger.error('Error handling search button', error);
+      const errorContainer = this.uiManager.generateErrorContainer(
+        'Error',
+        `${ctx.getEmoji('x_icon')} An error occurred while showing the search interface.`,
+      );
+      await ctx.editReply({
+        components: [errorContainer],
+        flags: [MessageFlags.IsComponentsV2],
+      });
+    }
   }
 }
