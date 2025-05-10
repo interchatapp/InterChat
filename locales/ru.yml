@@ -1,8 +1,7 @@
 rules:
+  header: 'InterChat Rules'
+  botRulesNote: 'These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:'
   rules: |
-    ### {emoji} Rules
-    These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:
-
     1. **No Hate Speech or Harassment**
     -# > **Includes:** Using slurs or hate speech to attack others, [and more]({guidelines_link}).
     2. **No Illegal Content**
@@ -34,14 +33,14 @@ rules:
   accepted: |
     {emoji} You're all set! Welcome to the InterChat community.
 
-    Quick tips to get started:
-    - Use `/hub browse` to find active communities
-    - Join discussions that interest you
+    {emoji} You're all set! Welcome to the InterChat community.
+
+    ### Get Started Quickly:
+    - Visit `/hub browse` to find active communities
+    - Join discussions that interest you or create your own through our __dashboard__
     - Use our new `/call` command to connect with single servers
 
-    Need help? Join our [community]({support_invite}) - we're happy to help!
-
-    Love what we're building? Consider [supporting us]({donateLink}) to help keep InterChat running.
+    Need help? Join our [community]({support_invite}) - we're happy to help! Please consider supporting us by [donating]({donateLink}) to help InterChat grow and thrive.
   declined: |
     {emoji} You have declined the InterChat rules.
     -# ⚠️ **You won't be able to use InterChat or chat with other servers until you accept the rules.**
@@ -55,12 +54,13 @@ rules:
     -# To try again, send another message in this hub.
   noHubRules: This hub has not set any specific rules yet. However, the [general InterChat rules]({rules_link}) still apply.
   hubRules: Hub Rules
+  viewbotRules: "View Bot Rules"
 vote:
   description: |
     Help more communities discover InterChat! Your vote on top.gg:
-    • Helps others find active communities
-    • Unlocks special features for you
-    • Supports our independent development
+    - Helps others find active communities
+    - Unlocks special features for you
+    - Supports our independent development
   footer: "Votes refresh every 12 hours • Thanks for supporting InterChat!"
   button:
     label: "Vote on top.gg"
@@ -307,6 +307,7 @@ hub:
       notAllowed: "{emoji} Только менеджеры хаба могут обновлять позицию модератора."
       notOwner: "{emoji} Только владелец этого хаба может обновлять позицию менеджера."
   manage:
+    dashboardTip: "**🛠️ NEW Dashboard:** Improved interface and more features! Try it out at [your hub's dashboard page]({url})."
     enterImgurUrl: Введите корректный URL изображения Imgur который не является галереей или альбомом.
     icon:
       changed: Иконка хаба успешно обновлена.
@@ -467,7 +468,6 @@ report:
     gore_violence: Gore or extreme violence
     raid_organizing: Organizing raids or attacks
     underage: Underage user or content
-    other: Other (Please Specify)
   dropdown:
     placeholder: Select a reason for your report
   submitted: '{emoji} Жалоба успешно отправлена. Присоединитесь к {support_command} чтобы получить больше подробностей. Спасибо!'
