@@ -22,6 +22,7 @@ import { HubService } from '#src/services/HubService.js';
 import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
 import { type HubModerator, Role } from '#src/generated/prisma/client/client.js';
 import { ApplicationCommandOptionType, type AutocompleteInteraction } from 'discord.js';
+import { fetchUserData } from '#src/utils/Utils.js';
 
 export default class HubModeratorAddSubcommand extends BaseCommand {
   private readonly hubService = new HubService();
@@ -61,14 +62,12 @@ export default class HubModeratorAddSubcommand extends BaseCommand {
 
   public async execute(ctx: Context) {
     const hubName = ctx.options.getString('hub', true);
-    const hub = hubName
-      ? (await this.hubService.findHubsByName(hubName)).at(0)
-      : undefined;
+    const hub = hubName ? (await this.hubService.findHubsByName(hubName)).at(0) : undefined;
     if (
       !hub ||
-			!(await runHubRoleChecksAndReply(hub, ctx, {
-			  checkIfManager: true,
-			}))
+      !(await runHubRoleChecksAndReply(hub, ctx, {
+        checkIfManager: true,
+      }))
     ) return;
 
     const user = await ctx.options.getUser('user');
@@ -84,8 +83,18 @@ export default class HubModeratorAddSubcommand extends BaseCommand {
       return;
     }
 
-    const role = (ctx.options.getString('position') ??
-			Role.MODERATOR) as HubModerator['role'];
+    // fetch user from db first
+    const userData = await fetchUserData(user.id);
+
+    if (!userData) {
+      await ctx.replyEmbed(
+        'Please ask them to accept InterChat rules before adding them as a moderator. You can do so by asking them to use **any command** or by sending a message in **any hub**.',
+        { flags: ['Ephemeral'] },
+      );
+      return;
+    }
+
+    const role = (ctx.options.getString('position') ?? Role.MODERATOR) as HubModerator['role'];
 
     await hub.moderators.add(user.id, role);
 
