@@ -15,9 +15,10 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import Context from '#src/core/CommandContext/Context.js';
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
+import Context from '#src/core/CommandContext/Context.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
+import type { User as DbUser } from '#src/generated/prisma/client/client.js';
 import HubManager from '#src/managers/HubManager.js';
 import { HubService } from '#src/services/HubService.js';
 import UserDbService from '#src/services/UserDbService.js';
@@ -30,7 +31,6 @@ import { CustomID } from '#utils/CustomID.js';
 import db from '#utils/Db.js';
 import { InfoEmbed } from '#utils/EmbedUtils.js';
 import { type supportedLocaleCodes, t } from '#utils/Locale.js';
-import type { User as DbUser } from '#src/generated/prisma/client/client.js';
 import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
@@ -253,24 +253,42 @@ export default class RulesScreeningInteraction {
       return;
     }
 
-    await db.hubRulesAcceptance.create({
-      data: {
-        userId,
-        hubId,
-      },
-    });
+    try {
+      // Check if the user has already accepted the rules for this hub
+      const existingAcceptance = await db.hubRulesAcceptance.findUnique({
+        where: { userId_hubId: { userId, hubId } },
+      });
 
-    await ctx.deleteReply();
+      // If no existing acceptance, create a new one
+      if (!existingAcceptance) {
+        await db.hubRulesAcceptance.create({ data: { userId, hubId } });
+      }
+      // If there is an existing acceptance, we don't need to do anything
+      // The user has already accepted the rules for this hub
 
-    const locale = await fetchUserLocale(ctx.user.id);
-    const embed = new InfoEmbed().setDescription(
-      t('rules.hubAccepted', locale, {
-        emoji: getEmoji('tick_icon', ctx.client),
-      }),
-    );
+      await ctx.deleteReply();
 
-    await ctx.reply({ embeds: [embed], components: [], flags: ['Ephemeral'] }).catch(() => null);
-    await this.redis.del(`${RedisKeys.HubRules}:shown:${hubId}:${ctx.user.id}`);
+      const locale = await fetchUserLocale(ctx.user.id);
+      const embed = new InfoEmbed().setDescription(
+        t('rules.hubAccepted', locale, {
+          emoji: getEmoji('tick_icon', ctx.client),
+        }),
+      );
+
+      await ctx.reply({ embeds: [embed], components: [], flags: ['Ephemeral'] }).catch(() => null);
+
+      // Clear both the rules shown cache and the hub connections cache
+      await this.redis.del(`${RedisKeys.HubRules}:shown:${hubId}:${ctx.user.id}`);
+    }
+    catch (error) {
+      Logger.error('Error in handleHubRulesAccept:', error);
+      await ctx
+        .reply({
+          content: `${getEmoji('x_icon', ctx.client)} An error occurred while processing your request.`,
+          flags: ['Ephemeral'],
+        })
+        .catch(() => null);
+    }
   }
 
   @RegisterInteractionHandler('rulesScreen', 'decline')

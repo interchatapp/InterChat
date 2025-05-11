@@ -53,10 +53,6 @@ export type RequiredConnectionData = {
  */
 export interface HubConnectionData {
   hub: HubManager;
-  hubRaw: Hub & {
-    rulesAcceptances: { acceptedAt: Date }[];
-    connections: RequiredConnectionData[];
-  };
   connection: RequiredConnectionData;
   hubConnections: RequiredConnectionData[];
 }
@@ -88,7 +84,7 @@ export class MessageProcessor {
   static async invalidateCache(channelId: string): Promise<void> {
     // Clear Redis cache for this channel
     const cacheKeys = await MessageProcessor.redis.keys(
-      `${RedisKeys.Hub}:connections:${channelId}:*`,
+      `${RedisKeys.Hub}:connections:${channelId}`,
     );
 
     if (cacheKeys.length > 0) {
@@ -116,22 +112,40 @@ export class MessageProcessor {
     };
   }
 
+  static parseHubDates<
+    T extends
+      | Hub
+      | (Hub & { connections: RequiredConnectionData[]; rulesAcceptances: { acceptedAt: Date }[] }),
+  >(hub: ConvertDatesToString<T>): T {
+    const data = {
+      ...hub,
+      createdAt: new Date(hub.createdAt),
+      updatedAt: new Date(hub.updatedAt),
+      lastActive: new Date(hub.lastActive),
+      rulesAcceptances:
+        'rulesAcceptances' in hub
+          ? hub.rulesAcceptances.map((acceptance) => ({
+            ...acceptance,
+            acceptedAt: new Date(acceptance.acceptedAt),
+          }))
+          : [],
+      connections:
+        'connections' in hub ? hub.connections.map(MessageProcessor.convertConnectionDates) : [],
+    } as T;
+
+    return data;
+  }
+
   /**
    * Retrieves hub and connection data for a given channel and user
    * @param channelId The channel ID to get hub data for
-   * @param userId The user ID to check rules acceptance for
    * @returns Hub and connection data or null if not found
    */
-  static async getHubAndConnections(
-    channelId: string,
-    userId: string,
-  ): Promise<HubConnectionData | null> {
+  static async getHubAndConnections(channelId: string): Promise<HubConnectionData | null> {
     const startTime = performance.now();
 
-    // Create a cache key that includes both channelId and userId
-    // We need userId in the key because rulesAcceptances are user-specific
-    const cacheKey = `${channelId}:${userId}`;
-    const redisKey = `${RedisKeys.Hub}:connections:${cacheKey}`;
+    // Create a cache key
+    const redisKey = `${RedisKeys.Hub}:connections:${channelId}`;
 
     // Check Redis cache first
     const redisStartTime = performance.now();
@@ -147,14 +161,13 @@ export class MessageProcessor {
 
         if (cached && cached.data) {
           // Create manager objects from the cached raw data
-          const connection = cached.data.connection;
+          const connection = cached.data.connection as ConvertDatesToString<RequiredConnectionData>;
           const hub = cached.data.hub;
 
           if (connection && hub) {
             // Create the result object
             const result: HubConnectionData = {
-              hub: new HubManager(hub),
-              hubRaw: hub,
+              hub: new HubManager(MessageProcessor.parseHubDates(hub)),
               connection: MessageProcessor.convertConnectionDates(connection),
               hubConnections: cached.data.hubConnections.map(
                 MessageProcessor.convertConnectionDates,
@@ -165,7 +178,7 @@ export class MessageProcessor {
               `Cache hit processing took ${performance.now() - cacheHitStartTime}ms for ${channelId}`,
             );
             Logger.debug(
-              `Total getHubAndConnections took ${performance.now() - startTime}ms for ${channelId}:${userId} (cache hit)`,
+              `Total getHubAndConnections took ${performance.now() - startTime}ms for ${channelId} (cache hit)`,
             );
             return result;
           }
@@ -214,16 +227,16 @@ export class MessageProcessor {
               where: { connected: true, channelId: { not: channelId } },
               select: connectionSelect,
             },
-            rulesAcceptances: { where: { userId }, take: 1, select: { acceptedAt: true } },
           },
         },
       },
     });
+
     Logger.debug(`Database fetch took ${performance.now() - dbFetchStartTime}ms for ${channelId}`);
 
     if (!connection || !connection.hub) {
       Logger.debug(
-        `Total getHubAndConnections took ${performance.now() - startTime}ms for ${channelId}:${userId} (no connection found)`,
+        `Total getHubAndConnections took ${performance.now() - startTime}ms for ${channelId} (no connection found)`,
       );
       return null;
     }
@@ -232,7 +245,6 @@ export class MessageProcessor {
     const createManagersStartTime = performance.now();
     const result: HubConnectionData = {
       hub: new HubManager(connection.hub),
-      hubRaw: connection.hub,
       connection,
       hubConnections: connection.hub.connections,
     };
@@ -259,7 +271,7 @@ export class MessageProcessor {
     Logger.debug(`Setting cache took ${performance.now() - setCacheStartTime}ms for ${channelId}`);
 
     Logger.debug(
-      `Total getHubAndConnections took ${performance.now() - startTime}ms for ${channelId}:${userId} (cache miss)`,
+      `Total getHubAndConnections took ${performance.now() - startTime}ms for ${channelId} (cache miss)`,
     );
     return result;
   }
@@ -277,14 +289,11 @@ export class MessageProcessor {
 
       // Get hub and connection data for this channel
       const hubStartTime = performance.now();
-      const hubAndConnections = await MessageProcessor.getHubAndConnections(
-        message.channelId,
-        message.author.id,
-      );
+      const hubAndConnections = await MessageProcessor.getHubAndConnections(message.channelId);
       timings.getHubAndConnections = performance.now() - hubStartTime;
 
       if (!hubAndConnections) return { handled: false, hub: null };
-      const { hub, hubRaw, hubConnections, connection } = hubAndConnections;
+      const { hub, hubConnections, connection } = hubAndConnections;
 
       // Ensure webhook URL is set (if connected through dashboard it might not be)
       if (connection.webhookURL.length < 1) {
@@ -309,7 +318,7 @@ export class MessageProcessor {
 
       // Check if user has accepted the hub's specific rules
       const hubRulesStartTime = performance.now();
-      const hubRulesAccepted = await this.checkHubRulesAcceptance(message, userData, hub, hubRaw);
+      const hubRulesAccepted = await this.checkHubRulesAcceptance(message, userData, hub);
       timings.checkHubRulesAcceptance = performance.now() - hubRulesStartTime;
 
       if (!hubRulesAccepted) {
@@ -397,23 +406,36 @@ export class MessageProcessor {
    * @param message The Discord message
    * @param userData The user's data from the database
    * @param hub The hub manager instance
-   * @param hubRaw The raw hub data from the database
    * @returns Whether the user has accepted the hub rules or if no rules exist
    */
   private async checkHubRulesAcceptance(
     message: Message<true>,
     userData: User | null,
     hub: HubManager,
-    hubRaw: HubConnectionData['hubRaw'],
   ): Promise<boolean> {
-    // If the hub has no rules or the user has already accepted them, return true
-    if (hubRaw.rulesAcceptances.length || hub.getRules().length === 0) {
+    const redis = getRedis();
+    const acceptedKey = `${RedisKeys.HubRules}:accepted:${hub.id}:${message.author.id}`;
+    const cachedAccepted = await redis.get(acceptedKey);
+    if (cachedAccepted === '1') return true;
+
+    const accepted = await db.hubRulesAcceptance.findFirst({
+      where: { hubId: hub.id, userId: message.author.id },
+    });
+
+    // If the user has accepted the rules or there are no rules, return true
+    if (accepted || hub.getRules().length === 0) {
+      // show accepted state
+      await redis.set(
+        `${RedisKeys.HubRules}:accepted:${hub.id}:${message.author.id}`,
+        '1',
+        'EX',
+        300,
+      );
       return true;
     }
 
     // Check if we've recently shown the rules to this user (cooldown)
     const rulesShownKey = `${RedisKeys.HubRules}:shown:${hub.id}:${message.author.id}`;
-    const redis = getRedis();
     const rulesShown = await redis.get(rulesShownKey);
 
     if (rulesShown) return false;
