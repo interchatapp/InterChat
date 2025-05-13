@@ -17,8 +17,6 @@
 
 import type { APIMessage, Message } from 'discord.js';
 import {
-  type Broadcast,
-  type OriginalMessage,
   addBroadcasts,
   storeMessage,
   storeMessageTimestamp,
@@ -26,6 +24,7 @@ import {
 import { updateConnections } from '#utils/ConnectedListUtils.js';
 import type { ConnectionMode } from '#utils/Constants.js';
 import Logger from '#src/utils/Logger.js';
+import type { Broadcast, Message as MessageDB } from '#src/generated/prisma/client/client.js';
 
 interface ErrorResult {
   webhookURL: string;
@@ -59,21 +58,21 @@ export default async (
   message: Message,
   broadcastResults: NetworkWebhookSendResult[],
   hubId: string,
-  dbReference?: OriginalMessage,
+  dbReference?: MessageDB,
   attachmentUrl?: string,
 ) => {
   if (!message.inGuild()) return;
 
   await storeMessage(message.id, {
+    id: message.id,
     hubId,
     content: message.content,
     imageUrl: attachmentUrl || null,
-    messageId: message.id,
     authorId: message.author.id,
     guildId: message.guildId,
     channelId: message.channelId,
-    referredMessageId: dbReference?.messageId,
-    timestamp: message.createdTimestamp,
+    referredMessageId: dbReference?.id || null,
+    createdAt: message.createdAt,
   });
 
   const invalidWebhookURLs: string[] = [];
@@ -90,13 +89,14 @@ export default async (
     }
     validBroadcasts.push({
       mode: res.mode,
-      messageId: res.messageRes.id,
+      id: res.messageRes.id,
       channelId: res.messageRes.channel_id,
-      originalMsgId: message.id,
+      messageId: message.id,
+      createdAt: message.createdAt,
     });
   }
 
-  if (validBroadcasts.length > 0) await addBroadcasts(hubId, message.id, ...validBroadcasts);
+  if (validBroadcasts.length > 0) await addBroadcasts(message.id, ...validBroadcasts);
   await storeMessageTimestamp(message);
 
   // disconnect network if, webhook does not exist/bot cannot access webhook

@@ -27,7 +27,7 @@ import {
   type User,
   userMention,
 } from 'discord.js';
-/* eslint-disable complexity */
+
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
@@ -169,10 +169,10 @@ export default class EditMessage extends BaseCommand {
     }
 
     const mode =
-      target.id === originalMsgData.messageId
+      target.id === originalMsgData.id
         ? ConnectionMode.Compact
         : ((
-          await getBroadcast(originalMsgData?.messageId, originalMsgData?.hubId, {
+          await getBroadcast(originalMsgData?.id, {
             channelId: target.channelId,
           })
         )?.mode ?? ConnectionMode.Compact);
@@ -187,7 +187,7 @@ export default class EditMessage extends BaseCommand {
     });
 
     // Find all the messages that need to be edited
-    const broadcastedMsgs = Object.values(await getBroadcasts(target.id, originalMsgData.hubId));
+    const broadcastedMsgs = Object.values(await getBroadcasts(target.id));
     const channelSettingsArr = await db.connection.findMany({
       where: { channelId: { in: broadcastedMsgs.map((c) => c.channelId) } },
     });

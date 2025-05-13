@@ -20,6 +20,7 @@ import deleteExpiredInvites from '#src/scheduled/tasks/deleteExpiredInvites.js';
 // import pauseIdleConnections from '#src/scheduled/tasks/pauseIdleConnections.js';
 import storeMsgTimestamps from '#src/scheduled/tasks/storeMsgTimestamps.js';
 import syncBotlistStats from '#src/scheduled/tasks/syncBotlistStats.js';
+import cleanupOldMessages from '#src/scheduled/tasks/cleanupOldMessages.js';
 import Scheduler from '#src/services/SchedulerService.js';
 import Constants from '#src/utils/Constants.js';
 import Logger from '#src/utils/Logger.js';
@@ -32,9 +33,16 @@ export default function startTasks(clusterManager: ClusterManager) {
 
   // store network message timestamps to Connection every minute
   scheduler.addRecurringTask('storeMsgTimestamps', 10 * 60 * 1000, storeMsgTimestamps);
+
+  // Run cleanup tasks every hour
   scheduler.addRecurringTask('cleanupTasks', 60 * 60 * 1000, () => {
     deleteExpiredInvites().catch(Logger.error);
     // pauseIdleConnections().catch(Logger.error);
+  });
+
+  // Clean up old messages every 12 hours
+  scheduler.addRecurringTask('cleanupOldMessages', 12 * 60 * 60 * 1000, () => {
+    cleanupOldMessages().catch(Logger.error);
   });
 
   // production only tasks

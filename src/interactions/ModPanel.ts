@@ -37,7 +37,8 @@ import DeleteMessageHandler from '#src/utils/moderation/modPanel/handlers/delete
 import UserBanHandler from '#src/utils/moderation/modPanel/handlers/userBanHandler.js';
 import ViewInfractionsHandler from '#src/utils/moderation/modPanel/handlers/viewInfractions.js';
 import WarnHandler from '#src/utils/moderation/modPanel/handlers/warnHandler.js';
-import { type OriginalMessage, getOriginalMessage } from '#src/utils/network/messageUtils.js';
+import { getOriginalMessage } from '#src/utils/network/messageUtils.js';
+import type { Message as MessageDB } from '#src/generated/prisma/client/client.js';
 import Constants from '#utils/Constants.js';
 import { stripIndents } from 'common-tags';
 import {
@@ -132,7 +133,7 @@ export default class ModPanelHandler {
   }
   private async validateMessage(
     ctx: ComponentContext,
-    originalMsg: OriginalMessage,
+    originalMsg: MessageDB,
     locale: supportedLocaleCodes,
   ) {
     const hubService = new HubService(db);
@@ -151,10 +152,10 @@ export default class ModPanelHandler {
   }
 }
 
-export async function buildModPanel(ctx: Context | Interaction, originalMsg: OriginalMessage) {
+export async function buildModPanel(ctx: Context | Interaction, originalMsg: MessageDB) {
   const user = await ctx.client.users.fetch(originalMsg.authorId);
   const server = await ctx.client.fetchGuild(originalMsg.guildId);
-  const deleteInProgress = await isDeleteInProgress(originalMsg.messageId);
+  const deleteInProgress = await isDeleteInProgress(originalMsg.id);
 
   const userBlManager = new BlacklistManager('user', originalMsg.authorId);
   const serverBlManager = new BlacklistManager('server', originalMsg.guildId);
@@ -170,7 +171,7 @@ export async function buildModPanel(ctx: Context | Interaction, originalMsg: Ori
     isDeleteInProgress: deleteInProgress,
   });
 
-  const buttons = buildButtons(ctx, originalMsg.messageId, {
+  const buttons = buildButtons(ctx, originalMsg.id, {
     isUserBlacklisted,
     isServerBlacklisted,
     isBanned: Boolean(dbUserTarget?.banReason),

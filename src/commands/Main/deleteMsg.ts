@@ -17,7 +17,7 @@
 
 import BaseCommand from '#src/core/BaseCommand.js';
 import type HubManager from '#src/managers/HubManager.js';
-import { findOriginalMessage, type OriginalMessage } from '#src/utils/network/messageUtils.js';
+import { findOriginalMessage } from '#src/utils/network/messageUtils.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import { fetchUserLocale } from '#src/utils/Utils.js';
 import { t } from '#utils/Locale.js';
@@ -27,6 +27,7 @@ import { deleteMessageFromHub, isDeleteInProgress } from '#utils/moderation/dele
 import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js';
 import { replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
 import { HubService } from '#src/services/HubService.js';
+import type { Message as MessageDB } from '#src/generated/prisma/client/client.js';
 
 export default class DeleteMessage extends BaseCommand {
   readonly cooldown = 10_000;
@@ -73,7 +74,7 @@ export default class DeleteMessage extends BaseCommand {
 
   private async processMessageDeletion(
     ctx: Context,
-    originalMsg: OriginalMessage,
+    originalMsg: MessageDB,
     hub: HubManager,
   ): Promise<void> {
     const locale = await fetchUserLocale(ctx.user.id);
@@ -82,7 +83,7 @@ export default class DeleteMessage extends BaseCommand {
       `${ctx.getEmoji('tick_icon')} Your request has been queued. Messages will be deleted shortly...`,
     );
 
-    const { deletedCount, totalCount } = await deleteMessageFromHub(hub.id, originalMsg.messageId);
+    const { deletedCount, totalCount } = await deleteMessageFromHub(hub.id, originalMsg.id);
 
     await ctx
       .editReply(
@@ -100,7 +101,7 @@ export default class DeleteMessage extends BaseCommand {
 
   private async validateMessage(
     ctx: Context,
-    originalMsg: OriginalMessage | null,
+    originalMsg: MessageDB | null,
     hub: HubManager | null,
   ) {
     const locale = await fetchUserLocale(ctx.user.id);
@@ -110,7 +111,7 @@ export default class DeleteMessage extends BaseCommand {
       return false;
     }
 
-    if (await isDeleteInProgress(originalMsg.messageId)) {
+    if (await isDeleteInProgress(originalMsg.id)) {
       await ctx.replyEmbed(
         `${ctx.getEmoji('neutral')} This message is already deleted or is being deleted by another moderator.`,
         { flags: ['Ephemeral'], edit: true },
@@ -133,7 +134,7 @@ export default class DeleteMessage extends BaseCommand {
   private async logDeletion(
     ctx: Context,
     hub: HubManager,
-    originalMsg: OriginalMessage,
+    originalMsg: MessageDB,
   ): Promise<void> {
     if (!(await isStaffOrHubMod(ctx.user.id, hub))) return;
 

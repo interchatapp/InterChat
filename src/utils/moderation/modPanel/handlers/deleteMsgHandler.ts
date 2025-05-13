@@ -30,18 +30,14 @@ import { deleteMessageFromHub, isDeleteInProgress } from '#utils/moderation/dele
 import type { Snowflake } from 'discord.js';
 
 export default class DeleteMessageHandler implements ModAction {
-  async handle(
-    ctx: ComponentContext,
-    originalMsgId: Snowflake,
-    locale: supportedLocaleCodes,
-  ) {
+  async handle(ctx: ComponentContext, originalMsgId: Snowflake, locale: supportedLocaleCodes) {
     const originalMsg = await getOriginalMessage(originalMsgId);
     if (!originalMsg) {
       await replyWithUnknownMessage(ctx, { locale });
       return;
     }
 
-    const deleteInProgress = await isDeleteInProgress(originalMsg.messageId);
+    const deleteInProgress = await isDeleteInProgress(originalMsg.id);
     if (deleteInProgress) {
       const { embed, buttons } = await buildModPanel(ctx, originalMsg);
       await ctx.editReply({ embeds: [embed], components: buttons });
@@ -59,28 +55,22 @@ export default class DeleteMessageHandler implements ModAction {
       flags: ['Ephemeral'],
     });
 
-    const broadcastMsgs = Object.values(
-      await getBroadcasts(originalMsg.messageId, originalMsg.hubId),
-    );
+    const broadcastMsgs = Object.values(await getBroadcasts(originalMsg.id));
 
     const { deletedCount } = await deleteMessageFromHub(
       originalMsg.hubId,
-      originalMsg.messageId,
+      originalMsg.id,
       broadcastMsgs,
     );
 
     await ctx
       .editReply(
-        t(
-          'network.deleteSuccess',
-          await fetchUserLocale(ctx.user.id),
-          {
-            emoji: getEmoji('tick_icon', ctx.client),
-            user: `<@${originalMsg.authorId}>`,
-            deleted: `${deletedCount}`,
-            total: `${broadcastMsgs.length}`,
-          },
-        ),
+        t('network.deleteSuccess', await fetchUserLocale(ctx.user.id), {
+          emoji: getEmoji('tick_icon', ctx.client),
+          user: `<@${originalMsg.authorId}>`,
+          deleted: `${deletedCount}`,
+          total: `${broadcastMsgs.length}`,
+        }),
       )
       .catch(() => null);
 

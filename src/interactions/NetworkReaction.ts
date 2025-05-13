@@ -21,7 +21,7 @@ import type HubManager from '#src/managers/HubManager.js';
 import { HubService } from '#src/services/HubService.js';
 import db from '#src/utils/Db.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
-import { type OriginalMessage, findOriginalMessage } from '#src/utils/network/messageUtils.js';
+import { findOriginalMessage } from '#src/utils/network/messageUtils.js';
 import { t } from '#utils/Locale.js';
 import { fetchUserLocale } from '#utils/Utils.js';
 import { checkBlacklists } from '#utils/reaction/helpers.js';
@@ -36,6 +36,7 @@ import {
 } from '#utils/reaction/reactions.js';
 import sortReactions from '#utils/reaction/sortReactions.js';
 import { type Snowflake, time } from 'discord.js';
+import type { Message as MessageDB } from '#src/generated/prisma/client/client.js';
 
 export default class NetworkReactionInteraction {
   @RegisterInteractionHandler('reaction_')
@@ -109,7 +110,7 @@ export default class NetworkReactionInteraction {
       return;
     }
 
-    const dbReactions: { [key: string]: Snowflake[] } = JSON.parse(originalMessage.reactions);
+    const dbReactions = originalMessage.reactions as { [key: string]: Snowflake[] };
 
     // Sort reactions by count
     const sortedReactions = sortReactions(dbReactions);
@@ -134,7 +135,7 @@ export default class NetworkReactionInteraction {
     });
   }
 
-  private async handleReactionToggle(ctx: ComponentContext, originalMessage: OriginalMessage) {
+  private async handleReactionToggle(ctx: ComponentContext, originalMessage: MessageDB) {
     // Parse reactions from JSON string or default to empty object
     let dbReactions: { [key: string]: Snowflake[] } = {};
 

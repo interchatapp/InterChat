@@ -15,117 +15,35 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Message, Snowflake } from 'discord.js';
-import isEmpty from 'lodash/isEmpty.js';
+import messageService from '#src/services/MessageService.js';
 import Logger from '#src/utils/Logger.js';
 import getRedis from '#src/utils/Redis.js';
-import { handleError } from '#src/utils/Utils.js';
 import { RedisKeys } from '#utils/Constants.js';
-
-export interface OriginalMessage {
-  hubId: string;
-  content: string;
-  imageUrl: string | null;
-  messageId: string;
-  channelId: string;
-  guildId: string;
-  authorId: string;
-  timestamp: number;
-  reactions?: string; // { [key: string]: Snowflake[] };
-  referredMessageId?: string;
-}
-
-export interface Broadcast {
-  mode: number;
-  messageId: string;
-  channelId: string;
-  originalMsgId: string;
-}
+import type { Message, Snowflake } from 'discord.js';
+import type { Broadcast, Message as MessageDB } from '#src/generated/prisma/client/client.js';
 
 export const storeMessage = async (
   originalMsgId: string,
-  messageData: Omit<OriginalMessage, 'reactions'> & { reactions?: { [key: string]: string[] } },
+  messageData: Omit<MessageDB, 'reactions'> & { reactions?: { [key: string]: string[] } },
 ) => {
-  const key = `${RedisKeys.message}:${originalMsgId}`;
-  const redis = getRedis();
-
-  await redis.hset(key, { ...messageData, reactions: JSON.stringify(messageData.reactions) });
-  await redis.expire(key, 86400); // 1 day in seconds
+  await messageService.storeMessage(originalMsgId, messageData);
 };
 
 /**
- * Get the original message from the cache.
+ * Get the original message from the database.
  *
  * @see {@link findOriginalMessage} for a more flexible method.
  * @param originalMsgId The original message ID
- * @returns Original Message Object from redis
+ * @returns Original Message Object from database
  */
-export const getOriginalMessage = async (originalMsgId: string) => {
-  const key = `${RedisKeys.message}:${originalMsgId}`;
-  const res = await getRedis().hgetall(key);
+export const getOriginalMessage = async (originalMsgId: string) =>
+  await messageService.getOriginalMessage(originalMsgId);
 
-  if (isEmpty(res)) return null;
-
-  return {
-    ...res,
-    timestamp: Number.parseInt(res.timestamp),
-  } as OriginalMessage;
-};
-
-export const addBroadcasts = async (
-  hubId: string,
-  originalMsgId: Snowflake,
-  ...broadcasts: Broadcast[]
-) => {
+export const addBroadcasts = async (originalMsgId: Snowflake, ...broadcasts: Broadcast[]) => {
   try {
-    const redis = getRedis();
-    const broadcastsKey = `${RedisKeys.broadcasts}:${originalMsgId}:${hubId}`;
-    const pipeline = redis.pipeline();
-
-    // Prepare all operations in a single reduce to minimize iterations
-    const { broadcastEntries, reverseLookupKeys } = broadcasts.reduce(
-      (acc, broadcast) => {
-        const { messageId, channelId, mode } = broadcast;
-        const broadcastInfo = JSON.stringify({
-          mode,
-          messageId,
-          channelId,
-          originalMsgId,
-        });
-
-        // Add to broadcasts entries
-        acc.broadcastEntries.push(channelId, broadcastInfo);
-
-        // Store reverse lookup key for later expiry setting
-        const reverseKey = `${RedisKeys.messageReverse}:${messageId}`;
-        acc.reverseLookupKeys.push(reverseKey);
-
-        // Add reverse lookup to pipeline
-        pipeline.set(reverseKey, `${originalMsgId}:${hubId}`);
-
-        return acc;
-      },
-      {
-        broadcastEntries: [] as string[],
-        reverseLookupKeys: [] as string[],
-      },
-    );
-
     Logger.debug(`Adding ${broadcasts.length} broadcasts for message ${originalMsgId}`);
 
-    // Add main broadcast hash
-    pipeline.hset(broadcastsKey, broadcastEntries);
-    pipeline.expire(broadcastsKey, 86400);
-
-    // Set expiry for all reverse lookups in the same pipeline
-    for (const key of reverseLookupKeys) {
-      pipeline.expire(key, 86400);
-    }
-
-    // Execute all Redis operations in a single pipeline
-    await pipeline.exec().catch((error) => {
-      handleError(error, { comment: 'Failed to add broadcasts' });
-    });
+    await messageService.addBroadcasts(originalMsgId, ...broadcasts);
 
     Logger.debug(`Added ${broadcasts.length} broadcasts for message ${originalMsgId}`);
   }
@@ -134,54 +52,26 @@ export const addBroadcasts = async (
   }
 };
 
-export const getBroadcasts = async (originalMsgId: string, hubId: string) => {
-  const key = `${RedisKeys.broadcasts}:${originalMsgId}:${hubId}`;
-  const broadcasts = await getRedis().hgetall(key);
-  const entries = Object.entries(broadcasts);
+export const getBroadcasts = async (originalMsgId: string) =>
+  await messageService.getBroadcasts(originalMsgId);
 
-  // Parse the JSON strings back into objects
-  return Object.fromEntries(entries.map(([k, v]) => [k, JSON.parse(v)])) as Record<
-    string,
-    Broadcast
-  >;
-};
-
-export const getBroadcast = async (
-  originalMsgId: string,
-  hubId: string,
-  find: { channelId: string },
-) => {
-  const broadcast = await getRedis().hget(
-    `${RedisKeys.broadcasts}:${originalMsgId}:${hubId}`,
-    find.channelId,
-  );
-  return broadcast ? (JSON.parse(broadcast) as Broadcast) : null;
-};
+export const getBroadcast = async (originalMsgId: string, find: { channelId: string }) =>
+  await messageService.getBroadcast(originalMsgId, find);
 
 /**
  * Retrieves the original message given a message ID, accepting both original and broadcast message IDs.
  *
  * This function first attempts to find the original message using the provided ID.
- * If the original message is not found, it looks up the original message using a broadcast reverse lookup in Redis.
+ * If the original message is not found, it looks up the original message using a broadcast relationship in PostgreSQL.
  *
  * Different from {@link getOriginalMessage}.
  * This finds the original message even if you provide a broadcasted message's ID.
- * However, this uses {@link getOriginalMessage} internally.
  *
  * @param messageId - The ID of the message to find the original for
  * @returns Promise that resolves to the original message object
  */
-export const findOriginalMessage = async (messageId: string) => {
-  const fetched = await getOriginalMessage(messageId);
-  if (fetched) return fetched;
-
-  // get the original messageId from a broadcast messageId
-  const lookup = await getRedis().get(`${RedisKeys.messageReverse}:${messageId}`);
-  if (!lookup) return null;
-
-  const [originalMsgId] = lookup.split(':');
-  return await getOriginalMessage(originalMsgId);
-};
+export const findOriginalMessage = async (messageId: string) =>
+  await messageService.findOriginalMessage(messageId);
 
 export const storeMessageTimestamp = async (message: Message) => {
   Logger.debug(`Storing message timestamp for channel ${message.channelId}`);
@@ -190,24 +80,13 @@ export const storeMessageTimestamp = async (message: Message) => {
 };
 
 /**
- * Deletes the cached message data from Redis associated with a given original message.
+ * Deletes the message data from the database associated with a given original message.
  *
- * This function retrieves the original message based on the provided message ID. If the original message exists,
- * it deletes the associated broadcasts, reverse lookup entries, and the original message from Redis.
+ * This function deletes the message and all its associated broadcasts from the database.
+ * The broadcasts are deleted automatically due to the cascade delete relationship.
  *
  * @param originalMsgId - The unique identifier (Snowflake) of the original message to be deleted.
- * @returns A promise that resolves to the number of keys that were deleted from Redis.
+ * @returns A promise that resolves to the number of records deleted.
  */
-export const deleteMessageCache = async (originalMsgId: Snowflake) => {
-  const redis = getRedis();
-  const original = await getOriginalMessage(originalMsgId);
-  if (!original) return 0;
-
-  // delete broadcats, reverse lookups and original message
-  const broadcats = Object.values(await getBroadcasts(originalMsgId, original.hubId));
-  await redis.del(`${RedisKeys.broadcasts}:${originalMsgId}:${original.hubId}`);
-  await redis.del(broadcats.map((b) => `${RedisKeys.messageReverse}:${b.messageId}`)); // multi delete
-  const count = await redis.del(`${RedisKeys.message}:${originalMsgId}`);
-
-  return count;
-};
+export const deleteMessageCache = async (originalMsgId: Snowflake) =>
+  await messageService.deleteMessage(originalMsgId);

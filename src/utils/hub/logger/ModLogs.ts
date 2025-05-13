@@ -21,9 +21,9 @@ import BlacklistManager from '#src/managers/BlacklistManager.js';
 import type HubLogManager from '#src/managers/HubLogManager.js';
 import type HubManager from '#src/managers/HubManager.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
-import type { OriginalMessage } from '#src/utils/network/messageUtils.js';
 import Constants from '#utils/Constants.js';
 import { sendLog } from './Default.js';
+import type { Message as MessageDB } from '#src/generated/prisma/client/client.js';
 
 const getUnblacklistEmbed = (
   type: 'User' | 'Server',
@@ -123,7 +123,7 @@ export const logUserUnblacklist = async (
 
 export const logMsgDelete = async (
   client: Client,
-  originalMsg: OriginalMessage,
+  originalMsg: MessageDB,
   logConfig: HubLogManager,
   opts: { hubName: string; modName: string },
 ) => {

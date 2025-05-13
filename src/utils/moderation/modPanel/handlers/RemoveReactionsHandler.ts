@@ -40,7 +40,7 @@ export default class RemoveReactionsHandler implements ModAction {
     let reactions: ReactionArray;
 
     try {
-      reactions = originalMsg.reactions ? JSON.parse(originalMsg.reactions) : {};
+      reactions = originalMsg.reactions ? originalMsg.reactions as { [key: string]: string[] } : {};
     }
     catch {
       // Fallback to empty object if parsing fails

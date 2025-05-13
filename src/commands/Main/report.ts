@@ -43,7 +43,7 @@ export default class ReportPrefixCommand extends BaseCommand {
     const targetMsg = await ctx.getTargetMessage('message');
     const originalMsg = targetMsg ? await findOriginalMessage(targetMsg.id) : null;
     const broadcastMsgs = originalMsg
-      ? await getBroadcasts(originalMsg.messageId, originalMsg.hubId)
+      ? await getBroadcasts(originalMsg.id)
       : null;
 
     if (!broadcastMsgs || !originalMsg || !targetMsg) {
@@ -53,7 +53,7 @@ export default class ReportPrefixCommand extends BaseCommand {
 
     const reportedMsgId =
       Object.values(broadcastMsgs).find((m) => m.messageId === targetMsg.id)?.messageId ??
-      originalMsg.messageId;
+      originalMsg.id;
 
     if (!reportedMsgId) {
       await ctx.reply('Please provide a valid message ID or link.');

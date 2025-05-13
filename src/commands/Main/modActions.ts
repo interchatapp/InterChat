@@ -21,11 +21,11 @@ import { buildModPanel } from '#src/interactions/ModPanel.js';
 import { HubService } from '#src/services/HubService.js';
 import db from '#src/utils/Db.js';
 import {
-  type OriginalMessage,
   findOriginalMessage,
 } from '#src/utils/network/messageUtils.js';
 import { isStaffOrHubMod } from '#utils/hub/utils.js';
 import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js';
+import type { Message as MessageDB } from '#src/generated/prisma/client/client.js';
 
 export default class ModPanelCommand extends BaseCommand {
   constructor() {
@@ -81,7 +81,7 @@ export default class ModPanelCommand extends BaseCommand {
     await ctx.editOrReply({ embeds: [embed], components: buttons });
   }
 
-  private async validateMessage(ctx: Context, originalMsg: OriginalMessage) {
+  private async validateMessage(ctx: Context, originalMsg: MessageDB) {
     const hubService = new HubService(db);
     const hub = await hubService.fetchHub(originalMsg.hubId);
 

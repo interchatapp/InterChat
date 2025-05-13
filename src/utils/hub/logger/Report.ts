@@ -90,7 +90,7 @@ const genJumpLink = async (
 
   if (!networkChannel) return null;
 
-  const reportsServerMsg = await getBroadcast(originalMsg.messageId, originalMsg.hubId, {
+  const reportsServerMsg = await getBroadcast(originalMsg.id, {
     channelId: networkChannel.channelId,
   });
   if (!reportsServerMsg) return null;
@@ -143,8 +143,10 @@ export const sendHubReport = async (
       iconURL: reportedBy.displayAvatarURL(),
     });
 
-  const modActionButton = modPanelButton(evidence.messageId, getEmoji('hammer_icon', client))
-    .setLabel('Take Action');
+  const modActionButton = modPanelButton(
+    evidence.messageId,
+    getEmoji('hammer_icon', client),
+  ).setLabel('Take Action');
   const resolveButton = markResolvedButton(hubId);
   const ignoreButton = ignoreReportButton(hubId);
 
@@ -160,7 +162,6 @@ export const sendHubReport = async (
       .setLabel('Jump To Message')
       .setStyle(ButtonStyle.Link),
   );
-
 
   const sentMessage = await sendLog(client.cluster, reportsChannelId, embed, {
     roleMentionIds: reportsRoleId ? [reportsRoleId] : undefined,
