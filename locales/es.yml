@@ -1,6 +1,6 @@
 rules:
-  header: 'InterChat Rules'
-  botRulesNote: 'These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:'
+  header: 'Reglas de InterChat'
+  botRulesNote: 'Estas reglas existen para garantizar una experiencia segura y agradable para todos. Léalas con atención y respétalas:'
   rules: |
     1. **No Hate Speech or Harassment**
     -# > **Includes:** Using slurs or hate speech to attack others, [and more]({guidelines_link}).
