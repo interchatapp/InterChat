@@ -465,38 +465,30 @@ export class PaginationManager<T = unknown> {
         `Interaction state: deferred=${interaction.deferred}, replied=${interaction.replied}`,
       );
 
-      try {
-        // Always use update() for button interactions
-        await interaction.update({
+      if (interaction.replied || interaction.deferred) {
+        await interaction.editReply({
           components: [container],
           flags: MessageFlags.IsComponentsV2,
-          // Explicitly set content to undefined to ensure it's not included
           content: undefined,
-          // Explicitly set embeds to undefined to ensure they're not included
           embeds: undefined,
         });
-        Logger.debug(`Successfully updated page to ${this.currentPage}`);
+        Logger.debug('Successfully updated page using editReply');
+        return;
       }
-      catch (updateError) {
-        Logger.error(`Failed to update with interaction.update(): ${updateError}`);
 
-        // Fallback to editReply if update fails
-        if (interaction.replied || interaction.deferred) {
-          await interaction.editReply({
-            components: [container],
-            flags: MessageFlags.IsComponentsV2,
-            content: undefined,
-            embeds: undefined,
-          });
-          Logger.debug('Successfully updated page using editReply fallback');
-        }
-        else {
-          throw new Error('Could not update page: interaction not replied or deferred');
-        }
-      }
+      // Always use update() for button interactions
+      await interaction.update({
+        components: [container],
+        flags: MessageFlags.IsComponentsV2,
+        // Explicitly set content to undefined to ensure it's not included
+        content: undefined,
+        // Explicitly set embeds to undefined to ensure they're not included
+        embeds: undefined,
+      });
+      Logger.debug(`Successfully updated page to ${this.currentPage}`);
     }
     catch (error) {
-      Logger.error(`Failed to update pagination page from interaction: ${error}`);
+      Logger.error('Failed to update pagination page from interaction:', error);
     }
   }
 
