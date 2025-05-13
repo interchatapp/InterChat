@@ -72,6 +72,22 @@ export const loadLocales = (localesDirectory: string) => {
   Logger.info(`${localesMap.size} Locales loaded successfully.`);
 };
 
+const getTranslationFile = (locale: supportedLocaleCodes) => {
+  const localeFile = localesMap.get(locale) || localesMap.get('en');
+  if (!localeFile) throw new Error(`Locale file for ${locale} not found! Fallback to en failed.`);
+
+  return localeFile;
+};
+
+const getTranslation = (phrase: keyof TranslationKeys, locale: supportedLocaleCodes): string => {
+  const localeFile = getTranslationFile(locale);
+  const translation: string = phrase
+    .split('.')
+    .reduce((obj, segment) => obj?.[segment], localeFile);
+
+  return translation || getTranslation(phrase, 'en');
+};
+
 /** Get the translated text with variable replacement */
 // skipcq: JS-C1002
 export const t = <K extends keyof TranslationKeys>(
@@ -79,29 +95,24 @@ export const t = <K extends keyof TranslationKeys>(
   locale: supportedLocaleCodes,
   variables?: { [Key in TranslationKeys[K]]: string },
 ): string => {
-  const localeFile = localesMap.get(locale) ?? localesMap.get('en');
+  const translation = getTranslation(phrase, locale);
 
-  if (localeFile) {
-    const translation: string = phrase
-      .split('.')
-      .reduce((obj, segment) => obj?.[segment], localeFile);
+  if (translation) {
+    // Replace variables in the translated text
+    let result = translation;
 
-    if (translation) {
-      // Replace variables in the translated text
-      let result = translation;
-
-      if (variables) {
-        for (const variable of Object.keys(variables)) {
-          result = result.replace(
-            new RegExp(`{${variable}}`, 'g'),
-            variables[variable as TranslationKeys[K]],
-          );
-        }
+    if (variables) {
+      for (const variable of Object.keys(variables)) {
+        result = result.replace(
+          new RegExp(`{${variable}}`, 'g'),
+          variables[variable as TranslationKeys[K]],
+        );
       }
-
-      return result;
     }
-    Logger.warn(`Translation for key '${phrase}' not found in ${locale} language.`);
+
+    return result;
   }
+
+  Logger.warn(`Translation for key '${phrase}' not found in ${locale} language.`);
   return phrase;
 };
