@@ -1,6 +1,6 @@
 rules:
   header: 'Reglas de InterChat'
-  botRulesNote: 'Estas reglas existen para garantizar una experiencia segura y agradable para todos. Léalas con atención y respétalas:'
+  botRulesNote: 'Estas reglas existen para garantizar una experiencia segura y agradable para todos. Léelas con atención y respétalas:'
   rules: |
     1. **No Hate Speech or Harassment**
     -# > **Includes:** Using slurs or hate speech to attack others, [and more]({guidelines_link}).
@@ -56,13 +56,13 @@ rules:
     -# Para intentarlo dé nuevo, envía otro mensaje en este centro.
   noHubRules: Este centro aún no ha establecido reglas específicas. Sin embargo, siguen aplicando las [reglas generales de InterChat]({rules_link}).
   hubRules: Reglas del centro
-  viewbotRules: "View Bot Rules"
+  viewbotRules: "Ver Reglas del Bot"
 vote:
   description: |
-    Help more communities discover InterChat! Your vote on top.gg:
-    - Helps others find active communities
-    - Unlocks special features for you
-    - Supports our independent development
+    ¡Ayuda a más comunidades a descubrir InterChat! Tu voto en top.gg:
+    - Ayuda a otros a encontrar comunidades activas
+    - Desbloquea funciones especiales para ti
+    - Apoya nuestro desarrollo independiente
   footer: "Los votos se actualizan cada 12 horas • ¡Gracias por apoyar InterChat!"
   button:
     label: "Vota en top.gg"
@@ -307,7 +307,7 @@ hub:
       notAllowed: "{emoji} Solo los administradores de centros pueden actualizar la posición de un moderador."
       notOwner: "{emoji} Solo el propietario de este centro puede actualizar la posición de un administrador."
   manage:
-    dashboardTip: "**🛠️ NEW Dashboard:** Improved interface and more features! Try it out at [your hub's dashboard page]({url})."
+    dashboardTip: "**🛠️ NUEVO Dashboard:** ¡Interfaz mejorada y más funciones! Pruébalo en la [página de Dashboard de tu centro]({url})."
     enterImgurUrl: Ingrese una URL de imagen de Imgur válida que no sea una galería o álbum.
     icon:
       changed: El icono del centro cambió con éxito.
