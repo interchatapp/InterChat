@@ -33,16 +33,16 @@ rules:
 
     ⚠️ **No puedes enviar mensajes en este centro hasta que aceptes estas reglas.**
   accepted: |
-    {emoji} You're all set! Welcome to the InterChat community.
+    {emoji} ¡Todo listo! Bienvenido a la comunidad de InterChat.
 
-    {emoji} You're all set! Welcome to the InterChat community.
+    {emoji} ¡Todo listo! Bienvenido a la comunidad de InterChat.
 
-    ### Get Started Quickly:
-    - Visit `/hub browse` to find active communities
-    - Join discussions that interest you or create your own through our __dashboard__
-    - Use our new `/call` command to connect with single servers
+    ### Empieza rápido:
+    - Visita `/hub browse` para encontrar comunidades activas
+    - Únete a discusiones que te interesen o crea tu propia comunidad a través de nuestro __dashboard__
+    - Usa nuestro nuevo comando `/call` para conectarte con servidores individuales
 
-    Need help? Join our [community]({support_invite}) - we're happy to help! Please consider supporting us by [donating]({donateLink}) to help InterChat grow and thrive.
+    ¿Necesitas ayuda? Únete a nuestra [comunidad]({support_invite}) - ¡estaremos encantados de ayudarte! Por favor, considera apoyarnos [donando]({donateLink}) para que InterChat siga creciendo y prosperando.
   declined: |
     {emoji} Has rechazado las reglas de InterChat.
     -# ⚠️ **No podrás usar InterChat ni chatear con otros servidores hasta que aceptes las reglas.**
