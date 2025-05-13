@@ -2,22 +2,22 @@ rules:
   header: 'Reglas de InterChat'
   botRulesNote: 'Estas reglas existen para garantizar una experiencia segura y agradable para todos. Léelas con atención y respétalas:'
   rules: |
-    1. **No Hate Speech or Harassment**
-    -# > **Includes:** Using slurs or hate speech to attack others, [and more]({guidelines_link}).
-    2. **No Illegal Content**
-    -# > **Includes:** Sharing links to illegal content, Encouraging violence, [and more]({guidelines_link}).
-    3. **No Severe NSFW or Gore**
-    -# > **Includes:** Posting gore or extreme gore in InterChat, Posting sexual content in non-NSFW hubs, [and more]({guidelines_link}).
-    4. **No Spamming or Flooding**
-    -# > **Includes:** Mass spamming or bot floods, [and more]({guidelines_link})
-    5. **No Impersonation or Fraud**
-    -# > **Includes:** Impersonating InterChat staff or hub moderators, Running cryptocurrency or NFT scams, [and more]({guidelines_link}).
-    6. **No Exploitation or Abuse**
-    -# > **Includes:** Grooming or predatory behavior towards minors, Sharing, Requesting, Blackmailing or threatening to  Encouraging self-harm, [and more]({guidelines_link}).
-    7. **No Sharing Malicious Software**
-    -# > **Includes:** Sharing malware, viruses, 'free nitro' links, harmful scripts [and more]({guidelines_link}).
+    1. **No discurso de odio ni acoso**
+    -# > **Incluye:** Usar insultos o lenguaje de odio para atacar a otros, [y más]({guidelines_link}).
+    2. **No contenido ilegal**
+    -# > **Incluye:** Compartir enlaces a contenido ilegal, Fomentar la violencia, [y más]({guidelines_link}).
+    3. **No contenido NSFW extremo ni gore**
+    -# > **Incluye:** Publicar gore o gore extremo en InterChat, Publicar contenido sexual en conexiones no NSFW, [y más]({guidelines_link}).
+    4. **No spam ni flood**
+    -# > **Incluye:** Envío masivo de spam o bots de flood, [y más]({guidelines_link}).
+    5. **No suplantación de identidad ni fraude**
+    -# > **Incluye:** Hacerse pasar por el personal de InterChat o moderadores de conexiones, Ejecutar estafas de criptomonedas o NFT, [y más]({guidelines_link}).
+    6. **No explotación ni abuso**
+    -# > **Incluye:** Grooming o comportamiento depredador hacia menores, Compartir, Solicitar, Chantajear o amenazar para Fomentar autolesiones, [y más]({guidelines_link}).
+    7. **No compartir software malicioso**
+    -# > **Incluye:** Compartir malware, virus, enlaces de 'nitro gratis', scripts dañinos, [y más]({guidelines_link}).
 
-    You also agree to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines). Check out the [full list of rules]({guidelines_link}).
+    También aceptas seguir los [Términos de servicio de Discord](https://discord.com/terms) y las [Normas de la comunidad](https://discord.com/guidelines). Consulta la [lista completa de reglas]({guidelines_link}).
   welcome: |
     {emoji} ¡Hola {user}! ¿Listo para conectarte con otras comunidades?
     Antes de que comiences a chatear entre servidores, repasemos rápidamente nuestras normas comunitarias.
