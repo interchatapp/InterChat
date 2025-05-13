@@ -2,16 +2,15 @@ import BaseCommand from '#src/core/BaseCommand.js';
 import Context from '#src/core/CommandContext/Context.js';
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
-import Constants from '#src/utils/Constants.js';
+import { UIComponents } from '#src/utils/DesignSystem.js';
 import { CustomID } from '#src/utils/CustomID.js';
-import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { formatServerLeaderboard, formatUserLeaderboard, getCallLeaderboard } from '#src/utils/Leaderboard.js';
 import {
-  ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder,
-  resolveColor,
+  ContainerBuilder,
+  MessageFlags,
+  TextDisplayBuilder,
 } from 'discord.js';
 
 export default class CallsLeaderboardCommand extends BaseCommand {
@@ -28,32 +27,47 @@ export default class CallsLeaderboardCommand extends BaseCommand {
     const userLeaderboard = await getCallLeaderboard('user', 10);
     const userLeaderboardFormatted = await formatUserLeaderboard(userLeaderboard, ctx.client, 'calls');
 
-    const embed = new EmbedBuilder()
-      .setTitle(`${ctx.getEmoji('call_icon')} Global Calls Leaderboard`)
-      .setDescription(userLeaderboardFormatted.length > 0 ? userLeaderboardFormatted : 'No data available.')
-      .setColor(resolveColor(Constants.Colors.invisible))
-      .setFooter({ text: 'Shows data from this month' });
+    // Create UI components helper
+    const ui = new UIComponents(ctx.client);
+    const container = new ContainerBuilder();
 
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setCustomId(new CustomID('calls_lb:user').toString())
-        .setLabel('User Leaderboard')
-        .setStyle(ButtonStyle.Primary)
-        .setDisabled(true),
-      new ButtonBuilder()
-        .setCustomId(new CustomID('calls_lb:server').toString())
-        .setLabel('Server Leaderboard')
-        .setStyle(ButtonStyle.Secondary),
+    // Add header
+    container.addTextDisplayComponents(
+      ui.createHeader('Global Calls Leaderboard', 'Shows data from this month', 'call_icon'),
+    );
+
+    // Add leaderboard content
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        userLeaderboardFormatted.length > 0 ? userLeaderboardFormatted : 'No data available.',
+      ),
+    );
+
+    // Add toggle buttons
+    container.addActionRowComponents((row) =>
+      row.addComponents(
+        new ButtonBuilder()
+          .setCustomId(new CustomID('calls_lb:user').toString())
+          .setLabel('User Leaderboard')
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(true),
+        new ButtonBuilder()
+          .setCustomId(new CustomID('calls_lb:server').toString())
+          .setLabel('Server Leaderboard')
+          .setStyle(ButtonStyle.Secondary),
+      ),
     );
 
     await ctx.reply({
-      embeds: [embed],
-      components: [row],
+      components: [container],
+      flags: [MessageFlags.IsComponentsV2],
     });
   }
 
   @RegisterInteractionHandler('calls_lb')
   async handleLeaderboardSwitch(ctx: ComponentContext) {
+    await ctx.deferUpdate();
+
     const currentType = ctx.customId.suffix as 'user' | 'server';
 
     const leaderboard = await getCallLeaderboard(currentType, 10);
@@ -61,28 +75,41 @@ export default class CallsLeaderboardCommand extends BaseCommand {
       ? await formatUserLeaderboard(leaderboard, ctx.client, 'calls')
       : await formatServerLeaderboard(leaderboard, ctx.client, 'calls');
 
-    const embed = new EmbedBuilder()
-      .setTitle(`${getEmoji('call_icon', ctx.client)} Global Calls Leaderboard`)
-      .setDescription(leaderboardFormatted.length > 0 ? leaderboardFormatted : 'No data available.')
-      .setColor(resolveColor(Constants.Colors.invisible))
-      .setFooter({ text: 'Shows data from this month' });
+    // Create UI components helper
+    const ui = new UIComponents(ctx.client);
+    const container = new ContainerBuilder();
 
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setCustomId(new CustomID('calls_lb:user').toString())
-        .setLabel('User Leaderboard')
-        .setStyle(currentType === 'user' ? ButtonStyle.Primary : ButtonStyle.Secondary)
-        .setDisabled(currentType === 'user'),
-      new ButtonBuilder()
-        .setCustomId(new CustomID('calls_lb:server').toString())
-        .setLabel('Server Leaderboard')
-        .setStyle(currentType === 'server' ? ButtonStyle.Primary : ButtonStyle.Secondary)
-        .setDisabled(currentType === 'server'),
+    // Add header
+    container.addTextDisplayComponents(
+      ui.createHeader('Global Calls Leaderboard', 'Shows data from this month', 'call_icon'),
+    );
+
+    // Add leaderboard content
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        leaderboardFormatted.length > 0 ? leaderboardFormatted : 'No data available.',
+      ),
+    );
+
+    // Add toggle buttons
+    container.addActionRowComponents((row) =>
+      row.addComponents(
+        new ButtonBuilder()
+          .setCustomId(new CustomID('calls_lb:user').toString())
+          .setLabel('User Leaderboard')
+          .setStyle(currentType === 'user' ? ButtonStyle.Primary : ButtonStyle.Secondary)
+          .setDisabled(currentType === 'user'),
+        new ButtonBuilder()
+          .setCustomId(new CustomID('calls_lb:server').toString())
+          .setLabel('Server Leaderboard')
+          .setStyle(currentType === 'server' ? ButtonStyle.Primary : ButtonStyle.Secondary)
+          .setDisabled(currentType === 'server'),
+      ),
     );
 
     await ctx.editReply({
-      embeds: [embed],
-      components: [row],
+      components: [container],
+      flags: [MessageFlags.IsComponentsV2],
     });
   }
 }
