@@ -82,13 +82,30 @@ export class MessageProcessor {
    * @param channelId The channel ID to invalidate cache for
    */
   static async invalidateCache(channelId: string): Promise<void> {
-    // Clear Redis cache for this channel
-    const cacheKeys = await MessageProcessor.redis.keys(
-      `${RedisKeys.Hub}:connections:${channelId}`,
-    );
+    // Clear Redis cache for this channel using scan instead of keys
+    // to avoid blocking the Redis server with large datasets
+    const pattern = `${RedisKeys.Hub}:connections:${channelId}`;
+    let cursor = '0';
+    const keysToDelete: string[] = [];
 
-    if (cacheKeys.length > 0) {
-      await MessageProcessor.redis.del(...cacheKeys);
+    do {
+      const [nextCursor, keysInBatch] = await MessageProcessor.redis.scan(
+        cursor,
+        'MATCH',
+        pattern,
+        'COUNT',
+        100,
+      );
+
+      if (keysInBatch.length > 0) {
+        keysToDelete.push(...keysInBatch);
+      }
+
+      cursor = nextCursor;
+    } while (cursor !== '0');
+
+    if (keysToDelete.length > 0) {
+      await MessageProcessor.redis.del(...keysToDelete);
     }
 
     Logger.debug(`Invalidated cache for channel ${channelId}`);
