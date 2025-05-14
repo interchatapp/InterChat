@@ -164,7 +164,7 @@ export default class SetupCommand extends BaseCommand {
       // Add channel select menu using action row
       container.addActionRowComponents((row) => {
         const channelSelect = new ChannelSelectMenuBuilder()
-          .setCustomId('setup_channel')
+          .setCustomId(new CustomID('setup_channel').toString())
           .setChannelTypes([ChannelType.GuildText])
           .setPlaceholder('Select a channel');
 
@@ -543,7 +543,7 @@ export default class SetupCommand extends BaseCommand {
       // Add hub select menu
       container.addActionRowComponents((row) => {
         const hubSelect = new StringSelectMenuBuilder()
-          .setCustomId('select_hub')
+          .setCustomId(new CustomID('select_hub').setArgs(channelId).toString())
           .setPlaceholder('Choose a hub to join')
           .addOptions(
             availableHubs.map(({ hub, totalConnections }) => ({
@@ -837,7 +837,7 @@ export default class SetupCommand extends BaseCommand {
           const copyButton = new ButtonBuilder()
             .setLabel('Copy Invite Command')
             .setEmoji('📋')
-            .setCustomId(`copy_invite_command:${hubName}`)
+            .setCustomId(new CustomID(`copy_invite_command:${hubName}`).toString())
             .setStyle(ButtonStyle.Secondary);
 
           return row.addComponents(copyButton);
@@ -1142,13 +1142,13 @@ export default class SetupCommand extends BaseCommand {
       // Add hub choice buttons
       container.addActionRowComponents((row) => {
         const joinPopularButton = new ButtonBuilder()
-          .setCustomId(new CustomID(`join_popular:${channel.id}`).toString())
+          .setCustomId(new CustomID('join_popular', [channel.id]).toString())
           .setLabel('Join Popular Hub')
           .setEmoji({ name: '🌟' }) // Use emoji object format for Unicode emojis
           .setStyle(ButtonStyle.Primary);
 
         const createHubButton = new ButtonBuilder()
-          .setCustomId(new CustomID(`create_hub:${channel.id}`).toString())
+          .setCustomId(new CustomID('create_hub', [channel.id]).toString())
           .setLabel('Create New Hub')
           .setEmoji({ name: '🆕' }) // Use emoji object format for Unicode emojis
           .setStyle(ButtonStyle.Secondary);
