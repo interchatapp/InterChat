@@ -79,13 +79,20 @@ const getTranslationFile = (locale: supportedLocaleCodes) => {
   return localeFile;
 };
 
-const getTranslation = (phrase: keyof TranslationKeys, locale: supportedLocaleCodes): string => {
+const getTranslation = (
+  phrase: keyof TranslationKeys,
+  locale: supportedLocaleCodes,
+): string | undefined => {
   const localeFile = getTranslationFile(locale);
-  const translation: string = phrase
+  const translation: string | undefined = phrase
     .split('.')
     .reduce((obj, segment) => obj?.[segment], localeFile);
 
-  return translation || getTranslation(phrase, 'en');
+  if (!translation && locale !== 'en') {
+    return getTranslation(phrase, 'en');
+  }
+
+  return translation;
 };
 
 /** Get the translated text with variable replacement */
