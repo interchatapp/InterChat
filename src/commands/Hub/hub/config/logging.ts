@@ -229,6 +229,16 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
     const logConfig = await HubLogManager.create(hubId);
     const locale = await fetchUserLocale(ctx.user.id);
 
+    if (!logConfig.config[`${selectedType}ChannelId`]) {
+      await ctx.reply({
+        content: t('hub.manage.logs.reportChannelFirst', locale, {
+          emoji: ctx.getEmoji('x_icon'),
+        }),
+        flags: ['Ephemeral'],
+      });
+      return;
+    }
+
     const [roleId] = ctx.interaction.values;
 
     if (!roleId) {
