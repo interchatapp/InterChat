@@ -39,7 +39,7 @@ export default class Ready extends BaseEventListener<'guildDelete'> {
 
     const infraction = await db.infraction.findFirst({ where: { serverId: guild.id } });
     // only delete guild if it doesn't have any infractions
-    if (!infraction) await db.serverData.delete({ where: { id: guild.id } });
+    if (!infraction) await db.serverData.deleteMany({ where: { id: guild.id } });
 
     logGuildLeave(guild);
   }
