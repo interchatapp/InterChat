@@ -50,9 +50,9 @@ export const deleteConnection = async (where: whereUniuqeInput) => {
 
   const deleted = await db.connection.delete({ where });
 
-  // Invalidate cache for this connection
+  // Invalidate cache for this connection and all channels in the hub
   if (connection.channelId) {
-    await MessageProcessor.onConnectionModified(connection.channelId);
+    await MessageProcessor.onConnectionModified(connection.channelId, connection.hubId);
   }
 
   return deleted;
@@ -72,16 +72,28 @@ export const deleteConnections = async (where: whereInput) => {
     return [await deleteConnection({ id: connections[0].id })];
   }
 
-  // Store channelIds for cache invalidation
-  const channelIds = connections.map((c) => c.channelId).filter(Boolean);
+  // Group connections by hubId for efficient cache invalidation
+  const connectionsByHub = new Map<string, string[]>();
+
+  for (const conn of connections) {
+    if (!conn.channelId) continue;
+
+    if (!connectionsByHub.has(conn.hubId)) {
+      connectionsByHub.set(conn.hubId, []);
+    }
+    connectionsByHub.get(conn.hubId)?.push(conn.channelId);
+  }
 
   await db.connection.deleteMany({
     where: { id: { in: connections.map((i) => i.id) } },
   });
 
-  // Invalidate cache for all deleted connections
-  for (const channelId of channelIds) {
-    await MessageProcessor.onConnectionModified(channelId);
+  // Invalidate cache for each hub and its connections
+  for (const [hubId, channelIds] of connectionsByHub.entries()) {
+    // Invalidate the first channel with the hubId to trigger hub-wide invalidation
+    if (channelIds.length > 0) {
+      await MessageProcessor.onConnectionModified(channelIds[0], hubId);
+    }
   }
 
   return connections;
@@ -94,31 +106,43 @@ export const updateConnection = async (where: whereUniuqeInput, data: dataInput)
   // Update in database
   const connection = await db.connection.update({ where, data });
 
-  // Invalidate cache for this connection
+  // Invalidate cache for this connection and all channels in the hub
   if (connection.channelId) {
-    await MessageProcessor.onConnectionModified(connection.channelId);
+    await MessageProcessor.onConnectionModified(connection.channelId, connection.hubId);
   }
 
   // If channelId was changed, also invalidate the old channelId
   if (data.channelId && typeof data.channelId === 'string' && data.channelId !== conn.channelId) {
-    await MessageProcessor.onConnectionModified(conn.channelId);
+    await MessageProcessor.onConnectionModified(conn.channelId, conn.hubId);
   }
 
   return connection;
 };
 
-// TODO: test this function
 export const updateConnections = async (where: whereInput, data: dataInput) => {
   // First get all affected connections to invalidate their caches
   const connections = await db.connection.findMany({ where });
 
+  // Group connections by hubId for efficient cache invalidation
+  const connectionsByHub = new Map<string, string[]>();
+
+  for (const conn of connections) {
+    if (!conn.channelId) continue;
+
+    if (!connectionsByHub.has(conn.hubId)) {
+      connectionsByHub.set(conn.hubId, []);
+    }
+    connectionsByHub.get(conn.hubId)?.push(conn.channelId);
+  }
+
   // Update in database
   const updated = await db.connection.updateMany({ where, data });
 
-  // Invalidate cache for all affected connections
-  for (const connection of connections) {
-    if (connection.channelId) {
-      await MessageProcessor.onConnectionModified(connection.channelId);
+  // Invalidate cache for each hub and its connections
+  for (const [hubId, channelIds] of connectionsByHub.entries()) {
+    // Invalidate the first channel with the hubId to trigger hub-wide invalidation
+    if (channelIds.length > 0) {
+      await MessageProcessor.onConnectionModified(channelIds[0], hubId);
     }
   }
 

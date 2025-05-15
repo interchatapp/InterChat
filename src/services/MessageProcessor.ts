@@ -15,10 +15,11 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Hub, Prisma, User } from '#src/generated/prisma/client/client.js';
+import type { Hub, User } from '#src/generated/prisma/client/client.js';
 import { showRulesScreening } from '#src/interactions/RulesScreening.js';
 import HubManager from '#src/managers/HubManager.js';
 import { CallService } from '#src/services/CallService.js';
+import type { ConvertDatesToString } from '#src/types/Utils.d.ts';
 import { RedisKeys } from '#src/utils/Constants.js';
 import db from '#src/utils/Db.js';
 import { updateLeaderboards } from '#src/utils/Leaderboard.js';
@@ -28,7 +29,6 @@ import { getRedis } from '#src/utils/Redis.js';
 import { fetchUserData, getOrCreateWebhook, handleError } from '#src/utils/Utils.js';
 import type { Client, GuildTextBasedChannel, Message } from 'discord.js';
 import { BroadcastService } from './BroadcastService.js';
-import { ConvertDatesToString } from '#src/types/Utils.js';
 
 /**
  * Result of processing a message in a hub channel
@@ -66,7 +66,6 @@ export class MessageProcessor {
 
   // Redis cache manager
   private static readonly redis = getRedis();
-  private static readonly REDIS_CACHE_TTL = 300; // 5 minutes in seconds
 
   /**
    * Creates a new MessageProcessor instance
@@ -82,25 +81,8 @@ export class MessageProcessor {
    * @param channelId The channel ID to invalidate cache for
    */
   static async invalidateCache(channelId: string): Promise<void> {
-    // Clear Redis cache for this channel
-    const cacheKeys = await MessageProcessor.redis.keys(
-      `${RedisKeys.Hub}:connections:${channelId}`,
-    );
-
-    if (cacheKeys.length > 0) {
-      await MessageProcessor.redis.del(...cacheKeys);
-    }
-
+    await MessageProcessor.redis.del(`${RedisKeys.Hub}:connections:${channelId}`);
     Logger.debug(`Invalidated cache for channel ${channelId}`);
-  }
-
-  /**
-   * Hooks into connection updates to invalidate cache
-   * This should be called whenever a connection is updated or deleted
-   * @param channelId The channel ID of the connection that was modified
-   */
-  static async onConnectionModified(channelId: string): Promise<void> {
-    await MessageProcessor.invalidateCache(channelId);
   }
 
   static convertConnectionDates(
@@ -144,138 +126,197 @@ export class MessageProcessor {
   static async getHubAndConnections(channelId: string): Promise<HubConnectionData | null> {
     const startTime = performance.now();
 
-    // Create a cache key
-    const redisKey = `${RedisKeys.Hub}:connections:${channelId}`;
+    // 1. Try to get connection data
+    const connectionCacheKey = `${RedisKeys.Hub}:connection:${channelId}`;
+    const cacheStartTime = performance.now();
+    const connectionData = await MessageProcessor.redis.get(connectionCacheKey);
+    const cacheCheckTime = performance.now() - cacheStartTime;
 
-    // Check Redis cache first
-    const redisStartTime = performance.now();
-    const cachedData = await MessageProcessor.redis.get(redisKey);
-    Logger.debug(`Redis get took ${performance.now() - redisStartTime}ms for ${channelId}`);
+    let connection: RequiredConnectionData | null = null;
+    let hubId;
 
-    // If we have a cache hit, use the cached data directly
-    if (cachedData) {
-      const cacheHitStartTime = performance.now();
+    // 2. Process connection data or fetch from database
+    if (connectionData) {
       try {
-        // Parse the cached data
-        const cached = JSON.parse(cachedData);
-
-        if (cached && cached.data) {
-          // Create manager objects from the cached raw data
-          const connection = cached.data.connection as ConvertDatesToString<RequiredConnectionData>;
-          const hub = cached.data.hub;
-
-          if (connection && hub) {
-            // Create the result object
-            const result: HubConnectionData = {
-              hub: new HubManager(MessageProcessor.parseHubDates(hub)),
-              connection: MessageProcessor.convertConnectionDates(connection),
-              hubConnections: cached.data.hubConnections.map(
-                MessageProcessor.convertConnectionDates,
-              ),
-            };
-
-            Logger.debug(
-              `Cache hit processing took ${performance.now() - cacheHitStartTime}ms for ${channelId}`,
-            );
-            Logger.debug(
-              `Total getHubAndConnections took ${performance.now() - startTime}ms for ${channelId} (cache hit)`,
-            );
-            return result;
-          }
-        }
-
-        // If we get here, the cached data is invalid
-        // Remove it from cache
-        await MessageProcessor.redis.del(redisKey);
-        Logger.debug(
-          `Invalid cache data processing took ${performance.now() - cacheHitStartTime}ms for ${channelId}`,
+        // Connection cache hit
+        connection = MessageProcessor.convertConnectionDates(
+          JSON.parse(connectionData) as ConvertDatesToString<RequiredConnectionData>,
         );
+        hubId = connection.hubId;
+        Logger.debug(`Connection cache HIT for ${channelId} (${cacheCheckTime}ms)`);
       }
       catch (error) {
-        // If there's an error parsing the cached data, log it and continue to fetch
-        Logger.error('Error parsing cached hub connection data:', error);
-        // Remove invalid data from cache
-        await MessageProcessor.redis.del(redisKey);
-        Logger.debug(
-          `Error cache processing took ${performance.now() - cacheHitStartTime}ms for ${channelId}`,
-        );
+        Logger.error(`Error parsing cached connection data for ${channelId}:`, error);
+        await MessageProcessor.invalidateConnectionCache(channelId);
       }
     }
 
-    // Cache miss - fetch from database
-    const connectionSelect = {
-      id: true,
-      channelId: true,
-      connected: true,
-      compact: true,
-      webhookURL: true,
-      parentId: true,
-      hubId: true,
-      embedColor: true,
-      serverId: true,
-      lastActive: true,
-    } as Prisma.ConnectionSelect;
+    if (!connection) {
+      // Connection cache miss - fetch from database
+      Logger.debug(`Connection cache MISS for ${channelId} (${cacheCheckTime}ms)`);
 
-    const dbFetchStartTime = performance.now();
-    const connection = await db.connection.findFirst({
-      where: { channelId, connected: true },
-      select: {
-        ...connectionSelect,
-        hub: {
-          include: {
-            connections: {
-              where: { connected: true, channelId: { not: channelId } },
-              select: connectionSelect,
+      connection = await db.connection.findFirst({
+        where: { channelId, connected: true },
+        select: {
+          id: true,
+          channelId: true,
+          connected: true,
+          compact: true,
+          webhookURL: true,
+          parentId: true,
+          hubId: true,
+          embedColor: true,
+          serverId: true,
+          lastActive: true,
+        },
+      });
+
+      if (!connection) {
+        Logger.debug(
+          `Total getHubAndConnections took ${performance.now() - startTime}ms for ${channelId} (no connection found)`,
+        );
+        return null;
+      }
+
+      // Cache the connection data
+      const cacheSaveStartTime = performance.now();
+      await MessageProcessor.redis.set(connectionCacheKey, JSON.stringify(connection), 'EX', 300);
+      Logger.debug(`Connection cache save took ${performance.now() - cacheSaveStartTime}ms`);
+
+      hubId = connection.hubId;
+    }
+
+    // 3. Try to get hub data with connections
+    const hubCacheKey = `${RedisKeys.Hub}:data:${hubId}`;
+    const hubCacheStartTime = performance.now();
+    const hubData = await MessageProcessor.redis.get(hubCacheKey);
+    const hubCacheCheckTime = performance.now() - hubCacheStartTime;
+
+    let hub: HubManager | null = null;
+    let hubConnections: RequiredConnectionData[] = [];
+
+    // 4. Process hub data or fetch from database
+    if (hubData) {
+      try {
+        // Hub cache hit
+        const parsedHub = JSON.parse(hubData) as {
+          hub: ConvertDatesToString<Hub>;
+          connections: ConvertDatesToString<RequiredConnectionData>[];
+        };
+
+        const hubWithDates = MessageProcessor.parseHubDates(parsedHub.hub);
+        hub = new HubManager(hubWithDates);
+
+        // Convert dates in all connections
+        hubConnections = parsedHub.connections
+          .filter((conn) => conn.channelId !== channelId) // Exclude current connection
+          .map(MessageProcessor.convertConnectionDates);
+
+        Logger.debug(`Hub cache HIT for ${hubId} (${hubCacheCheckTime}ms)`);
+      }
+      catch (error) {
+        Logger.error(`Error parsing cached hub data for ${hubId}:`, error);
+        if (hubId) await MessageProcessor.invalidateHubCache(hubId);
+      }
+    }
+
+    if (!hub) {
+      // Hub cache miss - fetch from database
+      Logger.debug(`Hub cache MISS for ${hubId} (${hubCacheCheckTime}ms)`);
+      const hubDbFetchStartTime = performance.now();
+
+      const dbHubData = await db.hub.findFirst({
+        where: { id: hubId },
+        include: {
+          connections: {
+            where: { connected: true },
+            select: {
+              id: true,
+              channelId: true,
+              connected: true,
+              compact: true,
+              webhookURL: true,
+              parentId: true,
+              hubId: true,
+              embedColor: true,
+              serverId: true,
+              lastActive: true,
             },
           },
         },
-      },
-    });
+      });
 
-    Logger.debug(`Database fetch took ${performance.now() - dbFetchStartTime}ms for ${channelId}`);
+      if (!dbHubData) {
+        Logger.debug(
+          `Total getHubAndConnections took ${performance.now() - startTime}ms for ${channelId} (no hub found)`,
+        );
+        return null;
+      }
 
-    if (!connection || !connection.hub) {
-      Logger.debug(
-        `Total getHubAndConnections took ${performance.now() - startTime}ms for ${channelId} (no connection found)`,
+      hub = new HubManager(dbHubData);
+      hubConnections = dbHubData.connections;
+
+      // Cache the hub data
+      const hubCacheSaveStartTime = performance.now();
+      await MessageProcessor.redis.set(
+        hubCacheKey,
+        JSON.stringify({
+          hub: dbHubData,
+          connections: hubConnections,
+        }),
+        'EX',
+        300,
       );
-      return null;
+      Logger.debug(`Hub cache save took ${performance.now() - hubCacheSaveStartTime}ms`);
+      Logger.debug(`Hub database fetch took ${performance.now() - hubDbFetchStartTime}ms`);
     }
 
-    // Create the result object
-    const createManagersStartTime = performance.now();
+    // 5. Create the final result
     const result: HubConnectionData = {
-      hub: new HubManager(connection.hub),
+      hub,
       connection,
-      hubConnections: connection.hub.connections,
+      hubConnections: hubConnections.filter((conn) => conn.channelId !== channelId),
     };
-    Logger.debug(
-      `Creating managers took ${performance.now() - createManagersStartTime}ms for ${channelId}`,
-    );
-
-    // Store in Redis cache with TTL
-    const setCacheStartTime = performance.now();
-    await MessageProcessor.redis.set(
-      redisKey,
-      JSON.stringify({
-        timestamp: performance.now(),
-        data: {
-          // Store the raw data that can be serialized
-          connection,
-          hub: connection.hub,
-          hubConnections: connection.hub.connections,
-        },
-      }),
-      'EX',
-      MessageProcessor.REDIS_CACHE_TTL,
-    );
-    Logger.debug(`Setting cache took ${performance.now() - setCacheStartTime}ms for ${channelId}`);
 
     Logger.debug(
-      `Total getHubAndConnections took ${performance.now() - startTime}ms for ${channelId} (cache miss)`,
+      `Total getHubAndConnections took ${performance.now() - startTime}ms for ${channelId}`,
     );
     return result;
   }
 
+  // Cache invalidation methods
+  static async invalidateConnectionCache(channelId: string): Promise<void> {
+    const connectionCacheKey = `${RedisKeys.Hub}:connection:${channelId}`;
+    await MessageProcessor.redis.del(connectionCacheKey);
+    Logger.debug(`Invalidated connection cache for channel ${channelId}`);
+  }
+
+  static async invalidateHubCache(hubId: string): Promise<void> {
+    const hubCacheKey = `${RedisKeys.Hub}:data:${hubId}`;
+    await MessageProcessor.redis.del(hubCacheKey);
+    Logger.debug(`Invalidated hub cache for hub ${hubId}`);
+  }
+
+  static async onConnectionModified(channelId: string, hubId?: string): Promise<void> {
+    // Always invalidate the connection cache
+    await MessageProcessor.invalidateConnectionCache(channelId);
+
+    // If hubId is provided, invalidate the hub cache
+    if (hubId) {
+      await MessageProcessor.invalidateHubCache(hubId);
+    }
+    else {
+      // If hubId is not provided, try to find it
+      const connection = await db.connection.findFirst({
+        where: { channelId },
+        select: { hubId: true },
+      });
+
+      if (connection?.hubId) {
+        await MessageProcessor.invalidateHubCache(connection.hubId);
+      }
+    }
+  }
   /**
    * Processes a message sent in a hub channel
    * @param message The Discord message to process

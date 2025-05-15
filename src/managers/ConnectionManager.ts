@@ -67,11 +67,20 @@ export default class ConnectionManager {
       return;
     }
 
+    // Store hubId before deleting the connection
+    const hubId = this.connection.hubId;
+
     await db.connection.delete({
       where: { id: this.connection.id },
     });
 
-    await MessageProcessor.onConnectionModified(this.channelId);
+    // FIXME AAA;
+    this.fetchHub().then((h) => {
+      if (h) this.hubService.updateHubCache(h.data);
+    });
+
+    // Invalidate cache for this connection and all channels in the hub
+    await MessageProcessor.onConnectionModified(this.channelId, hubId);
   }
 
   async setInvite(invite: string): Promise<void> {
@@ -113,12 +122,12 @@ export default class ConnectionManager {
       data,
     });
 
-    // Invalidate cache for this connection
-    await MessageProcessor.onConnectionModified(this.channelId);
+    // Invalidate cache for this connection and all channels in the hub
+    await MessageProcessor.onConnectionModified(this.channelId, this.hubId);
 
     // If the channelId is being changed, invalidate new channelId
     if (data.channelId && typeof data.channelId === 'string' && data.channelId !== this.channelId) {
-      await MessageProcessor.onConnectionModified(data.channelId);
+      await MessageProcessor.onConnectionModified(data.channelId, this.hubId);
     }
   }
 }
