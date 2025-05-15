@@ -69,6 +69,11 @@ vote:
 network:
   accountTooNew: '{emoji} {user} Sua conta é muito nova para enviar mensagens usando o InterChat. Tente novamente mais tarde.'
   deleteSuccess: '{emoji} A mensagem de {user} foi excluída de __**{deleted}/{total}**__ servidores.'
+  editInProgress: '{emoji} Your request has been queued. Messages will be edited shortly...'
+  editInProgressError: '{emoji} This message is already being edited by another user.'
+  emptyContent: '{emoji} Message content cannot be empty.'
+  newMessageContent: 'New Message Content'
+  editMessagePrompt: '{emoji} Please use the modal to edit your message.'
   editSuccess: '{emoji} A mensagem de {user} foi editada em __**{edited}/{total}**__ servidores.'
   onboarding:
     embed:
