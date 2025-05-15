@@ -70,6 +70,11 @@ vote:
 network:
   accountTooNew: '{emoji} {user} आपका खाता InterChat का उपयोग करके संदेश भेजने के लिए बहुत नया है। कृपया बाद में प्रयास करें।'
   deleteSuccess: '{emoji} {user} द्वारा भेजा गया संदेश __**{deleted}/{total}**__ सर्वरों से हटा दिया गया है।'
+  editInProgress: '{emoji} Your request has been queued. Messages will be edited shortly...'
+  editInProgressError: '{emoji} This message is already being edited by another user.'
+  emptyContent: '{emoji} Message content cannot be empty.'
+  newMessageContent: 'New Message Content'
+  editMessagePrompt: '{emoji} Please use the modal to edit your message.'
   editSuccess: '{emoji} {user} द्वारा भेजा गया संदेश __**{edited}/{total}**__ सर्वरों में संपादित कर दिया गया है।'
   onboarding:
     embed:
