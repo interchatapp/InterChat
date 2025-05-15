@@ -58,7 +58,7 @@
     "prisma": "^6.7.0",
     "release-it": "^19.0.2",
     "source-map-support": "^0.5.21",
-    "typescript": "5.9.0-dev.20250412",
+    "typescript": "5.8.3",
     "typescript-eslint": "^8.32.0"
   },
   "config": {
