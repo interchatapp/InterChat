@@ -15,45 +15,36 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import BaseCommand from '#src/core/BaseCommand.js';
+import type HubManager from '#src/managers/HubManager.js';
+import { findOriginalMessage } from '#src/utils/network/messageUtils.js';
+import type Context from '#src/core/CommandContext/Context.js';
+import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
+import { fetchUserLocale, handleError } from '#src/utils/Utils.js';
+import { t } from '#utils/Locale.js';
+import { logMsgEdit } from '#utils/hub/logger/ModLogs.js';
+import { isStaffOrHubMod } from '#utils/hub/utils.js';
 import {
-  ActionRowBuilder,
   ApplicationCommandOptionType,
   ApplicationCommandType,
-  EmbedBuilder,
-  type Message,
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
-  type User,
-  userMention,
+  ActionRowBuilder,
 } from 'discord.js';
-
-import BaseCommand from '#src/core/BaseCommand.js';
-import type Context from '#src/core/CommandContext/Context.js';
-import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
-import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
-import type { SerializedHubSettings } from '#src/modules/BitFields.js';
-import { HubService } from '#src/services/HubService.js';
-import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
-import {
-  findOriginalMessage,
-  getBroadcast,
-  getBroadcasts,
-} from '#src/utils/network/messageUtils.js';
-import Constants, { ConnectionMode } from '#utils/Constants.js';
-import { CustomID } from '#utils/CustomID.js';
-import db from '#utils/Db.js';
-import { getAttachmentURL } from '#utils/ImageUtils.js';
-import { t } from '#utils/Locale.js';
-import { containsInviteLinks, fetchUserLocale, handleError, replaceLinks } from '#utils/Utils.js';
+import { HubService } from '#src/services/HubService.js';
+import type { Message as MessageDB } from '#src/generated/prisma/client/client.js';
+import { CustomID } from '#src/utils/CustomID.js';
+import { editMessageInHub, isEditInProgress } from '#utils/moderation/editMessage.js';
+import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 
-interface ImageUrls {
-  oldURL?: string | null;
-  newURL?: string | null;
-}
+const EDIT_MSG_MODAL_ID = 'editMsgModal';
 
 export default class EditMessage extends BaseCommand {
+  readonly cooldown = 10_000;
+  private readonly hubService = new HubService();
+
   constructor() {
     super({
       name: 'editmsg',
@@ -71,253 +62,175 @@ export default class EditMessage extends BaseCommand {
         {
           type: ApplicationCommandOptionType.String,
           name: 'message',
-          description: 'The message to edit',
+          description: 'The message ID or message link of the message to edit',
           required: true,
         },
       ],
     });
   }
 
-  // TODO: Implement cooldown
-  readonly cooldown = 10_000;
-
   async execute(ctx: Context): Promise<void> {
+    if (!ctx.inGuild()) return;
+
     const targetId = ctx.getTargetMessageId('message');
+    const originalMsg = targetId ? await findOriginalMessage(targetId) : null;
+    const hub = await this.hubService.fetchHub({ id: originalMsg?.hubId });
+
+    const validation = await this.validateMessage(ctx, originalMsg, hub);
+    if (!validation || !originalMsg) return;
+
+    await this.showEditModal(ctx, originalMsg);
+  }
+
+  private async showEditModal(ctx: Context, originalMsg: MessageDB): Promise<void> {
     const locale = await fetchUserLocale(ctx.user.id);
 
-    const messageInDb = targetId ? await findOriginalMessage(targetId) : undefined;
-    if (!targetId || !messageInDb) {
+    // Create a modal for editing the message
+    const modal = new ModalBuilder()
+      .setCustomId(new CustomID(EDIT_MSG_MODAL_ID, [originalMsg.id]).toString())
+      .setTitle(t('network.editMessage', locale) || 'Edit Message');
+
+    // Create a text input for the new message content
+    const contentInput = new TextInputBuilder()
+      .setCustomId('content')
+      .setLabel(t('network.newMessageContent', locale) || 'New Message Content')
+      .setStyle(TextInputStyle.Paragraph)
+      .setValue(originalMsg.content)
+      .setRequired(true)
+      .setMaxLength(2000);
+
+    // Add the text input to an action row
+    const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(contentInput);
+
+    // Add the action row to the modal
+    modal.addComponents(actionRow);
+
+    try {
+      // Only show modal if it's an interaction that supports it
+      if ('showModal' in ctx.interaction) {
+        await ctx.interaction.showModal(modal);
+      }
+    }
+    catch (e) {
+      await ctx.editReply(
+        `${ctx.getEmoji('x_icon')} There was an error showing the edit modal. Please try again.`,
+      );
+      handleError(e);
+    }
+  }
+
+  @RegisterInteractionHandler(EDIT_MSG_MODAL_ID)
+  async handleModalSubmission(ctx: ComponentContext): Promise<void> {
+    if (!ctx.isModalSubmit()) return;
+
+    await ctx.deferUpdate();
+
+    const originalMsgId = ctx.customId.args[0];
+    const newContent = ctx.getModalFieldValue('content');
+
+    if (!newContent || newContent.trim().length === 0) {
+      const locale = await fetchUserLocale(ctx.user.id);
+      await ctx.editReply(
+        t('network.emptyContent', locale, {
+          emoji: ctx.getEmoji('x_icon'),
+        }) || `${ctx.getEmoji('x_icon')} Message content cannot be empty.`,
+      );
+      return;
+    }
+
+    const originalMsg = await findOriginalMessage(originalMsgId);
+    const hub = await this.hubService.fetchHub({ id: originalMsg?.hubId });
+
+    if (!originalMsg || !hub) {
       await replyWithUnknownMessage(ctx);
       return;
     }
-    if (ctx.user.id !== messageInDb.authorId) {
-      await ctx.reply({
-        content: t('errors.notMessageAuthor', locale, {
-          emoji: ctx.getEmoji('x_icon'),
-        }),
-      });
-      return;
-    }
 
-    const modal = new ModalBuilder()
-      .setCustomId(new CustomID().setIdentifier('editMsg').setArgs(targetId).toString())
-      .setTitle('Edit Message')
-      .addComponents(
-        new ActionRowBuilder<TextInputBuilder>().addComponents(
-          new TextInputBuilder()
-            .setRequired(true)
-            .setCustomId('newMessage')
-            .setStyle(TextInputStyle.Paragraph)
-            .setLabel('Please enter your new message.')
-            .setValue(messageInDb.content)
-            .setMaxLength(950),
-        ),
-      );
-
-    await ctx.showModal(modal);
+    await this.processMessageEdit(ctx, originalMsg, hub, newContent);
   }
 
-  @RegisterInteractionHandler('editMsg')
-  async handleModals(ctx: ComponentContext): Promise<void> {
-    // Defer the reply to give the user feedback
-    await ctx.deferReply({ flags: ['Ephemeral'] });
+  private async processMessageEdit(
+    ctx: ComponentContext,
+    originalMsg: MessageDB,
+    hub: HubManager,
+    newContent: string,
+  ): Promise<void> {
+    const locale = await fetchUserLocale(ctx.user.id);
 
-    // Parse the custom ID to get the message ID
-    const [messageId] = ctx.customId.args;
+    await ctx.reply(
+      t('network.editInProgress', locale, {
+        emoji: ctx.getEmoji('loading'),
+      }) ||
+        `${ctx.getEmoji('loading')} Your request has been queued. Messages will be edited shortly...`,
+    );
 
-    // Fetch the original message
-    const target = await ctx.channel?.messages.fetch(messageId).catch(() => null);
-    if (!target) {
-      await replyWithUnknownMessage(ctx, {
-        locale: await fetchUserLocale(ctx.user.id),
-      });
-      return;
-    }
+    const { editedCount, totalCount } = await editMessageInHub(
+      hub.id,
+      originalMsg.id,
+      newContent,
+      originalMsg.imageUrl,
+    );
 
-    // Get the original message data
-    const originalMsgData = await findOriginalMessage(target.id);
-
-    if (!originalMsgData?.hubId) {
-      await replyWithUnknownMessage(ctx, {
-        locale: await fetchUserLocale(ctx.user.id),
-      });
-      return;
-    }
-
-    // Fetch the hub information
-    const hubService = new HubService(db);
-    const hub = await hubService.fetchHub(originalMsgData.hubId);
-    if (!hub) {
-      await replyWithUnknownMessage(ctx, {
-        locale: await fetchUserLocale(ctx.user.id),
-      });
-      return;
-    }
-
-    // Get the new message input from the user
-    const userInput = ctx.getModalFieldValue('newMessage') as string;
-    const messageToEdit = this.sanitizeMessage(userInput, hub.settings.getAll());
-
-    // Check if the message contains invite links
-    if (hub.settings.has('BlockInvites') && containsInviteLinks(messageToEdit)) {
-      await ctx.editReply(
-        t('errors.inviteLinks', await fetchUserLocale(ctx.user.id), {
-          emoji: getEmoji('x_icon', ctx.client),
-        }),
-      );
-      return;
-    }
-
-    const mode =
-      target.id === originalMsgData.id
-        ? ConnectionMode.Compact
-        : ((
-          await getBroadcast(originalMsgData?.id, {
-            channelId: target.channelId,
-          })
-        )?.mode ?? ConnectionMode.Compact);
-
-    // Prepare the new message contents and embeds
-    const imageURLs = await this.getImageURLs(target, mode, messageToEdit);
-    const newContent = this.getCompactContents(messageToEdit, imageURLs);
-    const newEmbed = await this.buildEmbeds(target, mode, messageToEdit, {
-      guildId: originalMsgData.guildId,
-      user: ctx.user,
-      imageURLs,
-    });
-
-    // Find all the messages that need to be edited
-    const broadcastedMsgs = Object.values(await getBroadcasts(target.id));
-    const channelSettingsArr = await db.connection.findMany({
-      where: { channelId: { in: broadcastedMsgs.map((c) => c.channelId) } },
-    });
-
-    let counter = 0;
-    for (const msg of broadcastedMsgs) {
-      const connection = channelSettingsArr.find((c) => c.channelId === msg.channelId);
-      if (!connection) continue;
-
-      const webhook = await ctx.client
-        .fetchWebhook(connection.webhookURL.split('/')[connection.webhookURL.split('/').length - 2])
-        .catch(() => null);
-
-      if (webhook?.owner?.id !== ctx.client.user.id) continue;
-
-      let content: string | null = null;
-      let embeds: EmbedBuilder[] = [];
-      if (msg.mode === ConnectionMode.Embed) {
-        embeds = [newEmbed];
-      }
-      else {
-        content = newContent;
-      }
-
-      // Edit the message
-      const edited = await webhook
-        .editMessage(msg.messageId, {
-          content,
-          embeds,
-          threadId: connection.parentId ? connection.channelId : undefined,
-        })
-        .catch(() => null);
-
-      if (edited) counter++;
-    }
-
-    // Update the reply with the edit results
     await ctx
       .editReply(
-        t('network.editSuccess', await fetchUserLocale(ctx.user.id), {
-          edited: counter.toString(),
-          total: broadcastedMsgs.length.toString(),
-          emoji: getEmoji('tick_icon', ctx.client),
-          user: userMention(originalMsgData.authorId),
-        }),
+        t('network.editSuccess', locale, {
+          emoji: ctx.getEmoji('tick_icon'),
+          user: `<@${originalMsg.authorId}>`,
+          edited: `${editedCount}`,
+          total: `${totalCount}`,
+        }) ||
+          `${ctx.getEmoji('tick_icon')} Successfully edited ${editedCount}/${totalCount} messages from <@${originalMsg.authorId}>.`,
       )
-      .catch(handleError);
+      .catch(() => null);
+
+    await this.logEdit(ctx, hub, originalMsg, newContent);
   }
 
-  private async getImageURLs(
-    target: Message,
-    mode: ConnectionMode,
-    newMessage: string,
-  ): Promise<ImageUrls> {
-    const oldURL =
-      mode === ConnectionMode.Compact
-        ? await getAttachmentURL(target.content)
-        : target.embeds[0]?.image?.url;
-
-    const newURL = await getAttachmentURL(newMessage);
-
-    return { oldURL, newURL };
-  }
-
-  private async buildEmbeds(
-    target: Message,
-    mode: ConnectionMode,
-    messageToEdit: string,
-    opts: { user: User; guildId: string; imageURLs?: ImageUrls },
+  private async validateMessage(
+    ctx: Context,
+    originalMsg: MessageDB | null,
+    hub: HubManager | null,
   ) {
-    let embedContent = messageToEdit;
-    let embedImage = null;
+    const locale = await fetchUserLocale(ctx.user.id);
 
-    // This if check must come on top of the next one at all times
-    // because we want newImage Url to be given priority for the embedImage
-    if (opts.imageURLs?.newURL) {
-      embedContent = embedContent.replace(opts.imageURLs.newURL, '');
-      embedImage = opts.imageURLs.newURL;
-    }
-    if (opts.imageURLs?.oldURL) {
-      embedContent = embedContent.replace(opts.imageURLs.oldURL, '');
-      embedImage = opts.imageURLs.oldURL;
+    if (!originalMsg || !hub) {
+      await replyWithUnknownMessage(ctx);
+      return false;
     }
 
-    let embed: EmbedBuilder;
-
-    if (mode === ConnectionMode.Embed) {
-      // utilize the embed directly from the message
-      embed = EmbedBuilder.from(target.embeds[0]).setDescription(embedContent).setImage(embedImage);
+    if (await isEditInProgress(originalMsg.id)) {
+      await ctx.replyEmbed(
+        t('network.editInProgressError', locale, {
+          emoji: ctx.getEmoji('neutral'),
+        }) || `${ctx.getEmoji('neutral')} This message is already being edited by another user.`,
+        { flags: ['Ephemeral'], edit: true },
+      );
+      return false;
     }
-    else {
-      const guild = await target.client.fetchGuild(opts.guildId);
 
-      // create a new embed if the message being edited is in compact mode
-      embed = new EmbedBuilder()
-        .setAuthor({
-          name: opts.user.username,
-          iconURL: opts.user.displayAvatarURL(),
-        })
-        .setDescription(embedContent)
-        .setColor(Constants.Colors.invisible)
-        .setImage(embedImage)
-        .addFields(
-          target.embeds.at(0)?.fields.at(0)
-            ? [
-              {
-                name: 'Replying-to',
-                value: `${target.embeds[0].description}`,
-              },
-            ]
-            : [],
-        )
-        .setFooter({ text: `Server: ${guild?.name}` });
+    if (ctx.user.id !== originalMsg.authorId && !(await isStaffOrHubMod(ctx.user.id, hub))) {
+      await ctx.editReply(
+        t('errors.notMessageAuthor', locale, {
+          emoji: ctx.getEmoji('x_icon'),
+        }) || `${ctx.getEmoji('x_icon')} You can only edit your own messages.`,
+      );
+      return false;
     }
-    return embed;
+
+    return { hub };
   }
 
-  private sanitizeMessage(content: string, settings: SerializedHubSettings) {
-    const newMessage = settings.HideLinks ? replaceLinks(content) : content;
-    return newMessage;
-  }
+  private async logEdit(
+    ctx: ComponentContext,
+    hub: HubManager,
+    originalMsg: MessageDB,
+    newContent: string,
+  ): Promise<void> {
+    if (!(await isStaffOrHubMod(ctx.user.id, hub))) return;
 
-  private getCompactContents(messageToEdit: string, imageUrls: ImageUrls) {
-    let compactMsg = messageToEdit;
-
-    if (imageUrls.oldURL && imageUrls.newURL) {
-      // use the new url instead
-      compactMsg = compactMsg.replace(imageUrls.oldURL, imageUrls.newURL);
-    }
-
-    return compactMsg;
+    await logMsgEdit(ctx.client, originalMsg, newContent, await hub.fetchLogConfig(), {
+      hubName: hub.data.name,
+      modName: ctx.user.username,
+    });
   }
 }

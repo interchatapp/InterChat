@@ -56,7 +56,7 @@ export const deleteMessageFromHub = async (
 
     const webhook = new WebhookClient({ url: connection.webhookURL });
     const threadId = connection.parentId ? connection.channelId : undefined;
-    await webhook.deleteMessage(dbMsg.messageId, threadId).catch(() => null);
+    await webhook.deleteMessage(dbMsg.id, threadId).catch(() => null);
     deletedCount++;
   }
 

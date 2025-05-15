@@ -36,6 +36,12 @@ export type TranslationKeys = {
   'network.accountTooNew': 'emoji' | 'user';
   'network.deleteSuccess': 'emoji' | 'user' | 'deleted' | 'total';
   'network.editSuccess': 'emoji' | 'user' | 'edited' | 'total';
+  'network.editMessage': never;
+  'network.newMessageContent': never;
+  'network.editMessagePrompt': 'emoji';
+  'network.editInProgress': 'emoji';
+  'network.editInProgressError': 'emoji';
+  'network.emptyContent': 'emoji';
   'network.onboarding.embed.title': 'hubName';
   'network.onboarding.embed.description': never;
   'network.onboarding.embed.footer': 'version';

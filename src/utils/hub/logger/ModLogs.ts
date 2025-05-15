@@ -159,3 +159,45 @@ export const logMsgDelete = async (
 
   await sendLog(client.cluster, modLogsChannelId, embed);
 };
+
+export const logMsgEdit = async (
+  client: Client,
+  originalMsg: MessageDB,
+  newContent: string,
+  logConfig: HubLogManager,
+  opts: { hubName: string; modName: string },
+) => {
+  const modLogsChannelId = logConfig.config.modLogsChannelId;
+  if (!modLogsChannelId) return;
+
+  const { authorId, guildId, content } = originalMsg;
+  const user = await client.users.fetch(authorId).catch(() => null);
+  const server = await client.fetchGuild(guildId).catch(() => null);
+
+  const embed = new EmbedBuilder()
+    .setDescription(
+      stripIndents`
+      ### ${getEmoji('edit_icon', client)} Message Edited
+      **Before:**
+      ${codeBlock(content.length > 0 ? content : 'No content provided.')}
+      **After:**
+      ${codeBlock(newContent.length > 0 ? newContent : 'No content provided.')}
+    `,
+    )
+    .setColor(Constants.Colors.invisible)
+    .setImage(originalMsg.imageUrl || null)
+    .addFields([
+      {
+        name: `${getEmoji('person_icon', client)} User`,
+        value: `${user?.username} (\`${authorId}\`)`,
+      },
+      {
+        name: `${getEmoji('rules_icon', client)} Server`,
+        value: `${server?.name} (\`${guildId}\`)`,
+      },
+      { name: `${getEmoji('globe_icon', client)} Hub`, value: opts.hubName },
+    ])
+    .setFooter({ text: `Edited by: ${opts.modName}` });
+
+  await sendLog(client.cluster, modLogsChannelId, embed);
+};

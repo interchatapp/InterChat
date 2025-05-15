@@ -45,9 +45,7 @@ export class MessageService {
         update: {
           content: messageData.content,
           imageUrl: messageData.imageUrl,
-          reactions: messageData.reactions
-            ? (messageData.reactions as Prisma.InputJsonValue)
-            : undefined,
+          reactions: messageData.reactions ? messageData.reactions : undefined,
           referredMessageId: messageData.referredMessageId,
         },
         create: {
@@ -59,9 +57,7 @@ export class MessageService {
           guildId: messageData.guildId,
           authorId: messageData.authorId,
           createdAt: messageData.createdAt,
-          reactions: messageData.reactions
-            ? (messageData.reactions as Prisma.InputJsonValue)
-            : undefined,
+          reactions: messageData.reactions ? messageData.reactions : undefined,
           referredMessageId: messageData.referredMessageId,
         },
       });
@@ -117,7 +113,7 @@ export class MessageService {
       // Create all broadcasts in a single transaction
       await db.$transaction(
         broadcasts.map((broadcast) => {
-          const { messageId: broadcastMessageId, channelId, mode } = broadcast;
+          const { id: broadcastMessageId, channelId, mode } = broadcast;
           return db.broadcast.create({
             data: {
               id: broadcastMessageId,
@@ -200,7 +196,7 @@ export class MessageService {
       // If not found, check if it's a broadcast message
       const broadcast = await db.broadcast.findUnique({
         where: { id: messageId },
-        include: { message: true },
+        select: { message: true, id: true },
       });
 
       if (!broadcast) return null;
