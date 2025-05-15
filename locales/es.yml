@@ -22,11 +22,11 @@ rules:
     {emoji} ¡Hola {user}! ¿Listo para conectarte con otras comunidades?
     Antes de que comiences a chatear entre servidores, repasemos rápidamente nuestras normas comunitarias.
     Estas ayudan a que InterChat sea un gran lugar para todos.
-  alreadyAccepted: "{emoji} ¡Hola {user}! ¿Listo para conectarte con otras comunidades?\nAntes de que comiences a chatear entre servidores, repasemos rápidamente nuestras normas comunitarias.\nEstas ayudan a que InterChat sea un gran lugar para todos."
+  alreadyAccepted: '{emoji} Ya has aceptado las reglas. Ahora puedes usar InterChat al máximo.'
   continue: Continuar
   accept: Aceptar
   decline: Rechazar
-  agreementNote: "Al aceptar estas reglas, aceptas seguirlas mientras uses InterChat.  \nIncumplirlas puede resultar en restricciones o prohibiciones."
+  agreementNote: Al aceptar estas reglas, aceptas seguirlas mientras uses InterChat. Incumplirlas puede resultar en restricciones o prohibiciones.
   hubAgreementNote: |
     Al aceptar estas reglas, aceptas seguirlas mientras chateas en este centro.
     Incumplirlas puede resultar en tu expulsión del centro.
