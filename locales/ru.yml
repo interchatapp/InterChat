@@ -69,6 +69,11 @@ vote:
 network:
   accountTooNew: '{emoji} {user} Ваш аккаунт слишком молодой для отправки сообщений в InterChat. Пожалуйста, попробуйте позже.'
   deleteSuccess: '{emoji} Сообщение {user} было удалено из __**{deleted}/{total}**__ серверов.'
+  editInProgress: '{emoji} Your request has been queued. Messages will be edited shortly...'
+  editInProgressError: '{emoji} This message is already being edited by another user.'
+  emptyContent: '{emoji} Message content cannot be empty.'
+  newMessageContent: 'New Message Content'
+  editMessagePrompt: '{emoji} Please use the modal to edit your message.'
   editSuccess: '{emoji} Сообщение {user} было отредактировано на __**{edited}/{total}**__ серверах.'
   onboarding:
     embed:
