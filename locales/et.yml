@@ -67,6 +67,11 @@ vote:
 network:
   accountTooNew: '{emoji} {user} Teie konto on InterChati kaudu sõnumite saatmiseks liiga uus. Proovige hiljem uuesti.'
   deleteSuccess: '{emoji} Sõnum kasutajalt {user} on kustutatud __**{deleted}/{total}**__ serveritest.'
+  editInProgress: '{emoji} Your request has been queued. Messages will be edited shortly...'
+  editInProgressError: '{emoji} This message is already being edited by another user.'
+  emptyContent: '{emoji} Message content cannot be empty.'
+  newMessageContent: 'New Message Content'
+  editMessagePrompt: '{emoji} Please use the modal to edit your message.'
   editSuccess: '{emoji} Sõnum kasutajalt {user} on muudetud __**{edited}/{total}**__ serveritest.'
   onboarding:
     embed:
