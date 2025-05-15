@@ -70,7 +70,7 @@ export class CacheManager {
         handleError(error, {
           comment: `Failed to parse cached JSON for key ${fullKey}. Raw: "${cachedValue}"`,
         });
-        // Optionally, delete the corrupted cache entry
+        // delete the corrupted cache entry
         // and fall through to provider if it exists.
         await this.delete(key);
       }

@@ -17,9 +17,9 @@
 
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
-import Constants from '#src/utils/Constants.js';
+import { UIComponents } from '#src/utils/DesignSystem.js';
 import { formatUserLeaderboard, getLeaderboard } from '#src/utils/Leaderboard.js';
-import { resolveColor } from 'discord.js';
+import { ContainerBuilder, MessageFlags, TextDisplayBuilder } from 'discord.js';
 
 export default class UserLeaderboardCommand extends BaseCommand {
   constructor() {
@@ -34,15 +34,25 @@ export default class UserLeaderboardCommand extends BaseCommand {
     const leaderboard = await getLeaderboard('user', 10);
     const leaderboardTable = await formatUserLeaderboard(leaderboard, ctx.client);
 
+    // Create UI components helper
+    const ui = new UIComponents(ctx.client);
+    const container = new ContainerBuilder();
+
+    // Add header
+    container.addTextDisplayComponents(
+      ui.createHeader('Global User Leaderboard', 'Resets every month. Send a message in any hub to get on it!', 'hash_icon'),
+    );
+
+    // Add leaderboard content
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        leaderboardTable.length > 0 ? leaderboardTable : 'No data available.',
+      ),
+    );
+
     await ctx.reply({
-      embeds: [
-        {
-          title: `${ctx.getEmoji('hash_icon')} Global User Leaderboard`,
-          description: leaderboardTable,
-          color: resolveColor(Constants.Colors.invisible),
-          footer: { text: 'Resets every month. Send a message in any hub to get on it!' },
-        },
-      ],
+      components: [container],
+      flags: [MessageFlags.IsComponentsV2],
     });
   }
 }

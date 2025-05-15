@@ -16,6 +16,7 @@
  */
 
 import { createLogger, format, transports } from 'winston';
+import 'source-map-support/register.js';
 
 const custom = format.printf(
   (info) =>
@@ -33,7 +34,7 @@ const combinedFormat = format.combine(
   custom,
 );
 
-export default createLogger({
+const loggerConig = {
   format: combinedFormat,
   transports: [
     new transports.Console({
@@ -42,14 +43,6 @@ export default createLogger({
     }),
     new transports.File({ filename: 'logs/error.log', level: 'error' }),
     new transports.File({
-      filename: 'logs/debug.log',
-      level: 'debug',
-      format: format.combine(
-        format((info) => (info.level === 'DEBUG' ? info : false))(),
-        combinedFormat,
-      ),
-    }),
-    new transports.File({
       filename: 'logs/info.log',
       format: format.combine(
         format((info) => (info.level === 'INFO' ? info : false))(),
@@ -57,4 +50,19 @@ export default createLogger({
       ),
     }),
   ],
-});
+};
+
+if (process.env.DEBUG === 'true') {
+  loggerConig.transports.push(
+    new transports.File({
+      filename: 'logs/debug.log',
+      level: 'debug',
+      format: format.combine(
+        format((info) => (info.level === 'DEBUG' ? info : false))(),
+        combinedFormat,
+      ),
+    }),
+  );
+}
+
+export default createLogger(loggerConig);
