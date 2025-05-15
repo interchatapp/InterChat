@@ -29,6 +29,9 @@ import { getRedis } from '#src/utils/Redis.js';
 import { fetchUserData, getOrCreateWebhook, handleError } from '#src/utils/Utils.js';
 import type { Client, GuildTextBasedChannel, Message } from 'discord.js';
 import { BroadcastService } from './BroadcastService.js';
+import { getRandomBlockedMessageResponse } from '#src/config/contentFilter.js';
+import ContentFilterManager from '#src/managers/ContentFilterManager.js';
+import { logBlockedMessage } from '#src/utils/hub/logger/ContentFilter.js';
 
 /**
  * Result of processing a message in a hub channel
@@ -618,6 +621,35 @@ export class MessageProcessor {
         );
         Logger.debug(`Timings: ${JSON.stringify(timings)}`);
         return false;
+      }
+
+      // Check content filter
+      const contentFilterStartTime = performance.now();
+      const contentFilterResult = await ContentFilterManager.getInstance().checkMessage(message);
+      timings.contentFilter = performance.now() - contentFilterStartTime;
+
+      if (contentFilterResult.blocked) {
+        // Log the blocked message
+        await logBlockedMessage(message);
+
+        // Get a random humorous response
+        const humorousResponse = getRandomBlockedMessageResponse();
+
+        // Send notification to the other participant
+        await BroadcastService.sendMessage(otherParticipant.webhookUrl, {
+          content: `**The user's message was blocked by our content filter.**\n${humorousResponse}`,
+          username: 'InterChat Calls',
+          avatarURL: message.client.user.displayAvatarURL(),
+          allowedMentions: { parse: [] },
+        });
+
+        // Log performance metrics for blocked message
+        const totalTime = performance.now() - startTime;
+        Logger.debug(`Call message ${message.id} blocked by content filter (${totalTime}ms)`);
+        Logger.debug(`Timings: ${JSON.stringify(timings)}`);
+
+        // Still return true since we handled the message (by blocking it)
+        return true;
       }
 
       // Send the message to the other participant

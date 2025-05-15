@@ -31,6 +31,7 @@ export const enum RedisKeys {
   tutorialProgress = 'tutorialProgress', // Stores user progress in tutorials
   AntiSwear = 'antiswear', // Base prefix for all anti-swear related keys
   HubRules = 'rules', // Base prefix for all hub rules related keys
+  ContentFilter = 'contentFilter',
 }
 
 export const enum ConnectionMode {

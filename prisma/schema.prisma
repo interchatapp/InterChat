@@ -308,7 +308,6 @@ model User {
   emailVerified DateTime?
 
   // Relations
-  subscriptions         Subscription[]
   ownedHubs             Hub[]                  @relation("OwnedHubs")
   appeals               Appeal[]
   infractions           Infraction[]           @relation("infractions")
@@ -502,61 +501,4 @@ model Broadcast {
   @@unique([id])
   @@index([messageId])
   @@index([channelId])
-}
-enum SubscriptionTier {
-  STARTER
-  PLUS
-  PRO
-  ENTERPRISE
-}
-
-enum SubscriptionStatus {
-  ACTIVE
-  CANCELLED
-  EXPIRED
-  PENDING
-}
-
-enum PaymentProvider {
-  KOFI
-  MANUAL
-}
-
-model Subscription {
-  id              String             @id @default(cuid())
-  userId          String
-  user            User               @relation(fields: [userId], references: [id])
-  tier            SubscriptionTier
-  status          SubscriptionStatus @default(ACTIVE)
-  startDate       DateTime           @default(now())
-  endDate         DateTime?
-  renewalDate     DateTime?
-  cancelledAt     DateTime?
-  provider        PaymentProvider
-  providerData    Json?              // Store provider-specific data
-  paymentId       String?            // External payment ID
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
-
-  // Relations
-  transactions    Transaction[]
-
-  @@index([userId])
-  @@index([status])
-  @@index([renewalDate]) // For renewal checks
-}
-
-model Transaction {
-  id              String           @id @default(cuid())
-  subscriptionId  String
-  subscription    Subscription     @relation(fields: [subscriptionId], references: [id])
-  amount          Float
-  currency        String
-  status          String           // "succeeded", "failed", "pending", etc.
-  provider        PaymentProvider
-  providerData    Json?            // Store provider-specific data
-  transactionId   String?          // External transaction ID
-  createdAt       DateTime         @default(now())
-
-  @@index([subscriptionId])
 }
