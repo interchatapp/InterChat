@@ -67,6 +67,11 @@ vote:
 network:
   accountTooNew: '{emoji}{user}您的账号注册时间不足，无法在InterChat发送消息。请稍后再试。'
   deleteSuccess: '{emoji}{user}发送的消息已从 __**{deleted}/{total}**__ 服务器中删除。'
+  editInProgress: '{emoji} Your request has been queued. Messages will be edited shortly...'
+  editInProgressError: '{emoji} This message is already being edited by another user.'
+  emptyContent: '{emoji} Message content cannot be empty.'
+  newMessageContent: 'New Message Content'
+  editMessagePrompt: '{emoji} Please use the modal to edit your message.'
   editSuccess: '{emoji}{user}发送的消息已在__**{edited}／{total}**__服务器中完成编辑。'
   onboarding:
     embed:
