@@ -191,12 +191,12 @@ export class BroadcastService {
     client: Client,
   ) {
     const reply = dbReferrence?.broadcastMsgs.get(channelId) ?? dbReferrence;
-    return reply?.messageId
+    return reply?.id
       ? [
         getJumpButton(client, username, {
           channelId,
           serverId,
-          messageId: reply.messageId,
+          messageId: reply.id,
         }),
       ]
       : undefined;

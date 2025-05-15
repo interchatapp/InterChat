@@ -17,13 +17,13 @@
 
 import { type Snowflake, WebhookClient } from 'discord.js';
 import {
-  type Broadcast,
   deleteMessageCache,
   getBroadcasts,
 } from '#src/utils/network/messageUtils.js';
 import { getHubConnections } from '#utils/ConnectedListUtils.js';
 import { RedisKeys } from '#utils/Constants.js';
 import getRedis from '#utils/Redis.js';
+import { Broadcast } from '#src/generated/prisma/client/index.js';
 
 export const setDeleteLock = async (messageId: string) => {
   const redis = getRedis();
@@ -39,7 +39,7 @@ export const deleteMessageFromHub = async (
 ) => {
   let msgsToDelete = dbMessagesToDelete;
   if (!dbMessagesToDelete) {
-    msgsToDelete = Object.values(await getBroadcasts(originalMsgId, hubId));
+    msgsToDelete = await getBroadcasts(originalMsgId);
   }
 
   if (!msgsToDelete?.length) return { deletedCount: 0, totalCount: 0 };
@@ -56,7 +56,7 @@ export const deleteMessageFromHub = async (
 
     const webhook = new WebhookClient({ url: connection.webhookURL });
     const threadId = connection.parentId ? connection.channelId : undefined;
-    await webhook.deleteMessage(dbMsg.messageId, threadId).catch(() => null);
+    await webhook.deleteMessage(dbMsg.id, threadId).catch(() => null);
     deletedCount++;
   }
 

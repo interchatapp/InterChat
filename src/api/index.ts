@@ -173,7 +173,7 @@ export const startApi = (
     }
     catch (err) {
       Logger.debug('[webhook] Error caught in webhook handler');
-      handleError(err, { comment: 'Failed to send webhook message' });
+      Logger.error('Failed to send webhook message', err);
 
       // Check if the error is related to an invalid webhook
       const errorMessage = err instanceof Error ? err.message : String(err);

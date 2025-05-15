@@ -15,11 +15,8 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import {
-  type OriginalMessage,
-  getBroadcasts,
-  storeMessage,
-} from '#src/utils/network/messageUtils.js';
+import { getBroadcasts } from '#src/utils/network/messageUtils.js';
+import messageService from '#src/services/MessageService.js';
 import type { ReactionArray } from '#types/Utils.d.ts';
 import { CustomID } from '#utils/CustomID.js';
 import db from '#utils/Db.js';
@@ -37,8 +34,8 @@ import {
   StringSelectMenuOptionBuilder,
   calculateShardId,
 } from 'discord.js';
-
 import sortReactions from './sortReactions.js';
+import type { Message as MessageDB } from '#src/generated/prisma/client/client.js';
 
 // Maximum number of emoji buttons to show directly on the message
 const MAX_VISIBLE_REACTIONS = 4;
@@ -49,11 +46,7 @@ const MAX_VISIBLE_REACTIONS = 4;
  * @param userId The ID of the user adding the reaction
  * @param emoji The emoji to add
  */
-export const addReaction = (
-  reactionArr: ReactionArray,
-  userId: string,
-  emoji: string,
-): void => {
+export const addReaction = (reactionArr: ReactionArray, userId: string, emoji: string): void => {
   reactionArr[emoji] = reactionArr[emoji] || [];
   if (!reactionArr[emoji].includes(userId)) {
     reactionArr[emoji].push(userId);
@@ -102,9 +95,7 @@ export const createReactionButtons = (
 
     // Create button with appropriate emoji
     const button = new ButtonBuilder()
-      .setCustomId(
-        new CustomID().setIdentifier('reaction_', reaction).toString(),
-      )
+      .setCustomId(new CustomID().setIdentifier('reaction_', reaction).toString())
       .setStyle(ButtonStyle.Secondary)
       .setLabel(`${reactionCount}`);
 
@@ -121,14 +112,11 @@ export const createReactionButtons = (
   }
 
   // If there are more reactions than we can show, add a +X button
-  const additionalReactionsCount =
-		sortedReactions.length - visibleReactions.length;
+  const additionalReactionsCount = sortedReactions.length - visibleReactions.length;
   if (additionalReactionsCount > 0) {
     reactionRow.addComponents(
       new ButtonBuilder()
-        .setCustomId(
-          new CustomID().setIdentifier('reaction_', 'view_all').toString(),
-        )
+        .setCustomId(new CustomID().setIdentifier('reaction_', 'view_all').toString())
         .setStyle(ButtonStyle.Secondary)
         .setLabel(`+${additionalReactionsCount}`),
     );
@@ -149,33 +137,16 @@ export const createReactionSelectMenu = (
   messageId: string,
   userId: string,
 ): ActionRowBuilder<StringSelectMenuBuilder> => {
-  const selectMenu =
-		new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-		  new StringSelectMenuBuilder()
-		    .setCustomId(
-		      new CustomID()
-		        .setIdentifier('reaction_')
-		        .setArgs(messageId)
-		        .toString(),
-		    )
-		    .setPlaceholder('Add or remove a reaction')
-		    .setMinValues(1)
-		    .setMaxValues(1),
-		);
+  const selectMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+    new StringSelectMenuBuilder()
+      .setCustomId(new CustomID().setIdentifier('reaction_').setArgs(messageId).toString())
+      .setPlaceholder('Add or remove a reaction')
+      .setMinValues(1)
+      .setMaxValues(1),
+  );
 
   // Common emojis to offer as options if there aren't many reactions yet
-  const commonEmojis = [
-    '👍',
-    '👎',
-    '❤️',
-    '😂',
-    '😮',
-    '😢',
-    '😡',
-    '🎉',
-    '🙏',
-    '🔥',
-  ];
+  const commonEmojis = ['👍', '👎', '❤️', '😂', '😮', '😢', '😡', '🎉', '🙏', '🔥'];
 
   // Add existing reactions to the menu
   const existingEmojis = new Set<string>();
@@ -215,10 +186,7 @@ export const createReactionSelectMenu = (
 
   // Add common emojis that aren't already in the reactions
   for (const emoji of commonEmojis) {
-    if (
-      !existingEmojis.has(emoji) &&
-			selectMenu.components[0].options.length < 25
-    ) {
+    if (!existingEmojis.has(emoji) && selectMenu.components[0].options.length < 25) {
       const option = new StringSelectMenuOptionBuilder()
         .setValue(emoji)
         .setEmoji(emoji)
@@ -305,13 +273,11 @@ export const updateMessageComponents = (
  * @param reactions The reactions to update
  */
 export const updateReactions = async (
-  originalMessage: OriginalMessage,
+  originalMessage: MessageDB,
   reactions: { [key: string]: string[] },
 ): Promise<void> => {
   // Get all broadcast messages for this original message
-  const broadcastedMessages = Object.values(
-    await getBroadcasts(originalMessage.messageId, originalMessage.hubId),
-  );
+  const broadcastedMessages = await getBroadcasts(originalMessage.id);
 
   // Get all connections for these broadcast messages
   const connections = await db.connection.findMany({
@@ -329,28 +295,23 @@ export const updateReactions = async (
 
   // Update each broadcast message
   for (const connection of connections) {
-    const dbMsg = broadcastedMessages.find(
-      (e) => e.channelId === connection.channelId,
-    );
+    const dbMsg = broadcastedMessages.find((e) => e.channelId === connection.channelId);
     if (!dbMsg) continue;
 
     try {
       // Use the API endpoint to fetch and update the message
-      const response = await fetch(
-        `http://localhost:${process.env.PORT || 3000}/webhook/message`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            webhookUrl: connection.webhookURL,
-            messageId: dbMsg.messageId,
-            threadId: connection.parentId ? connection.channelId : undefined,
-            action: 'fetch',
-          }),
+      const response = await fetch(`http://localhost:${process.env.PORT || 3000}/webhook/message`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify({
+          webhookUrl: connection.webhookURL,
+          messageId: dbMsg.id,
+          threadId: connection.parentId ? connection.channelId : undefined,
+          action: 'fetch',
+        }),
+      });
 
       if (!response.ok) continue;
 
@@ -358,30 +319,24 @@ export const updateReactions = async (
       if (!message.data) continue;
 
       // Update the message components
-      const updatedComponents = updateMessageComponents(
-        message.data.components || [],
-        reactionRow,
-      );
+      const updatedComponents = updateMessageComponents(message.data.components || [], reactionRow);
 
       // Use the API endpoint to edit the message
-      await fetch(
-        `http://localhost:${process.env.PORT || 3000}/webhook/message`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            webhookUrl: connection.webhookURL,
-            messageId: dbMsg.messageId,
-            threadId: connection.parentId ? connection.channelId : undefined,
-            action: 'edit',
-            data: {
-              components: updatedComponents,
-            },
-          }),
+      await fetch(`http://localhost:${process.env.PORT || 3000}/webhook/message`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify({
+          webhookUrl: connection.webhookURL,
+          messageId: dbMsg.id,
+          threadId: connection.parentId ? connection.channelId : undefined,
+          action: 'edit',
+          data: {
+            components: updatedComponents,
+          },
+        }),
+      });
     }
     catch {
       // Silently fail if we can't update a message
@@ -395,13 +350,10 @@ export const updateReactions = async (
  * @param reactions The reactions to store
  */
 export const storeReactions = async (
-  originalMessage: OriginalMessage,
+  originalMessage: MessageDB,
   reactions: { [key: string]: string[] },
 ): Promise<void> => {
-  await storeMessage(originalMessage.messageId, {
-    ...originalMessage,
-    reactions,
-  });
+  await messageService.storeReactions(originalMessage, reactions);
 };
 
 /**
@@ -412,7 +364,7 @@ export const storeReactions = async (
  */
 export const addNativeReactions = async (
   client: Client,
-  originalMessage: OriginalMessage,
+  originalMessage: MessageDB,
   reactions: { [key: string]: string[] },
 ): Promise<void> => {
   try {
@@ -422,13 +374,10 @@ export const addNativeReactions = async (
     // Create a context object with all the data needed for the eval
     const context = {
       channelId: originalMessage.channelId,
-      messageId: originalMessage.messageId,
+      messageId: originalMessage.id,
       _reactions: JSON.stringify(reactions),
     };
-    const shardId = calculateShardId(
-      originalMessage.guildId,
-      client.cluster.info.TOTAL_SHARDS,
-    );
+    const shardId = calculateShardId(originalMessage.guildId, client.cluster.info.TOTAL_SHARDS);
 
     // Execute the eval only on the specific shard that has access to the message
     await client.cluster.broadcastEval(
@@ -442,9 +391,7 @@ export const addNativeReactions = async (
           if (!channel || !('messages' in channel)) return false;
 
           // Try to get the message
-          const message = await channel.messages
-            .fetch(messageId)
-            .catch(() => null);
+          const message = await channel.messages.fetch(messageId).catch(() => null);
           if (!message) return false;
 
           // Get all current reactions on the message
@@ -455,11 +402,7 @@ export const addNativeReactions = async (
           // For each reaction in our data, add it to the message if not already present
           for (const [emoji, users] of Object.entries(reactionData)) {
             // Make sure users is an array and has entries
-            if (
-              Array.isArray(users) &&
-							users.length > 0 &&
-							!currentReactions.includes(emoji)
-            ) {
+            if (Array.isArray(users) && users.length > 0 && !currentReactions.includes(emoji)) {
               // Try to add the reaction, but don't throw if it fails
               await message.react(emoji).catch(() => null);
             }

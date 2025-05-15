@@ -13,6 +13,7 @@ export const enum RedisKeys {
   channelQueue = 'channelQueue',
   commandUsesLeft = 'commandUsesLeft',
   msgDeleteInProgress = 'msgDeleteInProgress',
+  msgEditInProgress = 'msgEditInProgress',
   Infraction = 'Infraction',
   hubLogConfig = 'hubLogConfig',
   message = 'message',

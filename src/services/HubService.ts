@@ -447,7 +447,7 @@ export class HubService {
    */
   async getPopularHubs(
     limit: number = 5,
-  ): Promise<Array<{ totalConnections: number; hub: HubManager }>> {
+  ): Promise<{ totalConnections: number; hub: HubManager }[]> {
     const cacheKey = `popular:${limit}`;
 
     // Try to get from cache first

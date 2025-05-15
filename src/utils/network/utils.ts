@@ -17,7 +17,6 @@
 
 import { Collection, EmbedBuilder, type HexColorString, type Message } from 'discord.js';
 import {
-  type OriginalMessage,
   findOriginalMessage,
   getBroadcasts,
 } from '#src/utils/network/messageUtils.js';
@@ -25,6 +24,7 @@ import Constants from '#utils/Constants.js';
 import { stripTenorLinks } from '#utils/ImageUtils.js';
 import type { ReferredMsgData } from './Types.js';
 import { fetchUserData } from '#src/utils/Utils.js';
+import type { Message as MessageDB } from '#src/generated/prisma/client/client.js';
 
 /**
  * Retrieves the content of a referred message, which can be either the message's text content or the description of its first embed.
@@ -34,7 +34,7 @@ import { fetchUserData } from '#src/utils/Utils.js';
  * @param parseMode The mode in which the original message was sent in.
  * @returns The content of the referred message.
  */
-export const getReferredContent = (originalMsg: OriginalMessage) =>
+export const getReferredContent = (originalMsg: MessageDB) =>
   originalMsg.content.length > 0
     ? originalMsg.content
     : '*Original message contains attachment <:attachment:1102464803647275028>*';
@@ -66,7 +66,7 @@ export const getReferredMsgData = async (
   // fetch the acttual user ("referredMessage" is a webhook message)
   const referredAuthor = await client.users.fetch(dbReferrenceRaw.authorId).catch(() => null);
   const dbReferredAuthor = await fetchUserData(dbReferrenceRaw.authorId);
-  const broadcastedMessages = await getBroadcasts(dbReferrenceRaw.messageId, dbReferrenceRaw.hubId);
+  const broadcastedMessages = await getBroadcasts(dbReferrenceRaw.id);
 
   const dbReferrence = {
     ...dbReferrenceRaw,

@@ -19,7 +19,12 @@ import BaseEventListener from '#src/core/BaseEventListener.js';
 import { HubService } from '#src/services/HubService.js';
 import db from '#src/utils/Db.js';
 import { findOriginalMessage } from '#src/utils/network/messageUtils.js';
-import { addReaction, updateReactions, storeReactions, addNativeReactions } from '#utils/reaction/reactions.js';
+import {
+  addReaction,
+  updateReactions,
+  storeReactions,
+  addNativeReactions,
+} from '#utils/reaction/reactions.js';
 import { checkBlacklists } from '#utils/reaction/helpers.js';
 import type { MessageReaction, PartialMessageReaction, PartialUser, User } from 'discord.js';
 
@@ -60,7 +65,9 @@ export default class ReactionAdd extends BaseEventListener<'messageReactionAdd'>
     let dbReactions: { [key: string]: string[] };
 
     try {
-      dbReactions = originalMsg.reactions ? JSON.parse(originalMsg.reactions) : {};
+      dbReactions = originalMsg.reactions
+        ? (originalMsg.reactions as { [key: string]: string[] })
+        : {};
     }
     catch {
       // Fallback to empty object if parsing fails

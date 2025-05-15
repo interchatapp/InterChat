@@ -76,7 +76,7 @@ export default class MessageDelete extends BaseEventListener<'messageDelete'> {
       .then((msg) => setTimeout(() => msg.delete(), 10_000))
       .catch(() => null);
 
-    await deleteMessageFromHub(hub.id, originalMsg.messageId);
+    await deleteMessageFromHub(hub.id, originalMsg.id);
 
     await logMsgDelete(message.client, originalMsg, await hub.fetchLogConfig(), {
       hubName: hub.data.name,

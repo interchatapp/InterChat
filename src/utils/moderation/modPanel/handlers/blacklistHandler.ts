@@ -20,7 +20,7 @@ import { buildModPanel } from '#src/interactions/ModPanel.js';
 import BlacklistManager from '#src/managers/BlacklistManager.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import type { ModAction } from '#src/utils/moderation/modPanel/utils.js';
-import type { OriginalMessage } from '#src/utils/network/messageUtils.js';
+
 import { deleteConnection } from '#utils/ConnectedListUtils.js';
 import { CustomID } from '#utils/CustomID.js';
 import { type supportedLocaleCodes, t } from '#utils/Locale.js';
@@ -39,6 +39,7 @@ import {
   time,
 } from 'discord.js';
 import ms from 'ms';
+import type { Message as MessageDB } from '#src/generated/prisma/client/client.js';
 
 abstract class BaseBlacklistHandler implements ModAction {
   abstract handle(
@@ -49,7 +50,7 @@ abstract class BaseBlacklistHandler implements ModAction {
 
   abstract handleModal(
     ctx: ComponentContext,
-    originalMsg: OriginalMessage,
+    originalMsg: MessageDB,
     locale: supportedLocaleCodes,
   ): Promise<void>;
 
@@ -343,11 +344,7 @@ export class BlacklistUserHandler extends BaseBlacklistHandler {
     }
   }
 
-  async handleModal(
-    ctx: ComponentContext,
-    originalMsg: OriginalMessage,
-    locale: supportedLocaleCodes,
-  ) {
+  async handleModal(ctx: ComponentContext, originalMsg: MessageDB, locale: supportedLocaleCodes) {
     // Extract duration from customId if it's a reason-only modal
     const customId = ctx.customId;
     const predefinedDuration =
@@ -448,11 +445,7 @@ export class BlacklistServerHandler extends BaseBlacklistHandler {
     }
   }
 
-  async handleModal(
-    ctx: ComponentContext,
-    originalMsg: OriginalMessage,
-    locale: supportedLocaleCodes,
-  ) {
+  async handleModal(ctx: ComponentContext, originalMsg: MessageDB, locale: supportedLocaleCodes) {
     // Extract duration from customId if it's a reason-only modal
     const customId = ctx.customId;
     const predefinedDuration =

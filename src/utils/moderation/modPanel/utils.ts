@@ -18,7 +18,7 @@
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import Context from '#src/core/CommandContext/Context.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
-import type { OriginalMessage } from '#src/utils/network/messageUtils.js';
+import type { Message as MessageDB } from '#src/generated/prisma/client/client.js';
 import { type supportedLocaleCodes } from '#utils/Locale.js';
 import type { Snowflake } from 'discord.js';
 
@@ -30,7 +30,7 @@ export interface ModAction {
   ): Promise<void>;
   handleModal?(
     ctx: ComponentContext,
-    originalMsg: OriginalMessage,
+    originalMsg: MessageDB,
     locale: supportedLocaleCodes,
   ): Promise<void>;
 }

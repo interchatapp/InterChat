@@ -5,8 +5,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
   // directUrl = env("DIRECT_URL") // Uncomment if you use a provider that requires directUrl
 }
 
@@ -80,6 +80,7 @@ model Hub {
   antiSwearRules   AntiSwearRule[]
   infractions      Infraction[]
   invites          HubInvite[]
+  messages         Message[]
 
   @@index([ownerId])
 }
@@ -307,6 +308,7 @@ model User {
   emailVerified DateTime?
 
   // Relations
+  subscriptions         Subscription[]
   ownedHubs             Hub[]                  @relation("OwnedHubs")
   appeals               Appeal[]
   infractions           Infraction[]           @relation("infractions")
@@ -461,4 +463,100 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Models for message data (migrated from Redis)
+model Message {
+  id                String   @id // Discord message ID (Snowflake)
+  hubId             String
+  hub               Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  content           String
+  imageUrl          String?
+  channelId         String
+  guildId           String
+  authorId          String
+  createdAt         DateTime
+  reactions         Json? // Stored as JSON object
+  referredMessageId String?
+
+  // Relations
+  broadcasts Broadcast[]
+  referredBy Message[]   @relation("MessageReference")
+  referredTo Message?    @relation("MessageReference", fields: [referredMessageId], references: [id])
+
+  @@index([hubId])
+  @@index([channelId])
+  @@index([authorId])
+  @@index([createdAt]) // For message cleanup by age
+  @@index([referredMessageId])
+}
+
+model Broadcast {
+  id        String   @id // Discord message ID of the broadcast message
+  messageId String // Original message ID
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  channelId String
+  mode      Int // Connection mode
+  createdAt DateTime @default(now())
+
+  @@unique([id])
+  @@index([messageId])
+  @@index([channelId])
+}
+enum SubscriptionTier {
+  STARTER
+  PLUS
+  PRO
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  PENDING
+}
+
+enum PaymentProvider {
+  KOFI
+  MANUAL
+}
+
+model Subscription {
+  id              String             @id @default(cuid())
+  userId          String
+  user            User               @relation(fields: [userId], references: [id])
+  tier            SubscriptionTier
+  status          SubscriptionStatus @default(ACTIVE)
+  startDate       DateTime           @default(now())
+  endDate         DateTime?
+  renewalDate     DateTime?
+  cancelledAt     DateTime?
+  provider        PaymentProvider
+  providerData    Json?              // Store provider-specific data
+  paymentId       String?            // External payment ID
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  // Relations
+  transactions    Transaction[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([renewalDate]) // For renewal checks
+}
+
+model Transaction {
+  id              String           @id @default(cuid())
+  subscriptionId  String
+  subscription    Subscription     @relation(fields: [subscriptionId], references: [id])
+  amount          Float
+  currency        String
+  status          String           // "succeeded", "failed", "pending", etc.
+  provider        PaymentProvider
+  providerData    Json?            // Store provider-specific data
+  transactionId   String?          // External transaction ID
+  createdAt       DateTime         @default(now())
+
+  @@index([subscriptionId])
 }
