@@ -69,6 +69,11 @@ vote:
 network:
   accountTooNew: '{emoji} {user} Dein Account ist zu neu um Nachrichten mittels InterChat zu senden. Bitte versuche es später erneut.'
   deleteSuccess: '{emoji} Nachricht von {user} wurde von __**{deleted}/{total}**__ Servern gelöscht.'
+  editInProgress: '{emoji} Your request has been queued. Messages will be edited shortly...'
+  editInProgressError: '{emoji} This message is already being edited by another user.'
+  emptyContent: '{emoji} Message content cannot be empty.'
+  newMessageContent: 'New Message Content'
+  editMessagePrompt: '{emoji} Please use the modal to edit your message.'
   editSuccess: '{emoji} Nachricht von {user} wurde auf__**{edited}/{total}**__ Servern bearbeitet.'
   onboarding:
     embed:
