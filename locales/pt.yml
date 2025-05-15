@@ -54,6 +54,7 @@ rules:
     -# Para tentar novamente, envie outra mensagem neste hub.
   noHubRules: Este hub ainda não definiu nenhuma regra específica. No entanto, as [regras gerais do InterChat]({rules_link}) ainda se aplicam.
   hubRules: Regras do Hub
+  viewbotRules: "View Bot Rules"
 vote:
   description: |
     Ajude mais comunidades a descobrir o InterChat! Seu voto no top.gg:
@@ -68,6 +69,11 @@ vote:
 network:
   accountTooNew: '{emoji} {user} Sua conta é muito nova para enviar mensagens usando o InterChat. Tente novamente mais tarde.'
   deleteSuccess: '{emoji} A mensagem de {user} foi excluída de __**{deleted}/{total}**__ servidores.'
+  editInProgress: '{emoji} Your request has been queued. Messages will be edited shortly...'
+  editInProgressError: '{emoji} This message is already being edited by another user.'
+  emptyContent: '{emoji} Message content cannot be empty.'
+  newMessageContent: 'New Message Content'
+  editMessagePrompt: '{emoji} Please use the modal to edit your message.'
   editSuccess: '{emoji} A mensagem de {user} foi editada em __**{edited}/{total}**__ servidores.'
   onboarding:
     embed:
@@ -297,6 +303,7 @@ hub:
       notAllowed: "{emoji} Somente os gerentes do hub podem atualizar a posição de um moderador."
       notOwner: "{emoji} Somente o proprietário deste hub pode atualizar a posição de um gerente."
   manage:
+    dashboardTip: "**🛠️ NEW Dashboard:** Improved interface and more features! Try it out at [your hub's dashboard page]({url})."
     enterImgurUrl: Insira uma URL de imagem Imgur válida que não seja uma galeria ou álbum.
     icon:
       changed: Ícone do Hub alterado com sucesso.
@@ -408,7 +415,7 @@ hub:
     select:
       placeholder: Selecione uma regra para editar ou remover
       option:
-        label: Regra {número}
+        label: Regra {number}
     buttons:
       add: Adicionar regra
       edit: Editar regra
@@ -426,8 +433,8 @@ hub:
     removed: '{emoji} Mensagem de boas-vindas removida.'
     voterOnly: '{emoji} Mensagens de boas-vindas personalizadas são um privilégio exclusivo para eleitores! Vote para desbloquear este recurso.'
     placeholder: |
-      Welcome {user} from {serverName} to {hubName}! 🎉
-      Members: {memberCount}, Hub: {totalConnections}!
+      Bem-vindo {user} de {serverName} ao {hubName}! 🎉
+      Membros: {memberCount}, Hub: {totalConnections}!
 report:
   modal:
     title: Detalhes do relatório
@@ -442,24 +449,23 @@ report:
         label: Descrição detalhada (opcional)
         placeholder: 'Passos que você deu. Por exemplo: 1. Execute /help 2. Aguarde 5 segundos...'
   reasons:
-    spam: Spam or excessive messages
-    advertising: Unwanted advertising or self-promotion
-    nsfw: NSFW or inappropriate content
-    harassment: Harassment or bullying
-    hate_speech: Hate speech or discrimination
-    scam: Scam, fraud, or phishing attempt
-    illegal: Illegal content or activities
-    personal_info: Sharing personal/private information
-    impersonation: Impersonating others
-    breaks_hub_rules: Violates hub rules
-    trolling: Trolling or intentional disruption
-    misinformation: False or misleading information
-    gore_violence: Gore or extreme violence
-    raid_organizing: Organizing raids or attacks
-    underage: Underage user or content
-    other: Other (Please Specify)
+    spam: Spam ou mensagens excessivas
+    advertising: Publicidade indesejada ou autopromoção
+    nsfw: Conteúdo NSFW ou inapropriado
+    harassment: Assédio ou intimidação
+    hate_speech: Discurso de ódio ou discriminação
+    scam: Golpe, fraude ou tentativa de phishing
+    illegal: Conteúdo ou atividades ilegais
+    personal_info: Compartilhamento de informações pessoais/privadas
+    impersonation: Representando outros
+    breaks_hub_rules: Viola as regras do hub
+    trolling: Trolling ou interrupção intencional
+    misinformation: Informações falsas ou enganosas
+    gore_violence: Sangue ou violência extrema
+    raid_organizing: Organizar ataques ou incursões
+    underage: Usuário ou conteúdo menor de idade
   dropdown:
-    placeholder: Select a reason for your report
+    placeholder: Selecione um motivo para o seu relatório
   submitted: '{emoji} Relatório enviado com sucesso. Junte-se ao {support_command} para obter mais detalhes. Obrigado!'
   bug:
     title: Relatório de erro
@@ -499,26 +505,26 @@ errors:
 config:
   setInvite:
     success: |
-      ### {emoji} Invite Link Set
-      - Your server's invite will be used when people use `/joinserver`.
-      - It will be displayed in `/leaderboard server`.
-    removed: '{emoji} Invite removed successfully!'
-    invalid: '{emoji} Invalid invite. Please make sure you have entered a valid invite link. Eg. `https://discord.gg/discord`'
-    notFromServer: '{emoji} This invite is not from this server.'
+      ### {emoji} Conjunto de links de convite
+      - O convite do seu servidor será usado quando as pessoas usarem `/joinserver`.
+      - Ele será exibido em `/leaderboard server`.
+    removed: '{emoji} Invite removed successfully!{emoji} Convite removido com sucesso!'
+    invalid: '{emoji} Convite inválido. Certifique-se de ter inserido um link de convite válido. Por exemplo, `https://discord.gg/discord`'
+    notFromServer: '{emoji} Este convite não é deste servidor'
 badges:
-  shown: '{emoji} Your badges will now be shown in messages.'
-  hidden: '{emoji} Your badges will now be hidden in messages.'
+  shown: '{emoji} Seus emblemas agora serão exibidos nas mensagens'
+  hidden: '{emoji} Seus emblemas agora ficarão ocultos nas mensagens.'
   command:
-    description: '🏅 Configure your badge display preferences'
+    description: ' Configure suas preferências de exibição de crachá'
     options:
       show:
-        name: 'show'
-        description: 'Whether to show or hide your badges in messages'
+        name: 'mostrar'
+        description: 'Se deseja mostrar ou ocultar seus emblemas nas mensagens'
   list:
-    developer: 'Core developer of InterChat'
-    staff: 'InterChat staff member'
-    translator: 'Translator of InterChat'
-    voter: 'Voted for InterChat in the last 12 hours'
+    developer: 'Desenvolvedor principal do InterChat'
+    staff: 'Membro da equipe InterChat'
+    translator: 'Tradutor do InterChat'
+    voter: 'Votou no InterChat nas últimas 12 horas'
 global:
   webhookNoLongerExists: '{emoji} O webhook para este canal não existe mais. Para continuar usando o InterChat, recrie o webhook usando `/connection unpause`.'
   noReason: Nenhuma razão fornecida.
@@ -533,21 +539,21 @@ global:
   cancelled: '{emoji} Cancelled. No changes were made.'
 warn:
   modal:
-    title: Warn User
+    title: Avisar usuário
     reason:
-      label: Reason
-      placeholder: Enter the reason for warning this user...
+      label: Razão
+      placeholder: Insira o motivo do aviso a este usuário...
   success: |
-    {emoji} Successfully warned **{name}**.
+    {emoji} **{name}** foi avisado com sucesso.
 
-    -# They will be notified of the most recent warning the next time they send a message in the hub. Avoid issuing multiple warnings at once.
+    -# Eles serão notificados do aviso mais recente na próxima vez que enviarem uma mensagem no hub. Evite emitir vários avisos de uma vez.
   dm:
-    title: '{emoji} Warning Notification'
-    description: 'You have been warned in hub **{hubName}**'
+    title: '{emoji} Notificação de Aviso'
+    description: 'Você foi avisado no hub **{hubName}**'
   log:
-    title: '{emoji} User Warned'
+    title: '{emoji} Usuário avisado'
     description: |
-      {arrow} **User:** {user} ({userId})
-      {arrow} **Moderator:** {moderator} ({modId})
-      {arrow} **Reason:** {reason}
-    footer: 'Warned by: {moderator}'
+      {arrow} **Usuário:** {user} ({userId})
+      {arrow} **Moderador:** {moderator} ({modId})
+      {arrow} **Motivo:** {reason}
+    footer: 'Avisado por: {moderador}'

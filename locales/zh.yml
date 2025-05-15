@@ -52,6 +52,7 @@ rules:
     -# 如重试，请在此中心另发送一条消息。
   noHubRules: 此中心尚未设置任何细则。但是 [InterChat通用规则]({rules_link}) 仍然适用。
   hubRules: 中心规则
+  viewbotRules: "View Bot Rules"
 vote:
   description: |
     帮助更多社区发现InterChat！您在top.gg的投票将:
@@ -66,6 +67,11 @@ vote:
 network:
   accountTooNew: '{emoji}{user}您的账号注册时间不足，无法在InterChat发送消息。请稍后再试。'
   deleteSuccess: '{emoji}{user}发送的消息已从 __**{deleted}/{total}**__ 服务器中删除。'
+  editInProgress: '{emoji} Your request has been queued. Messages will be edited shortly...'
+  editInProgressError: '{emoji} This message is already being edited by another user.'
+  emptyContent: '{emoji} Message content cannot be empty.'
+  newMessageContent: 'New Message Content'
+  editMessagePrompt: '{emoji} Please use the modal to edit your message.'
   editSuccess: '{emoji}{user}发送的消息已在__**{edited}／{total}**__服务器中完成编辑。'
   onboarding:
     embed:
@@ -303,6 +309,7 @@ hub:
       notAllowed: "{emoji}只有中心管理员可以更新监管员级别。"
       notOwner: "{emoji}只有此中心的所有者可以更新管理员的级别。"
   manage:
+    dashboardTip: "**🛠️ NEW Dashboard:** Improved interface and more features! Try it out at [your hub's dashboard page]({url})."
     enterImgurUrl: 输入一个有效的Imgur图片网址，且该网址不是图库或相册。
     icon:
       changed: 中心图标已成功更改。
@@ -448,24 +455,23 @@ report:
         label: 描述详情（可选）
         placeholder: 要做的步骤。例如：1.运行／帮助 2.等待5秒……
   reasons:
-    spam: Spam or excessive messages
-    advertising: Unwanted advertising or self-promotion
-    nsfw: NSFW or inappropriate content
-    harassment: Harassment or bullying
-    hate_speech: Hate speech or discrimination
-    scam: Scam, fraud, or phishing attempt
-    illegal: Illegal content or activities
-    personal_info: Sharing personal/private information
-    impersonation: Impersonating others
-    breaks_hub_rules: Violates hub rules
-    trolling: Trolling or intentional disruption
-    misinformation: False or misleading information
-    gore_violence: Gore or extreme violence
-    raid_organizing: Organizing raids or attacks
-    underage: Underage user or content
-    other: Other (Please Specify)
+    spam: 垃圾或过多消息
+    advertising: 垃圾推广
+    nsfw: 成人或不恰当内容
+    harassment: 骚扰或欺凌
+    hate_speech: 侮辱性或仇恨言论
+    scam: 诈骗、欺诈或网络钓鱼
+    illegal: 非法的内容或活动
+    personal_info: 泄露个人/私人信息
+    impersonation: 仿冒他人
+    breaks_hub_rules: 违反中心规则
+    trolling: 拖钓或扰乱
+    misinformation: 错误或误导性信息
+    gore_violence: 血腥或极端暴力
+    raid_organizing: 组织袭击
+    underage: 未达年龄限制的用户或内容
   dropdown:
-    placeholder: Select a reason for your report
+    placeholder: 选择您举报的原因
   submitted: '{emoji}报告已成功提交。加入{support_command}获取详情。谢谢！'
   bug:
     title: 故障报告

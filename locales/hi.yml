@@ -1,8 +1,7 @@
 rules:
+  header: 'InterChat Rules'
+  botRulesNote: 'These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:'
   rules: |
-    ### {emoji} Rules
-    These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:
-
     1. **No Hate Speech or Harassment**
     -# > **Includes:** Using slurs or hate speech to attack others, [and more]({guidelines_link}).
     2. **No Illegal Content**
@@ -20,28 +19,29 @@ rules:
 
     You also agree to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines). Check out the [full list of rules]({guidelines_link}).
   welcome: |
-    {emoji} Hi {user}! Ready to connect with other communities?
-    Before you start chatting across servers, let's quickly review our community guidelines. These help keep InterChat a great place for everyone.
-  alreadyAccepted: '{emoji} You have already accepted the rules. You can now use InterChat to its full extent.'
-  continue: Continue
-  accept: Accept
-  decline: Decline
-  agreementNote: By accepting these rules, you agree to follow them while using InterChat. Breaking these rules may result in restrictions or bans.
+    {emoji} हाय {user}! क्या आप दूसरी कम्युनिटीज़ से जुड़ने के लिए तैयार हैं?
+    सर्वर के बीच बातचीत शुरू करने से पहले, आइए जल्दी से हमारी कम्युनिटी गाइडलाइन्स पर एक नज़र डाल लें।
+    यही नियम InterChat को सभी के लिए एक बेहतरीन जगह बनाए रखते हैं।
+  alreadyAccepted: '{emoji} आपने पहले ही नियमों को स्वीकार कर लिया है। अब आप InterChat का पूरा उपयोग कर सकते हैं।'
+  continue: आगे बढ़ें
+  accept: स्वीकार करें
+  decline: अस्वीकार करें
+  agreementNote: इन नियमों को स्वीकार करके, आप InterChat का उपयोग करते समय इन्हें पालन करने के लिए सहमति देते हैं। इन नियमों का उल्लंघन करने पर प्रतिबंध या बैन हो सकता है।
   hubAgreementNote: |
-    By accepting these rules, you agree to follow them while chatting in this hub. Breaking these rules may result in removal from the hub.
+    इन नियमों को स्वीकार करके, आप इस हब में बात करते समय इन्हें पालन करने के लिए सहमति देते हैं। इन नियमों का उल्लंघन करने पर हब से हटा दिया जा सकता है।
 
-    ⚠️ **You cannot send messages in this hub until you accept these rules.**
+    ⚠️ जब तक आप इन नियमों को स्वीकार नहीं करते, आप इस हब में संदेश नहीं भेज सकते। 
   accepted: |
     {emoji} You're all set! Welcome to the InterChat community.
 
-    Quick tips to get started:
-    - Use `/hub browse` to find active communities
-    - Join discussions that interest you
+    {emoji} You're all set! Welcome to the InterChat community.
+
+    ### Get Started Quickly:
+    - Visit `/hub browse` to find active communities
+    - Join discussions that interest you or create your own through our __dashboard__
     - Use our new `/call` command to connect with single servers
 
-    Need help? Join our [community]({support_invite}) - we're happy to help!
-
-    Love what we're building? Consider [supporting us]({donateLink}) to help keep InterChat running.
+    Need help? Join our [community]({support_invite}) - we're happy to help! Please consider supporting us by [donating]({donateLink}) to help InterChat grow and thrive.
   declined: |
     {emoji} You have declined the InterChat rules.
     -# ⚠️ **You won't be able to use InterChat or chat with other servers until you accept the rules.**
@@ -53,97 +53,103 @@ rules:
     {emoji} You have declined the rules for {hubName}.
     -# ⚠️ **You won't be able to send messages in this hub until you accept its rules.**
     -# To try again, send another message in this hub.
-  noHubRules: This hub has not set any specific rules yet. However, the [general InterChat rules]({rules_link}) still apply.
-  hubRules: Hub Rules
+  noHubRules: इस हब ने अभी तक कोई विशेष नियम निर्धारित नहीं किए हैं। हालांकि, [general InterChat rules]({rules_link}) अभी भी लागू हैं।
+  hubRules: हब नियम
+  viewbotRules: "View Bot Rules"
 vote:
   description: |
     Help more communities discover InterChat! Your vote on top.gg:
-    • Helps others find active communities
-    • Unlocks special features for you
-    • Supports our independent development
-  footer: "Votes refresh every 12 hours • Thanks for supporting InterChat!"
+    - Helps others find active communities
+    - Unlocks special features for you
+    - Supports our independent development
+  footer: "वोट हर बारह (12) घंटे में रीफ़्रेश होते हैं • InterChat का समर्थन करने के लिए धन्यवाद!"
   button:
-    label: "Vote on top.gg"
+    label: "top.gg पर वोट करें"
   perks:
-    moreComingSoon: "More perks coming soon! Suggest some in the [support server]({support_invite})."
+    moreComingSoon: "और फायदे जल्द ही आ रहे हैं! कुछ सुझाव [सपोर्ट सर्वर]({support_invite}) में दें।"
 network:
-  accountTooNew: '{emoji} {user} Your account is too new to send messages using InterChat. Please try again later.'
-  deleteSuccess: '{emoji} Message by {user} has been deleted from __**{deleted}/{total}**__ servers.'
-  editSuccess: '{emoji} Message by {user} has been edited in __**{edited}/{total}**__ servers.'
+  accountTooNew: '{emoji} {user} आपका खाता InterChat का उपयोग करके संदेश भेजने के लिए बहुत नया है। कृपया बाद में प्रयास करें।'
+  deleteSuccess: '{emoji} {user} द्वारा भेजा गया संदेश __**{deleted}/{total}**__ सर्वरों से हटा दिया गया है।'
+  editInProgress: '{emoji} Your request has been queued. Messages will be edited shortly...'
+  editInProgressError: '{emoji} This message is already being edited by another user.'
+  emptyContent: '{emoji} Message content cannot be empty.'
+  newMessageContent: 'New Message Content'
+  editMessagePrompt: '{emoji} Please use the modal to edit your message.'
+  editSuccess: '{emoji} {user} द्वारा भेजा गया संदेश __**{edited}/{total}**__ सर्वरों में संपादित कर दिया गया है।'
   onboarding:
     embed:
-      title: '👋 Welcome to {hubName}!'
+      title: '👋 {hubName} में आपका स्वागत है!'
       description: |
-        You've found an active community hub! Before joining the discussion, take a quick look at our guidelines to keep conversations engaging and friendly for everyone.
-      footer: InterChat Network | Version {version}
-    inProgress: '{emoji} {channel} is already in the process of being setup to join a hub. Please wait for the setup to complete or cancel it if you were the one who initiated it.'
+        आपने एक सक्रिय कम्युनिटी हब ढूंढ लिया है! चर्चा में शामिल होने से पहले, हमारी गाइडलाइन्स पर एक नज़र डाल लें ताकि बातचीत सभी के लिए मनोरंजक और शांतिपूर्ण बनी रहे।
+      footer: InterChat नेटवर्क | संस्करण {version}
+    inProgress: '{emoji} {channel} पहले से ही एक हब में शामिल होने के लिए सेटअप होने की प्रक्रिया में है। कृपया सेटअप को पूरा करने या रद्द करने के लिए प्रतीक्षा करें यदि आप इसे शुरू करने वाले थे।'
 blacklist:
-  success: '{emoji} **{name}** has been successfully blacklisted!'
-  removed: '{emoji} **{name}** has been removed from the blacklist!'
+  success: '{emoji} **{name}** सफलतापूर्ण ब्लैकलिस्ट हो गया है!'
+  removed: '{emoji} **{name}** ब्लैकलिस्ट से हटा दिया गया है!'
   modal:
     reason:
-      label: Reason
-      placeholder: Reason for blacklisting
+      label: कारण
+      placeholder: ब्लैकलिस्ट करने का कारण
     duration:
-      label: Duration
-      placeholder: 'Duration of blacklist. Eg: 1d, 1w, 1m, 1y. Leave blank for permanent.'
+      label: अवधि
+      placeholder: 'ब्लैकलिस्ट की अवधि। जैसे: 1d, 1w, 1m, 1y। स्थायी के लिए खाली छोड़ें।'
   user:
     cannotBlacklistMod: '{emoji} You cannot blacklist a moderator. Please remove their moderator role first.'
-    alreadyBlacklisted: '{emoji} This user is already blacklisted.'
+    alreadyBlacklisted: '{emoji} यह User पहले से ही ब्लैकलिस्टेड है।'
     easterEggs:
-      blacklistBot: You can't blacklist me wtf.
+      blacklistBot: आप मुझे ब्लैकलिस्ट नहीं कर सकते, wtf.
   server:
-    alreadyBlacklisted: '{emoji} This server is already blacklisted.'
-    unknownError: Failed to blacklist **{server}**. Enquire with the developers for more information.
+    alreadyBlacklisted: '{emoji} यह सर्वर पहले से ही ब्लैकलिस्टेड है।'
+    unknownError: '**{server}** को ब्लैकलिस्ट करने में विफल रहा। अधिक जानकारी के लिए डेवलपर्स से पूछताछ करें।'
   list:
     user: |
-      **UserID:** {id}
-      **Moderator:** {moderator}
-      **Reason:** {reason}
-      **Expires:** {expires}
+      **User ID:** {id}
+      **मॉडरेटर:** {moderator}
+      **कारण:** {reason}
+      **समाप्ति:** {expires}
     server: |
-      **ServerId:** {id}
-      **Moderator:** {moderator}
-      **Reason:** {reason}
-      **Expires:** {expires}
+      **सर्वर ID:** {id}
+      **मॉडरेटर:** {moderator}
+      **कारण:** {reason}
+      **समाप्ति:** {expires}
 msgInfo:
   buttons:
-    message: Message Info
-    server: Server Info
-    user: User Info
-    report: Report
+    message: संदेश जानकारी
+    server: सर्वर जानकारी
+    user: User जानकारी
+    report: रिपोर्ट
   report:
-    notEnabled: '{emoji} Reporting is not enabled for this hub.'
-    success: '{emoji} Report submitted successfully. Thank you!'
+    notEnabled: '{emoji} इस हब के लिए रिपोर्टिंग सक्षम नहीं है।'
+    success: '{emoji} रिपोर्ट सफलतापूर्वक सबमिट की गई। धन्यवाद!'
 invite: |
   Thank you for choosing to invite InterChat! If you have any questions or need help, we are always here to help you in the support server!
 
   **[{invite_emoji} `Invite Link`]( {invite} ) [{support_emoji} `Support Server`]( {support} )**
 connection:
   joinRequestsDisabled: '{emoji} Join requests are disabled for this hub.'
-  notFound: '{emoji} Invalid connection. Verify the channel ID or select from displayed options.'
-  channelNotFound: '{emoji} Unable to find connected channel. To talk again choose a new channel.'
-  alreadyConnected: '{emoji} Channel {channel} is already connected to a hub.'
-  switchChannel: '{emoji} Select a channel to switch to using the select menu below:'
+  notFound: '{emoji} अमान्य कनेक्शन। चैनल ID की पुष्टि करें या प्रदर्शित विकल्पों से चुनें।'
+  channelNotFound: '{emoji} कनेक्टेड चैनल नहीं मिला। फिर से बात करने के लिए एक नया चैनल चुनें।'
+  alreadyConnected: '{emoji} चैनल {channel} पहले से ही एक हब से कनेक्टेड है।'
+  switchChannel: '{emoji} नीचे दिए गए चयन मेनू का उपयोग करके स्विच करने के लिए एक चैनल चुनें:'
   switchCalled: '{emoji} Channel switch called, use the command again to view new connection.'
-  switchSuccess: '{emoji} Channel switched. You are now connected from **{channel}**.'
-  inviteRemoved: '{emoji} Server Invite removed for this hub.'
+  switchSuccess: '{emoji} चैनल स्विच हो गया है। आप अब **{channel}** से कनेक्ट हो गए हैं।'
+  inviteRemoved: '{emoji} इस हब के लिए सर्वर आमंत्रण हटा दिया गया है।'
   setInviteError: '{emoji} Unable to create invite. Please grant me  the `Create Invite` permission for the connected channel.'
   inviteAdded: '{emoji} Invite Added. Others can now join this server by using `Apps > Message Info/Report` command and `/joinserver` command.'
-  emColorInvalid: '{emoji} Invalid color. Please make sure you have entered a valid hex color code.'
-  emColorChange: '{emoji} Embed color successfully {action}'
+  emColorInvalid: '{emoji} अमान्य रंग। कृपया सुनिश्चित करें कि आपने एक वैध हेक्स रंग कोड दर्ज किया है।'
+  emColorChange: '{emoji} एंबेड रंग सफलतापूर्वक {action}'
   embed:
-    title: Connection Details
+    title: कनेक्शन जानकारी
     fields:
-      hub: Hub
-      channel: Channel
-      invite: Invite
+      hub: हब
+      channel: चैनल
+      invite: आमंत्रण
       connected: Connected
-      emColor: Embed Color
+      emColor: एंबेड रंग
       compact: Compact Mode
     footer: Use the dropdown menu below to manage your connection.
   selects:
-    placeholder: '🛠️ Select an option to edit this connection'
+    placeholder: '🛠️ इस कनेक्शन को संपादित करने के लिए एक विकल्प चुनें'
   unpaused:
     desc: |
       ### {tick_emoji} Unpaused Connection
@@ -228,7 +234,7 @@ hub:
       banner:
         label: Banner URL
         placeholder: Enter an Imgur image URL.
-    maxHubs: '{emoji} You have reached the maximum number of hubs ({maxHubs}) you can create. Please delete a hub before creating another one. [Vote for InterChat]({voteUrl}) to create more hubs.'
+    maxHubs: '{emoji} [Vote for InterChat]({voteUrl}) to create more hubs! You have reached the maximum number of hubs ({maxHubs}) you can create.'
     invalidName: '{emoji} Invalid hub name. It must not contain `discord`, `clyde` or \`\`\` . Please choose another name.'
     nameTaken: '{emoji} This hub name is already taken. Please choose another name.'
     success: |
@@ -307,6 +313,7 @@ hub:
       notAllowed: "{emoji} Only hub managers can update a moderator's position."
       notOwner: "{emoji} Only the owner of this hub can update a manager's position."
   manage:
+    dashboardTip: "**🛠️ NEW Dashboard:** Improved interface and more features! Try it out at [your hub's dashboard page]({url})."
     enterImgurUrl: Enter a valid Imgur image URL that is not a gallery or album.
     icon:
       changed: Hub icon successfully changed.
@@ -451,6 +458,24 @@ report:
       input2:
         label: Detailed Description (Optional)
         placeholder: Steps you took. Eg. 1. Run /help 2. Wait for 5 seconds...
+  reasons:
+    spam: Spam or excessive messages
+    advertising: Unwanted advertising or self-promotion
+    nsfw: NSFW or inappropriate content
+    harassment: Harassment or bullying
+    hate_speech: Hate speech or discrimination
+    scam: Scam, fraud, or phishing attempt
+    illegal: Illegal content or activities
+    personal_info: Sharing personal/private information
+    impersonation: Impersonating others
+    breaks_hub_rules: Violates hub rules
+    trolling: Trolling or intentional disruption
+    misinformation: False or misleading information
+    gore_violence: Gore or extreme violence
+    raid_organizing: Organizing raids or attacks
+    underage: Underage user or content
+  dropdown:
+    placeholder: Select a reason for your report
   submitted: '{emoji} Report submitted successfully. Join the {support_command} to get more details. Thank you!'
   bug:
     title: Bug Report

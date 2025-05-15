@@ -52,6 +52,7 @@ rules:
     .....
   noHubRules: See keskus ei ole veel konkreetseid reegleid kehtestanud. Siiski kehtivad [InterChat'i üldreeglid]({rules_link}).
   hubRules: Keskuse reeglid
+  viewbotRules: "View Bot Rules"
 vote:
   description: |
     Aidake rohkematel kogukondadel avastada InterChat! Sinu hääl saidil top.gg:
@@ -66,6 +67,11 @@ vote:
 network:
   accountTooNew: '{emoji} {user} Teie konto on InterChati kaudu sõnumite saatmiseks liiga uus. Proovige hiljem uuesti.'
   deleteSuccess: '{emoji} Sõnum kasutajalt {user} on kustutatud __**{deleted}/{total}**__ serveritest.'
+  editInProgress: '{emoji} Your request has been queued. Messages will be edited shortly...'
+  editInProgressError: '{emoji} This message is already being edited by another user.'
+  emptyContent: '{emoji} Message content cannot be empty.'
+  newMessageContent: 'New Message Content'
+  editMessagePrompt: '{emoji} Please use the modal to edit your message.'
   editSuccess: '{emoji} Sõnum kasutajalt {user} on muudetud __**{edited}/{total}**__ serveritest.'
   onboarding:
     embed:
@@ -303,6 +309,7 @@ hub:
       notAllowed: "{emoji} Ainult keskuse haldurid saavad moderaatori rolli muuta."
       notOwner: "{emoji} Ainult selle keskuse omanik saab halduri rolli muuta."
   manage:
+    dashboardTip: "**🛠️ NEW Dashboard:** Improved interface and more features! Try it out at [your hub's dashboard page]({url})."
     enterImgurUrl: Sisestage kehtiv Imgur'i pildi URL, mis ei ole galerii ega album.
     icon:
       changed: Keskuse ikooni muutmine õnnestus.
@@ -463,7 +470,6 @@ report:
     gore_violence: Gore or extreme violence
     raid_organizing: Organizing raids or attacks
     underage: Underage user or content
-    other: Other (Please Specify)
   dropdown:
     placeholder: Select a reason for your report
   submitted: '{emoji} Report submitted successfully. Join the {support_command} to get more details. Thank you!'
