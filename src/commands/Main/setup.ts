@@ -141,10 +141,12 @@ export default class SetupCommand extends BaseCommand {
           stripIndents`
           Welcome to InterChat Setup!
 
-          Let's get your server connected to the InterChat network. This setup will guide you through:
+          Let's get your server connected to the InterChat hub network. This setup will guide you through:
           1. Selecting a channel for InterChat messages
-          2. Connecting to or creating a hub
+          2. Connecting to a hub community or creating your own
           3. Configuring basic settings
+
+          InterChat's main feature is Hubs - persistent chat communities that connect multiple servers together!
           `,
           'info_icon',
         ),
@@ -1103,7 +1105,7 @@ export default class SetupCommand extends BaseCommand {
       container.addTextDisplayComponents(
         ui.createSection(
           'What is a Hub?',
-          'A hub is a shared chat space where multiple servers can talk together. Think of it like a bridge connecting different Discord servers.',
+          'A hub is InterChat\'s main feature - a shared chat space where multiple servers can talk together. Hubs are persistent communities that stay connected 24/7, unlike temporary calls.',
         ),
       );
 
@@ -1112,10 +1114,10 @@ export default class SetupCommand extends BaseCommand {
         ui.createSubsection(
           'Popular Hubs',
           stripIndents`
-          - Join existing active communities
-          - Start chatting immediately
-          - Great for new users
-          - No setup required
+          - Join thriving active communities with thousands of users
+          - Start chatting immediately with other servers
+          - Perfect for new users to experience InterChat
+          - No additional setup required - just connect and chat!
           `,
         ),
       );
@@ -1124,10 +1126,10 @@ export default class SetupCommand extends BaseCommand {
         ui.createSubsection(
           'Create Your Own Hub',
           stripIndents`
-          - Start a fresh community
-          - Full control over settings
-          - Invite specific servers
-          - Set your own rules
+          - Start your own community themed around your interests
+          - Full control over settings, moderation, and features
+          - Invite specific servers to create a private network
+          - Set custom rules, welcome messages, and more
           `,
         ),
       );

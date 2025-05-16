@@ -20,9 +20,11 @@ import Context from '#src/core/CommandContext/Context.js';
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import { CallService } from '#src/services/CallService.js';
+import Constants from '#src/utils/Constants.js';
 import { UIComponents } from '#src/utils/DesignSystem.js';
 import { CustomID } from '#utils/CustomID.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
+import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -30,6 +32,7 @@ import {
   ContainerBuilder,
   GuildTextBasedChannel,
   MessageFlags,
+  TextDisplayBuilder,
 } from 'discord.js';
 
 /**
@@ -102,16 +105,21 @@ export default class HangupCommand extends BaseCommand {
         // Create success message
         const container = ui.createSuccessMessage(
           'Call Ended',
-          'Rate your experience or start a new call',
+          'Rate your experience or try InterChat\'s main feature - Hubs!',
         );
 
-        // Add new call button
+        // Add hub and call buttons
         container.addActionRowComponents((row) =>
           row.addComponents(
             new ButtonBuilder()
+              .setCustomId(new CustomID().setIdentifier('hangup', 'explore-hubs').toString())
+              .setLabel('Explore Hubs')
+              .setStyle(ButtonStyle.Primary)
+              .setEmoji(ctx.getEmoji('house_icon')),
+            new ButtonBuilder()
               .setCustomId(new CustomID().setIdentifier('hangup', 'new-call').toString())
               .setLabel('New Call')
-              .setStyle(ButtonStyle.Primary)
+              .setStyle(ButtonStyle.Secondary)
               .setEmoji(ctx.getEmoji('call_icon')),
           ),
         );
@@ -138,6 +146,118 @@ export default class HangupCommand extends BaseCommand {
         flags: [MessageFlags.IsComponentsV2],
       });
     }
+  }
+
+  @RegisterInteractionHandler('hangup', 'explore-hubs')
+  async handleExploreHubsButton(ctx: ComponentContext) {
+    await ctx.deferUpdate();
+
+    const ui = new UIComponents(ctx.client);
+    const container = new ContainerBuilder();
+
+    // Add header
+    container.addTextDisplayComponents(
+      ui.createHeader(
+        'InterChat Hubs',
+        'Hubs are the main feature of InterChat, connecting servers in persistent chat communities',
+        'house_icon',
+      ),
+    );
+
+    // Add separator
+    ui.addSeparator(container);
+
+    // Add hub description
+    container.addTextDisplayComponents(
+      ui.createSection(
+        'Why Choose Hubs?',
+        'Hubs offer a more reliable and feature-rich experience than calls:',
+      ),
+    );
+
+    // Add hub benefits
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        stripIndents`
+        • **Persistent Connections** - Messages stay even when you're offline
+        • **Multiple Communities** - Join various themed hubs or create your own
+        • **Advanced Moderation** - Content filtering, anti-spam, and more
+        • **Rich Features** - Custom welcome messages, rules, and settings
+        • **Active Communities** - Thousands of servers already connected
+        `,
+      ),
+    );
+
+    // Add action buttons for URL button
+    ui.createActionButtons(
+      container,
+      {
+        label: 'Browse All Hubs',
+        url: `${Constants.Links.Website}/hubs`,
+        emoji: 'globe_icon',
+      },
+    );
+
+    // Add custom buttons separately
+    container.addActionRowComponents((row) =>
+      row.addComponents(
+        new ButtonBuilder()
+          .setCustomId(new CustomID().setIdentifier('hangup', 'redirect-connect').toString())
+          .setLabel('Connect to a Hub')
+          .setStyle(ButtonStyle.Primary)
+          .setEmoji(ctx.getEmoji('connect')),
+        new ButtonBuilder()
+          .setCustomId(new CustomID().setIdentifier('hangup', 'redirect-create').toString())
+          .setLabel('Create Your Hub')
+          .setStyle(ButtonStyle.Secondary)
+          .setEmoji(ctx.getEmoji('plus_icon')),
+      ),
+    );
+
+    await ctx.editReply({
+      components: [container],
+      flags: [MessageFlags.IsComponentsV2],
+    });
+  }
+
+  @RegisterInteractionHandler('hangup', 'redirect-connect')
+  async handleRedirectConnectButton(ctx: ComponentContext) {
+    await ctx.deferUpdate();
+
+    // Create a new context to simulate running the connect command
+    const connectCommand = ctx.client.commands.get('connect');
+    if (connectCommand?.execute) {
+      await connectCommand.execute(ctx);
+    }
+    else {
+      await ctx.reply({
+        content: `${ctx.getEmoji('x_icon')} Could not find the connect command. Please use \`/connect\` manually.`,
+        flags: ['Ephemeral'],
+      });
+    }
+  }
+
+  @RegisterInteractionHandler('hangup', 'redirect-create')
+  async handleRedirectCreateButton(ctx: ComponentContext) {
+    await ctx.deferUpdate();
+
+    const ui = new UIComponents(ctx.client);
+    const container = ui.createInfoMessage(
+      'Create a New Hub',
+      'To create your own hub, use the `/hub create` command and follow the prompts.',
+    );
+
+    // Add button to create hub
+    ui.createActionButtons(container, {
+      label: 'Create Hub',
+      customId: new CustomID().setIdentifier('connect', 'redirect-create').toString(),
+      emoji: 'plus_icon',
+    });
+
+    await ctx.reply({
+      components: [container],
+      flags: [MessageFlags.IsComponentsV2, 'Ephemeral'],
+    });
   }
 
   @RegisterInteractionHandler('hangup', 'new-call')
@@ -169,12 +289,21 @@ export default class HangupCommand extends BaseCommand {
 
     const ui = new UIComponents(ctx.client);
 
+    // Add beta notice and hub promotion at the top
+    const container = new ContainerBuilder();
+
+    container.addTextDisplayComponents(
+      ui.createSubsection(
+        '🌟 Discover InterChat Hubs!',
+        'Calls are in beta. For a more reliable experience, try InterChat Hubs - our main feature for connecting servers!',
+        'info_icon',
+      ),
+    );
+
     if (result.success) {
       // Call was initiated successfully
       if (result.message.includes('queue')) {
         // In queue - waiting for match
-        const container = new ContainerBuilder();
-
         container.addTextDisplayComponents(
           ui.createHeader(
             'Call Initiated',
@@ -200,8 +329,6 @@ export default class HangupCommand extends BaseCommand {
       }
       else {
         // Connected immediately
-        const container = new ContainerBuilder();
-
         container.addTextDisplayComponents(
           ui.createHeader(
             'Call Connected!',
@@ -233,7 +360,23 @@ export default class HangupCommand extends BaseCommand {
     }
     else {
       // Error occurred
-      const container = ui.createErrorMessage('Call Failed', result.message);
+      container.addTextDisplayComponents(
+        ui.createHeader(
+          'Call Failed',
+          result.message,
+          'x_icon',
+        ),
+      );
+
+      // Add explore hubs button
+      ui.createActionButtons(
+        container,
+        {
+          label: 'Explore Hubs',
+          customId: new CustomID().setIdentifier('hangup', 'explore-hubs').toString(),
+          emoji: 'house_icon',
+        },
+      );
 
       await ctx.editReply({
         components: [container],
