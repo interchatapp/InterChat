@@ -198,7 +198,7 @@ hub:
     actionsUpdated: '{emoji} Se han actualizado las acciones a tomar por la regla. **Nuevas acciones:** {actions}'
     selectRuleToEdit: Selecciona una regla para editar sus palabras/acciones
     listDescription: |
-      ### {emoji} Reglas contra palabrotas 
+      ### {emoji} Reglas contra palabrotas
       Este hub tiene {totalRules}/2 reglas contra palabrotas configuradas.
     listFooter: Selecciona una regla usando el menú para ver sus detalles completos.
     ruleDescription: |
@@ -238,21 +238,21 @@ hub:
     invalidName: '{emoji} Nombre de la concentración no válida. No debe contener `discord`,`clyde` o `/`. Elija otro nombre.'
     nameTaken: '{emoji} Este nombre del centro ya está tomado. Elija otro nombre.'
     success: |
-      ## ¡Centro creado! Está __private__ por defecto. 
-      Usa `/hub edit hub:{name}` para personalizar tu hub. Sigue los pasos a continuación para comenzar: 
-      ### Próximos pasos: 
-      1. **Crear una invitación:** 
-      > Usa `/hub invite create` para generar una invitación y permitir que otros se unan. 
-      2. **Vincula un canal:** 
-      > Usa `/connect` **con el enlace de invitación generado previamente** para vincular un canal al hub y empezar a chatear. 
-      3. **Configurar el hub:** (Recomendado) 
-      > Usa `/hub config settings`, `/hub config logging` y `/hub config anti-swear` para ajustar la configuración del hub. 
-      4. **Agregar moderadores:** 
-      > Usa `/hub moderator add` para asignar moderadores al hub. 
-      5. **Personalizar el hub:** 
-      > Usa `/hub edit` para cambiar el ícono, el banner y la descripción del hub. 
-      6. **Hacerlo público:** 
-      > Usa `/hub visibility` para hacer el hub público y permitir que otros lo exploren y se unan sin necesidad de una invitación. (Opcional) 
+      ## ¡Centro creado! Está __private__ por defecto.
+      Usa `/hub edit hub:{name}` para personalizar tu hub. Sigue los pasos a continuación para comenzar:
+      ### Próximos pasos:
+      1. **Crear una invitación:**
+      > Usa `/hub invite create` para generar una invitación y permitir que otros se unan.
+      2. **Vincula un canal:**
+      > Usa `/connect` **con el enlace de invitación generado previamente** para vincular un canal al hub y empezar a chatear.
+      3. **Configurar el hub:** (Recomendado)
+      > Usa `/hub config settings`, `/hub config logging` y `/hub config anti-swear` para ajustar la configuración del hub.
+      4. **Agregar moderadores:**
+      > Usa `/hub moderator add` para asignar moderadores al hub.
+      5. **Personalizar el hub:**
+      > Usa `/hub edit` para cambiar el ícono, el banner y la descripción del hub.
+      6. **Hacerlo público:**
+      > Usa `/hub visibility` para hacer el hub público y permitir que otros lo exploren y se unan sin necesidad de una invitación. (Opcional)
 
       Si tienes preguntas o necesitas ayuda, no dudes en preguntar en el [servidor de soporte]({support_invite}). Considera [donar]({donateLink}) para ayudar a cubrir los costos de desarrollo.
   delete:
