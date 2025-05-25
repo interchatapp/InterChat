@@ -7,7 +7,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  // directUrl = env("DIRECT_URL") // Uncomment if you use a provider that requires directUrl
+  directUrl = env("DIRECT_URL") // Uncomment if you use a provider that requires directUrl
 }
 
 enum Role {
@@ -81,6 +81,7 @@ model Hub {
   infractions      Infraction[]
   invites          HubInvite[]
   messages         Message[]
+  reports          Report[]
 
   @@index([ownerId])
 }
@@ -323,6 +324,11 @@ model User {
   tutorialProgress      UserTutorialProgress[]
   accounts              Account[]
   sessions              Session[]
+  reportsSubmitted      Report[]               @relation("ReportsSubmitted")
+  reportsReceived       Report[]               @relation("ReportsReceived")
+  reportsHandled        Report[]               @relation("ReportsHandled")
+  achievements          UserAchievement[]
+  achievementProgress   UserAchievementProgress[]
 }
 
 model Announcement {
@@ -464,6 +470,48 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+// Achievement related models
+model Achievement {
+  id          String   @id @unique
+  name        String
+  description String
+  badgeEmoji  String
+  badgeUrl    String?
+  threshold   Int      @default(1)
+  secret      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  userAchievements UserAchievement[]
+  userProgress     UserAchievementProgress[]
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  unlockedAt    DateTime    @default(now())
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+  @@index([achievementId])
+}
+
+model UserAchievementProgress {
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  currentValue  Int         @default(0)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@id([userId, achievementId])
+}
+
 // Models for message data (migrated from Redis)
 model Message {
   id                String   @id // Discord message ID (Snowflake)
@@ -501,4 +549,37 @@ model Broadcast {
   @@unique([id])
   @@index([messageId])
   @@index([channelId])
+}
+
+// Report tracking model for enhanced moderation
+model Report {
+  id              String      @id @default(nanoid(10)) // Short, unique report ID
+  hubId           String
+  hub             Hub         @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  reporterId      String      // User who submitted the report
+  reporter        User        @relation("ReportsSubmitted", fields: [reporterId], references: [id])
+  reportedUserId  String      // User being reported
+  reportedUser    User        @relation("ReportsReceived", fields: [reportedUserId], references: [id])
+  reportedServerId String     // Server where the reported content originated
+  messageId       String?     // ID of the reported message (if applicable)
+  reason          String      // Reason for the report
+  status          ReportStatus @default(PENDING)
+  handledBy       String?     // Moderator who handled the report
+  handler         User?       @relation("ReportsHandled", fields: [handledBy], references: [id])
+  handledAt       DateTime?   // When the report was handled
+  evidence        Json?       // Evidence data (content, attachments, etc.)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([hubId])
+  @@index([reporterId])
+  @@index([reportedUserId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum ReportStatus {
+  PENDING
+  RESOLVED
+  IGNORED
 }
