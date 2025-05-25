@@ -27,6 +27,10 @@ export default class HubConnectionsManager {
     this.hub = hub;
   }
 
+  async fetchCount() {
+    return await db.connection.count({ where: { hubId: this.hub.id } });
+  }
+
   async fetch(channelId: string): Promise<ConnectionManager | null>;
   async fetch(): Promise<ConnectionManager[]>;
   async fetch(channelId?: string): Promise<ConnectionManager[] | ConnectionManager | null> {
