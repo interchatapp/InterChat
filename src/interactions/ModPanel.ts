@@ -183,6 +183,7 @@ export async function buildModPanel(ctx: Context | Interaction, originalMsg: Mes
 
 function buildButtons(ctx: Context | Interaction, messageId: Snowflake, opts: BuilderOpts) {
   const author = ctx.user;
+
   const firstRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
       .setCustomId(new CustomID('modPanel:blacklistUser', [author.id, messageId]).toString())
@@ -249,12 +250,9 @@ function buildInfoEmbed(username: string, servername: string, client: Client, op
     ? '~~This user is already banned.~~'
     : 'Ban this user from the entire bot.';
 
-  return new EmbedBuilder()
-    .setColor(Constants.Colors.invisible)
-    .setFooter({
-      text: 'Target will be notified of the blacklist. Use /blacklist list to view all blacklists.',
-    })
-    .setDescription(stripIndents`
+  return new EmbedBuilder().setColor(Constants.Colors.invisible).setFooter({
+    text: 'Target will be notified of the blacklist. Use /blacklist list to view all blacklists.',
+  }).setDescription(stripIndents`
         ### ${getEmoji('clock_icon', client)} Moderation Actions
         **${getEmoji('person_icon', client)} Blacklist User**: ${userEmbedDesc}
         **${getEmoji('globe_icon', client)} Blacklist Server**: ${serverEmbedDesc}

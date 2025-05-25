@@ -369,7 +369,6 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
         : null;
 
       const channelStatus = channelId ? `<#${channelId}>` : x_icon;
-      // eslint-disable-next-line no-nested-ternary
       const roleStatus = roleId
         ? `<@&${roleId}>`
         : hubLogManager.logsWithRoleId.includes(type)

@@ -15,13 +15,19 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import Logger from '#src/utils/Logger.js';
 import type { ClusterClient } from 'discord-hybrid-sharding';
 import type {
-  APIActionRowComponent,
-  APIComponentInMessageActionRow,
+  ActionRowData,
+  APIMessageTopLevelComponent,
   Channel,
   Client,
   EmbedBuilder,
+  JSONEncodable,
+  MessageActionRowComponentBuilder,
+  MessageActionRowComponentData,
+  MessageFlags,
+  TopLevelComponentData,
 } from 'discord.js';
 
 /**
@@ -33,46 +39,63 @@ import type {
 export const sendLog = async (
   cluster: ClusterClient<Client>,
   channelId: string,
-  embed: EmbedBuilder,
+  embed: EmbedBuilder | null,
   opts?: {
     content?: string;
     roleMentionIds?: readonly string[];
-    components?: APIActionRowComponent<APIComponentInMessageActionRow>[];
+    components?: readonly (
+      | JSONEncodable<APIMessageTopLevelComponent>
+      | TopLevelComponentData
+      | ActionRowData<MessageActionRowComponentData>
+      | APIMessageTopLevelComponent
+      | MessageActionRowComponentBuilder
+      | ActionRowData<MessageActionRowComponentData | MessageActionRowComponentBuilder>
+    )[];
+    flags?: Array<
+      MessageFlags.SuppressEmbeds | MessageFlags.SuppressNotifications | MessageFlags.IsComponentsV2
+    >;
   },
 ): Promise<{ id: string } | null> => {
-  const result = await cluster.broadcastEval(
-    async (shardClient, ctx) => {
-      const channel = (await shardClient.channels
-        .fetch(ctx.channelId)
-        .catch(() => null)) as Channel | null;
+  const result = await cluster
+    .broadcastEval(
+      async (shardClient, ctx) => {
+        const channel = (await shardClient.channels
+          .fetch(ctx.channelId)
+          .catch(() => null)) as Channel | null;
 
-      if (channel?.isSendable()) {
-        const message = await channel
-          .send({
-            content: `${ctx.roleMentionIds?.map((id) => `<@&${id}>`).join(' ') ?? ''} ${ctx.content ?? ''}`,
-            embeds: [ctx.embed],
-            components: ctx.components,
-            allowedMentions: { roles: ctx.roleMentionIds },
-          })
-          .catch(() => null);
+        if (channel?.isSendable()) {
+          const message = await channel
+            .send({
+              content: `${ctx.roleMentionIds?.map((id) => `<@&${id}>`).join(' ') ?? ''} ${ctx.content ?? ''}`,
+              embeds: ctx.embed ? [ctx.embed] : undefined,
+              components: ctx.components,
+              allowedMentions: { roles: ctx.roleMentionIds },
+              flags: ctx.flags,
+            })
+            .catch(() => null);
 
-        if (message) {
-          return { id: message.id };
+          if (message) {
+            return { id: message.id };
+          }
         }
-      }
-      return null;
-    },
-    {
-      context: {
-        channelId,
-        embed: embed.toJSON(),
-        content: opts?.content,
-        components: opts?.components,
-        roleMentionIds: opts?.roleMentionIds,
+        return null;
       },
-    },
-  );
+      {
+        context: {
+          channelId,
+          embed: embed?.toJSON(),
+          content: opts?.content,
+          flags: opts?.flags,
+          components: opts?.components,
+          roleMentionIds: opts?.roleMentionIds,
+        },
+      },
+    )
+    .catch((e) => {
+      Logger.error(e);
+      return null;
+    });
 
   // Find the first non-null result (the message that was actually sent)
-  return result.find((r) => r !== null) ?? null;
+  return result?.find((r) => r !== null) ?? null;
 };

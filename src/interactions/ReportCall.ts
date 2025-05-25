@@ -17,12 +17,13 @@
 
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
-import { CallService } from '#src/services/CallService.js';
-import Constants from '#src/utils/Constants.js';
+import { ActiveCallData, CallService } from '#src/services/CallService.js';
+import Constants, { RedisKeys } from '#src/utils/Constants.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import { InfoEmbed } from '#src/utils/EmbedUtils.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import Logger from '#src/utils/Logger.js';
+import { getRedis } from '#src/utils/Redis.js';
 import {
   getReasonFromKey,
   getReportReasons,
@@ -151,10 +152,49 @@ export default class ReportCallHandler {
     if (!opts.ctx.inGuild()) return false;
 
     const { ctx, callId, serverId, reason, reportedUsers } = opts;
-
+    const redis = getRedis();
     const REPORTS_CHANNEL_ID = Constants.Channels.reports;
 
     try {
+      // Get call data to calculate duration
+      const callService = new CallService(ctx.client);
+      const callData = await callService.getEndedCallData(callId);
+
+      if (!callData) {
+        Logger.error(`Failed to get call data for report: ${callId}`);
+        return false;
+      }
+
+      // Calculate call duration if timestamps are available
+      let callDuration = 0;
+      if (callData.startTime && callData.endTime) {
+        callDuration = callData.endTime - callData.startTime;
+      }
+
+      // Store report data in Redis
+      const reportData = {
+        callId,
+        reporterId: ctx.user.id,
+        reporterTag: ctx.user.tag,
+        reporterChannelId: ctx.channelId,
+        reporterGuildId: ctx.guildId,
+        serverId,
+        reason,
+        reportedUsers,
+        timestamp: Date.now(),
+        status: 'pending',
+        callDuration,
+      };
+
+      // Store report data with 30-day expiry
+      const reportKey = `${RedisKeys.Call}:report:${callId}`;
+      await redis.set(reportKey, JSON.stringify(reportData), 'EX', 30 * 24 * 60 * 60);
+
+      // Store reporter ID for notification when report is resolved
+      const reporterKey = `${RedisKeys.ReportReporter}:${callId}`;
+      await redis.set(reporterKey, ctx.user.id, 'EX', 30 * 24 * 60 * 60);
+
+      // Create the embed for the reports channel
       const reportEmbed = new EmbedBuilder()
         .setTitle('Call Report')
         .setColor('Red')
@@ -171,9 +211,14 @@ export default class ReportCallHandler {
           },
           { name: 'Reporter Channel', value: ctx.channelId, inline: true },
           { name: 'Reporter Server', value: ctx.guildId || 'Unknown', inline: true },
+          {
+            name: 'Call Duration',
+            value: callDuration ? this.formatDuration(callDuration) : 'Unknown',
+            inline: true,
+          },
         ])
         .setFooter({
-          text: `Reported by: ${ctx.user.username} | Use \`/view_call\` to view the call details.`,
+          text: `Reported by: ${ctx.user.username} | Use \`/view_reported_call ${callId}\` to view details.`,
           iconURL: ctx.user.displayAvatarURL(),
         })
         .setTimestamp();
@@ -191,11 +236,75 @@ export default class ReportCallHandler {
       }
 
       await reportsChannel.send({ embeds: [reportEmbed] });
+
+      // Store call messages for review (if any)
+      await this.storeCallMessages(callId, callData);
+
+      // Extend the expiry time of the call data to 48 hours for moderation purposes
+      const callDataKey = `${RedisKeys.Call}:ended:${callId}`;
+      await redis.expire(callDataKey, 172800); // 48 hours in seconds
+
       return true;
     }
     catch (error) {
       Logger.error('Error sending call report:', error);
       return false;
     }
+  }
+
+  /**
+   * Store call messages for later review
+   */
+  private async storeCallMessages(callId: string, callData: ActiveCallData) {
+    try {
+      const redis = getRedis();
+      const messagesKey = `${RedisKeys.Call}:messages:${callId}`;
+
+      // Check if we already have messages stored
+      const existingMessages = await redis.llen(messagesKey);
+      if (existingMessages > 0) {
+        // Messages already stored, no need to store again
+        return;
+      }
+
+      // Get messages from call data if available
+      const messages = callData.messages || [];
+
+      if (messages.length > 0) {
+        // Store each message in Redis list
+        const pipeline = redis.pipeline();
+
+        for (const message of messages) {
+          pipeline.rpush(messagesKey, JSON.stringify(message));
+        }
+
+        // Set 30-day expiry
+        pipeline.expire(messagesKey, 30 * 24 * 60 * 60);
+
+        await pipeline.exec();
+        Logger.debug(`Stored ${messages.length} messages for call ${callId}`);
+      }
+      else {
+        Logger.debug(`No messages found for call ${callId}`);
+      }
+    }
+    catch (error) {
+      Logger.error(`Error storing call messages for ${callId}:`, error);
+    }
+  }
+
+  /**
+   * Format call duration in a human-readable format
+   */
+  private formatDuration(durationMs: number): string {
+    const seconds = Math.floor(durationMs / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+
+    if (minutes === 0) {
+      return `${seconds} seconds`;
+    }
+
+    return `${minutes} min ${remainingSeconds} sec`;
   }
 }

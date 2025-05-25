@@ -18,25 +18,34 @@
 import { modPanelButton } from '#src/interactions/ShowModPanel.js';
 import { findOriginalMessage, getBroadcast } from '#src/utils/network/messageUtils.js';
 import { HubService } from '#src/services/HubService.js';
-import { RedisKeys } from '#src/utils/Constants.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
+import { CustomID } from '#utils/CustomID.js';
 import db from '#utils/Db.js';
-import getRedis from '#utils/Redis.js';
 import { resolveEval } from '#utils/Utils.js';
 import { stripIndents } from 'common-tags';
 import {
-  ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   type Client,
-  EmbedBuilder,
+  type Guild,
   type GuildTextBasedChannel,
   type User,
   codeBlock,
   messageLink,
+  ContainerBuilder,
+  TextDisplayBuilder,
+  SectionBuilder,
+  MediaGalleryBuilder,
+  MediaGalleryItemBuilder,
+  SeparatorBuilder,
+  SeparatorSpacingSize,
+  MessageFlags,
+  ThumbnailBuilder,
 } from 'discord.js';
+import type { RemoveMethods } from '#src/types/Utils.d.ts';
 import { sendLog } from './Default.js';
-import { ignoreReportButton, markResolvedButton } from '#src/interactions/ReportActionButtons.js';
+import Logger from '#src/utils/Logger.js';
+import Constants from '#src/utils/Constants.js';
 
 export type ReportEvidenceOpts = {
   // the message content
@@ -53,20 +62,23 @@ export type LogReportOpts = {
   evidence?: ReportEvidenceOpts;
 };
 
+type ReplyContextData = {
+  id: string;
+  isReply: boolean;
+  originalContent?: string;
+  originalAuthor?: string;
+} | null;
+
 /**
- * Retrieves the jump link for a specific message in the reports channel of a hub.
- * @param hubId - The ID of the hub.
- * @param messageId - The ID of the message. (optional)
- * @param reportsChannelId - The ID of the reports channel.
- * @returns The jump link for the specified message, or undefined if the message is not found.
+ * Generate a jump link to the reported message in the reports server
  */
 const genJumpLink = async (
   hubId: string,
   client: Client,
-  messageId: string | undefined,
-  reportsChannelId: string,
-) => {
-  if (!messageId) return null;
+  messageId?: string,
+  reportsChannelId?: string,
+): Promise<string | null> => {
+  if (!messageId || !reportsChannelId) return null;
 
   const originalMsg = await findOriginalMessage(messageId);
   if (!originalMsg) return null;
@@ -99,79 +111,308 @@ const genJumpLink = async (
 };
 
 /**
- * Logs a report with the specified details.
- * @param userId - The ID of the user being reported.
- * @param serverId - The ID of the server being reported.
- * @param reason - The reason for the report.
- * @param reportedBy - The user who reported the incident.
- * @param evidence - Optional evidence for the report.
+ * Create a report record in the database
+ */
+const createReportRecord = async (
+  hubId: string,
+  { userId, serverId, reason, reportedBy, evidence }: LogReportOpts,
+): Promise<string> => {
+  const report = await db.report.create({
+    data: {
+      hubId,
+      reporterId: reportedBy.id,
+      reportedUserId: userId,
+      reportedServerId: serverId,
+      messageId: evidence?.messageId,
+      reason,
+      evidence: evidence
+        ? {
+          content: evidence.content,
+          attachmentUrl: evidence.attachmentUrl,
+        }
+        : undefined,
+    },
+  });
+
+  return report.id;
+};
+
+/**
+ * Get reply context for a message if it's a reply
+ */
+const getReplyContext = async (
+  messageId?: string,
+): Promise<{
+  id: string;
+  isReply: boolean;
+  originalContent?: string;
+  originalAuthor?: string;
+} | null> => {
+  if (!messageId) return null;
+
+  const message = await db.message.findUnique({
+    where: { id: messageId },
+    include: {
+      referredTo: true,
+    },
+  });
+
+  if (!message) return null;
+
+  if (!message?.referredTo) {
+    return { id: message.id, isReply: false };
+  }
+
+  return {
+    id: message.id,
+    isReply: true,
+    originalContent: message.referredTo.content,
+    originalAuthor: message.referredTo.authorId,
+  };
+};
+
+/**
+ * Prepare all data needed for the report
+ */
+const prepareReportData = async (hubId: string, client: Client, opts: LogReportOpts) => {
+  const hub = await new HubService().fetchHub(hubId);
+  const logConfig = await hub?.fetchLogConfig();
+
+  if (!logConfig?.config.reportsChannelId || !opts.evidence?.messageId) {
+    return null;
+  }
+
+  const reportsChannelId = logConfig.config.reportsChannelId;
+  const reportsRoleId = logConfig.config.reportsRoleId;
+  const user = await client.users.fetch(opts.userId).catch(() => null);
+  const server = await client.fetchGuild(opts.serverId);
+  const jumpLink = await genJumpLink(hubId, client, opts.evidence?.messageId, reportsChannelId);
+  const reportId = await createReportRecord(hubId, opts);
+  const replyContext = await getReplyContext(opts.evidence?.messageId);
+
+  return {
+    reportsChannelId,
+    reportsRoleId,
+    user,
+    server,
+    jumpLink,
+    reportId,
+    replyContext,
+  };
+};
+
+/**
+ * Build the header section with report info and action button
+ */
+const buildHeaderSection = (
+  client: Client,
+  reportId: string,
+  opts: LogReportOpts,
+  user: User | null,
+  server: RemoveMethods<Guild> | undefined,
+) => {
+  // Ensure we have a messageId before proceeding
+  if (!opts.evidence?.messageId) {
+    throw new Error('Message ID is required for building header section');
+  }
+
+  return new SectionBuilder()
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        stripIndents`
+          ## ${getEmoji('alert_icon', client)} New Report • ID: \`${reportId}\`
+
+          **Reported User:** @${user?.username} (\`${opts.userId}\`)
+          **Reported Server:** ${server?.name} (\`${opts.serverId}\`)
+          **Reported by:** ${opts.reportedBy.username}
+          **Reason:** ${opts.reason}
+        `,
+      ),
+    )
+    .setButtonAccessory(
+      modPanelButton(opts.evidence.messageId, getEmoji('hammer_icon', client) || '🔨').setLabel(
+        'Take Action',
+      ),
+    )
+    .setThumbnailAccessory(
+      new ThumbnailBuilder()
+        .setURL(user?.displayAvatarURL() || Constants.Links.EasterAvatar)
+        .setDescription('User avatar'),
+    );
+};
+
+/**
+ * Build the reply context section if applicable
+ */
+const buildReplyContextSection = (client: Client, replyContext: ReplyContextData) => {
+  if (!replyContext?.isReply || !replyContext.originalContent) {
+    return null;
+  }
+
+  return new SectionBuilder()
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        stripIndents`
+          ### ${getEmoji('reply', client)} Reply Context
+          **Original message:** ${codeBlock(replyContext.originalContent.slice(0, 200))}
+        `,
+      ),
+    )
+    .setButtonAccessory(
+      new ButtonBuilder()
+        .setCustomId(
+          new CustomID().setIdentifier('reply_context_view').setArgs(replyContext.id).toString(),
+        )
+        .setStyle(ButtonStyle.Secondary)
+        .setLabel('View Context')
+        .setEmoji(getEmoji('search', client)),
+    );
+};
+
+/**
+ * Build the content section with message details
+ */
+const buildContentSection = (client: Client, opts: LogReportOpts, jumpLink: string | null) =>
+  new SectionBuilder()
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        stripIndents`
+          ### ${getEmoji('info', client)} Reported Message
+          ${codeBlock(opts.evidence?.content?.replaceAll('`', '\\`') || 'No content provided.')}
+          **Message ID:** \`${opts.evidence?.messageId}\`
+        `,
+      ),
+    )
+    .setButtonAccessory(
+      new ButtonBuilder()
+        .setURL(jumpLink ?? 'https://discord.com')
+        .setDisabled(!jumpLink)
+        .setLabel('Jump To Message')
+        .setStyle(ButtonStyle.Link)
+        .setEmoji(getEmoji('link', client) || '🔗'),
+    );
+
+/**
+ * Build media gallery if attachment is present
+ */
+const buildMediaGallery = (attachmentUrl?: string) => {
+  if (!attachmentUrl) return null;
+
+  const mediaGallery = new MediaGalleryBuilder();
+  const mediaItem = new MediaGalleryItemBuilder()
+    .setURL(attachmentUrl)
+    .setDescription('Reported message attachment');
+
+  mediaGallery.addItems(mediaItem);
+  return mediaGallery;
+};
+
+/**
+ * Build action buttons for the report
+ */
+const buildActionButtons = (client: Client, reportId: string) => {
+  const resolveButton = new ButtonBuilder()
+    .setCustomId(
+      new CustomID().setIdentifier('reportAction', 'resolve').setArgs(reportId).toString(),
+    )
+    .setStyle(ButtonStyle.Success)
+    .setLabel('Mark Resolved')
+    .setEmoji(getEmoji('tick_icon', client) || '✅');
+
+  const ignoreButton = new ButtonBuilder()
+    .setCustomId(
+      new CustomID().setIdentifier('reportAction', 'ignore').setArgs(reportId).toString(),
+    )
+    .setStyle(ButtonStyle.Secondary)
+    .setLabel('Ignore Report')
+    .setEmoji(getEmoji('x_icon', client) || '❌');
+
+  return { resolveButton, ignoreButton };
+};
+
+/**
+ * Enhanced report logging with Components v2 UI
  */
 export const sendHubReport = async (
   hubId: string,
   client: Client,
-  { userId, serverId, reason, reportedBy, evidence }: LogReportOpts,
-) => {
-  const hub = await new HubService().fetchHub(hubId);
-  const logConfig = await hub?.fetchLogConfig();
+  opts: LogReportOpts,
+): Promise<void> => {
+  const reportData = await prepareReportData(hubId, client, opts);
+  if (!reportData) return;
 
-  if (!logConfig?.config.reportsChannelId || !evidence?.messageId) return;
+  const { reportsChannelId, reportsRoleId, user, server, jumpLink, reportId, replyContext } =
+    reportData;
 
-  const reportsChannelId = logConfig.config.reportsChannelId;
-  const reportsRoleId = logConfig.config.reportsRoleId;
-  const user = await client.users.fetch(userId).catch(() => null);
-  const server = await client.fetchGuild(serverId);
-  const jumpLink = await genJumpLink(hubId, client, evidence?.messageId, reportsChannelId);
+  const container = new ContainerBuilder();
 
-  const dotRedEmoji = getEmoji('dotRed', client);
+  // Add header section
+  const headerSection = buildHeaderSection(client, reportId, opts, user, server);
+  container.addSectionComponents(headerSection);
+  container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small));
 
-  const embed = new EmbedBuilder()
-    .setTitle('New Report')
-    .setColor('Red')
-    .setImage(evidence?.attachmentUrl ?? null)
-    .setDescription(
-      stripIndents`
-        ${getEmoji('info_icon', client)} **Message Content:**
-        ${codeBlock(evidence?.content?.replaceAll('`', '\\`') || 'No content provided.')}
-        ${dotRedEmoji} **Reported User:** @${user?.username} (${userId})
-        ${dotRedEmoji} **Reported Server:** ${server?.name} (${serverId})
-        ${dotRedEmoji} **Reported MessageID:** ${evidence.messageId}
-      `,
-    )
-    .addFields([{ name: 'Reason', value: reason, inline: true }])
-    .setFooter({
-      text: `Reported by: ${reportedBy.username}`,
-      iconURL: reportedBy.displayAvatarURL(),
-    });
+  // Add reply context section if applicable
+  const replySection = buildReplyContextSection(client, replyContext);
+  if (replySection) {
+    container.addSectionComponents(replySection);
+    container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small));
+  }
 
-  const modActionButton = modPanelButton(
-    evidence.messageId,
-    getEmoji('hammer_icon', client),
-  ).setLabel('Take Action');
-  const resolveButton = markResolvedButton(hubId);
-  const ignoreButton = ignoreReportButton(hubId);
+  // Add content section
+  const contentSection = buildContentSection(client, opts, jumpLink);
+  container.addSectionComponents(contentSection);
 
-  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    modActionButton,
-    resolveButton,
-    ignoreButton,
-  );
-  const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder()
-      .setURL(jumpLink ?? 'https://discord.com')
-      .setDisabled(!jumpLink)
-      .setLabel('Jump To Message')
-      .setStyle(ButtonStyle.Link),
-  );
+  // Add media gallery if present
+  const mediaGallery = buildMediaGallery(opts.evidence?.attachmentUrl);
+  if (mediaGallery) {
+    container.addMediaGalleryComponents(mediaGallery);
+  }
 
-  const sentMessage = await sendLog(client.cluster, reportsChannelId, embed, {
+  // Add action buttons
+  const { resolveButton, ignoreButton } = buildActionButtons(client, reportId);
+  container.addActionRowComponents((row) => row.addComponents(resolveButton, ignoreButton));
+
+  // Send the log with Components v2
+  await sendLog(client.cluster, reportsChannelId, null, {
     roleMentionIds: reportsRoleId ? [reportsRoleId] : undefined,
-    components: [row.toJSON(), row2.toJSON()],
+    components: [container.toJSON()],
+    flags: [MessageFlags.IsComponentsV2],
   });
 
-  // Store the reporter's ID in Redis with a 48-hour expiration
-  if (sentMessage?.id) {
-    const redis = getRedis();
-    const key = `${RedisKeys.ReportReporter}:${sentMessage.id}`;
-    await redis.set(key, reportedBy.id, 'EX', 48 * 60 * 60); // 48 hours in seconds
+  // Send immediate DM notification to reporter with report ID
+  await sendReporterConfirmation(client, reportId, opts.reportedBy);
+};
+
+/**
+ * Send immediate DM confirmation to reporter with their report ID
+ */
+const sendReporterConfirmation = async (
+  _client: Client,
+  reportId: string,
+  reporter: User,
+): Promise<void> => {
+  try {
+    const embed = {
+      title: '📋 Report Submitted Successfully',
+      description: stripIndents`
+        Thank you for submitting your report. Our moderation team will review it shortly.
+
+        **Your Report ID:** \`${reportId}\`
+        **Status:** Pending Review
+
+        You will receive a notification when action is taken on your report.
+        Please keep this ID for your records.
+      `,
+      color: 0x5865f2,
+      timestamp: new Date().toISOString(),
+      footer: {
+        text: 'InterChat Moderation System',
+      },
+    };
+
+    await reporter.send({ embeds: [embed] }).catch(() => null);
+  }
+  catch (e) {
+    Logger.error('Failed to send reporter confirmation', e);
   }
 };

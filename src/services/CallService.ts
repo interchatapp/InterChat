@@ -32,7 +32,7 @@ import {
 } from 'discord.js';
 import { updateCallLeaderboards } from '#src/utils/Leaderboard.js';
 
-interface CallData {
+export interface CallData {
   callId: string;
   channelId: string;
   guildId: string;
@@ -41,7 +41,7 @@ interface CallData {
   timestamp: number;
 }
 
-interface CallParticipants {
+export interface CallParticipants {
   channelId: string;
   guildId: string;
   webhookUrl: string;
@@ -50,9 +50,19 @@ interface CallParticipants {
   leaderboardUpdated: boolean; // to track if we've already counted this call
 }
 
-interface ActiveCallData {
+export interface CallMessage {
+  authorId: string;
+  content: string;
+  timestamp: number;
+  attachmentUrl?: string;
+}
+
+export interface ActiveCallData {
   callId: string;
   participants: CallParticipants[];
+  messages?: CallMessage[];
+  startTime?: number;
+  endTime?: number;
 }
 
 const MINIMUM_MESSAGES_FOR_CALL = 3;
@@ -197,12 +207,25 @@ export class CallService {
 
     const { content, components } = await this.getCallEndMessage(activeCall.callId);
 
-    // Store call data temporarily for ratings
+    // Set end time
+    activeCall.endTime = Date.now();
+
+    // Check if this call has been reported
+    const reportKey = `${RedisKeys.Call}:report:${activeCall.callId}`;
+    const hasBeenReported = await this.redis.exists(reportKey);
+
+    // Determine expiry time based on whether the call has been reported
+    // For privacy reasons, we keep different retention periods:
+    // - 30 minutes (1800 seconds) for normal calls
+    // - 48 hours (172800 seconds) for reported calls to allow for moderation
+    const expiryTime = hasBeenReported ? 172800 : 1800;
+
+    // Store call data temporarily
     await this.redis.set(
       `${RedisKeys.Call}:ended:${activeCall.callId}`,
       JSON.stringify(activeCall, (_, value) => (value instanceof Set ? Array.from(value) : value)),
       'EX',
-      3600, // 1 hour to rate the call
+      expiryTime,
     );
 
     // Find the other participant and send them the end message
@@ -276,6 +299,7 @@ export class CallService {
 
   private async connectCall(call1: CallData, call2: CallData) {
     const callId = this.generateCallId();
+    const startTime = Date.now();
 
     // Store recent match
     await this.addRecentMatch(call1.initiatorId, call2.initiatorId);
@@ -301,6 +325,8 @@ export class CallService {
           leaderboardUpdated: false,
         },
       ],
+      messages: [],
+      startTime,
     };
 
     // Store active call data
@@ -430,7 +456,12 @@ export class CallService {
   }
 
   // handle message counting and leaderboard updates
-  async updateCallParticipant(channelId: string, userId: string): Promise<void> {
+  async updateCallParticipant(
+    channelId: string,
+    userId: string,
+    messageContent?: string,
+    attachmentUrl?: string,
+  ): Promise<void> {
     const callData = await this.getActiveCallData(channelId);
     if (!callData) return;
 
@@ -449,6 +480,26 @@ export class CallService {
         updateCallLeaderboards('user', userId),
         updateCallLeaderboards('server', participant.guildId),
       ]);
+    }
+
+    // Store message content if provided (for moderation purposes)
+    if (messageContent !== undefined) {
+      if (!callData.messages) {
+        callData.messages = [];
+      }
+
+      // Add message to the array (limit to last 100 messages)
+      callData.messages.push({
+        authorId: userId,
+        content: messageContent,
+        timestamp: Date.now(),
+        attachmentUrl,
+      });
+
+      // Keep only the last 100 messages to prevent excessive storage
+      if (callData.messages.length > 100) {
+        callData.messages = callData.messages.slice(-100);
+      }
     }
 
     // Update the call data in Redis

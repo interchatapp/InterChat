@@ -581,7 +581,7 @@ export class MessageProcessor {
    * @param message The Discord message to process
    * @returns Whether the message was successfully processed and sent
    */
-  async processCallMessage(message: Message<true>): Promise<boolean> {
+  async processCallMessage(message: Message<true>): Promise<void> {
     try {
       // Start performance tracking
       const startTime = performance.now();
@@ -600,7 +600,7 @@ export class MessageProcessor {
         Logger.debug(
           `Call message processing failed: ${!activeCall ? 'No active call' : 'No user data'}`,
         );
-        return false;
+        return;
       }
 
       // Check if user has accepted the bot's rules
@@ -608,7 +608,7 @@ export class MessageProcessor {
         const rulesStartTime = performance.now();
         await showRulesScreening(message, userData);
         timings.showRulesScreening = performance.now() - rulesStartTime;
-        return false;
+        return;
       }
 
       // Track this user as a participant in the call
@@ -623,7 +623,7 @@ export class MessageProcessor {
 
       if (!otherParticipant) {
         Logger.debug('No other participant found in call');
-        return false;
+        return;
       }
 
       const attachmentURL = message.attachments.first()?.url;
@@ -643,7 +643,7 @@ export class MessageProcessor {
           `Call message ${message.id} processing failed at checks stage (${totalTime}ms)`,
         );
         Logger.debug(`Timings: ${JSON.stringify(timings)}`);
-        return false;
+        return;
       }
 
       // Check content filter
@@ -666,13 +666,22 @@ export class MessageProcessor {
           allowedMentions: { parse: [] },
         });
 
+        // Store the blocked message for moderation purposes
+        const blockedUpdateStartTime = performance.now();
+        await this.callService.updateCallParticipant(
+          message.channelId,
+          message.author.id,
+          `[BLOCKED] ${message.content}`,
+          attachmentURL,
+        );
+        timings.updateBlockedMessage = performance.now() - blockedUpdateStartTime;
+
         // Log performance metrics for blocked message
         const totalTime = performance.now() - startTime;
         Logger.debug(`Call message ${message.id} blocked by content filter (${totalTime}ms)`);
         Logger.debug(`Timings: ${JSON.stringify(timings)}`);
 
-        // Still return true since we handled the message (by blocking it)
-        return true;
+        return;
       }
 
       // Send the message to the other participant
@@ -687,19 +696,21 @@ export class MessageProcessor {
 
       // Update call participation after successful message send
       const updateStartTime = performance.now();
-      await this.callService.updateCallParticipant(message.channelId, message.author.id);
+      await this.callService.updateCallParticipant(
+        message.channelId,
+        message.author.id,
+        message.content,
+        attachmentURL,
+      );
       timings.updateCallParticipant = performance.now() - updateStartTime;
 
       // Log performance metrics
       const totalTime = performance.now() - startTime;
       Logger.debug(`Call message ${message.id} processed successfully in ${totalTime}ms`);
       Logger.debug(`Timings: ${JSON.stringify(timings)}`);
-
-      return true;
     }
     catch (error) {
       handleError(error, { comment: 'Failed to process call message' });
-      return false;
     }
   }
 }

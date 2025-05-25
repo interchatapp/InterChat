@@ -20,14 +20,18 @@ import type Context from '#src/core/CommandContext/Context.js';
 import { buildReportReasonDropdown } from '#src/interactions/ReportMessage.js';
 import { findOriginalMessage, getBroadcasts } from '#src/utils/network/messageUtils.js';
 import { fetchUserLocale } from '#src/utils/Utils.js';
-import { ApplicationCommandOptionType } from 'discord.js';
+import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js';
 
 export default class ReportPrefixCommand extends BaseCommand {
   constructor() {
     super({
       name: 'report',
       description: 'Report a message',
-      types: { slash: true, prefix: true },
+      types: {
+        slash: true,
+        prefix: true,
+        contextMenu: { name: 'Report Message', type: ApplicationCommandType.Message },
+      },
       options: [
         {
           name: 'message',
@@ -42,9 +46,7 @@ export default class ReportPrefixCommand extends BaseCommand {
   async execute(ctx: Context) {
     const targetMsg = await ctx.getTargetMessage('message');
     const originalMsg = targetMsg ? await findOriginalMessage(targetMsg.id) : null;
-    const broadcastMsgs = originalMsg
-      ? await getBroadcasts(originalMsg.id)
-      : null;
+    const broadcastMsgs = originalMsg ? await getBroadcasts(originalMsg.id) : null;
 
     if (!broadcastMsgs || !originalMsg || !targetMsg) {
       await ctx.reply('Please provide a valid message ID or link.');

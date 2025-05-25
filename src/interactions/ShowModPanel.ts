@@ -29,7 +29,12 @@ import { ButtonBuilder, ButtonStyle } from 'discord.js';
 
 export const modPanelButton = (targetMsgId: string, emoji: string, opts?: { label?: string }) =>
   new ButtonBuilder()
-    .setCustomId(new CustomID().setIdentifier('showModPanel').setArgs(targetMsgId).toString())
+    .setCustomId(
+      new CustomID()
+        .setIdentifier('showModPanel')
+        .setArgs(targetMsgId)
+        .toString(),
+    )
     .setStyle(ButtonStyle.Danger)
     .setLabel(opts?.label ?? 'Mod Panel')
     .setEmoji(emoji);

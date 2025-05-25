@@ -73,7 +73,7 @@ export default class MessageInfo extends BaseCommand {
       types: {
         prefix: true,
         slash: true,
-        contextMenu: { name: 'Message Info/Report', type: ApplicationCommandType.Message },
+        contextMenu: { name: 'Message Info', type: ApplicationCommandType.Message },
       },
       options: [
         {
@@ -281,10 +281,7 @@ export default class MessageInfo extends BaseCommand {
     await ctx.editReply({ embeds: [embed], components, files: [] });
   }
 
-  private async handleReportButton(
-    ctx: ComponentContext,
-    { hub, locale, messageId }: ReportOpts,
-  ) {
+  private async handleReportButton(ctx: ComponentContext, { hub, locale, messageId }: ReportOpts) {
     if (!hub || !(await HubLogManager.create(hub.id)).config.reportsChannelId) {
       const notEnabledEmbed = new InfoEmbed().setDescription(
         t('msgInfo.report.notEnabled', locale, { emoji: getEmoji('x_icon', ctx.client) }),

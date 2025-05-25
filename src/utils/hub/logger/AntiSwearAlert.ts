@@ -21,7 +21,14 @@ import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { sendLog } from '#src/utils/hub/logger/Default.js';
 import { ACTION_LABELS } from '#utils/moderation/antiSwear.js';
 import { stripIndents } from 'common-tags';
-import { EmbedBuilder, type Message } from 'discord.js';
+import {
+  ContainerBuilder,
+  MessageFlags,
+  SeparatorBuilder,
+  SeparatorSpacingSize,
+  TextDisplayBuilder,
+  type Message,
+} from 'discord.js';
 
 /**
  * Rule interface for the antiswear alert system
@@ -38,7 +45,7 @@ const boldANSIText = (text: string) => `\u001b[1;2m${text}\u001b[0m`;
 
 /**
  * Log an alert when a prohibited word is detected
- * Uses the antiswear system format
+ * Enhanced with Components v2 UI and Take Action buttons
  */
 export const logAntiSwearAlert = async (
   message: Message<true>,
@@ -53,29 +60,40 @@ export const logAntiSwearAlert = async (
     content = content.replaceAll(match, boldANSIText(match));
   });
 
-  const embed = new EmbedBuilder()
-    .setColor('Yellow')
-    .setTitle(`${getEmoji('exclamation', message.client)} Prohibited Word Alert`)
-    .setDescription(
-      stripIndents`
-        A message containing prohibited words was detected:
+  // Create Components v2 container
+  const container = new ContainerBuilder()
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        stripIndents`
+          ## ${getEmoji('exclamation', message.client)} Prohibited Word Alert
 
-        **Rule Triggered:** ${rule.name}
-        **Author:** ${message.author.tag} (${message.author.id})
-        **Server:** ${message.guild.name} (${message.guild.id})
-
-        ### Message Content:
-          \`\`\`ansi
-            ${content}
-          \`\`\`
-      -# Actions Taken: **${rule.actions.map((a) => ACTION_LABELS[a]).join(', ')}**
-    `,
+          **Rule Triggered:** ${rule.name}
+          **Author:** ${message.author.tag} (\`${message.author.id}\`)
+          **Server:** ${message.guild.name} (\`${message.guild.id}\`)
+          **Actions Taken:** ${rule.actions.map((a) => ACTION_LABELS[a]).join(', ')}
+        `,
+      ),
     )
-    .setTimestamp();
+    .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small))
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        stripIndents`
+          ### ${getEmoji('info', message.client)} Detected Message Content
+          \`\`\`ansi
+          ${content}
+          \`\`\`
+          **Message ID:** \`${message.id}\`
+          **Channel:** <#${message.channel.id}>
+        `,
+      ),
+    );
 
-  await sendLog(message.client.cluster, logManager.config.networkAlertsChannelId, embed, {
+  // Send the log with Components v2
+  await sendLog(message.client.cluster, logManager.config.networkAlertsChannelId, null, {
     roleMentionIds: logManager.config.networkAlertsRoleId
       ? [logManager.config.networkAlertsRoleId]
       : undefined,
+    components: [container],
+    flags: [MessageFlags.IsComponentsV2],
   });
 };
