@@ -202,7 +202,8 @@ export default class EditMessage extends BaseCommand {
       await ctx.replyEmbed(
         t('network.editInProgressError', locale, {
           emoji: ctx.getEmoji('neutral'),
-        }) || `${ctx.getEmoji('neutral')} This message is already being edited by another user.`,
+        }) ||
+          `${ctx.getEmoji('neutral')} This message is already in the process of being edited in all connected servers. Please wait.`,
         { flags: ['Ephemeral'], edit: true },
       );
       return false;

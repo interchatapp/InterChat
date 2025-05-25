@@ -65,8 +65,7 @@ export default class PrefixContext extends Context<{
 
     // Split arguments with quote handling
     const commandOptions = new Map(
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      Object.entries(command.options).map(([_i, option]) => [option.name, option]),
+      Object.entries(command.options).map(([, option]) => [option.name, option]),
     );
 
     // Store parsed arguments with resolved values
@@ -204,8 +203,7 @@ export default class PrefixContext extends Context<{
     await this.lastReply?.delete();
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public async deferReply(_opts?: { flags?: string[] }) {
+  public async deferReply() {
     this._deferred = true;
     this.lastReply = await this.interaction.reply('Processing...');
     return this.lastReply;

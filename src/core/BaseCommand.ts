@@ -194,8 +194,7 @@ export default abstract class BaseCommand {
               name: subcommandGroupName,
               description: 'placeholder',
               options: Object.entries(data).map(
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                ([_subcommandName, subcommandData]) => ({
+                ([, subcommandData]) => ({
                   type: ApplicationCommandOptionType.Subcommand,
                   name: subcommandData.name,
                   description: subcommandData.description,

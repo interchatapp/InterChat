@@ -31,8 +31,8 @@ import {
   ContainerBuilder,
   type InteractionCollector,
   type InteractionEditReplyOptions,
-  type InteractionResponse,
   type InteractionReplyOptions,
+  type InteractionResponse,
   Message,
   MessageFlags,
   type RepliableInteraction,
@@ -404,39 +404,31 @@ export class PaginationManager<T = unknown> {
       }
       else {
         try {
-          // Remove the buttons but keep the content
           const container = this.generatePageContainer(this.currentPage);
-
-          if (this.message instanceof Message) {
-            await this.message
-              .edit({
-                components: [container],
-                flags: MessageFlags.IsComponentsV2,
-                // Explicitly set content to undefined to ensure it's not included
-                content: undefined,
-                // Explicitly set embeds to undefined to ensure they're not included
-                embeds: undefined,
-              })
-              .catch(() => null);
-          }
-          else if (ctx instanceof Context || ctx instanceof ComponentContext) {
-            await ctx
-              .editReply({
-                components: [container],
-                flags: [MessageFlags.IsComponentsV2],
-                // Explicitly set content to undefined to ensure it's not included
-                content: undefined,
-                // Explicitly set embeds to undefined to ensure they're not included
-                embeds: undefined,
-              })
-              .catch(() => null);
-          }
+          await this.editMessage(
+            {
+              components: [container],
+              flags: MessageFlags.IsComponentsV2,
+              content: undefined,
+              embeds: undefined,
+            },
+            ctx,
+          );
         }
         catch (error) {
           Logger.error('Failed to update pagination on collector end', error);
         }
       }
     });
+  }
+
+  private async editMessage(
+    data: InteractionEditReplyOptions,
+    ctx: Context | RepliableInteraction,
+  ) {
+    return this.message instanceof Message
+      ? await this.message.edit(data)
+      : await ctx.editReply(data);
   }
 
   /**
