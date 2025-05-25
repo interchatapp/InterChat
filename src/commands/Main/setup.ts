@@ -20,6 +20,7 @@ import type Context from '#src/core/CommandContext/Context.js';
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import { HubValidator } from '#src/modules/HubValidator.js';
+import AchievementService from '#src/services/AchievementService.js';
 import { HubJoinService } from '#src/services/HubJoinService.js';
 import { HubCreationData, HubService } from '#src/services/HubService.js';
 import { fetchCommands } from '#src/utils/CommandUtils.js';
@@ -698,6 +699,15 @@ export default class SetupCommand extends BaseCommand {
 
     try {
       const hub = await this.hubService.createHub(hubData);
+
+      // Track Hub Creator achievement
+      const achievementService = new AchievementService();
+      await achievementService.processEvent(
+        'hub_create',
+        { userId: ctx.user.id },
+        ctx.client,
+      );
+
       await this.showNextSteps(ctx, 'created', hubData.name, hub.id, channelId);
     }
     catch {

@@ -15,6 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import AchievementService from '#src/services/AchievementService.js';
 import Scheduler from '#src/services/SchedulerService.js';
 import UserDbService from '#src/services/UserDbService.js';
 import type { WebhookPayload } from '#types/TopGGPayload.d.ts';
@@ -41,6 +42,7 @@ import ms from 'ms';
 export class VoteManager {
   private scheduler: Scheduler;
   private readonly userDbManager = new UserDbService();
+  private readonly achievementService = new AchievementService();
   private readonly rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN as string);
   private clusterManager: ClusterManager | null = null;
 
@@ -64,11 +66,21 @@ export class VoteManager {
   async incrementUserVote(userId: string, name?: string) {
     const lastVoted = new Date();
     const user = await this.userDbManager.getUser(userId);
-    return await this.userDbManager.upsertUser(userId, {
+    const newVoteCount = user?.voteCount ? user.voteCount + 1 : 1;
+
+    const updatedUser = await this.userDbManager.upsertUser(userId, {
       name,
       lastVoted,
-      voteCount: user?.voteCount ? user.voteCount + 1 : 1,
+      voteCount: newVoteCount,
     });
+
+    // Track vote achievements
+    await this.achievementService.processEvent('vote', {
+      userId,
+      voteCount: newVoteCount,
+    });
+
+    return updatedUser;
   }
 
   async getAPIUser(userId: string) {

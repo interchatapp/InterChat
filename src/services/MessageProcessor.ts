@@ -32,6 +32,7 @@ import { BroadcastService } from './BroadcastService.js';
 import { getRandomBlockedMessageResponse } from '#src/config/contentFilter.js';
 import ContentFilterManager from '#src/managers/ContentFilterManager.js';
 import { logBlockedMessage } from '#src/utils/hub/logger/ContentFilter.js';
+import AchievementService from '#src/services/AchievementService.js';
 
 /**
  * Result of processing a message in a hub channel
@@ -412,7 +413,11 @@ export class MessageProcessor {
 
       // Update leaderboards and metrics
       const statsStartTime = performance.now();
-      this.updateStatsAfterBroadcast(message, hub);
+      this.updateStatsAfterBroadcast(message, {
+        name: hub.data.name,
+        id: hub.data.id,
+        connections: { count: hubConnections.length },
+      });
       timings.updateStatsAfterBroadcast = performance.now() - statsStartTime;
 
       // Log performance metrics
@@ -522,10 +527,28 @@ export class MessageProcessor {
    * @param message The Discord message
    * @param hub The hub manager instance
    */
-  private updateStatsAfterBroadcast(message: Message<true>, hub: HubManager): void {
+  private updateStatsAfterBroadcast(
+    message: Message<true>,
+    hub: { name: string; id: string; connections: { count: number } },
+  ): void {
     updateLeaderboards('user', message.author.id);
     updateLeaderboards('server', message.guildId);
-    message.client.shardMetrics.incrementMessage(hub.data.name);
+    message.client.shardMetrics.incrementMessage(hub.name);
+
+    // Track achievements
+    const achievementService = new AchievementService();
+    achievementService
+      .processEvent(
+        'message',
+        {
+          userId: message.author.id,
+          hubId: hub.id,
+          serverId: message.guildId,
+          broadcastCount: hub.connections.count,
+        },
+        message.client,
+      )
+      .catch(handleError);
   }
 
   /**

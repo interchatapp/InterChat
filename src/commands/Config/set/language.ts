@@ -17,6 +17,7 @@
 
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
+import AchievementService from '#src/services/AchievementService.js';
 import UserDbService from '#src/services/UserDbService.js';
 import { fetchUserLocale } from '#src/utils/Utils.js';
 import { type supportedLocaleCodes, supportedLocales, t } from '#utils/Locale.js';
@@ -61,6 +62,13 @@ export default class SetLanguage extends BaseCommand {
     const { id, username } = ctx.user;
     const userService = new UserDbService();
     await userService.upsertUser(id, { locale, name: username, image: ctx.user.avatarURL() });
+
+    // Track language change for Polyglot achievement
+    const achievementService = new AchievementService();
+    await achievementService.processEvent('language_change', {
+      userId: id,
+      language: locale,
+    }, ctx.client);
 
     const langInfo = supportedLocales[locale];
     const lang = `${langInfo.emoji} ${langInfo.name}`;

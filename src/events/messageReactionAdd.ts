@@ -16,9 +16,11 @@
  */
 
 import BaseEventListener from '#src/core/BaseEventListener.js';
+import AchievementService from '#src/services/AchievementService.js';
 import { HubService } from '#src/services/HubService.js';
 import db from '#src/utils/Db.js';
 import { findOriginalMessage } from '#src/utils/network/messageUtils.js';
+import { handleError } from '#src/utils/Utils.js';
 import {
   addReaction,
   updateReactions,
@@ -27,6 +29,7 @@ import {
 } from '#utils/reaction/reactions.js';
 import { checkBlacklists } from '#utils/reaction/helpers.js';
 import type { MessageReaction, PartialMessageReaction, PartialUser, User } from 'discord.js';
+import { Message as MessageDB } from '#src/generated/prisma/client/index.js';
 
 export default class ReactionAdd extends BaseEventListener<'messageReactionAdd'> {
   readonly name = 'messageReactionAdd';
@@ -96,5 +99,49 @@ export default class ReactionAdd extends BaseEventListener<'messageReactionAdd'>
 
     // Add native reactions to the original message
     await addNativeReactions(reaction.client, originalMsg, dbReactions);
+
+    // Track achievements related to reactions
+    await this.trackReactionAchievements(reaction, user, originalMsg);
+  }
+
+  /**
+   * Track achievement progress related to reactions
+   */
+  private async trackReactionAchievements(
+    reaction: MessageReaction | PartialMessageReaction,
+    user: User | PartialUser,
+    originalMsg: MessageDB,
+  ): Promise<void> {
+    try {
+      const achievementService = new AchievementService();
+
+      // Track reactions for Cross-Cultural Ambassador achievement
+      // This tracks when users receive reactions from different servers
+      if (originalMsg.authorId && originalMsg.authorId !== user.id && reaction.message.guildId) {
+        await achievementService.processEvent(
+          'reaction',
+          {
+            userId: originalMsg.authorId,
+            serverId: reaction.message.guildId,
+          },
+          this.client ?? undefined,
+        );
+      }
+
+      // Track chain reactions for Chain Reaction achievement
+      if (originalMsg.id && originalMsg.authorId && reaction.message.guildId) {
+        await achievementService.trackChainReaction(
+          originalMsg.id,
+          reaction.message.guildId,
+          originalMsg.authorId,
+          this.client ?? undefined,
+        );
+      }
+    }
+    catch (error) {
+      handleError(error, {
+        comment: `Failed to process reaction achievement tracking for user: ${user.id}`,
+      });
+    }
   }
 }

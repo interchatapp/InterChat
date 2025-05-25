@@ -20,6 +20,7 @@ import type Context from '#src/core/CommandContext/Context.js';
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import { HubValidator } from '#src/modules/HubValidator.js';
+import AchievementService from '#src/services/AchievementService.js';
 import { type HubCreationData, HubService } from '#src/services/HubService.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
@@ -92,6 +93,15 @@ export default class HubCreateSubCommand extends BaseCommand {
     }
 
     await this.hubService.createHub(hubData);
+
+    // Track Hub Creator achievement
+    const achievementService = new AchievementService();
+    await achievementService.processEvent(
+      'hub_create',
+      { userId: ctx.user.id },
+      ctx.client,
+    );
+
     await this.handleSuccessfulCreation(ctx, hubData.name, locale);
   }
 
@@ -108,7 +118,7 @@ export default class HubCreateSubCommand extends BaseCommand {
           support_invite: Constants.Links.SupportInvite,
           donateLink: Constants.Links.Donate,
         })}
-        
+
         ${getEmoji('wand_icon', ctx.client)} **Pro tip:** Use our [dashboard](${Constants.Links.Website}/dashboard) for easier hub management with a visual interface!`,
       )
       .setTimestamp();

@@ -17,6 +17,7 @@
 
 import BlacklistManager from '#src/managers/BlacklistManager.js';
 import HubManager from '#src/managers/HubManager.js';
+import AchievementService from '#src/services/AchievementService.js';
 import { HubService } from '#src/services/HubService.js';
 import { type EmojiKeys, getEmoji } from '#src/utils/EmojiUtils.js';
 import type { TranslationKeys } from '#types/TranslationKeys.d.ts';
@@ -120,6 +121,31 @@ export class HubJoinService {
     });
 
     await this.sendSuccessMessages(hub, channel);
+    const connectionCount = await hub.connections.fetchCount();
+
+    // Track achievements
+    const achievementService = new AchievementService();
+    await achievementService.processEvent(
+      'hub_join',
+      { userId: this.ctx.user.id, hubId: hub.id, serverCount: connectionCount },
+      this.ctx.client,
+    );
+
+    // If user is admin, track Bridge Builder achievement
+    if (this.ctx.inGuild() && this.ctx.member.permissions.has('Administrator', true)) {
+      await achievementService.processEvent(
+        'serverJoin',
+        { userId: this.ctx.user.id, isAdmin: true, hubConnected: true },
+        this.ctx.client,
+      );
+    }
+
+    await achievementService.updateHubServerCountAchievements(
+      hub.id,
+      connectionCount,
+      this.ctx.client,
+    );
+
     return true;
   }
 

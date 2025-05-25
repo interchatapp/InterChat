@@ -25,6 +25,7 @@ export const enum RedisKeys {
   RulesShown = 'rulesShown',
   Call = 'call', // Base prefix for all call-related keys
   CallRecentMatches = 'call:recent_matches',
+  Achievement = 'achievement', // Base prefix for all achievement-related keys
   LastHubMessageUser = 'lastHubMessageUser',
   ReportReporter = 'report:reporter', // Stores reporter ID for report resolution notifications
   tutorialData = 'tutorialData', // Base prefix for all tutorial-related keys
