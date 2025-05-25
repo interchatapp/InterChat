@@ -112,15 +112,6 @@ export async function seedAchievements(prisma: PrismaClient): Promise<void> {
       badgeUrl: 'https://images.emojiterra.com/twitter/512px/1f389.png',
       threshold: 10,
     },
-    {
-      id: 'hub-guardian',
-      name: 'Hub Guardian',
-      description:
-        'Be a moderator in a hub with 90%+ positive interactions (tracked via sentiment).',
-      badgeEmoji: '🔰',
-      badgeUrl: 'https://images.emojiterra.com/twitter/512px/1f389.png',
-      threshold: 90,
-    },
 
     // Special achievements
     {

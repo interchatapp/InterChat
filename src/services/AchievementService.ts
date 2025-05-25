@@ -1025,38 +1025,6 @@ export class AchievementService {
       });
     }
   }
-
-  /**
-   * Update Hub Guardian achievement based on hub sentiment
-   * @param hubId Hub ID to check
-   * @param positivePercentage Percentage of positive interactions
-   * @param client Discord client for notifications
-   */
-  public async updateHubGuardianAchievement(
-    hubId: string,
-    positivePercentage: number,
-    client?: Client,
-  ): Promise<void> {
-    try {
-      if (positivePercentage < 90) return;
-
-      // Get all moderators for this hub
-      const moderators = await db.hubModerator.findMany({
-        where: { hubId },
-        select: { userId: true },
-      });
-
-      // Award achievement to all moderators
-      for (const mod of moderators) {
-        await this.unlockAchievement(mod.userId, 'hub-guardian', client);
-      }
-    }
-    catch (error) {
-      handleError(error, {
-        comment: `Failed to update hub guardian achievement for hub: ${hubId}`,
-      });
-    }
-  }
 }
 
 export default AchievementService;

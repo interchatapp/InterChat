@@ -22,7 +22,7 @@ import { InfoEmbed } from '#src/utils/EmbedUtils.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { t } from '#src/utils/Locale.js';
 import { webhookErrorMessages } from '#src/utils/network/storeMessageData.js';
-import { getHubConnections, updateConnections } from '#utils/ConnectedListUtils.js';
+import { getHubConnections, updateConnection } from '#utils/ConnectedListUtils.js';
 import { checkIfStaff, fetchUserLocale, getReplyMethod } from '#utils/Utils.js';
 import type { HubModerator, Role } from '#src/generated/prisma/client/client.js';
 import { type RepliableInteraction, type WebhookMessageCreateOptions } from 'discord.js';
@@ -43,8 +43,8 @@ export const sendToHub = async (hubId: string, message: string | WebhookMessageC
   const connections = await getHubConnections(hubId);
   if (!connections?.length) return;
 
-  for (const { channelId, webhookURL, parentId, connected } of connections) {
-    if (!connected) continue;
+  connections.forEach(async ({ channelId, webhookURL, parentId, connected }) => {
+    if (!connected) return;
 
     const threadId = parentId ? channelId : undefined;
     const payload =
@@ -56,9 +56,9 @@ export const sendToHub = async (hubId: string, message: string | WebhookMessageC
     });
 
     if (error && webhookErrorMessages.includes(error)) {
-      await updateConnections({ channelId }, { connected: false });
+      await updateConnection({ channelId }, { connected: false });
     }
-  }
+  });
 };
 
 export const isHubMod = (userId: string, mods: HubModerator[], checkRoles?: Role[]) =>
