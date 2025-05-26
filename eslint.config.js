@@ -34,12 +34,11 @@ export default config({
     curly: ['error', 'multi-line', 'consistent'],
 
     '@typescript-eslint/no-unused-vars': 'error',
-    '@typescript-eslint/no-explicit-any': 'warn',
+    '@typescript-eslint/no-explicit-any': 'error',
     '@typescript-eslint/no-var-requires': 'off',
     '@typescript-eslint/no-shadow': ['error', { allow: ['err', 'resolve', 'reject'] }],
 
     // 'class-methods-use-this': 'warn',
-    'no-nested-ternary': 'error',
 
     'object-shorthand': 'error',
     'no-array-constructor': 'error',
