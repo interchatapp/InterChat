@@ -101,20 +101,15 @@ export default class ReportMessageHandler {
     reason: string;
     content: string;
   }) {
-    const { ctx, hubId, messageId, authorId, guildId, reason, content } = opts;
+    const { ctx, hubId, messageId, authorId, guildId, reason } = opts;
     const locale = await fetchUserLocale(ctx.user.id);
-
-    const message = await ctx.channel?.messages.fetch(messageId).catch(() => null);
-    const attachmentUrl =
-      content?.match(/https?:\/\/\S+\.(?:png|jpg|jpeg|gif|webp)/i)?.at(0) ??
-      message?.embeds[0]?.image?.url;
 
     await sendHubReport(hubId, ctx.client, {
       userId: authorId,
       serverId: guildId,
       reason,
       reportedBy: ctx.user,
-      evidence: { content, attachmentUrl, messageId },
+      messageId,
     });
 
     const successEmbed = new InfoEmbed().setDescription(

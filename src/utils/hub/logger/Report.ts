@@ -15,10 +15,14 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { Message as MessageDB } from '#src/generated/prisma/client/index.js';
 import { modPanelButton } from '#src/interactions/ShowModPanel.js';
-import { findOriginalMessage, getBroadcast } from '#src/utils/network/messageUtils.js';
 import { HubService } from '#src/services/HubService.js';
+import type { RemoveMethods } from '#src/types/Utils.d.ts';
+import Constants from '#src/utils/Constants.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
+import Logger from '#src/utils/Logger.js';
+import { findOriginalMessage, getBroadcast } from '#src/utils/network/messageUtils.js';
 import { CustomID } from '#utils/CustomID.js';
 import db from '#utils/Db.js';
 import { resolveEval } from '#utils/Utils.js';
@@ -27,39 +31,29 @@ import {
   ButtonBuilder,
   ButtonStyle,
   type Client,
+  ContainerBuilder,
   type Guild,
   type GuildTextBasedChannel,
+  MediaGalleryBuilder,
+  MediaGalleryItemBuilder,
+  MessageFlags,
+  SectionBuilder,
+  SeparatorBuilder,
+  SeparatorSpacingSize,
+  TextDisplayBuilder,
+  ThumbnailBuilder,
   type User,
   codeBlock,
   messageLink,
-  ContainerBuilder,
-  TextDisplayBuilder,
-  SectionBuilder,
-  MediaGalleryBuilder,
-  MediaGalleryItemBuilder,
-  SeparatorBuilder,
-  SeparatorSpacingSize,
-  MessageFlags,
-  ThumbnailBuilder,
 } from 'discord.js';
-import type { RemoveMethods } from '#src/types/Utils.d.ts';
 import { sendLog } from './Default.js';
-import Logger from '#src/utils/Logger.js';
-import Constants from '#src/utils/Constants.js';
-
-export type ReportEvidenceOpts = {
-  // the message content
-  content?: string;
-  messageId?: string;
-  attachmentUrl?: string;
-};
 
 export type LogReportOpts = {
   userId: string;
   serverId: string;
   reason: string;
   reportedBy: User;
-  evidence?: ReportEvidenceOpts;
+  messageId?: string;
 };
 
 type ReplyContextData = {
@@ -75,13 +69,10 @@ type ReplyContextData = {
 const genJumpLink = async (
   hubId: string,
   client: Client,
-  messageId?: string,
+  originalMsg: MessageDB,
   reportsChannelId?: string,
 ): Promise<string | null> => {
-  if (!messageId || !reportsChannelId) return null;
-
-  const originalMsg = await findOriginalMessage(messageId);
-  if (!originalMsg) return null;
+  if (!reportsChannelId) return null;
 
   // fetch the reports server ID from the log channel's ID
   const reportsServerId = resolveEval(
@@ -115,7 +106,7 @@ const genJumpLink = async (
  */
 const createReportRecord = async (
   hubId: string,
-  { userId, serverId, reason, reportedBy, evidence }: LogReportOpts,
+  { userId, serverId, reason, reportedBy, messageId }: LogReportOpts,
 ): Promise<string> => {
   const report = await db.report.create({
     data: {
@@ -123,14 +114,8 @@ const createReportRecord = async (
       reporterId: reportedBy.id,
       reportedUserId: userId,
       reportedServerId: serverId,
-      messageId: evidence?.messageId,
+      messageId,
       reason,
-      evidence: evidence
-        ? {
-          content: evidence.content,
-          attachmentUrl: evidence.attachmentUrl,
-        }
-        : undefined,
     },
   });
 
@@ -178,17 +163,21 @@ const prepareReportData = async (hubId: string, client: Client, opts: LogReportO
   const hub = await new HubService().fetchHub(hubId);
   const logConfig = await hub?.fetchLogConfig();
 
-  if (!logConfig?.config.reportsChannelId || !opts.evidence?.messageId) {
+  if (!logConfig?.config.reportsChannelId || !opts?.messageId) {
     return null;
   }
 
   const reportsChannelId = logConfig.config.reportsChannelId;
   const reportsRoleId = logConfig.config.reportsRoleId;
+
+  const originalMsg = await findOriginalMessage(opts.messageId);
+  if (!originalMsg) return null;
+
   const user = await client.users.fetch(opts.userId).catch(() => null);
   const server = await client.fetchGuild(opts.serverId);
-  const jumpLink = await genJumpLink(hubId, client, opts.evidence?.messageId, reportsChannelId);
+  const jumpLink = await genJumpLink(hubId, client, originalMsg, reportsChannelId);
   const reportId = await createReportRecord(hubId, opts);
-  const replyContext = await getReplyContext(opts.evidence?.messageId);
+  const replyContext = await getReplyContext(opts?.messageId);
 
   return {
     reportsChannelId,
@@ -198,6 +187,7 @@ const prepareReportData = async (hubId: string, client: Client, opts: LogReportO
     jumpLink,
     reportId,
     replyContext,
+    content: originalMsg.content,
   };
 };
 
@@ -212,7 +202,7 @@ const buildHeaderSection = (
   server: RemoveMethods<Guild> | undefined,
 ) => {
   // Ensure we have a messageId before proceeding
-  if (!opts.evidence?.messageId) {
+  if (!opts.messageId) {
     throw new Error('Message ID is required for building header section');
   }
 
@@ -230,7 +220,7 @@ const buildHeaderSection = (
       ),
     )
     .setButtonAccessory(
-      modPanelButton(opts.evidence.messageId, getEmoji('hammer_icon', client) || '🔨').setLabel(
+      modPanelButton(opts.messageId, getEmoji('hammer_icon', client) || '🔨').setLabel(
         'Take Action',
       ),
     )
@@ -272,14 +262,18 @@ const buildReplyContextSection = (client: Client, replyContext: ReplyContextData
 /**
  * Build the content section with message details
  */
-const buildContentSection = (client: Client, opts: LogReportOpts, jumpLink: string | null) =>
+const buildContentSection = (
+  client: Client,
+  opts: LogReportOpts & { content: string },
+  jumpLink: string | null,
+) =>
   new SectionBuilder()
     .addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
         stripIndents`
           ### ${getEmoji('info', client)} Reported Message
-          ${codeBlock(opts.evidence?.content?.replaceAll('`', '\\`') || 'No content provided.')}
-          **Message ID:** \`${opts.evidence?.messageId}\`
+          ${codeBlock(opts.content?.replaceAll('`', '\\`') || 'No content provided.')}
+          **Message ID:** \`${opts.messageId}\`
         `,
       ),
     )
@@ -359,11 +353,20 @@ export const sendHubReport = async (
   }
 
   // Add content section
-  const contentSection = buildContentSection(client, opts, jumpLink);
+  const contentSection = buildContentSection(
+    client,
+    { ...opts, content: reportData.content },
+    jumpLink,
+  );
   container.addSectionComponents(contentSection);
 
-  // Add media gallery if present
-  const mediaGallery = buildMediaGallery(opts.evidence?.attachmentUrl);
+  // FIXME: Add media gallery if present
+  const attachmentUrl =
+    reportData.content?.match(Constants.Regex.StaticImageUrl)?.[0] ??
+    reportData.content.match(Constants.Regex.TenorLinks)?.[0] ??
+    undefined;
+
+  const mediaGallery = buildMediaGallery(attachmentUrl);
   if (mediaGallery) {
     container.addMediaGalleryComponents(mediaGallery);
   }

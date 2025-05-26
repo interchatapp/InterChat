@@ -213,7 +213,7 @@ export default class AchievementsCommand extends BaseCommand {
         fieldValue += `\nProgress: ${progressBar} ${achievement.progress}/${achievement.threshold}`;
       }
       else if (achievement.unlocked && achievement.unlockedAt) {
-        fieldValue += `\nUnlocked: <t:${Math.floor(achievement.unlockedAt.getTime() / 1000)}:R>`;
+        fieldValue += `\n:tada: Unlocked: <t:${Math.floor(achievement.unlockedAt.getTime() / 1000)}:R>`;
       }
 
       embed.addFields({

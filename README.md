@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://github.com/user-attachments/assets/33f68c3a-67bc-4653-8578-2ab350ac3a75" alt="interchat logo" width="150" height="150" style="border-radius: 50%">
 
-  # InterChat
+# InterChat
 
   *Connect Discord communities seamlessly with real-time cross-server communication*
 

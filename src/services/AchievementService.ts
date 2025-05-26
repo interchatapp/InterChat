@@ -432,8 +432,9 @@ export class AchievementService {
       const embed = new EmbedBuilder()
         .setTitle('🏆 Achievement Unlocked!')
         .setDescription(
-          stripIndents`**${achievement.badgeEmoji} ${achievement.name}**\n
-          ${achievement.description}\n\n
+          stripIndents`**${achievement.badgeEmoji} ${achievement.name}**
+          ${achievement.description}
+
           **Progress:** ${totalUnlocked}/${totalAchievements} achievements unlocked`,
         )
         .setColor('#FFD700')
@@ -936,7 +937,7 @@ export class AchievementService {
   public async trackAnniversaryActivity(userId: string, client?: Client): Promise<void> {
     try {
       const currentMonth = new Date().getMonth();
-      const anniversaryMonth = 4; // May (0-indexed, so 4 = May)
+      const anniversaryMonth = 9; // October (0-indexed, so 9 = October)
 
       if (currentMonth === anniversaryMonth) {
         await this.unlockAchievement(userId, 'golden-webhook', client);
@@ -1000,28 +1001,6 @@ export class AchievementService {
     catch (error) {
       handleError(error, {
         comment: `Failed to track time-based achievements for user: ${userId}`,
-      });
-    }
-  }
-
-  /**
-   * Track help responses for Hub Hero achievement
-   * @param userId User ID to track
-   * @param client Discord client for notifications
-   */
-  public async trackHelpResponse(userId: string, client?: Client): Promise<void> {
-    try {
-      await this.incrementProgress(userId, 'hub-hero');
-
-      // Check if the user has reached the threshold
-      const progress = await this.getProgress(userId, 'hub-hero');
-      if (progress >= 50) {
-        await this.unlockAchievement(userId, 'hub-hero', client);
-      }
-    }
-    catch (error) {
-      handleError(error, {
-        comment: `Failed to track help response for user: ${userId}`,
       });
     }
   }

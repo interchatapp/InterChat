@@ -5,8 +5,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL") // Uncomment if you use a provider that requires directUrl
 }
 
@@ -309,24 +309,24 @@ model User {
   emailVerified DateTime?
 
   // Relations
-  ownedHubs             Hub[]                  @relation("OwnedHubs")
+  ownedHubs             Hub[]                     @relation("OwnedHubs")
   appeals               Appeal[]
-  infractions           Infraction[]           @relation("infractions")
-  issuedInfractions     Infraction[]           @relation("issuedInfractions")
+  infractions           Infraction[]              @relation("infractions")
+  issuedInfractions     Infraction[]              @relation("issuedInfractions")
   upvotedHubs           HubUpvote[]
   reputationLog         ReputationLog[]
   reviews               HubReview[]
   blockWordsCreated     BlockWord[]
   antiSwearRulesCreated AntiSwearRule[]
   rulesAcceptances      HubRulesAcceptance[]
-  ratingsMade           CallRating[]           @relation("RatingsMade")
-  ratingsReceived       CallRating[]           @relation("RatingsReceived")
+  ratingsMade           CallRating[]              @relation("RatingsMade")
+  ratingsReceived       CallRating[]              @relation("RatingsReceived")
   tutorialProgress      UserTutorialProgress[]
   accounts              Account[]
   sessions              Session[]
-  reportsSubmitted      Report[]               @relation("ReportsSubmitted")
-  reportsReceived       Report[]               @relation("ReportsReceived")
-  reportsHandled        Report[]               @relation("ReportsHandled")
+  reportsSubmitted      Report[]                  @relation("ReportsSubmitted")
+  reportsReceived       Report[]                  @relation("ReportsReceived")
+  reportsHandled        Report[]                  @relation("ReportsHandled")
   achievements          UserAchievement[]
   achievementProgress   UserAchievementProgress[]
 }
@@ -527,6 +527,7 @@ model Message {
   referredMessageId String?
 
   // Relations
+  reports    Report[]
   broadcasts Broadcast[]
   referredBy Message[]   @relation("MessageReference")
   referredTo Message?    @relation("MessageReference", fields: [referredMessageId], references: [id])
@@ -553,23 +554,23 @@ model Broadcast {
 
 // Report tracking model for enhanced moderation
 model Report {
-  id              String      @id @default(nanoid(10)) // Short, unique report ID
-  hubId           String
-  hub             Hub         @relation(fields: [hubId], references: [id], onDelete: Cascade)
-  reporterId      String      // User who submitted the report
-  reporter        User        @relation("ReportsSubmitted", fields: [reporterId], references: [id])
-  reportedUserId  String      // User being reported
-  reportedUser    User        @relation("ReportsReceived", fields: [reportedUserId], references: [id])
-  reportedServerId String     // Server where the reported content originated
-  messageId       String?     // ID of the reported message (if applicable)
-  reason          String      // Reason for the report
-  status          ReportStatus @default(PENDING)
-  handledBy       String?     // Moderator who handled the report
-  handler         User?       @relation("ReportsHandled", fields: [handledBy], references: [id])
-  handledAt       DateTime?   // When the report was handled
-  evidence        Json?       // Evidence data (content, attachments, etc.)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  id               String       @id @default(nanoid(10)) // Short, unique report ID
+  hubId            String
+  hub              Hub          @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  reporterId       String // User who submitted the report
+  reporter         User         @relation("ReportsSubmitted", fields: [reporterId], references: [id])
+  reportedUserId   String // User being reported
+  reportedUser     User         @relation("ReportsReceived", fields: [reportedUserId], references: [id])
+  reportedServerId String // Server where the reported content originated
+  message          Message?     @relation(fields: [messageId], references: [id])
+  messageId        String? // ID of the reported message (if applicable)
+  reason           String // Reason for the report
+  status           ReportStatus @default(PENDING)
+  handledBy        String? // Moderator who handled the report
+  handler          User?        @relation("ReportsHandled", fields: [handledBy], references: [id])
+  handledAt        DateTime? // When the report was handled
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
 
   @@index([hubId])
   @@index([reporterId])
