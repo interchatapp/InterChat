@@ -28,6 +28,8 @@ import db from '#utils/Db.js';
 import { resolveEval } from '#utils/Utils.js';
 import { stripIndents } from 'common-tags';
 import {
+  APIContainerComponent,
+  APITextDisplayComponent,
   ButtonBuilder,
   ButtonStyle,
   type Client,
@@ -219,11 +221,6 @@ const buildHeaderSection = (
         `,
       ),
     )
-    .setButtonAccessory(
-      modPanelButton(opts.messageId, getEmoji('hammer_icon', client) || '🔨').setLabel(
-        'Take Action',
-      ),
-    )
     .setThumbnailAccessory(
       new ThumbnailBuilder()
         .setURL(user?.displayAvatarURL() || Constants.Links.EasterAvatar)
@@ -304,7 +301,7 @@ const buildMediaGallery = (attachmentUrl?: string) => {
 /**
  * Build action buttons for the report
  */
-const buildActionButtons = (client: Client, reportId: string) => {
+const buildActionButtons = (client: Client, reportId: string, messageId: string | undefined) => {
   const resolveButton = new ButtonBuilder()
     .setCustomId(
       new CustomID().setIdentifier('reportAction', 'resolve').setArgs(reportId).toString(),
@@ -321,7 +318,11 @@ const buildActionButtons = (client: Client, reportId: string) => {
     .setLabel('Ignore Report')
     .setEmoji(getEmoji('x_icon', client) || '❌');
 
-  return { resolveButton, ignoreButton };
+  const actionButton = modPanelButton(messageId ?? '', getEmoji('hammer_icon', client) || '🔨')
+    .setLabel('Take Action')
+    .setDisabled(messageId ? false : true);
+
+  return { resolveButton, ignoreButton, actionButton };
 };
 
 /**
@@ -329,6 +330,7 @@ const buildActionButtons = (client: Client, reportId: string) => {
  */
 export const sendHubReport = async (
   hubId: string,
+  hubName: string,
   client: Client,
   opts: LogReportOpts,
 ): Promise<void> => {
@@ -372,18 +374,28 @@ export const sendHubReport = async (
   }
 
   // Add action buttons
-  const { resolveButton, ignoreButton } = buildActionButtons(client, reportId);
-  container.addActionRowComponents((row) => row.addComponents(resolveButton, ignoreButton));
+  const { resolveButton, ignoreButton, actionButton } = buildActionButtons(
+    client,
+    reportId,
+    opts.messageId,
+  );
+  container.addActionRowComponents((row) =>
+    row.addComponents(resolveButton, ignoreButton, actionButton),
+  );
+
+  const components = [container.toJSON()] as (APIContainerComponent | APITextDisplayComponent)[];
+  if (reportsRoleId) {
+    components.unshift(new TextDisplayBuilder().setContent(`<@&${reportsRoleId}>`).toJSON());
+  }
 
   // Send the log with Components v2
   await sendLog(client.cluster, reportsChannelId, null, {
-    roleMentionIds: reportsRoleId ? [reportsRoleId] : undefined,
-    components: [container.toJSON()],
+    components,
     flags: [MessageFlags.IsComponentsV2],
   });
 
   // Send immediate DM notification to reporter with report ID
-  await sendReporterConfirmation(client, reportId, opts.reportedBy);
+  await sendReporterConfirmation(client, reportId, opts.reportedBy, hubName);
 };
 
 /**
@@ -393,12 +405,13 @@ const sendReporterConfirmation = async (
   _client: Client,
   reportId: string,
   reporter: User,
+  hubName: string,
 ): Promise<void> => {
   try {
     const embed = {
       title: '📋 Report Submitted Successfully',
       description: stripIndents`
-        Thank you for submitting your report. Our moderation team will review it shortly.
+        Thank you for submitting your report to the moderators of hub **${hubName}**. Our moderation team will review it shortly.
 
         **Your Report ID:** \`${reportId}\`
         **Status:** Pending Review

@@ -77,8 +77,8 @@ export default class ModPanelCommand extends BaseCommand {
       return;
     }
 
-    const { embed, buttons } = await buildModPanel(ctx, originalMsg);
-    await ctx.editOrReply({ embeds: [embed], components: buttons });
+    const { container, buttons } = await buildModPanel(ctx, originalMsg);
+    await ctx.editOrReply({ components: [container, ...buttons] }, ['IsComponentsV2']);
   }
 
   private async validateMessage(ctx: Context, originalMsg: MessageDB) {

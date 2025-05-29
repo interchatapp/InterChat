@@ -39,8 +39,8 @@ export default class DeleteMessageHandler implements ModAction {
 
     const deleteInProgress = await isDeleteInProgress(originalMsg.id);
     if (deleteInProgress) {
-      const { embed, buttons } = await buildModPanel(ctx, originalMsg);
-      await ctx.editReply({ embeds: [embed], components: buttons });
+      const { container, buttons } = await buildModPanel(ctx, originalMsg);
+      await ctx.editReply({ components: [container, ...buttons], flags: ['IsComponentsV2'] });
 
       const errorEmbed = new InfoEmbed().setDescription(
         `${getEmoji('neutral', ctx.client)} This message is already deleted or is being deleted by another moderator.`,

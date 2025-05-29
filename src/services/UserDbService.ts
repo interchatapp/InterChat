@@ -46,8 +46,8 @@ export default class UserDbService {
     return { ...user, ...dates };
   }
 
-  public async getUser(id: Snowflake): Promise<User | null> {
-    const result = await this.cacheManager.get<User>(
+  public async getUser(id: Snowflake) {
+    const result = await this.cacheManager.get(
       id,
       async () => await db.user.findFirst({ where: { id } }),
     );
@@ -87,23 +87,6 @@ export default class UserDbService {
     const lastVoteTime = new Date(user.lastVoted).getTime();
     const timeSinceVote = Date.now() - lastVoteTime;
     return timeSinceVote < this.VOTE_COOLDOWN_MS;
-  }
-
-  // Moderation methods
-  public async ban(id: string, reason: string, name?: string): Promise<void> {
-    await this.upsertUser(id, {
-      name,
-      voteCount: 0,
-      banReason: reason,
-    });
-  }
-
-  public async unban(id: string, name?: string): Promise<void> {
-    await this.upsertUser(id, {
-      name,
-      voteCount: 0,
-      banReason: null,
-    });
   }
 
   private async cacheUser(user: User, expirySecs?: number): Promise<void> {

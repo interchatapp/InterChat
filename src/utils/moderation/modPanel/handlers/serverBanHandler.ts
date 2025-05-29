@@ -19,10 +19,11 @@ import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { type ModAction, replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
 import { getOriginalMessage } from '#src/utils/network/messageUtils.js';
 import { checkIfStaff } from '#src/utils/Utils.js';
+
 import type { supportedLocaleCodes } from '#utils/Locale.js';
 import type { Snowflake } from 'discord.js';
 
-export default class UserBanHandler implements ModAction {
+export default class ServerBanHandler implements ModAction {
   async handle(
     ctx: ComponentContext,
     originalMsgId: Snowflake,
@@ -35,17 +36,9 @@ export default class UserBanHandler implements ModAction {
       return;
     }
 
-    if (originalMsg.authorId === ctx.user.id) {
-      await ctx.reply({
-        content: 'Let\'s not go there. <:bruhcat:1256859727158050838>',
-        flags: ['Ephemeral'],
-      });
-      return;
-    }
-
     if (!checkIfStaff(ctx.user.id)) {
       await ctx.reply({
-        content: 'You do not have permission to ban users.',
+        content: 'You do not have permission to ban servers.',
         flags: ['Ephemeral'],
       });
       return;
@@ -56,6 +49,6 @@ export default class UserBanHandler implements ModAction {
     const banFlowHandler = new ModPanelBanFlowHandler();
 
     // Call the ban type selection directly
-    await banFlowHandler.showBanTypeSelection(ctx, originalMsg.authorId, originalMsgId, 'user');
+    await banFlowHandler.showBanTypeSelection(ctx, originalMsg.guildId, originalMsgId, 'server');
   }
 }

@@ -15,9 +15,11 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type Context from '#src/core/CommandContext/Context.js';
-import UserDbService from '#src/services/UserDbService.js';
+import Context from '#src/core/CommandContext/Context.js';
+import ServerBanManager from '#src/managers/ServerBanManager.js';
+import BanManager from '#src/managers/UserBanManager.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
+import { handleError } from '#src/utils/Utils.js';
 import Logger from '#utils/Logger.js';
 import type { User } from 'discord.js';
 
@@ -26,6 +28,8 @@ export const handleBan = async (
   targetId: string,
   target: User | null,
   reason: string,
+  type: 'PERMANENT' | 'TEMPORARY' = 'PERMANENT',
+  duration?: number,
 ) => {
   if (targetId === interaction.user.id) {
     await interaction.reply({
@@ -35,23 +39,113 @@ export const handleBan = async (
     return;
   }
 
-  const userService = new UserDbService();
-  const dbUser = await userService.getUser(targetId);
+  const banManager = new BanManager();
 
-  if (dbUser?.banReason) {
+  // Check if user is already banned
+  const banCheck = await banManager.isUserBanned(targetId);
+  if (banCheck.isBanned) {
     await interaction.reply({
-      content: `${getEmoji('slash', interaction.client)} This user is already banned.`,
+      content: `${getEmoji('slash', interaction.client)} This user is already banned (Ban ID: ${banCheck.ban?.id}).`,
       flags: ['Ephemeral'],
     });
     return;
   }
 
-  const targetUsername = target?.username;
-  await userService.ban(targetId, reason, targetUsername);
+  try {
+    const ban = await banManager.createBan({
+      userId: targetId,
+      moderatorId: interaction.user.id,
+      reason,
+      type,
+      duration,
+    });
 
-  Logger.info(`User ${targetUsername} (${targetId}) banned by ${interaction.user.username}.`);
+    const targetUsername = target?.username || targetId;
+    const durationText =
+      type === 'TEMPORARY' && duration ? ` for ${formatDuration(duration)}` : ' permanently';
 
-  await interaction.reply(
-    `${getEmoji('tick', interaction.client)} Successfully banned \`${targetUsername}\`. They can no longer use the bot.`,
-  );
+    Logger.info(
+      `User ${targetUsername} (${targetId}) banned${durationText} by ${interaction.user.username} (Ban ID: ${ban.id})`,
+    );
+
+    await interaction.reply(
+      `${getEmoji('tick', interaction.client)} Successfully banned \`${targetUsername}\`${durationText}. They can no longer use the bot. (Ban ID: \`${ban.id}\`)`,
+    );
+  }
+  catch (error) {
+    handleError(error, {
+      repliable: interaction instanceof Context ? interaction.interaction : interaction,
+      comment: 'Failed to ban user. **Possible reasons:** User has not used the bot before',
+    });
+  }
+};
+
+/**
+ * Format duration in milliseconds to human-readable string
+ */
+function formatDuration(durationMs: number): string {
+  const seconds = Math.floor(durationMs / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (days > 0) {
+    return `${days} day${days !== 1 ? 's' : ''}`;
+  }
+  if (hours > 0) {
+    return `${hours} hour${hours !== 1 ? 's' : ''}`;
+  }
+  if (minutes > 0) {
+    return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+  }
+  return `${seconds} second${seconds !== 1 ? 's' : ''}`;
+}
+
+export const handleServerBan = async (
+  interaction: Context,
+  targetServerId: string,
+  targetServerName: string | null,
+  reason: string,
+  type: 'PERMANENT' | 'TEMPORARY' = 'PERMANENT',
+  duration?: number,
+) => {
+  const serverBanManager = new ServerBanManager();
+
+  // Check if server is already banned
+  const banCheck = await serverBanManager.isServerBanned(targetServerId);
+  if (banCheck.isBanned) {
+    await interaction.reply({
+      content: `${getEmoji('slash', interaction.client)} This server is already banned (Ban ID: ${banCheck.ban?.id}).`,
+      flags: ['Ephemeral'],
+    });
+    return;
+  }
+
+  try {
+    const ban = await serverBanManager.createServerBan({
+      serverId: targetServerId,
+      moderatorId: interaction.user.id,
+      reason,
+      type,
+      duration,
+    });
+
+    const durationText =
+      type === 'TEMPORARY' && duration ? ` for ${formatDuration(duration)}` : ' permanently';
+
+    Logger.info(
+      `Server ${targetServerName} (${targetServerId}) banned${durationText} by ${interaction.user.username} (Ban ID: ${ban.id})`,
+    );
+
+    await interaction.reply(
+      `${getEmoji('tick', interaction.client)} Successfully banned server \`${targetServerName}\`${durationText}. They can no longer use the bot. (Ban ID: \`${ban.id}\`)`,
+    );
+  }
+  catch (error) {
+    Logger.error('Error creating server ban:', error);
+    await interaction.reply({
+      content: `${getEmoji('x_icon', interaction.client)} Failed to ban server: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      flags: ['Ephemeral'],
+    });
+  }
 };

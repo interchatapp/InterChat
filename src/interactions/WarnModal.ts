@@ -42,7 +42,7 @@ export default class WarnModalHandler {
       flags: ['Ephemeral'],
     });
 
-    const { embed, buttons } = await buildModPanel(ctx, originalMsg);
-    await ctx.editReply({ embeds: [embed], components: buttons });
+    const { container, buttons } = await buildModPanel(ctx, originalMsg);
+    await ctx.editReply({ components: [container, ...buttons], flags: ['IsComponentsV2'] });
   }
 }

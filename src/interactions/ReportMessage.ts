@@ -18,6 +18,7 @@
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import HubLogManager from '#src/managers/HubLogManager.js';
+import { HubService } from '#src/services/HubService.js';
 import { InfoEmbed } from '#src/utils/EmbedUtils.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { sendHubReport } from '#src/utils/hub/logger/Report.js';
@@ -80,10 +81,19 @@ export default class ReportMessageHandler {
 
     // Get the translated reason
     const reason = getReasonFromKey(selectedReason, locale);
+    const hub = await new HubService().fetchHub(originalMsg.hubId);
+    if (!hub) {
+      await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} Hub not found. Please try again.`,
+        flags: ['Ephemeral'],
+      });
+      return;
+    }
 
     await this.submitReport({
       ctx,
       hubId: originalMsg.hubId,
+      hubName: hub.data.name,
       messageId,
       authorId,
       guildId,
@@ -95,16 +105,17 @@ export default class ReportMessageHandler {
   private async submitReport(opts: {
     ctx: ComponentContext;
     hubId: string;
+    hubName: string;
     messageId: string;
     authorId: string;
     guildId: string;
     reason: string;
     content: string;
   }) {
-    const { ctx, hubId, messageId, authorId, guildId, reason } = opts;
+    const { ctx, hubId, hubName, messageId, authorId, guildId, reason } = opts;
     const locale = await fetchUserLocale(ctx.user.id);
 
-    await sendHubReport(hubId, ctx.client, {
+    await sendHubReport(hubId, hubName, ctx.client, {
       userId: authorId,
       serverId: guildId,
       reason,

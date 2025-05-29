@@ -4,10 +4,11 @@ import {
   ApplicationCommandOptionType,
   ButtonBuilder,
   ButtonStyle,
-  Client,
   ContainerBuilder,
   MessageFlags,
   SeparatorSpacingSize,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
   TextDisplayBuilder,
   time,
   TimestampStyles,
@@ -26,11 +27,11 @@ import {
 import { CustomID } from '#src/utils/CustomID.js';
 import { UIComponents } from '#src/utils/DesignSystem.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
-import { PaginationManager } from '#src/utils/ui/PaginationManager.js';
 import { checkIfStaff } from '#src/utils/Utils.js';
 import { RedisKeys } from '#utils/Constants.js';
 import Logger from '#utils/Logger.js';
 import { getRedis } from '#utils/Redis.js';
+import BanManager from '#src/managers/UserBanManager.js';
 
 export interface CallReportData {
   callId: string;
@@ -156,7 +157,7 @@ export default class ViewReportedCallCommand extends BaseCommand {
     container.addTextDisplayComponents(
       ui.createHeader(
         'Call Report Review',
-        `Reported on ${time(new Date(reportData.timestamp), TimestampStyles.RelativeTime)}`,
+        `Reported ${time(new Date(reportData.timestamp), TimestampStyles.RelativeTime)}`,
         'alert_icon',
       ),
     );
@@ -166,7 +167,7 @@ export default class ViewReportedCallCommand extends BaseCommand {
       new TextDisplayBuilder().setContent(
         stripIndents`
         **Report Reason:** ${reportData.reason}
-        **Reporter:** <@${reportData.reporterId}> (${reportData.reporterId})
+        **Reporter:** @${reportData.reporterTag} (${reportData.reporterId})
         **Call ID:** \`${callData.callId}\`
         **Call Duration:** ${this.formatDuration(reportData.callDuration || 0)}
         **Participants:** ${this.formatParticipants(callData.participants)}
@@ -196,8 +197,8 @@ export default class ViewReportedCallCommand extends BaseCommand {
         container.addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
             stripIndents`
-            **<@${msg.authorId}>** (${msg.authorId}) - ${time(new Date(msg.timestamp), TimestampStyles.RelativeTime)}
-            ${msg.content || '*[No text content]*'}
+            **${msg.authorUsername}** (${msg.authorId}) - ${time(new Date(msg.timestamp), TimestampStyles.RelativeTime)}
+            \`\`\`${msg.content || '*[No text content]*'}\`\`\`
             ${msg.attachmentUrl ? `[Attachment](${msg.attachmentUrl})` : ''}
             `,
           ),
@@ -257,18 +258,18 @@ export default class ViewReportedCallCommand extends BaseCommand {
         .setLabel('Dismiss Report')
         .setStyle(ButtonStyle.Secondary),
       new ButtonBuilder()
-        .setCustomId(new CustomID('view_call:warn', [callData.callId]).toString())
-        .setLabel('Warn Users')
-        .setStyle(ButtonStyle.Primary),
-      new ButtonBuilder()
-        .setCustomId(new CustomID('view_call:ban', [callData.callId]).toString())
+        .setCustomId(new CustomID('view_call:ban_users', [callData.callId]).toString())
         .setLabel('Ban Users')
         .setStyle(ButtonStyle.Danger),
+      new ButtonBuilder()
+        .setCustomId(new CustomID('view_call:ban_servers', [callData.callId]).toString())
+        .setLabel('Ban Servers')
+        .setStyle(ButtonStyle.Primary),
     );
 
     // Send or update the message
     try {
-      const components = [container.toJSON(), actionRow];
+      const components = [container, actionRow];
       await ctx.editOrReply({ components }, ['IsComponentsV2']);
     }
     catch (error) {
@@ -286,111 +287,20 @@ export default class ViewReportedCallCommand extends BaseCommand {
     messages: CallMessage[],
   ): Promise<void> {
     try {
-      // Create pagination manager for messages
-      const pagination = new PaginationManager<CallMessage>({
-        client: ctx.client,
-        identifier: `view_call_${callData.callId}`,
-        items: messages,
-        itemsPerPage: 5, // 5 messages per page
-        contentGenerator: (pageIndex, messagesOnPage, totalPages, totalMessages) =>
-          this.generateCallReportPage(
-            callData,
-            reportData,
-            messagesOnPage,
-            pageIndex,
-            ctx.client,
-            totalMessages,
-          ),
-        idleTimeout: 300000, // 5 minutes
-        ephemeral: false,
-        deleteOnEnd: false,
-      });
-
-      // Start pagination
-      await pagination.start(ctx);
-
-      // Add action buttons after pagination is started
-      // This is handled separately since PaginationManager doesn't support custom buttons directly
+      // Use the simpler displayCallReport method which includes action buttons
+      await this.displayCallReport(ctx, callData, reportData, messages);
     }
     catch (error) {
       Logger.error('Error displaying call report with pagination:', error);
 
-      // Fall back to the old method if pagination fails
-      await this.displayCallReport(ctx, callData, reportData, messages);
+      // Fall back to a basic error message
+      await ctx.editOrReply({
+        content: `${ctx.getEmoji('x_icon')} Failed to display call report. Please try again.`,
+        components: [],
+      });
     }
   }
 
-  /**
-   * Generate a page for the call report
-   */
-  private generateCallReportPage(
-    callData: ActiveCallData,
-    reportData: CallReportData,
-    messagesOnPage: CallMessage[],
-    pageIndex: number,
-    client: Client,
-    totalMessages: number,
-  ): ContainerBuilder {
-    const ui = new UIComponents(client);
-    const container = new ContainerBuilder();
-
-    // Add header with call information
-    container.addTextDisplayComponents(
-      ui.createHeader(
-        'Call Report Review',
-        `Reported on ${time(new Date(reportData.timestamp), TimestampStyles.RelativeTime)}`,
-        'alert_icon',
-      ),
-    );
-
-    // Add call metadata section
-    container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        stripIndents`
-        **Report Reason:** ${reportData.reason}
-        **Reporter:** <@${reportData.reporterId}> (${reportData.reporterId})
-        **Call ID:** \`${callData.callId}\`
-        **Call Duration:** ${this.formatDuration(reportData.callDuration || 0)}
-        **Participants:** ${this.formatParticipants(callData.participants)}
-        `,
-      ),
-    );
-    container.addSeparatorComponents((separator) =>
-      separator.setSpacing(SeparatorSpacingSize.Small),
-    );
-
-    // Add message display
-    const startIdx = pageIndex * 5 + 1;
-    const endIdx = startIdx + messagesOnPage.length - 1;
-
-    // Add messages section
-    if (totalMessages > 0) {
-      container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `## Message History (${startIdx}-${endIdx} of ${totalMessages})`,
-        ),
-      );
-
-      for (const msg of messagesOnPage) {
-        container.addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            stripIndents`
-            **<@${msg.authorId}>** (${msg.authorId}) - ${time(new Date(msg.timestamp), TimestampStyles.RelativeTime)}
-            ${msg.content || '*[No text content]*'}
-            ${msg.attachmentUrl ? `[Attachment](${msg.attachmentUrl})` : ''}
-            `,
-          ),
-        );
-      }
-    }
-    else {
-      container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('*No messages were recorded for this call.*'),
-      );
-    }
-
-    return container;
-  }
 
   /**
    * Format call duration in a human-readable format
@@ -539,77 +449,9 @@ export default class ViewReportedCallCommand extends BaseCommand {
     );
   }
 
-  @RegisterInteractionHandler('view_call', 'warn')
-  async handleWarnUsers(ctx: ComponentContext) {
-    await ctx.deferUpdate();
+  // Warning system removed - only ban system is used for call moderation
 
-    const [callId] = ctx.customId.args;
-
-    // Get call data to find users
-    const callService = new CallService(ctx.client);
-    const callData = await callService.getEndedCallData(callId);
-
-    if (!callData) {
-      await ctx.editReply({
-        content: `${ctx.getEmoji('x_icon')} Unable to find call data.`,
-        components: [],
-      });
-      return;
-    }
-
-    // Get all users from the call
-    const allUsers: string[] = [];
-    callData.participants.forEach((p) => {
-      if (p.users instanceof Set) {
-        p.users.forEach((u) => allUsers.push(u));
-      }
-      else if (Array.isArray(p.users)) {
-        allUsers.push(...(p.users as string[]));
-      }
-    });
-
-    // Mark the report as resolved with warnings
-    const redis = getRedis();
-    const reportKey = `${RedisKeys.Call}:report:${callId}`;
-    const reportData = await redis.get(reportKey);
-
-    if (!reportData) {
-      await ctx.editReply({
-        content: `${ctx.getEmoji('x_icon')} Unable to find report data.`,
-        components: [],
-      });
-      return;
-    }
-
-    const parsedReport = JSON.parse(reportData);
-    parsedReport.status = 'warned';
-    parsedReport.resolvedBy = ctx.user.id;
-    parsedReport.resolvedAt = Date.now();
-    parsedReport.warnedUsers = allUsers;
-
-    await redis.set(reportKey, JSON.stringify(parsedReport));
-
-    // TODO: Implement actual warning system integration
-
-    // Notify the staff member
-    const ui = new UIComponents(ctx.client);
-    const container = ui.createSuccessMessage(
-      'Users Warned',
-      `Warnings have been issued to ${allUsers.length} users from call ${callId}.`,
-    );
-
-    await ctx.editReply({
-      components: [container],
-      flags: [MessageFlags.IsComponentsV2],
-    });
-
-    // Log the action
-    Logger.info(
-      `Staff member ${ctx.user.tag} (${ctx.user.id}) warned ${allUsers.length} users from call ${callId}`,
-    );
-  }
-
-  @RegisterInteractionHandler('view_call', 'ban')
+  @RegisterInteractionHandler('view_call', 'ban_users')
   async handleBanUsers(ctx: ComponentContext) {
     await ctx.deferUpdate();
 
@@ -627,46 +469,584 @@ export default class ViewReportedCallCommand extends BaseCommand {
       return;
     }
 
-    // Get all users from the call
-    const allUsers: string[] = [];
-    callData.participants.forEach((p) => {
-      if (p.users instanceof Set) {
-        p.users.forEach((u) => allUsers.push(u));
-      }
-      else if (Array.isArray(p.users)) {
-        allUsers.push(...(p.users as string[]));
-      }
-    });
+    // Show user selection interface
+    await this.showUserSelectionInterface(ctx, callData);
+  }
 
-    // Mark the report as resolved with bans
-    const redis = getRedis();
-    const reportKey = `${RedisKeys.Call}:report:${callId}`;
-    const reportData = await redis.get(reportKey);
+  @RegisterInteractionHandler('view_call', 'ban_servers')
+  async handleBanServers(ctx: ComponentContext) {
+    await ctx.deferUpdate();
 
-    if (!reportData) {
+    const [callId] = ctx.customId.args;
+
+    // Get call data to find servers
+    const callService = new CallService(ctx.client);
+    const callData = await callService.getEndedCallData(callId);
+
+    if (!callData) {
       await ctx.editReply({
-        content: `${ctx.getEmoji('x_icon')} Unable to find report data.`,
+        content: `${ctx.getEmoji('x_icon')} Unable to find call data.`,
         components: [],
       });
       return;
     }
 
-    const parsedReport = JSON.parse(reportData);
-    parsedReport.status = 'banned';
-    parsedReport.resolvedBy = ctx.user.id;
-    parsedReport.resolvedAt = Date.now();
-    parsedReport.bannedUsers = allUsers;
+    // Show server selection interface
+    await this.showServerSelectionInterface(ctx, callData);
+  }
 
-    await redis.set(reportKey, JSON.stringify(parsedReport));
-
-    // TODO: Implement actual ban system integration
-
-    // Notify the staff member
+  /**
+   * Show user selection interface for banning
+   */
+  private async showUserSelectionInterface(
+    ctx: ComponentContext,
+    callData: ActiveCallData,
+  ): Promise<void> {
     const ui = new UIComponents(ctx.client);
-    const container = ui.createSuccessMessage(
-      'Users Banned',
-      `${allUsers.length} users from call ${callId} have been banned from using InterChat.`,
+    const container = new ContainerBuilder();
+
+    // Get all users from the call with their server information
+    const userOptions: Array<{ userId: string; guildId: string; guildName: string }> = [];
+
+    for (const participant of callData.participants) {
+      const guild = await ctx.client.guilds.fetch(participant.guildId).catch(() => null);
+      const guildName = guild?.name || `Unknown Server (${participant.guildId})`;
+
+      const users = participant.users instanceof Set
+        ? Array.from(participant.users)
+        : participant.users as string[];
+      for (const userId of users) {
+        userOptions.push({
+          userId,
+          guildId: participant.guildId,
+          guildName,
+        });
+      }
+    }
+
+    if (userOptions.length === 0) {
+      await ctx.editReply({
+        content: `${ctx.getEmoji('x_icon')} No users found in this call.`,
+        components: [],
+      });
+      return;
+    }
+
+    // Add header
+    container.addTextDisplayComponents(
+      ui.createHeader(
+        'Select Users to Ban',
+        `Choose which users to ban from the ${userOptions.length} participants`,
+        'alert_icon',
+      ),
     );
+
+    // Add user selection menu
+    const selectMenu = new StringSelectMenuBuilder()
+      .setCustomId(new CustomID('view_call:user_selected', [callData.callId]).toString())
+      .setPlaceholder('Select users to ban...')
+      .setMinValues(1)
+      .setMaxValues(Math.min(userOptions.length, 25)); // Discord limit
+
+    for (const { userId, guildName } of userOptions.slice(0, 25)) { // Discord limit
+      const user = await ctx.client.users.fetch(userId).catch(() => null);
+      const username = user?.username || `Unknown User (${userId})`;
+
+      selectMenu.addOptions(
+        new StringSelectMenuOptionBuilder()
+          .setLabel(`${username} from ${guildName}`)
+          .setValue(userId)
+          .setDescription(`User ID: ${userId}`),
+      );
+    }
+
+    container.addActionRowComponents((row) => {
+      row.addComponents(selectMenu);
+      return row;
+    });
+
+    // Add action buttons
+    container.addActionRowComponents((row) => {
+      row.addComponents(
+        new ButtonBuilder()
+          .setCustomId(new CustomID('view_call:ban_all_users', [callData.callId]).toString())
+          .setLabel('Ban All Users')
+          .setStyle(ButtonStyle.Danger),
+        new ButtonBuilder()
+          .setCustomId(new CustomID('view_call:back', [callData.callId]).toString())
+          .setLabel('Back')
+          .setStyle(ButtonStyle.Secondary),
+      );
+      return row;
+    });
+
+    await ctx.editReply({
+      components: [container.toJSON()],
+      flags: [MessageFlags.IsComponentsV2],
+    });
+  }
+
+  /**
+   * Show server selection interface for banning
+   */
+  private async showServerSelectionInterface(
+    ctx: ComponentContext,
+    callData: ActiveCallData,
+  ): Promise<void> {
+    const ui = new UIComponents(ctx.client);
+    const container = new ContainerBuilder();
+
+    // Get all servers from the call
+    const serverOptions: Array<{ guildId: string; guildName: string; userCount: number }> = [];
+
+    for (const participant of callData.participants) {
+      const guild = await ctx.client.guilds.fetch(participant.guildId).catch(() => null);
+      const guildName = guild?.name || `Unknown Server (${participant.guildId})`;
+      const userCount = participant.users instanceof Set
+        ? participant.users.size
+        : (participant.users as string[]).length;
+
+      serverOptions.push({
+        guildId: participant.guildId,
+        guildName,
+        userCount,
+      });
+    }
+
+    if (serverOptions.length === 0) {
+      await ctx.editReply({
+        content: `${ctx.getEmoji('x_icon')} No servers found in this call.`,
+        components: [],
+      });
+      return;
+    }
+
+    // Add header
+    container.addTextDisplayComponents(
+      ui.createHeader(
+        'Select Servers to Ban',
+        `Choose which servers to ban from the ${serverOptions.length} participating servers`,
+        'alert_icon',
+      ),
+    );
+
+    // Add server selection menu
+    const selectMenu = new StringSelectMenuBuilder()
+      .setCustomId(new CustomID('view_call:server_selected', [callData.callId]).toString())
+      .setPlaceholder('Select servers to ban...')
+      .setMinValues(1)
+      .setMaxValues(Math.min(serverOptions.length, 25)); // Discord limit
+
+    for (const { guildId, guildName, userCount } of serverOptions.slice(0, 25)) { // Discord limit
+      selectMenu.addOptions(
+        new StringSelectMenuOptionBuilder()
+          .setLabel(guildName)
+          .setValue(guildId)
+          .setDescription(`${userCount} users • Server ID: ${guildId}`),
+      );
+    }
+
+    container.addActionRowComponents((row) => {
+      row.addComponents(selectMenu);
+      return row;
+    });
+
+    // Add action buttons
+    container.addActionRowComponents((row) => {
+      row.addComponents(
+        new ButtonBuilder()
+          .setCustomId(new CustomID('view_call:ban_all_servers', [callData.callId]).toString())
+          .setLabel('Ban All Servers')
+          .setStyle(ButtonStyle.Danger),
+        new ButtonBuilder()
+          .setCustomId(new CustomID('view_call:back', [callData.callId]).toString())
+          .setLabel('Back')
+          .setStyle(ButtonStyle.Secondary),
+      );
+      return row;
+    });
+
+    await ctx.editReply({
+      components: [container.toJSON()],
+      flags: [MessageFlags.IsComponentsV2],
+    });
+  }
+
+  // Handlers for user and server selection
+
+  @RegisterInteractionHandler('view_call', 'user_selected')
+  async handleUserSelected(ctx: ComponentContext) {
+    await ctx.deferUpdate();
+
+    const [callId] = ctx.customId.args;
+
+    // Type guard to ensure this is a string select menu interaction
+    if (!ctx.interaction.isStringSelectMenu()) {
+      await ctx.editReply({
+        content: `${ctx.getEmoji('x_icon')} Invalid interaction type.`,
+        components: [],
+      });
+      return;
+    }
+
+    const selectedUsers = ctx.interaction.values;
+
+    if (!selectedUsers || selectedUsers.length === 0) {
+      await ctx.editReply({
+        content: `${ctx.getEmoji('x_icon')} No users selected.`,
+        components: [],
+      });
+      return;
+    }
+
+    // Show ban type selection for selected users
+    await this.showBanTypeSelection(ctx, callId, selectedUsers, 'user');
+  }
+
+  @RegisterInteractionHandler('view_call', 'server_selected')
+  async handleServerSelected(ctx: ComponentContext) {
+    await ctx.deferUpdate();
+
+    const [callId] = ctx.customId.args;
+
+    // Type guard to ensure this is a string select menu interaction
+    if (!ctx.interaction.isStringSelectMenu()) {
+      await ctx.editReply({
+        content: `${ctx.getEmoji('x_icon')} Invalid interaction type.`,
+        components: [],
+      });
+      return;
+    }
+
+    const selectedServers = ctx.interaction.values;
+
+    if (!selectedServers || selectedServers.length === 0) {
+      await ctx.editReply({
+        content: `${ctx.getEmoji('x_icon')} No servers selected.`,
+        components: [],
+      });
+      return;
+    }
+
+    // Show ban type selection for selected servers
+    await this.showBanTypeSelection(ctx, callId, selectedServers, 'server');
+  }
+
+  @RegisterInteractionHandler('view_call', 'ban_all_users')
+  async handleBanAllUsers(ctx: ComponentContext) {
+    await ctx.deferUpdate();
+
+    const [callId] = ctx.customId.args;
+
+    // Get call data to find all users
+    const callService = new CallService(ctx.client);
+    const callData = await callService.getEndedCallData(callId);
+
+    if (!callData) {
+      await ctx.editReply({
+        content: `${ctx.getEmoji('x_icon')} Unable to find call data.`,
+        components: [],
+      });
+      return;
+    }
+
+    // Get all users from the call
+    const allUsers: string[] = [];
+    callData.participants.forEach((p) => {
+      const users = p.users instanceof Set
+        ? Array.from(p.users)
+        : p.users as string[];
+      allUsers.push(...users);
+    });
+
+    if (allUsers.length === 0) {
+      await ctx.editReply({
+        content: `${ctx.getEmoji('x_icon')} No users found in this call.`,
+        components: [],
+      });
+      return;
+    }
+
+    // Show ban type selection for all users
+    await this.showBanTypeSelection(ctx, callId, allUsers, 'user');
+  }
+
+  @RegisterInteractionHandler('view_call', 'ban_all_servers')
+  async handleBanAllServers(ctx: ComponentContext) {
+    await ctx.deferUpdate();
+
+    const [callId] = ctx.customId.args;
+
+    // Get call data to find all servers
+    const callService = new CallService(ctx.client);
+    const callData = await callService.getEndedCallData(callId);
+
+    if (!callData) {
+      await ctx.editReply({
+        content: `${ctx.getEmoji('x_icon')} Unable to find call data.`,
+        components: [],
+      });
+      return;
+    }
+
+    // Get all servers from the call
+    const allServers = callData.participants.map((p) => p.guildId);
+
+    if (allServers.length === 0) {
+      await ctx.editReply({
+        content: `${ctx.getEmoji('x_icon')} No servers found in this call.`,
+        components: [],
+      });
+      return;
+    }
+
+    // Show ban type selection for all servers
+    await this.showBanTypeSelection(ctx, callId, allServers, 'server');
+  }
+
+  /**
+   * Show ban type selection (permanent/temporary) for users or servers
+   */
+  private async showBanTypeSelection(
+    ctx: ComponentContext,
+    callId: string,
+    targets: string[],
+    type: 'user' | 'server',
+  ): Promise<void> {
+    const ui = new UIComponents(ctx.client);
+    const container = new ContainerBuilder();
+
+    const targetType = type === 'user' ? 'users' : 'servers';
+    const targetCount = targets.length;
+
+    // Add header
+    container.addTextDisplayComponents(
+      ui.createHeader(
+        'Select Ban Type',
+        `Choose ban type for ${targetCount} ${targetType}`,
+        'alert_icon',
+      ),
+    );
+
+    // Add ban type selection buttons
+    container.addActionRowComponents((row) => {
+      row.addComponents(
+        new ButtonBuilder()
+          .setCustomId(new CustomID('view_call:execute_permanent_ban', [callId, type, ...targets]).toString())
+          .setLabel('Permanent Ban')
+          .setStyle(ButtonStyle.Danger),
+        new ButtonBuilder()
+          .setCustomId(new CustomID('view_call:show_temp_duration', [callId, type, ...targets]).toString())
+          .setLabel('Temporary Ban')
+          .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+          .setCustomId(new CustomID('view_call:back', [callId]).toString())
+          .setLabel('Back')
+          .setStyle(ButtonStyle.Secondary),
+      );
+      return row;
+    });
+
+    await ctx.editReply({
+      components: [container.toJSON()],
+      flags: [MessageFlags.IsComponentsV2],
+    });
+  }
+
+  @RegisterInteractionHandler('view_call', 'execute_permanent_ban')
+  async handleExecutePermanentBan(ctx: ComponentContext) {
+    await ctx.deferUpdate();
+
+    const [callId, type, ...targets] = ctx.customId.args;
+
+    if (type === 'user') {
+      await this.executeBans(ctx, callId, targets, 'PERMANENT');
+    }
+    else if (type === 'server') {
+      await this.executeServerBans(ctx, callId, targets, 'PERMANENT');
+    }
+  }
+
+  @RegisterInteractionHandler('view_call', 'show_temp_duration')
+  async handleShowTempDuration(ctx: ComponentContext) {
+    await ctx.deferUpdate();
+
+    const [callId, type, ...targets] = ctx.customId.args;
+    await this.showTemporaryBanDurationSelection(ctx, callId, targets, type as 'user' | 'server');
+  }
+
+  /**
+   * Show duration selection UI for temporary bans
+   */
+  private async showTemporaryBanDurationSelection(
+    ctx: ComponentContext,
+    callId: string,
+    targets: string[],
+    type: 'user' | 'server',
+  ): Promise<void> {
+    const ui = new UIComponents(ctx.client);
+    const container = new ContainerBuilder();
+
+    const targetType = type === 'user' ? 'users' : 'servers';
+    const targetCount = targets.length;
+
+    // Add header
+    container.addTextDisplayComponents(
+      ui.createHeader(
+        'Select Ban Duration',
+        `Choose how long to ban ${targetCount} ${targetType}`,
+        'clock_icon',
+      ),
+    );
+
+    // Add duration selection buttons
+    container.addActionRowComponents((row) => {
+      row.addComponents(
+        new ButtonBuilder()
+          .setCustomId(new CustomID('view_call:execute_temp_ban', [callId, type, '3600000', ...targets]).toString()) // 1 hour
+          .setLabel('1 Hour')
+          .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+          .setCustomId(new CustomID('view_call:execute_temp_ban', [callId, type, '86400000', ...targets]).toString()) // 1 day
+          .setLabel('1 Day')
+          .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+          .setCustomId(new CustomID('view_call:execute_temp_ban', [callId, type, '604800000', ...targets]).toString()) // 1 week
+          .setLabel('1 Week')
+          .setStyle(ButtonStyle.Primary),
+      );
+      return row;
+    });
+
+    container.addActionRowComponents((row) => {
+      row.addComponents(
+        new ButtonBuilder()
+          .setCustomId(new CustomID('view_call:execute_temp_ban', [callId, type, '2592000000', ...targets]).toString()) // 30 days
+          .setLabel('30 Days')
+          .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+          .setCustomId(new CustomID('view_call:back', [callId]).toString())
+          .setLabel('Back')
+          .setStyle(ButtonStyle.Secondary),
+      );
+      return row;
+    });
+
+    await ctx.editReply({
+      components: [container.toJSON()],
+      flags: [MessageFlags.IsComponentsV2],
+    });
+  }
+
+  @RegisterInteractionHandler('view_call', 'execute_temp_ban')
+  async handleExecuteTempBan(ctx: ComponentContext) {
+    await ctx.deferUpdate();
+
+    const [callId, type, durationStr, ...targets] = ctx.customId.args;
+    const duration = parseInt(durationStr, 10);
+
+    if (type === 'user') {
+      await this.executeBans(ctx, callId, targets, 'TEMPORARY', duration);
+    }
+    else if (type === 'server') {
+      await this.executeServerBans(ctx, callId, targets, 'TEMPORARY', duration);
+    }
+  }
+
+
+  @RegisterInteractionHandler('view_call', 'back')
+  async handleBackToReport(ctx: ComponentContext) {
+    await ctx.deferUpdate();
+
+    const [callId] = ctx.customId.args;
+
+    // Get call data and report data to redisplay the original report
+    const callService = new CallService(ctx.client);
+    const callData = await callService.getEndedCallData(callId);
+    const reportData = await this.getReportData(callId);
+    const messages = await this.getCallMessages(callId);
+
+    if (!callData || !reportData) {
+      await ctx.editReply({
+        content: `${ctx.getEmoji('x_icon')} Unable to find call or report data.`,
+        components: [],
+      });
+      return;
+    }
+
+    await this.displayCallReport(ctx, callData, reportData, messages);
+  }
+
+  /**
+   * Execute server bans for servers from a call
+   */
+  private async executeServerBans(
+    ctx: ComponentContext,
+    callId: string,
+    serverIds: string[],
+    banType: 'PERMANENT' | 'TEMPORARY',
+    duration?: number,
+  ): Promise<void> {
+    const { default: ServerBanManager } = await import('#src/managers/ServerBanManager.js');
+    const serverBanManager = new ServerBanManager();
+
+    const reason = `Server banned from call ${callId} for violating InterChat rules`;
+    const successfulBans: string[] = [];
+    const failedBans: { serverId: string; error: string }[] = [];
+
+    // Process each server
+    for (const serverId of serverIds) {
+      try {
+        await serverBanManager.createServerBan({
+          serverId,
+          moderatorId: ctx.user.id,
+          reason,
+          type: banType,
+          duration,
+        });
+        successfulBans.push(serverId);
+      }
+      catch (error) {
+        failedBans.push({
+          serverId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+        Logger.error(`Failed to ban server ${serverId}:`, error);
+      }
+    }
+
+    // Mark the report as resolved with server bans
+    const redis = getRedis();
+    const reportKey = `${RedisKeys.Call}:report:${callId}`;
+    const reportData = await redis.get(reportKey);
+
+    if (reportData) {
+      const parsedReport = JSON.parse(reportData);
+      parsedReport.status = 'server_banned';
+      parsedReport.resolvedBy = ctx.user.id;
+      parsedReport.resolvedAt = Date.now();
+      parsedReport.bannedServers = successfulBans;
+      await redis.set(reportKey, JSON.stringify(parsedReport));
+    }
+
+    // Create result message
+    const ui = new UIComponents(ctx.client);
+    const durationText = banType === 'TEMPORARY' && duration
+      ? ` for ${this.formatDuration(duration)}`
+      : ' permanently';
+
+    let resultMessage = `${successfulBans.length} servers from call ${callId} have been banned${durationText}.`;
+
+    if (failedBans.length > 0) {
+      resultMessage += `\n\n⚠️ ${failedBans.length} server bans failed:`;
+      failedBans.forEach(({ serverId, error }) => {
+        resultMessage += `\n• Server ${serverId}: ${error}`;
+      });
+    }
+
+    const container = successfulBans.length > 0
+      ? ui.createSuccessMessage('Servers Banned', resultMessage)
+      : ui.createErrorMessage('Server Ban Failed', resultMessage);
 
     await ctx.editReply({
       components: [container],
@@ -675,7 +1055,88 @@ export default class ViewReportedCallCommand extends BaseCommand {
 
     // Log the action
     Logger.info(
-      `Staff member ${ctx.user.tag} (${ctx.user.id}) banned ${allUsers.length} users from call ${callId}`,
+      `Staff member ${ctx.user.tag} (${ctx.user.id}) banned ${successfulBans.length}/${serverIds.length} servers from call ${callId}${durationText}`,
+    );
+  }
+
+  /**
+   * Execute bans for users from a call
+   */
+  private async executeBans(
+    ctx: ComponentContext,
+    callId: string,
+    allUsers: string[],
+    banType: 'PERMANENT' | 'TEMPORARY',
+    duration?: number,
+  ): Promise<void> {
+    const banManager = new BanManager();
+
+    const reason = `Banned from call ${callId} for violating InterChat rules`;
+    const successfulBans: string[] = [];
+    const failedBans: { userId: string; error: string }[] = [];
+
+    // Process each user
+    for (const userId of allUsers) {
+      try {
+        await banManager.createBan({
+          userId,
+          moderatorId: ctx.user.id,
+          reason,
+          type: banType,
+          duration,
+        });
+        successfulBans.push(userId);
+      }
+      catch (error) {
+        failedBans.push({
+          userId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+        Logger.error(`Failed to ban user ${userId}:`, error);
+      }
+    }
+
+    // Mark the report as resolved with bans
+    const redis = getRedis();
+    const reportKey = `${RedisKeys.Call}:report:${callId}`;
+    const reportData = await redis.get(reportKey);
+
+    if (reportData) {
+      const parsedReport = JSON.parse(reportData);
+      parsedReport.status = 'banned';
+      parsedReport.resolvedBy = ctx.user.id;
+      parsedReport.resolvedAt = Date.now();
+      parsedReport.bannedUsers = successfulBans;
+      await redis.set(reportKey, JSON.stringify(parsedReport));
+    }
+
+    // Create result message
+    const ui = new UIComponents(ctx.client);
+    const durationText = banType === 'TEMPORARY' && duration
+      ? ` for ${this.formatDuration(duration)}`
+      : ' permanently';
+
+    let resultMessage = `${successfulBans.length} users from call ${callId} have been banned${durationText}.`;
+
+    if (failedBans.length > 0) {
+      resultMessage += `\n\n⚠️ ${failedBans.length} bans failed:`;
+      failedBans.forEach(({ userId, error }) => {
+        resultMessage += `\n• <@${userId}>: ${error}`;
+      });
+    }
+
+    const container = successfulBans.length > 0
+      ? ui.createSuccessMessage('Users Banned', resultMessage)
+      : ui.createErrorMessage('Ban Failed', resultMessage);
+
+    await ctx.editReply({
+      components: [container],
+      flags: [MessageFlags.IsComponentsV2],
+    });
+
+    // Log the action
+    Logger.info(
+      `Staff member ${ctx.user.tag} (${ctx.user.id}) banned ${successfulBans.length}/${allUsers.length} users from call ${callId}${durationText}`,
     );
   }
 }

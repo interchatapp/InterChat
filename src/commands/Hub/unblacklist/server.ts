@@ -65,7 +65,7 @@ export default class UnblacklistserverSubcommand extends BaseCommand {
     const blacklistManager = new BlacklistManager('server', serverId);
     const blacklist = await blacklistManager.fetchBlacklist(hub.id);
     if (!blacklist) {
-      await ctx.replyEmbed('errors.userNotBlacklisted', {
+      await ctx.replyEmbed('errors.serverNotBlacklisted', {
         t: { emoji: ctx.getEmoji('x_icon') },
         flags: ['Ephemeral'],
       });

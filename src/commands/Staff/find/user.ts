@@ -15,19 +15,19 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import BaseCommand from '#src/core/BaseCommand.js';
+import type Context from '#src/core/CommandContext/Context.js';
+import BanManager from '#src/managers/UserBanManager.js';
+import { HubService } from '#src/services/HubService.js';
+import Constants from '#utils/Constants.js';
+import db from '#utils/Db.js';
+import { InfoEmbed } from '#utils/EmbedUtils.js';
 import { stripIndents } from 'common-tags';
 import {
   ApplicationCommandOptionType,
   type AutocompleteInteraction,
   EmbedBuilder,
 } from 'discord.js';
-import { HubService } from '#src/services/HubService.js';
-import { fetchUserData } from '#src/utils/Utils.js';
-import Constants from '#utils/Constants.js';
-import db from '#utils/Db.js';
-import { InfoEmbed } from '#utils/EmbedUtils.js';
-import type Context from '#src/core/CommandContext/Context.js';
-import BaseCommand from '#src/core/BaseCommand.js';
 
 export default class FindUserSubcommand extends BaseCommand {
   constructor() {
@@ -40,16 +40,14 @@ export default class FindUserSubcommand extends BaseCommand {
         {
           type: ApplicationCommandOptionType.String,
           name: 'user',
-          description:
-						'The username (if they\'ve used the bot within 24h) or user ID',
+          description: 'The username (if they\'ve used the bot within 24h) or user ID',
           required: true,
           autocomplete: true,
         },
         {
           type: ApplicationCommandOptionType.Boolean,
           name: 'hidden',
-          description:
-						'The response will be hidden for others. (Default: True)',
+          description: 'The response will be hidden for others. (Default: True)',
         },
       ],
     });
@@ -67,28 +65,26 @@ export default class FindUserSubcommand extends BaseCommand {
       return;
     }
 
-    const userData = await fetchUserData(user.id);
+    const banManager = new BanManager();
+    const banned = await banManager.isUserBanned(user.id);
     const blacklistList = await db.infraction.findMany({
       where: { userId: user.id, status: 'ACTIVE', type: 'BLACKLIST' },
       select: { hub: { select: { name: true } } },
     });
 
     const blacklistedFromStr =
-			blacklistList && blacklistList.length > 0
-			  ? blacklistList.map((bl) => bl.hub.name).join(', ')
-			  : 'None';
+      blacklistList && blacklistList.length > 0
+        ? blacklistList.map((bl) => bl.hub.name).join(', ')
+        : 'None';
 
     const serversOwned = user.client.guilds.cache
       .filter((guild) => guild.ownerId === user.id)
       .map((guild) => guild.name);
 
     const ownedHubs = await new HubService().getOwnedHubs(user.id);
-    const numServersOwned =
-			serversOwned.length > 0 ? serversOwned.join(', ') : 'None';
+    const numServersOwned = serversOwned.length > 0 ? serversOwned.join(', ') : 'None';
     const numHubOwned =
-			ownedHubs.length > 0
-			  ? ownedHubs.map((hub) => hub.data.name).join(', ')
-			  : 'None';
+      ownedHubs.length > 0 ? ownedHubs.map((hub) => hub.data.name).join(', ') : 'None';
 
     const embed = new EmbedBuilder()
       .setAuthor({ name: user.username, iconURL: user.avatarURL()?.toString() })
@@ -111,7 +107,7 @@ export default class FindUserSubcommand extends BaseCommand {
           value: stripIndents`
             > ${ctx.getEmoji('chat_icon')} **Hubs Owned:** ${numHubOwned}
             > ${ctx.getEmoji('delete')} **Blacklisted From:** ${blacklistedFromStr}
-            > ${ctx.getEmoji('delete_icon')} **Banned:** ${userData?.banReason ? 'Yes' : 'No'}
+            > ${ctx.getEmoji('delete_icon')} **Banned:** ${banned ? 'Yes' : 'No'}
              `,
         },
       ]);
@@ -130,7 +126,7 @@ export default class FindUserSubcommand extends BaseCommand {
       .filter(
         (choice) =>
           choice.username.toLowerCase().includes(focusedValue) ||
-					choice.id.toLowerCase().includes(focusedValue),
+          choice.id.toLowerCase().includes(focusedValue),
       )
       .map((user) => ({ name: user.username, value: user.id }))
       .slice(0, 25);

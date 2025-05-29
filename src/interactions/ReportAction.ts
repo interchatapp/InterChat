@@ -32,7 +32,7 @@ import {
   TopLevelComponent,
 } from 'discord.js';
 
-export default class ReportActionV2Handler {
+export default class ReportActionHandler {
   /**
    * Updates button components to show only a single disabled button with the action taken
    */

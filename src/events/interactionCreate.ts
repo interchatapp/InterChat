@@ -43,6 +43,7 @@ import type {
   ModalSubmitInteraction,
 } from 'discord.js';
 import { createComponentContext } from '#src/utils/ContextUtils.js';
+import BanManager from '#src/managers/UserBanManager.js';
 
 export default class InteractionCreate extends BaseEventListener<'interactionCreate'> {
   readonly name = 'interactionCreate';
@@ -84,7 +85,7 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
 
     const dbUser = await fetchUserData(interaction.user.id);
 
-    if (await this.isUserBanned(interaction, dbUser)) {
+    if (await this.isUserBanned(interaction, dbUser ?? undefined)) {
       return { shouldContinue: false, dbUser: null };
     }
 
@@ -203,21 +204,48 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
     return true;
   }
 
-  private async isUserBanned(interaction: Interaction, dbUser: DbUser | undefined | null) {
-    if (!dbUser?.banReason) {
-      return false;
+  private async isUserBanned(interaction: Interaction, dbUser?: DbUser) {
+    const banManager = new BanManager();
+    const banCheck = await banManager.isUserBanned(interaction.user.id);
+    if (banCheck.isBanned && banCheck.ban) {
+      if (interaction.isRepliable() && dbUser) {
+        const durationText = banCheck.ban.type === 'PERMANENT'
+          ? 'permanently'
+          : banCheck.ban.expiresAt
+            ? `until <t:${Math.floor(banCheck.ban.expiresAt.getTime() / 1000)}:F>`
+            : 'permanently';
+
+        await interaction.reply({
+          content: `${this.getEmoji('x_icon')} **You are banned from using InterChat**\n\n**Reason:** ${banCheck.ban.reason}\n**Duration:** ${durationText}\n**Ban ID:** \`${banCheck.ban.id}\`\n\nIf you believe this ban is unjustified, you can appeal at ${Constants.Links.SupportInvite}`,
+          flags: ['Ephemeral'],
+        });
+      }
+      return true;
     }
 
-    if (interaction.isRepliable()) {
-      const locale = await fetchUserLocale(dbUser);
-      await interaction.reply({
-        content: t('errors.banned', locale, {
-          emoji: this.getEmoji('x_icon'),
-          support_invite: Constants.Links.SupportInvite,
-        }),
-        flags: ['Ephemeral'],
-      });
+    // Check for server ban if in a guild
+    if (interaction.guild) {
+      const ServerBanManager = (await import('#src/managers/ServerBanManager.js')).default;
+      const serverBanManager = new ServerBanManager();
+      const serverBanCheck = await serverBanManager.isServerBanned(interaction.guild.id);
+
+      if (serverBanCheck.isBanned && serverBanCheck.ban) {
+        if (interaction.isRepliable() && dbUser) {
+          const durationText = serverBanCheck.ban.type === 'PERMANENT'
+            ? 'permanently'
+            : serverBanCheck.ban.expiresAt
+              ? `until <t:${Math.floor(new Date(serverBanCheck.ban.expiresAt).getTime() / 1000)}:F>`
+              : 'permanently';
+
+          await interaction.reply({
+            content: `${this.getEmoji('x_icon')} **This server is banned from using InterChat**\n\n**Reason:** ${serverBanCheck.ban.reason}\n**Duration:** ${durationText}\n**Ban ID:** \`${serverBanCheck.ban.id}\`\n\nServer administrators can appeal at ${Constants.Links.SupportInvite}`,
+            flags: ['Ephemeral'],
+          });
+        }
+        return true;
+      }
     }
-    return true;
+
+    return false;
   }
 }

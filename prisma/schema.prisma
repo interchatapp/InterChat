@@ -329,6 +329,9 @@ model User {
   reportsHandled        Report[]                  @relation("ReportsHandled")
   achievements          UserAchievement[]
   achievementProgress   UserAchievementProgress[]
+  bans                  Ban[] // Bans received by this user
+  issuedBans            Ban[]                     @relation("IssuedBans") // Bans issued by this user (if staff)
+  issuedServerBans      ServerBan[]               @relation("IssuedServerBans") // Server bans issued by this user (if staff)
 }
 
 model Announcement {
@@ -354,6 +357,7 @@ model ServerData {
   // Relations
   connections Connection[]
   infractions Infraction[]
+  serverBans  ServerBan[]
 }
 
 model CallRating {
@@ -552,7 +556,6 @@ model Broadcast {
   @@index([channelId])
 }
 
-// Report tracking model for enhanced moderation
 model Report {
   id               String       @id @default(nanoid(10)) // Short, unique report ID
   hubId            String
@@ -583,4 +586,55 @@ enum ReportStatus {
   PENDING
   RESOLVED
   IGNORED
+}
+
+enum BanType {
+  PERMANENT
+  TEMPORARY
+}
+
+enum BanStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+}
+
+model Ban {
+  id          String    @id @default(nanoid(10))
+  userId      String // User being banned
+  user        User      @relation(fields: [userId], references: [id])
+  moderatorId String // Staff member who issued the ban
+  moderator   User      @relation("IssuedBans", fields: [moderatorId], references: [id])
+  type        BanType   @default(PERMANENT)
+  status      BanStatus @default(ACTIVE)
+  reason      String // Reason for the ban
+  duration    Int? // Duration in milliseconds for temporary bans (null for permanent)
+  expiresAt   DateTime? // When the ban expires (null for permanent bans)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([expiresAt])
+  @@index([createdAt])
+}
+
+model ServerBan {
+  id          String    @id @default(nanoid(10))
+  serverId    String // Discord server ID being banned
+  server      ServerData? @relation(fields: [serverId], references: [id])
+  moderatorId String // Staff member who issued the ban
+  moderator   User      @relation("IssuedServerBans", fields: [moderatorId], references: [id])
+  type        BanType   @default(PERMANENT)
+  status      BanStatus @default(ACTIVE)
+  reason      String // Reason for the ban
+  duration    Int? // Duration in milliseconds for temporary bans (null for permanent)
+  expiresAt   DateTime? // When the ban expires (null for permanent bans)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([serverId])
+  @@index([status])
+  @@index([expiresAt])
+  @@index([createdAt])
 }

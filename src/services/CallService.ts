@@ -52,6 +52,7 @@ export interface CallParticipants {
 
 export interface CallMessage {
   authorId: string;
+  authorUsername: string;
   content: string;
   timestamp: number;
   attachmentUrl?: string;
@@ -459,6 +460,7 @@ export class CallService {
   async updateCallParticipant(
     channelId: string,
     userId: string,
+    username: string,
     messageContent?: string,
     attachmentUrl?: string,
   ): Promise<void> {
@@ -491,6 +493,7 @@ export class CallService {
       // Add message to the array (limit to last 100 messages)
       callData.messages.push({
         authorId: userId,
+        authorUsername: username,
         content: messageContent,
         timestamp: Date.now(),
         attachmentUrl,

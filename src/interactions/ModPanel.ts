@@ -19,13 +19,16 @@ import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import BlacklistManager from '#src/managers/BlacklistManager.js';
+import ServerBanManager from '#src/managers/ServerBanManager.js';
+import BanManager from '#src/managers/UserBanManager.js';
 import { HubService } from '#src/services/HubService.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import db from '#src/utils/Db.js';
+
 import { InfoEmbed } from '#src/utils/EmbedUtils.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { type supportedLocaleCodes, t } from '#src/utils/Locale.js';
-import { checkIfStaff, fetchUserData, fetchUserLocale } from '#src/utils/Utils.js';
+import { checkIfStaff, fetchUserLocale } from '#src/utils/Utils.js';
 import { isStaffOrHubMod } from '#src/utils/hub/utils.js';
 import { isDeleteInProgress } from '#src/utils/moderation/deleteMessage.js';
 import RemoveReactionsHandler from '#src/utils/moderation/modPanel/handlers/RemoveReactionsHandler.js';
@@ -34,21 +37,24 @@ import {
   BlacklistUserHandler,
 } from '#src/utils/moderation/modPanel/handlers/blacklistHandler.js';
 import DeleteMessageHandler from '#src/utils/moderation/modPanel/handlers/deleteMsgHandler.js';
+import ServerBanHandler from '#src/utils/moderation/modPanel/handlers/serverBanHandler.js';
 import UserBanHandler from '#src/utils/moderation/modPanel/handlers/userBanHandler.js';
 import ViewInfractionsHandler from '#src/utils/moderation/modPanel/handlers/viewInfractions.js';
 import WarnHandler from '#src/utils/moderation/modPanel/handlers/warnHandler.js';
 import { getOriginalMessage } from '#src/utils/network/messageUtils.js';
 import type { Message as MessageDB } from '#src/generated/prisma/client/client.js';
-import Constants from '#utils/Constants.js';
 import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   type Client,
-  EmbedBuilder,
+  ContainerBuilder,
   type Interaction,
+
+
   type Snowflake,
+  TextDisplayBuilder,
 } from 'discord.js';
 
 type BuilderOpts = {
@@ -56,12 +62,14 @@ type BuilderOpts = {
   isServerBlacklisted: boolean;
   isDeleteInProgress: boolean;
   isBanned: boolean;
+  isServerBanned: boolean;
 };
 
 export default class ModPanelHandler {
   private readonly modActionHandlers = {
     deleteMsg: new DeleteMessageHandler(),
     banUser: new UserBanHandler(),
+    banServer: new ServerBanHandler(),
     blacklistUser: new BlacklistUserHandler(),
     blacklistServer: new BlacklistServerHandler(),
     removeAllReactions: new RemoveReactionsHandler(),
@@ -159,106 +167,157 @@ export async function buildModPanel(ctx: Context | Interaction, originalMsg: Mes
 
   const userBlManager = new BlacklistManager('user', originalMsg.authorId);
   const serverBlManager = new BlacklistManager('server', originalMsg.guildId);
+  const banManager = new BanManager();
+  const serverBanManager = new ServerBanManager();
 
   const isUserBlacklisted = Boolean(await userBlManager.fetchBlacklist(originalMsg.hubId));
   const isServerBlacklisted = Boolean(await serverBlManager.fetchBlacklist(originalMsg.hubId));
-  const dbUserTarget = await fetchUserData(user.id);
 
-  const embed = buildInfoEmbed(user.username, server?.name ?? 'Unknown Server', ctx.client, {
-    isUserBlacklisted,
-    isServerBlacklisted,
-    isBanned: Boolean(dbUserTarget?.banReason),
-    isDeleteInProgress: deleteInProgress,
-  });
+  // Check for user ban
+  const userBanCheck = await banManager.isUserBanned(user.id);
+  const isBanned = userBanCheck.isBanned;
+
+  // Check for server ban
+  const serverBanCheck = await serverBanManager.isServerBanned(originalMsg.guildId);
+  const isServerBanned = serverBanCheck.isBanned;
+
+  const container = buildModPanelContainer(
+    user.username,
+    server?.name ?? 'Unknown Server',
+    ctx.client,
+    {
+      isUserBlacklisted,
+      isServerBlacklisted,
+      isBanned,
+      isServerBanned,
+      isDeleteInProgress: deleteInProgress,
+    },
+    originalMsg.id,
+    originalMsg.authorId,
+  );
 
   const buttons = buildButtons(ctx, originalMsg.id, {
     isUserBlacklisted,
     isServerBlacklisted,
-    isBanned: Boolean(dbUserTarget?.banReason),
+    isBanned,
+    isServerBanned,
     isDeleteInProgress: deleteInProgress,
   });
 
-  return { embed, buttons };
+  return { container, buttons };
 }
 
 function buildButtons(ctx: Context | Interaction, messageId: Snowflake, opts: BuilderOpts) {
   const author = ctx.user;
+  const rows: ActionRowBuilder<ButtonBuilder>[] = [];
 
-  const firstRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder()
-      .setCustomId(new CustomID('modPanel:blacklistUser', [author.id, messageId]).toString())
-      .setStyle(ButtonStyle.Secondary)
-      .setEmoji(getEmoji('person_icon', ctx.client))
-      .setDisabled(opts.isUserBlacklisted),
-    new ButtonBuilder()
-      .setCustomId(new CustomID('modPanel:blacklistServer', [author.id, messageId]).toString())
-      .setStyle(ButtonStyle.Secondary)
-      .setEmoji(getEmoji('globe_icon', ctx.client))
-      .setDisabled(opts.isServerBlacklisted),
-    new ButtonBuilder()
-      .setCustomId(new CustomID('modPanel:removeAllReactions', [author.id, messageId]).toString())
-      .setStyle(ButtonStyle.Secondary)
-      .setEmoji(getEmoji('plus_icon', ctx.client)),
-    new ButtonBuilder()
-      .setCustomId(new CustomID('modPanel:deleteMsg', [author.id, messageId]).toString())
-      .setStyle(ButtonStyle.Secondary)
-      .setEmoji(getEmoji('delete_icon', ctx.client))
-      .setDisabled(opts.isDeleteInProgress),
-  );
+  // Create main action row with view infractions
+  const mainRow = new ActionRowBuilder<ButtonBuilder>();
 
-  if (checkIfStaff(author.id)) {
-    firstRow.addComponents(
-      new ButtonBuilder()
-        .setCustomId(new CustomID('modPanel:banUser', [author.id, messageId]).toString())
-        .setStyle(ButtonStyle.Secondary)
-        .setEmoji(getEmoji('hammer_icon', ctx.client))
-        .setDisabled(opts.isBanned),
-    );
-  }
-
-  const secondRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder()
-      .setCustomId(new CustomID('modPanel:warnUser', [author.id, messageId]).toString())
-      .setStyle(ButtonStyle.Secondary)
-      .setEmoji(getEmoji('alert_icon', ctx.client)),
+  // Always add view infractions button
+  mainRow.addComponents(
     new ButtonBuilder()
       .setCustomId(new CustomID('modPanel:viewInfractions', [author.id, messageId]).toString())
-      .setLabel('View Infractions')
+      .setLabel('View History')
       .setStyle(ButtonStyle.Secondary)
       .setEmoji(getEmoji('exclamation', ctx.client)),
   );
 
-  return [firstRow, secondRow];
+  // Add staff-only ban buttons with clear visual distinction
+  if (checkIfStaff(author.id)) {
+    // User ban button
+    const userBanButton = new ButtonBuilder()
+      .setCustomId(new CustomID('modPanel:banUser', [author.id, messageId]).toString())
+      .setLabel(opts.isBanned ? 'User Banned' : 'Ban User')
+      .setStyle(opts.isBanned ? ButtonStyle.Secondary : ButtonStyle.Danger)
+      .setEmoji(getEmoji('hammer_icon', ctx.client))
+      .setDisabled(opts.isBanned);
+
+    // Server ban button
+    const serverBanButton = new ButtonBuilder()
+      .setCustomId(new CustomID('modPanel:banServer', [author.id, messageId]).toString())
+      .setLabel(opts.isServerBanned ? 'Server Banned' : 'Ban Server')
+      .setStyle(opts.isServerBanned ? ButtonStyle.Secondary : ButtonStyle.Danger)
+      .setEmoji(getEmoji('staff', ctx.client))
+      .setDisabled(opts.isServerBanned);
+
+    mainRow.addComponents(userBanButton, serverBanButton);
+  }
+
+  rows.push(mainRow);
+  return rows;
 }
 
-function buildInfoEmbed(username: string, servername: string, client: Client, opts: BuilderOpts) {
-  const userEmbedDesc = opts.isUserBlacklisted
-    ? `~~User **${username}** is already blacklisted.~~`
-    : `Blacklist user **${username}** from this hub.`;
+function buildModPanelContainer(
+  username: string,
+  servername: string,
+  client: Client,
+  opts: BuilderOpts,
+  messageId: Snowflake,
+  authorId: Snowflake,
+): ContainerBuilder {
+  const container = new ContainerBuilder();
 
-  const serverEmbedDesc = opts.isServerBlacklisted
-    ? `~~Server **${servername}** is already blacklisted.~~`
-    : `Blacklist server **${servername}** from this hub.`;
+  // Create compact header with status indicators
+  const statusIndicators = [];
+  if (opts.isUserBlacklisted) statusIndicators.push(`${getEmoji('dotRed', client)} User Blacklisted`);
+  if (opts.isServerBlacklisted) statusIndicators.push(`${getEmoji('dotRed', client)} Server Blacklisted`);
+  if (opts.isBanned) statusIndicators.push(`${getEmoji('dotRed', client)} User Banned`);
+  if (opts.isServerBanned) statusIndicators.push(`${getEmoji('dotRed', client)} Server Banned`);
+  if (opts.isDeleteInProgress) statusIndicators.push(`${getEmoji('dotRed', client)} Deleting...`);
 
-  const deleteDesc = opts.isDeleteInProgress
-    ? '~~Message is already deleted or is being deleted.~~'
-    : 'Delete this message from all connections.';
+  const headerContent = stripIndents`
+    ## ${getEmoji('hammer_icon', client)} Moderation Panel
+    **Target:** ${username} • **Server:** ${servername}
+    ${statusIndicators.length > 0 ? `**Status:** ${statusIndicators.join(' • ')}` : ''}
+  `;
 
-  const warnDesc = 'Warn this user for their message.';
+  container.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(headerContent),
+  );
 
-  const banUserDesc = opts.isBanned
-    ? '~~This user is already banned.~~'
-    : 'Ban this user from the entire bot.';
+  // Content Actions Group (Primary moderation actions)
+  container.addActionRowComponents((row) => {
+    row.addComponents(
+      new ButtonBuilder()
+        .setCustomId(new CustomID('modPanel:deleteMsg', [authorId, messageId]).toString())
+        .setLabel('Delete Message')
+        .setStyle(opts.isDeleteInProgress ? ButtonStyle.Secondary : ButtonStyle.Danger)
+        .setEmoji(getEmoji('delete_icon', client))
+        .setDisabled(opts.isDeleteInProgress),
+      new ButtonBuilder()
+        .setCustomId(new CustomID('modPanel:removeAllReactions', [authorId, messageId]).toString())
+        .setLabel('Clear Reactions')
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji(getEmoji('plus_icon', client)),
+      new ButtonBuilder()
+        .setCustomId(new CustomID('modPanel:warnUser', [authorId, messageId]).toString())
+        .setLabel('Warn')
+        .setStyle(ButtonStyle.Primary)
+        .setEmoji(getEmoji('alert_icon', client)),
+    );
+    return row;
+  });
 
-  return new EmbedBuilder().setColor(Constants.Colors.invisible).setFooter({
-    text: 'Target will be notified of the blacklist. Use /blacklist list to view all blacklists.',
-  }).setDescription(stripIndents`
-        ### ${getEmoji('clock_icon', client)} Moderation Actions
-        **${getEmoji('person_icon', client)} Blacklist User**: ${userEmbedDesc}
-        **${getEmoji('globe_icon', client)} Blacklist Server**: ${serverEmbedDesc}
-        **${getEmoji('plus_icon', client)} Remove Reactions**: Remove all reactions from this message.
-        **${getEmoji('delete_icon', client)} Delete Message**: ${deleteDesc}
-        **${getEmoji('alert_icon', client)} Warn User**: ${warnDesc}
-        **${getEmoji('hammer_icon', client)} Ban User**: ${banUserDesc}
-    `);
+  // Hub Actions Group (Blacklist actions)
+  container.addActionRowComponents((row) => {
+    const userButton = new ButtonBuilder()
+      .setCustomId(new CustomID('modPanel:blacklistUser', [authorId, messageId]).toString())
+      .setLabel(opts.isUserBlacklisted ? 'User Blacklisted' : 'Blacklist User')
+      .setStyle(opts.isUserBlacklisted ? ButtonStyle.Secondary : ButtonStyle.Secondary)
+      .setEmoji(getEmoji('person_icon', client))
+      .setDisabled(opts.isUserBlacklisted);
+
+    const serverButton = new ButtonBuilder()
+      .setCustomId(new CustomID('modPanel:blacklistServer', [authorId, messageId]).toString())
+      .setLabel(opts.isServerBlacklisted ? 'Server Blacklisted' : 'Blacklist Server')
+      .setStyle(opts.isServerBlacklisted ? ButtonStyle.Secondary : ButtonStyle.Secondary)
+      .setEmoji(getEmoji('globe_icon', client))
+      .setDisabled(opts.isServerBlacklisted);
+
+    row.addComponents(userButton, serverButton);
+    return row;
+  });
+
+  return container;
 }

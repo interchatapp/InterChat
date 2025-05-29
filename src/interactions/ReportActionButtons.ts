@@ -83,7 +83,7 @@ export default class MarkResolvedButton {
     const [hubId] = ctx.customId.args;
 
     try {
-      await this.updateButtonComponents(ctx, (component, _, buttonCustomId) => {
+      await this.updateButtonComponents(ctx, (component, row, buttonCustomId) => {
         if (buttonCustomId === ctx.interaction.customId) {
           component
             .setLabel(`Resolved by @${ctx.user.username}`)

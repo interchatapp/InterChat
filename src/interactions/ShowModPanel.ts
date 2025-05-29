@@ -68,9 +68,8 @@ export default class ModActionsButton {
 
     const panel = await buildModPanel(ctx, originalMessage);
     await ctx.reply({
-      embeds: [panel.embed],
-      components: panel.buttons,
-      flags: ['Ephemeral'],
+      components: [panel.container, ...panel.buttons],
+      flags: ['Ephemeral', 'IsComponentsV2'],
     });
   }
 }

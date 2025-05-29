@@ -397,8 +397,8 @@ export class BlacklistUserHandler extends BaseBlacklistHandler {
       `User ${user?.username} blacklisted by ${ctx.user.username} in ${originalMsg.hubId}`,
     );
 
-    const { embed, buttons } = await buildModPanel(ctx, originalMsg);
-    await ctx.editReply({ embeds: [embed], components: buttons });
+    const { container, buttons } = await buildModPanel(ctx, originalMsg);
+    await ctx.editReply({ components: [container, ...buttons], flags: ['IsComponentsV2'] });
 
     const successEmbed = this.buildSuccessEmbed(
       user.username,
@@ -511,8 +511,8 @@ export class BlacklistServerHandler extends BaseBlacklistHandler {
 
     const successEmbed = this.buildSuccessEmbed(server.name, reason, expiresAt, client, locale);
 
-    const { embed, buttons } = await buildModPanel(ctx, originalMsg);
-    await ctx.editReply({ embeds: [embed], components: buttons });
+    const { container, buttons } = await buildModPanel(ctx, originalMsg);
+    await ctx.editReply({ components: [container, ...buttons], flags: ['IsComponentsV2'] });
     await ctx.reply({ embeds: [successEmbed], components: [], flags: ['Ephemeral'] });
   }
 }

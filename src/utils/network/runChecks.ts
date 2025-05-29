@@ -19,6 +19,8 @@ import type { User as DbUser } from '#src/generated/prisma/client/client.js';
 import BlacklistManager from '#src/managers/BlacklistManager.js';
 import type HubManager from '#src/managers/HubManager.js';
 import type HubSettingsManager from '#src/managers/HubSettingsManager.js';
+import ServerBanManager from '#src/managers/ServerBanManager.js';
+import BanManager from '#src/managers/UserBanManager.js';
 import NSFWDetector from '#src/modules/NSFWDetection.js';
 import UserDbService from '#src/services/UserDbService.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
@@ -213,8 +215,17 @@ async function checkBanAndBlacklist(
   message: Message<true>,
   opts: HubCheckFunctionOpts,
 ): Promise<CheckResult> {
-  // Quick check for ban reason in userData first
-  if (opts.userData?.banReason) {
+  // Check for global server ban first
+  const serverBanManager = new ServerBanManager();
+  const serverBanCheck = await serverBanManager.isServerBanned(message.guildId);
+  if (serverBanCheck.isBanned) {
+    return { passed: false };
+  }
+
+  // Check for global user ban
+  const banManager = new BanManager();
+  const banCheck = await banManager.isUserBanned(message.author.id);
+  if (banCheck.isBanned) {
     return { passed: false };
   }
 

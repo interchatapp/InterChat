@@ -671,6 +671,7 @@ export class MessageProcessor {
         await this.callService.updateCallParticipant(
           message.channelId,
           message.author.id,
+          message.author.username,
           `[BLOCKED] ${message.content}`,
           attachmentURL,
         );
@@ -699,6 +700,7 @@ export class MessageProcessor {
       await this.callService.updateCallParticipant(
         message.channelId,
         message.author.id,
+        message.author.username,
         message.content,
         attachmentURL,
       );
