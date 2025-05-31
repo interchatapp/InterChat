@@ -17,17 +17,18 @@
 
 import Logger from '#src/utils/Logger.js';
 import type { ClusterClient } from 'discord-hybrid-sharding';
-import type {
-  ActionRowData,
-  APIMessageTopLevelComponent,
-  Channel,
-  Client,
-  EmbedBuilder,
-  JSONEncodable,
-  MessageActionRowComponentBuilder,
-  MessageActionRowComponentData,
-  MessageFlags,
-  TopLevelComponentData,
+import {
+  TextDisplayBuilder,
+  type ActionRowData,
+  type APIMessageTopLevelComponent,
+  type Channel,
+  type Client,
+  type EmbedBuilder,
+  type JSONEncodable,
+  type MessageActionRowComponentBuilder,
+  type MessageActionRowComponentData,
+  type MessageFlags,
+  type TopLevelComponentData,
 } from 'discord.js';
 
 /**
@@ -41,7 +42,6 @@ export const sendLog = async (
   channelId: string,
   embed: EmbedBuilder | null,
   opts?: {
-    content?: string;
     roleMentionIds?: readonly string[];
     components?: readonly (
       | JSONEncodable<APIMessageTopLevelComponent>
@@ -56,6 +56,14 @@ export const sendLog = async (
     >;
   },
 ): Promise<{ id: string } | null> => {
+  const content = opts?.roleMentionIds?.length
+    ? [
+      new TextDisplayBuilder()
+        .setContent(opts.roleMentionIds.map((id) => `<@&${id}>`).join(' '))
+        .toJSON(),
+    ]
+    : [];
+
   const result = await cluster
     .broadcastEval(
       async (shardClient, ctx) => {
@@ -66,9 +74,6 @@ export const sendLog = async (
         if (channel?.isSendable()) {
           const message = await channel
             .send({
-              content: ctx.roleMentionIds?.length
-                ? `${ctx.roleMentionIds?.map((id) => `<@&${id}>`).join(' ') ?? ''} ${ctx.content ?? ''}`
-                : ctx.content,
               embeds: ctx.embed ? [ctx.embed] : undefined,
               components: ctx.components,
               allowedMentions: { roles: ctx.roleMentionIds },
@@ -86,10 +91,10 @@ export const sendLog = async (
         context: {
           channelId,
           embed: embed?.toJSON(),
-          content: opts?.content,
           flags: opts?.flags,
-          components: opts?.components,
+          components: [...content, ...(opts?.components ?? [])],
           roleMentionIds: opts?.roleMentionIds,
+          roleMentionTextComponent: content,
         },
       },
     )

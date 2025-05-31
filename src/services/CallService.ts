@@ -15,6 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import AchievementService from '#src/services/AchievementService.js';
 import { BroadcastService } from '#src/services/BroadcastService.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
@@ -71,9 +72,11 @@ const MINIMUM_MESSAGES_FOR_CALL = 3;
 export class CallService {
   private readonly redis = getRedis();
   private readonly client: Client;
+  private readonly achievementService: AchievementService;
 
   constructor(client: Client) {
     this.client = client;
+    this.achievementService = new AchievementService();
   }
 
   private async addRecentMatch(userId1: string, userId2: string) {
@@ -210,6 +213,32 @@ export class CallService {
 
     // Set end time
     activeCall.endTime = Date.now();
+
+    // Calculate call duration and participant count for achievements
+    const duration = activeCall.startTime
+      ? Math.floor((activeCall.endTime - activeCall.startTime) / 1000)
+      : 0;
+    const allParticipants = new Set<string>();
+    activeCall.participants.forEach((p) => p.users.forEach((u) => allParticipants.add(u)));
+    const participantCount = allParticipants.size;
+
+    // Track call end achievements for all participants
+    const achievementPromises = Array.from(allParticipants).map((userId) => {
+      // Find which channel this user was in for proper notification
+      const userChannel = activeCall.participants.find((p) => p.users.has(userId))?.channelId;
+      return this.achievementService.processEvent(
+        'call_end',
+        {
+          userId,
+          callId: activeCall.callId,
+          duration,
+          participantCount,
+        },
+        this.client,
+        userChannel,
+      );
+    });
+    await Promise.all(achievementPromises);
 
     // Check if this call has been reported
     const reportKey = `${RedisKeys.Call}:report:${activeCall.callId}`;
@@ -350,6 +379,28 @@ export class CallService {
     const message = await this.getCallStartMessage();
     await this.sendSystemMessage(call2.webhookUrl, `<@${call2.initiatorId}> ${message}`);
     await this.sendSystemMessage(call1.webhookUrl, `<@${call1.initiatorId}> ${message}`);
+
+    // Track call start achievements for both initiators
+    await Promise.all([
+      this.achievementService.processEvent(
+        'call_start',
+        {
+          userId: call1.initiatorId,
+          callId,
+        },
+        this.client,
+        call1.channelId,
+      ),
+      this.achievementService.processEvent(
+        'call_start',
+        {
+          userId: call2.initiatorId,
+          callId,
+        },
+        this.client,
+        call2.channelId,
+      ),
+    ]);
   }
 
   // Add method to track new participants during the call
@@ -472,6 +523,18 @@ export class CallService {
 
     // Increment message count
     participant.messageCount++;
+
+    // Track call message achievements
+    await this.achievementService.processEvent(
+      'call_message',
+      {
+        userId,
+        callId: callData.callId,
+        messageCount: participant.messageCount,
+      },
+      this.client,
+      channelId,
+    );
 
     // Check if we should update leaderboards
     if (!participant.leaderboardUpdated && participant.messageCount >= MINIMUM_MESSAGES_FOR_CALL) {

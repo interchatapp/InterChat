@@ -22,9 +22,9 @@ import db from '#src/utils/Db.js';
 import Logger from '#src/utils/Logger.js';
 import getRedis from '#src/utils/Redis.js';
 import { handleError } from '#src/utils/Utils.js';
+import { getVotingStreak } from '#src/utils/VotingUtils.js';
 import { RedisKeys } from '#utils/Constants.js';
-import { stripIndents } from 'common-tags';
-import { type Snowflake, Client, EmbedBuilder } from 'discord.js';
+import { type Snowflake, Client } from 'discord.js';
 
 /**
  * Achievement tracking configuration for Redis
@@ -66,6 +66,14 @@ export interface VoteEventData {
   voteCount: number;
 }
 
+export interface CallEventData {
+  userId: string;
+  callId: string;
+  duration?: number; // in seconds
+  participantCount?: number;
+  messageCount?: number;
+}
+
 export interface HubJoinEventData {
   userId: string;
   hubId: string;
@@ -95,6 +103,7 @@ export interface ReactionEventData {
 export type AchievementEventData =
   | MessageEventData
   | VoteEventData
+  | CallEventData
   | HubJoinEventData
   | ServerJoinEventData
   | LanguageChangeEventData
@@ -247,6 +256,8 @@ export class AchievementService {
    * @param achievementId Achievement ID to update progress for
    * @param value Value to set (or increment if increment=true)
    * @param increment Whether to add to current value (true) or set directly (false)
+   * @param client Discord client for notifications when achievement is unlocked
+   * @param channelId Optional channel ID where achievement was earned
    * @returns The new progress value after update
    */
   public async updateProgress(
@@ -254,6 +265,8 @@ export class AchievementService {
     achievementId: string,
     value: number,
     increment = true,
+    client?: Client,
+    channelId?: Snowflake,
   ): Promise<number> {
     try {
       // First check if the achievement is already unlocked
@@ -308,7 +321,7 @@ export class AchievementService {
 
         if (!recentlyChecked) {
           await this.cacheManager.set(unlockKey, true, 60); // Cache for 1 minute
-          await this.unlockAchievement(userId, achievementId);
+          await this.unlockAchievement(userId, achievementId, client, channelId);
         }
       }
 
@@ -326,10 +339,17 @@ export class AchievementService {
    * Increment progress towards an achievement by 1
    * @param userId User ID to update
    * @param achievementId Achievement ID to increment
+   * @param client Discord client for notifications when achievement is unlocked
+   * @param channelId Optional channel ID where achievement was earned
    * @returns New progress value
    */
-  public async incrementProgress(userId: string, achievementId: string): Promise<number> {
-    return await this.updateProgress(userId, achievementId, 1, true);
+  public async incrementProgress(
+    userId: string,
+    achievementId: string,
+    client?: Client,
+    channelId?: Snowflake,
+  ): Promise<number> {
+    return await this.updateProgress(userId, achievementId, 1, true, client, channelId);
   }
 
   /**
@@ -357,12 +377,14 @@ export class AchievementService {
    * @param userId User ID to unlock for
    * @param achievementId Achievement ID to unlock
    * @param client Discord client for sending notifications
+   * @param channelId Optional channel ID where achievement was earned
    * @returns The unlocked user achievement or null
    */
   public async unlockAchievement(
     userId: string,
     achievementId: string,
     client?: Client,
+    channelId?: Snowflake,
   ): Promise<UserAchievement | null> {
     try {
       // Check if already unlocked
@@ -395,7 +417,7 @@ export class AchievementService {
 
       // Send notification if client is provided
       if (client) {
-        await this.sendAchievementNotification(userId, achievement, client);
+        await this.sendAchievementNotification(userId, achievement, client, channelId);
       }
 
       // Check for InterCompletionist achievement
@@ -412,12 +434,13 @@ export class AchievementService {
   }
 
   /**
-   * Sends a DM notification to the user about unlocking an achievement
+   * Sends a channel notification to the user about unlocking an achievement
    */
   private async sendAchievementNotification(
     userId: Snowflake,
     achievement: Achievement,
     client: Client,
+    channelId?: Snowflake,
   ): Promise<void> {
     try {
       const user = await client.users.fetch(userId).catch(() => null);
@@ -429,38 +452,43 @@ export class AchievementService {
       const allAchievements = await this.getAchievements();
       const totalAchievements = allAchievements.length;
 
-      const embed = new EmbedBuilder()
-        .setTitle('🏆 Achievement Unlocked!')
-        .setDescription(
-          stripIndents`**${achievement.badgeEmoji} ${achievement.name}**
-          ${achievement.description}
+      // Create expressive notification message
+      let notificationText = `🏆 **${user.username}** just unlocked **${achievement.badgeEmoji} ${achievement.name}** achievement!`;
 
-          **Progress:** ${totalUnlocked}/${totalAchievements} achievements unlocked`,
-        )
-        .setColor('#FFD700')
-        .setThumbnail(achievement.badgeUrl ?? 'https://i.imgur.com/NKKmav5.gif')
-        .setFooter({
-          text: 'InterChat Achievements • Use /achievements to view all',
-          iconURL: client.user?.displayAvatarURL(),
-        })
-        .setTimestamp();
-
-      // Add a special message for milestone achievements
+      // Add celebratory milestone messages
       if (totalUnlocked === 1) {
-        embed.setDescription(
-          `${embed.data.description}\n\n🎉 **Congratulations on your first achievement!**`,
-        );
+        notificationText += ' 🎉 *Welcome to the achievement club!*';
+      }
+      else if (totalUnlocked === 5) {
+        notificationText += ' ⭐ *Achievement collector in the making!*';
+      }
+      else if (totalUnlocked === 10) {
+        notificationText += ' 🔥 *On fire with achievements!*';
       }
       else if (totalUnlocked === Math.floor(totalAchievements / 2)) {
-        embed.setDescription(`${embed.data.description}\n\n🌟 **Halfway there! Keep going!**`);
+        notificationText += ' 🌟 *Halfway to greatness!*';
+      }
+      else if (totalUnlocked === totalAchievements - 1) {
+        notificationText += ' 💎 *So close to perfection!*';
       }
       else if (totalUnlocked === totalAchievements) {
-        embed.setDescription(
-          `${embed.data.description}\n\n👑 **Achievement Master! You've unlocked everything!**`,
-        );
+        notificationText += ' 👑 *Achievement Master - Legendary status achieved!*';
+      }
+      else if (totalUnlocked % 5 === 0) {
+        notificationText += ` ✨ *${totalUnlocked} achievements strong!*`;
       }
 
-      await user.send({ embeds: [embed] }).catch(() => {
+      // Try to send to the channel where achievement was earned
+      if (channelId) {
+        const channel = await client.channels.fetch(channelId).catch(() => null);
+        if (channel?.isTextBased() && 'guild' in channel) {
+          await channel.send({ content: notificationText }).catch(() => null);
+          return;
+        }
+      }
+
+      // Fallback to DM if channel notification fails
+      await user.send({ content: notificationText }).catch(() => {
         // User might have DMs disabled - we can ignore this error
       });
     }
@@ -518,11 +546,11 @@ export class AchievementService {
 
     // Global Chatter (message in a hub)
     if (data.hubId) {
-      await this.incrementProgress(userId, 'global-chatter');
+      await this.incrementProgress(userId, 'global-chatter', client);
     }
 
     // Message Marathoner (any message)
-    await this.incrementProgress(userId, 'message-marathoner');
+    await this.incrementProgress(userId, 'message-marathoner', client);
 
     // Streak Master (messages on consecutive days)
     await this.processMessageStreak(userId);
@@ -557,14 +585,43 @@ export class AchievementService {
   ): Promise<void> {
     const voteCount = data.voteCount || 0;
 
-    // Voter achievement (10 votes)
-    if (voteCount >= 10) {
-      await this.unlockAchievement(userId, 'voter', client);
-    }
+    // Update progress for voter achievement (10 votes)
+    await this.updateProgress(userId, 'voter', voteCount, false, client);
 
-    // Super Voter achievement (100 votes)
-    if (voteCount >= 100) {
-      await this.unlockAchievement(userId, 'super-voter', client);
+    // Update progress for super voter achievement (100 votes)
+    await this.updateProgress(userId, 'super-voter', voteCount, false, client);
+
+    // Check for voting streak achievements
+    await this.processVotingStreakAchievements(userId, client);
+  }
+
+  /**
+   * Process voting streak achievements
+   * @param userId User ID
+   * @param client Discord client
+   */
+  private async processVotingStreakAchievements(userId: string, client?: Client): Promise<void> {
+    try {
+      // Get voting streak from VotingUtils
+      const streak = await getVotingStreak(userId);
+
+      // Streak achievements
+      if (streak >= 7) {
+        await this.unlockAchievement(userId, 'voting-week-streak', client);
+      }
+
+      if (streak >= 30) {
+        await this.unlockAchievement(userId, 'voting-month-streak', client);
+      }
+
+      if (streak >= 100) {
+        await this.unlockAchievement(userId, 'voting-dedication', client);
+      }
+    }
+    catch (error) {
+      handleError(error, {
+        comment: `Failed to process voting streak achievements for user: ${userId}`,
+      });
     }
   }
 
@@ -606,11 +663,76 @@ export class AchievementService {
   }
 
   /**
+   * Process call start-related achievements
+   * @param userId User ID
+   * @param data Event data
+   * @param client Discord client
+   * @param channelId Channel where achievement was earned
+   */
+  private async processCallStartAchievements(
+    userId: string,
+    data: CallEventData,
+    client?: Client,
+    channelId?: Snowflake,
+  ): Promise<void> {
+    // First Caller (first call ever)
+    await this.unlockAchievement(userId, 'first-caller', client, channelId);
+  }
+
+  /**
+   * Process call end-related achievements
+   * @param userId User ID
+   * @param data Event data
+   * @param client Discord client
+   * @param channelId Channel where achievement was earned
+   */
+  private async processCallEndAchievements(
+    userId: string,
+    data: CallEventData,
+    client?: Client,
+    channelId?: Snowflake,
+  ): Promise<void> {
+    // Call Veteran (10 calls completed)
+    await this.incrementProgress(userId, 'call-veteran', client, channelId);
+
+    // Call Master (50 calls completed)
+    await this.incrementProgress(userId, 'call-master', client, channelId);
+
+    // Marathon Caller (30+ minute call)
+    if (data.duration && data.duration >= 1800) {
+      await this.unlockAchievement(userId, 'marathon-caller', client, channelId);
+    }
+
+    // Social Butterfly (5+ people in call)
+    if (data.participantCount && data.participantCount >= 5) {
+      await this.unlockAchievement(userId, 'social-butterfly', client, channelId);
+    }
+  }
+
+  /**
+   * Process call message-related achievements
+   * @param userId User ID
+   * @param data Event data
+   * @param client Discord client
+   * @param channelId Channel where achievement was earned
+   */
+  private async processCallMessageAchievements(
+    userId: string,
+    data: CallEventData,
+    client?: Client,
+    channelId?: Snowflake,
+  ): Promise<void> {
+    // Conversation Starter (100+ messages during calls)
+    await this.incrementProgress(userId, 'conversation-starter', client, channelId);
+  }
+
+  /**
    * Mass update achievement progress for related activities
    * For example, when a user sends a message, check various message-related achievements
    * @param eventType The type of event to process
    * @param data Event-specific data
    * @param client Discord client for notifications
+   * @param channelId Optional channel ID where the event occurred
    */
   public async processEvent(
     eventType:
@@ -620,9 +742,13 @@ export class AchievementService {
       | 'hub_create'
       | 'reaction'
       | 'serverJoin'
-      | 'language_change',
+      | 'language_change'
+      | 'call_start'
+      | 'call_end'
+      | 'call_message',
     data: AchievementEventData,
     client?: Client,
+    channelId?: Snowflake,
   ): Promise<void> {
     try {
       const { userId } = data;
@@ -655,6 +781,23 @@ export class AchievementService {
 
         case 'serverJoin':
           await this.processServerJoinAchievements(userId, data as ServerJoinEventData, client);
+          break;
+
+        case 'call_start':
+          await this.processCallStartAchievements(userId, data as CallEventData, client, channelId);
+          break;
+
+        case 'call_end':
+          await this.processCallEndAchievements(userId, data as CallEventData, client, channelId);
+          break;
+
+        case 'call_message':
+          await this.processCallMessageAchievements(
+            userId,
+            data as CallEventData,
+            client,
+            channelId,
+          );
           break;
 
         case 'language_change':
@@ -955,10 +1098,7 @@ export class AchievementService {
    * @param userId User ID to track
    * @param client Discord client for notifications
    */
-  public async trackFirstMessage(
-    userId: string,
-    client?: Client,
-  ): Promise<void> {
+  public async trackFirstMessage(userId: string, client?: Client): Promise<void> {
     try {
       // Check if user has already sent a message (has any progress on message-marathoner)
       const messageCount = await this.getProgress(userId, 'message-marathoner');
@@ -980,10 +1120,7 @@ export class AchievementService {
    * @param userId User ID to track
    * @param client Discord client for notifications
    */
-  public async trackTimeBasedAchievements(
-    userId: string,
-    client?: Client,
-  ): Promise<void> {
+  public async trackTimeBasedAchievements(userId: string, client?: Client): Promise<void> {
     try {
       const now = new Date();
       const hour = now.getHours();

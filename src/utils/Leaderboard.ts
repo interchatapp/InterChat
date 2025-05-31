@@ -10,7 +10,9 @@ import { Client } from 'discord.js';
  * @param prefix - The leaderboard prefix (e.g., 'leaderboard:messages:users').
  * @returns A string key that includes the current year and month.
  */
-export function getLeaderboardKey(prefix: `leaderboard:${'messages:users' | 'messages:servers' | 'calls:users' | 'calls:servers'}`): string {
+export function getLeaderboardKey(
+  prefix: `leaderboard:${'messages:users' | 'messages:servers' | 'calls:users' | 'calls:servers'}`,
+): string {
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -145,12 +147,83 @@ export async function formatServerLeaderboard(
   return output;
 }
 
-export async function updateCallLeaderboards(type: 'user' | 'server', targetId: string): Promise<void> {
+export async function updateCallLeaderboards(
+  type: 'user' | 'server',
+  targetId: string,
+): Promise<void> {
   const redis = getRedis();
   const key = getLeaderboardKey(`leaderboard:calls:${type}s`);
 
   await redis.zincrby(key, 1, targetId);
   await redis.expire(key, 30 * 24 * 60 * 60); // 30 days
+}
+
+/**
+ * Retrieves the top entries from the voting leaderboard.
+ *
+ * @param limit - The maximum number of entries to retrieve (default is 10).
+ * @returns An array containing user IDs and their corresponding vote counts.
+ */
+export async function getVotingLeaderboard(limit = 10): Promise<string[]> {
+  const redis = getRedis();
+  const leaderboardKey = 'voting:leaderboard:monthly';
+
+  // Get from Redis first (real-time data)
+  const redisResults = await redis.zrevrange(leaderboardKey, 0, limit - 1, 'WITHSCORES');
+
+  if (redisResults.length > 0) {
+    return redisResults;
+  }
+
+  // Fallback to database if Redis is empty
+  const users = await db.user.findMany({
+    where: { voteCount: { gt: 0 } },
+    orderBy: { voteCount: 'desc' },
+    take: limit,
+    select: { id: true, voteCount: true },
+  });
+
+  // Convert to Redis format: [id, score, id, score, ...]
+  const results: string[] = [];
+  for (const user of users) {
+    results.push(user.id, user.voteCount.toString());
+  }
+
+  return results;
+}
+
+/**
+ * Formats the voting leaderboard for display.
+ *
+ * @param leaderboard - Array of user IDs and vote counts from getVotingLeaderboard.
+ * @param client - Discord client instance for fetching user data.
+ * @returns Formatted leaderboard string.
+ */
+export async function formatVotingLeaderboard(
+  leaderboard: string[],
+  client: Client,
+): Promise<string> {
+  if (leaderboard.length === 0) return 'No voting data available.';
+
+  let output = '';
+
+  for (let i = 0; i < leaderboard.length; i += 2) {
+    const userId = leaderboard[i];
+    const voteCount = parseInt(leaderboard[i + 1], 10);
+    const rank = Math.floor(i / 2) + 1;
+
+    // Fetch user data
+    const user = await client.users.fetch(userId).catch(() => null);
+    const username = user?.username ?? 'Unknown User';
+
+    // Use the helper function to get the rank display value.
+    const rankDisplay = getRankDisplay(rank, getEmoji('dot', client));
+
+    // Pad each column for alignment.
+    output += `${rankDisplay} \` ${voteCount} votes \` - ${username}\n`;
+  }
+
+  return output;
 }
 
 export async function getCallLeaderboard(type: 'user' | 'server', limit = 10): Promise<string[]> {

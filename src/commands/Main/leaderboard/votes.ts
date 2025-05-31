@@ -18,21 +18,21 @@
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import { UIComponents } from '#src/utils/DesignSystem.js';
-import { formatServerLeaderboard, getLeaderboard } from '#src/utils/Leaderboard.js';
+import { formatVotingLeaderboard, getVotingLeaderboard } from '#src/utils/Leaderboard.js';
 import { ContainerBuilder, MessageFlags, TextDisplayBuilder } from 'discord.js';
 
-export default class ServerLeaderboardCommand extends BaseCommand {
+export default class VotesLeaderboardCommand extends BaseCommand {
   constructor() {
     super({
-      name: 'server',
-      description: 'Shows the global server leaderboard for InterChat (with invites).',
+      name: 'votes',
+      description: 'Shows the global voting leaderboard for InterChat.',
       types: { slash: true, prefix: true },
     });
   }
 
   async execute(ctx: Context) {
-    const leaderboard = await getLeaderboard('server', 10);
-    const leaderboardTable = await formatServerLeaderboard(leaderboard, ctx.client);
+    const leaderboard = await getVotingLeaderboard(10);
+    const leaderboardTable = await formatVotingLeaderboard(leaderboard, ctx.client);
 
     // Create UI components helper
     const ui = new UIComponents(ctx.client);
@@ -40,13 +40,17 @@ export default class ServerLeaderboardCommand extends BaseCommand {
 
     // Add header
     container.addTextDisplayComponents(
-      ui.createHeader('Global Server Leaderboard', 'Resets every month. Send a message in any hub to get on it!', 'hash_icon'),
+      ui.createHeader(
+        'Global Voting Leaderboard',
+        'Resets every month. Vote on top.gg to get on it!',
+        'topggSparkles',
+      ),
     );
 
     // Add leaderboard content
     container.addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
-        leaderboardTable.length > 0 ? leaderboardTable : 'No data available.',
+        leaderboardTable.length > 0 ? leaderboardTable : 'No voting data available.',
       ),
     );
 

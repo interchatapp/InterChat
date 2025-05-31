@@ -95,7 +95,6 @@ export const logAppeals = async (
 
   await sendLog(appealer.client.cluster, opts.appealsChannelId, appealEmbed, {
     roleMentionIds: opts.appealsRoleId ? [opts.appealsRoleId] : undefined,
-    content: `\n-# New blacklist appeal for ${opts.appealName} (${opts.appealTargetId})`,
     components: [buttonRow.toJSON()],
   });
 };

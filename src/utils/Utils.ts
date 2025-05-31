@@ -66,7 +66,7 @@ export const msToReadable = (milliseconds: number, short = true): string => {
   for (const unit of timeUnits) {
     const value = Math.floor(remainingMs / unit.div);
     if (value > 0) {
-      // eslint-disable-next-line no-nested-ternary
+
       const suffix = short ? unit.short : value === 1 ? ` ${unit.long}` : ` ${unit.long}s`;
 
       parts.push(`${value}${suffix}`);

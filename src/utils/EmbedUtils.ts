@@ -53,7 +53,6 @@ export class ErrorEmbed extends EmbedBuilder {
     super({
       title: `${getEmoji('x_icon', client)} Unexpected Error Occurred`,
       color: Colors.Red,
-      footer: { text: 'You will earn bug points for every bug you report!' },
     });
 
     if (data?.errorCode) this.setErrorCode(data.errorCode);

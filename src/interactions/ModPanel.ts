@@ -25,6 +25,7 @@ import { HubService } from '#src/services/HubService.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import db from '#src/utils/Db.js';
 
+import type { Message as MessageDB } from '#src/generated/prisma/client/client.js';
 import { InfoEmbed } from '#src/utils/EmbedUtils.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { type supportedLocaleCodes, t } from '#src/utils/Locale.js';
@@ -42,7 +43,6 @@ import UserBanHandler from '#src/utils/moderation/modPanel/handlers/userBanHandl
 import ViewInfractionsHandler from '#src/utils/moderation/modPanel/handlers/viewInfractions.js';
 import WarnHandler from '#src/utils/moderation/modPanel/handlers/warnHandler.js';
 import { getOriginalMessage } from '#src/utils/network/messageUtils.js';
-import type { Message as MessageDB } from '#src/generated/prisma/client/client.js';
 import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
@@ -51,8 +51,6 @@ import {
   type Client,
   ContainerBuilder,
   type Interaction,
-
-
   type Snowflake,
   TextDisplayBuilder,
 } from 'discord.js';
@@ -79,10 +77,10 @@ export default class ModPanelHandler {
 
   @RegisterInteractionHandler('modPanel')
   async handleButtons(ctx: ComponentContext): Promise<void> {
-    const [userId, originalMsgId] = ctx.customId.args;
+    const [originalMsgId] = ctx.customId.args;
     const locale = await fetchUserLocale(ctx.user.id);
 
-    if (!(await this.validateUser(ctx, userId, locale))) return;
+    if (!(await this.validateUser(ctx, locale))) return;
 
     const handler =
       this.modActionHandlers[ctx.customId.suffix as keyof typeof this.modActionHandlers];
@@ -104,14 +102,28 @@ export default class ModPanelHandler {
       await handler.handleDurationSelect(ctx, originalMsgId, duration, locale);
     }
   }
-  private async validateUser(ctx: ComponentContext, userId: string, locale: supportedLocaleCodes) {
-    if (ctx.user.id !== userId) {
+  private async validateUser(ctx: ComponentContext, locale: supportedLocaleCodes) {
+    // Get the original message to check hub permissions
+    const originalMsg = await getOriginalMessage(ctx.customId.args[1]);
+    if (!originalMsg) {
+      const embed = new InfoEmbed().setDescription(
+        t('errors.messageNotSentOrExpired', locale, {
+          emoji: getEmoji('x_icon', ctx.client),
+        }),
+      );
+      await ctx.reply({ embeds: [embed], flags: ['Ephemeral'] });
+      return false;
+    }
+
+    // Check if user is staff or hub moderator
+    const hubService = new HubService();
+    const hub = await hubService.fetchHub(originalMsg.hubId);
+    if (!hub || !(await isStaffOrHubMod(ctx.user.id, hub))) {
       const embed = new InfoEmbed().setDescription(
         t('errors.notYourAction', locale, {
           emoji: getEmoji('x_icon', ctx.client),
         }),
       );
-
       await ctx.reply({ embeds: [embed], flags: ['Ephemeral'] });
       return false;
     }
@@ -193,7 +205,6 @@ export async function buildModPanel(ctx: Context | Interaction, originalMsg: Mes
       isDeleteInProgress: deleteInProgress,
     },
     originalMsg.id,
-    originalMsg.authorId,
   );
 
   const buttons = buildButtons(ctx, originalMsg.id, {
@@ -217,7 +228,7 @@ function buildButtons(ctx: Context | Interaction, messageId: Snowflake, opts: Bu
   // Always add view infractions button
   mainRow.addComponents(
     new ButtonBuilder()
-      .setCustomId(new CustomID('modPanel:viewInfractions', [author.id, messageId]).toString())
+      .setCustomId(new CustomID('modPanel:viewInfractions', [messageId]).toString())
       .setLabel('View History')
       .setStyle(ButtonStyle.Secondary)
       .setEmoji(getEmoji('exclamation', ctx.client)),
@@ -227,7 +238,7 @@ function buildButtons(ctx: Context | Interaction, messageId: Snowflake, opts: Bu
   if (checkIfStaff(author.id)) {
     // User ban button
     const userBanButton = new ButtonBuilder()
-      .setCustomId(new CustomID('modPanel:banUser', [author.id, messageId]).toString())
+      .setCustomId(new CustomID('modPanel:banUser', [messageId]).toString())
       .setLabel(opts.isBanned ? 'User Banned' : 'Ban User')
       .setStyle(opts.isBanned ? ButtonStyle.Secondary : ButtonStyle.Danger)
       .setEmoji(getEmoji('hammer_icon', ctx.client))
@@ -235,7 +246,7 @@ function buildButtons(ctx: Context | Interaction, messageId: Snowflake, opts: Bu
 
     // Server ban button
     const serverBanButton = new ButtonBuilder()
-      .setCustomId(new CustomID('modPanel:banServer', [author.id, messageId]).toString())
+      .setCustomId(new CustomID('modPanel:banServer', [messageId]).toString())
       .setLabel(opts.isServerBanned ? 'Server Banned' : 'Ban Server')
       .setStyle(opts.isServerBanned ? ButtonStyle.Secondary : ButtonStyle.Danger)
       .setEmoji(getEmoji('staff', ctx.client))
@@ -254,7 +265,6 @@ function buildModPanelContainer(
   client: Client,
   opts: BuilderOpts,
   messageId: Snowflake,
-  authorId: Snowflake,
 ): ContainerBuilder {
   const container = new ContainerBuilder();
 
@@ -272,26 +282,24 @@ function buildModPanelContainer(
     ${statusIndicators.length > 0 ? `**Status:** ${statusIndicators.join(' • ')}` : ''}
   `;
 
-  container.addTextDisplayComponents(
-    new TextDisplayBuilder().setContent(headerContent),
-  );
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerContent));
 
   // Content Actions Group (Primary moderation actions)
   container.addActionRowComponents((row) => {
     row.addComponents(
       new ButtonBuilder()
-        .setCustomId(new CustomID('modPanel:deleteMsg', [authorId, messageId]).toString())
+        .setCustomId(new CustomID('modPanel:deleteMsg', [messageId]).toString())
         .setLabel('Delete Message')
         .setStyle(opts.isDeleteInProgress ? ButtonStyle.Secondary : ButtonStyle.Danger)
         .setEmoji(getEmoji('delete_icon', client))
         .setDisabled(opts.isDeleteInProgress),
       new ButtonBuilder()
-        .setCustomId(new CustomID('modPanel:removeAllReactions', [authorId, messageId]).toString())
+        .setCustomId(new CustomID('modPanel:removeAllReactions', [messageId]).toString())
         .setLabel('Clear Reactions')
         .setStyle(ButtonStyle.Secondary)
         .setEmoji(getEmoji('plus_icon', client)),
       new ButtonBuilder()
-        .setCustomId(new CustomID('modPanel:warnUser', [authorId, messageId]).toString())
+        .setCustomId(new CustomID('modPanel:warnUser', [messageId]).toString())
         .setLabel('Warn')
         .setStyle(ButtonStyle.Primary)
         .setEmoji(getEmoji('alert_icon', client)),
@@ -302,14 +310,14 @@ function buildModPanelContainer(
   // Hub Actions Group (Blacklist actions)
   container.addActionRowComponents((row) => {
     const userButton = new ButtonBuilder()
-      .setCustomId(new CustomID('modPanel:blacklistUser', [authorId, messageId]).toString())
+      .setCustomId(new CustomID('modPanel:blacklistUser', [messageId]).toString())
       .setLabel(opts.isUserBlacklisted ? 'User Blacklisted' : 'Blacklist User')
       .setStyle(opts.isUserBlacklisted ? ButtonStyle.Secondary : ButtonStyle.Secondary)
       .setEmoji(getEmoji('person_icon', client))
       .setDisabled(opts.isUserBlacklisted);
 
     const serverButton = new ButtonBuilder()
-      .setCustomId(new CustomID('modPanel:blacklistServer', [authorId, messageId]).toString())
+      .setCustomId(new CustomID('modPanel:blacklistServer', [messageId]).toString())
       .setLabel(opts.isServerBlacklisted ? 'Server Blacklisted' : 'Blacklist Server')
       .setStyle(opts.isServerBlacklisted ? ButtonStyle.Secondary : ButtonStyle.Secondary)
       .setEmoji(getEmoji('globe_icon', client))

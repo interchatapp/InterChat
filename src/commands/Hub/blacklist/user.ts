@@ -26,6 +26,7 @@ import {
   ApplicationCommandOptionType,
   type AutocompleteInteraction,
 } from 'discord.js';
+import BlacklistManager from '#src/managers/BlacklistManager.js';
 
 export default class BlacklistUserSubcommand extends BaseCommand {
   private readonly hubService = new HubService();
@@ -85,9 +86,7 @@ export default class BlacklistUserSubcommand extends BaseCommand {
     }
 
     // Check if the user is already blacklisted
-    const blacklistManager = await import(
-      '#src/managers/BlacklistManager.js'
-    ).then((m) => new m.default('user', user.id));
+    const blacklistManager = new BlacklistManager('user', user.id);
     const alreadyBlacklisted = await blacklistManager.fetchBlacklist(hub.id);
     if (alreadyBlacklisted) {
       await ctx.replyEmbed('blacklist.user.alreadyBlacklisted', {

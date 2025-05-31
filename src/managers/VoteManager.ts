@@ -22,6 +22,7 @@ import type { WebhookPayload } from '#types/TopGGPayload.d.ts';
 import Constants from '#utils/Constants.js';
 import db from '#utils/Db.js';
 import { getOrdinalSuffix } from '#utils/Utils.js';
+import { updateVotingLeaderboard, updateVotingStreak } from '#src/utils/VotingUtils.js';
 import { stripIndents } from 'common-tags';
 import { ClusterManager } from 'discord-hybrid-sharding';
 import {
@@ -66,7 +67,8 @@ export class VoteManager {
   async incrementUserVote(userId: string, name?: string) {
     const lastVoted = new Date();
     const user = await this.userDbManager.getUser(userId);
-    const newVoteCount = user?.voteCount ? user.voteCount + 1 : 1;
+    const oldVoteCount = user?.voteCount ?? 0;
+    const newVoteCount = oldVoteCount + 1;
 
     const updatedUser = await this.userDbManager.upsertUser(userId, {
       name,
@@ -79,6 +81,12 @@ export class VoteManager {
       userId,
       voteCount: newVoteCount,
     });
+
+    // Update voting streak
+    await updateVotingStreak(userId, lastVoted);
+
+    // Update voting leaderboard
+    await updateVotingLeaderboard(userId, newVoteCount);
 
     return updatedUser;
   }
@@ -173,7 +181,7 @@ export class VoteManager {
       - Create up to 4 hubs
       - Custom welcome messages
       - Voter role in support server
-      - Exclusive voter badge in \`/profile\`
+      - Exclusive voter badge in \`/profile\` & your messages
     `;
   }
 

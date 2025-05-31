@@ -32,6 +32,7 @@ import { RedisKeys } from '#utils/Constants.js';
 import Logger from '#utils/Logger.js';
 import { getRedis } from '#utils/Redis.js';
 import BanManager from '#src/managers/UserBanManager.js';
+import ServerBanManager from '#src/managers/ServerBanManager.js';
 
 export interface CallReportData {
   callId: string;
@@ -987,7 +988,6 @@ export default class ViewReportedCallCommand extends BaseCommand {
     banType: 'PERMANENT' | 'TEMPORARY',
     duration?: number,
   ): Promise<void> {
-    const { default: ServerBanManager } = await import('#src/managers/ServerBanManager.js');
     const serverBanManager = new ServerBanManager();
 
     const reason = `Server banned from call ${callId} for violating InterChat rules`;

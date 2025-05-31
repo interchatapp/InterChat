@@ -15,20 +15,22 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import AchievementsLeaderboardCommand from '#src/commands/Main/leaderboard/achievements.js';
 import CallsLeaderboardCommand from '#src/commands/Main/leaderboard/calls.js';
-import ServerLeaderboardCommand from '#src/commands/Main/leaderboard/server.js';
-import UserLeaderboardCommand from '#src/commands/Main/leaderboard/user.js';
+import MessagesLeaderboardCommand from '#src/commands/Main/leaderboard/messages.js';
+import VotesLeaderboardCommand from '#src/commands/Main/leaderboard/votes.js';
 import BaseCommand from '#src/core/BaseCommand.js';
 export default class LeaderboardCommand extends BaseCommand {
   constructor() {
     super({
       name: 'leaderboard',
-      description: 'leaderboard rahhh',
+      description: 'View various leaderboards for InterChat.',
       types: { slash: true, prefix: true },
       subcommands: {
-        user: new UserLeaderboardCommand(),
-        server: new ServerLeaderboardCommand(),
+        messages: new MessagesLeaderboardCommand(),
         calls: new CallsLeaderboardCommand(),
+        votes: new VotesLeaderboardCommand(),
+        achievements: new AchievementsLeaderboardCommand(),
       },
     });
   }

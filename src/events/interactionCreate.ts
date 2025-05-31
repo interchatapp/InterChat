@@ -44,6 +44,7 @@ import type {
 } from 'discord.js';
 import { createComponentContext } from '#src/utils/ContextUtils.js';
 import BanManager from '#src/managers/UserBanManager.js';
+import ServerBanManager from '#src/managers/ServerBanManager.js';
 
 export default class InteractionCreate extends BaseEventListener<'interactionCreate'> {
   readonly name = 'interactionCreate';
@@ -225,7 +226,6 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
 
     // Check for server ban if in a guild
     if (interaction.guild) {
-      const ServerBanManager = (await import('#src/managers/ServerBanManager.js')).default;
       const serverBanManager = new ServerBanManager();
       const serverBanCheck = await serverBanManager.isServerBanned(interaction.guild.id);
 
