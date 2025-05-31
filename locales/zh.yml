@@ -52,7 +52,7 @@ rules:
     -# 如重试，请在此中心另发送一条消息。
   noHubRules: 此中心尚未设置任何细则。但是 [InterChat通用规则]({rules_link}) 仍然适用。
   hubRules: 中心规则
-  viewbotRules: "View Bot Rules"
+  viewbotRules: "查看 Bot 规则"
 vote:
   description: |
     帮助更多社区发现InterChat！您在top.gg的投票将:
@@ -67,11 +67,11 @@ vote:
 network:
   accountTooNew: '{emoji}{user}您的账号注册时间不足，无法在InterChat发送消息。请稍后再试。'
   deleteSuccess: '{emoji}{user}发送的消息已从 __**{deleted}/{total}**__ 服务器中删除。'
-  editInProgress: '{emoji} Your request has been queued. Messages will be edited shortly...'
-  editInProgressError: '{emoji} This message is already being edited by another user.'
-  emptyContent: '{emoji} Message content cannot be empty.'
-  newMessageContent: 'New Message Content'
-  editMessagePrompt: '{emoji} Please use the modal to edit your message.'
+  editInProgress: '{emoji}您的请求正在排队中。消息将很快编辑完成……'
+  editInProgressError: '{emoji}此消息已被其他用户编辑。'
+  emptyContent: '{emoji}消息内容不能为空。'
+  newMessageContent: '新消息内容'
+  editMessagePrompt: '{emoji}请使用此模式编辑您的消息。'
   editSuccess: '{emoji}{user}发送的消息已在__**{edited}／{total}**__服务器中完成编辑。'
   onboarding:
     embed:
@@ -309,7 +309,7 @@ hub:
       notAllowed: "{emoji}只有中心管理员可以更新监管员级别。"
       notOwner: "{emoji}只有此中心的所有者可以更新管理员的级别。"
   manage:
-    dashboardTip: "**🛠️ NEW Dashboard:** Improved interface and more features! Try it out at [your hub's dashboard page]({url})."
+    dashboardTip: "**🛠️ 新控制面板：** 界面优化，功能增多！在 [您中心的控制面板页]({url})试试看。"
     enterImgurUrl: 输入一个有效的Imgur图片网址，且该网址不是图库或相册。
     icon:
       changed: 中心图标已成功更改。
