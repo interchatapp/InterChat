@@ -115,14 +115,6 @@ export async function seedAchievements(prisma: PrismaClient): Promise<void> {
 
     // Special achievements
     {
-      id: 'pioneer',
-      name: 'Pioneer',
-      description: 'Be among the first 100 users globally to join InterChat.',
-      badgeEmoji: '🏆',
-      badgeUrl: 'https://images.emojiterra.com/twitter/512px/1f389.png',
-      threshold: 1,
-    },
-    {
       id: 'echo-chamber',
       name: 'Echo Chamber',
       description: 'Your message is broadcast to 10+ servers in one hub.',
@@ -221,6 +213,30 @@ export async function seedAchievements(prisma: PrismaClient): Promise<void> {
       badgeUrl: 'https://images.emojiterra.com/twitter/512px/1f389.png',
       threshold: 100,
     },
+    {
+      id: 'voting-week-streaker',
+      name: 'Voting Week Streaker',
+      description: 'Vote for 7 consecutive days. (7 continuous votes)',
+      badgeEmoji: '📅',
+      badgeUrl: 'https://images.emojiterra.com/twitter/512px/1f389.png',
+      threshold: 7,
+    },
+    {
+      id: 'voting-month-streaker',
+      name: 'Voting Month Streaker',
+      description: 'Vote for 30 consecutive days. (30 continuous votes)',
+      badgeEmoji: '📆',
+      badgeUrl: 'https://images.emojiterra.com/twitter/512px/1f389.png',
+      threshold: 30,
+    },
+    {
+      id: 'voting-dedication',
+      name: 'Voting Dedication',
+      description: 'Vote for 100 consecutive days. (100 continuous votes)',
+      badgeEmoji: '🏆',
+      badgeUrl: 'https://images.emojiterra.com/twitter/512px/1f389.png',
+      threshold: 100,
+    },
     // Hub creation achievements
     {
       id: 'hub-creator',
@@ -246,16 +262,78 @@ export async function seedAchievements(prisma: PrismaClient): Promise<void> {
       badgeUrl: 'https://images.emojiterra.com/twitter/512px/1f389.png',
       threshold: 100,
     },
+
+    // Call-related achievements
+    {
+      id: 'first-caller',
+      name: 'First Caller',
+      description: 'Make your first call using InterChat.',
+      badgeEmoji: '📞',
+      badgeUrl: 'https://images.emojiterra.com/twitter/512px/1f389.png',
+      threshold: 1,
+    },
+    {
+      id: 'call-veteran',
+      name: 'Call Veteran',
+      description: 'Complete 10 calls successfully.',
+      badgeEmoji: '🎖️',
+      badgeUrl: 'https://images.emojiterra.com/twitter/512px/1f389.png',
+      threshold: 10,
+    },
+    {
+      id: 'call-master',
+      name: 'Call Master',
+      description: 'Complete 50 calls successfully.',
+      badgeEmoji: '🏅',
+      badgeUrl: 'https://images.emojiterra.com/twitter/512px/1f389.png',
+      threshold: 50,
+    },
+    {
+      id: 'marathon-caller',
+      name: 'Marathon Caller',
+      description: 'Stay in a call for 30+ minutes.',
+      badgeEmoji: '⏰',
+      badgeUrl: 'https://images.emojiterra.com/twitter/512px/1f389.png',
+      threshold: 1800, // 30 minutes in seconds
+    },
+    {
+      id: 'social-butterfly',
+      name: 'Social Butterfly',
+      description: 'Participate in a call with 5+ people.',
+      badgeEmoji: '🦋',
+      badgeUrl: 'https://images.emojiterra.com/twitter/512px/1f389.png',
+      threshold: 5,
+    },
+    {
+      id: 'conversation-starter',
+      name: 'Conversation Starter',
+      description: 'Send 100+ messages during calls.',
+      badgeEmoji: '💭',
+      badgeUrl: 'https://images.emojiterra.com/twitter/512px/1f389.png',
+      threshold: 100,
+    },
   ];
 
-  // Insert achievements
+  // Insert achievements using upsert to preserve existing user data
   console.log('Seeding achievements...');
-  await prisma.achievement.createMany({
-    data: achievements,
-    skipDuplicates: true,
-  });
+  let upsertedCount = 0;
 
-  console.log(`Seeded ${achievements.length} achievements.`);
+  for (const achievement of achievements) {
+    await prisma.achievement.upsert({
+      where: { id: achievement.id },
+      update: {
+        name: achievement.name,
+        description: achievement.description,
+        badgeEmoji: achievement.badgeEmoji,
+        badgeUrl: achievement.badgeUrl,
+        threshold: achievement.threshold,
+      },
+      create: achievement,
+    });
+    upsertedCount++;
+  }
+
+  console.log(`Seeded ${upsertedCount} achievements (using upsert to preserve user data).`);
 }
 
 const prisma = new PrismaClient();
