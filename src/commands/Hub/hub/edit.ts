@@ -421,8 +421,6 @@ export default class HubEditSubcommand extends BaseCommand {
     hubId: string,
     locale: supportedLocaleCodes,
   ) {
-    await ctx.deferReply({ flags: ['Ephemeral'] });
-
     const hub = await this.getHubOrReplyError(ctx, hubId, locale);
     if (!hub) return;
 
