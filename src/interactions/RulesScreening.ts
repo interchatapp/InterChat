@@ -48,7 +48,13 @@ async function sendRulesReply(
   ephemeral = false,
 ) {
   if (repliable instanceof Message) {
-    await repliable.reply(message);
+    try {
+      await repliable.reply(message);
+    }
+    catch {
+      // If reply fails (most likely due to missing "read message history" permission), try to send in the channel
+      if (repliable.channel.isSendable()) await repliable.channel.send(message);
+    }
   }
   else if (repliable instanceof Context) {
     await repliable.editOrReply({ ...message });
