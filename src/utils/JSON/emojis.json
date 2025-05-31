@@ -550,5 +550,21 @@
   "lightbulb_icon": {
     "url": "https://cdn.discordapp.com/emojis/1371384654187331635.png",
     "updatedAt": "2025-05-12T07:13:00.653Z"
+  },
+  "leaderboard_icon": {
+    "url": "https://cdn.discordapp.com/emojis/1377679900978315328.png",
+    "updatedAt": "2025-05-29T16:08:04.448Z"
+  },
+  "refresh_icon": {
+    "url": "https://cdn.discordapp.com/emojis/1377680261499846699.png",
+    "updatedAt": "2025-05-29T16:09:30.403Z"
+  },
+  "trophy_icon": {
+    "url": "https://cdn.discordapp.com/emojis/1377680871280349245.png",
+    "updatedAt": "2025-05-29T16:11:55.786Z"
+  },
+  "calendar_icon": {
+    "url": "https://cdn.discordapp.com/emojis/1378379465310343379.png",
+    "updatedAt": "2025-05-31T14:27:53.582Z"
   }
 }
