@@ -481,7 +481,7 @@ export class AchievementService {
       // Try to send to the channel where achievement was earned
       if (channelId) {
         const channel = await client.channels.fetch(channelId).catch(() => null);
-        if (channel?.isTextBased() && 'guild' in channel) {
+        if (channel?.isSendable()) {
           await channel.send({ content: notificationText }).catch(() => null);
           return;
         }
@@ -535,41 +535,43 @@ export class AchievementService {
    * @param userId User ID
    * @param data Event data
    * @param client Discord client
+   * @param channelId Channel where achievement was earned
    */
   private async processMessageAchievements(
     userId: string,
     data: MessageEventData,
     client?: Client,
+    channelId?: Snowflake,
   ): Promise<void> {
     // First Steps (first message ever)
-    await this.trackFirstMessage(userId, client);
+    await this.trackFirstMessage(userId, client, channelId);
 
     // Global Chatter (message in a hub)
     if (data.hubId) {
-      await this.incrementProgress(userId, 'global-chatter', client);
+      await this.incrementProgress(userId, 'global-chatter', client, channelId);
     }
 
     // Message Marathoner (any message)
-    await this.incrementProgress(userId, 'message-marathoner', client);
+    await this.incrementProgress(userId, 'message-marathoner', client, channelId);
 
     // Streak Master (messages on consecutive days)
-    await this.processMessageStreak(userId);
+    await this.processMessageStreak(userId, channelId);
 
     // World Tour (check unique servers)
     if (data.serverId) {
-      await this.processWorldTour(userId, data.serverId);
+      await this.processWorldTour(userId, data.serverId, channelId);
     }
 
     // Echo Chamber (check broadcast count)
     if (data.broadcastCount && data.broadcastCount >= 10) {
-      await this.unlockAchievement(userId, 'echo-chamber', client);
+      await this.unlockAchievement(userId, 'echo-chamber', client, channelId);
     }
 
     // FIXME: Time-based achievements (Night Owl, Early Bird) (Currently disabled, because timezones)
-    // await this.trackTimeBasedAchievements(userId, client);
+    // await this.trackTimeBasedAchievements(userId, client, channelId);
 
     // Golden Webhook (active during anniversary month)
-    await this.trackAnniversaryActivity(userId, client);
+    await this.trackAnniversaryActivity(userId, client, channelId);
   }
 
   /**
@@ -756,7 +758,12 @@ export class AchievementService {
 
       switch (eventType) {
         case 'message':
-          await this.processMessageAchievements(userId, data as MessageEventData, client);
+          await this.processMessageAchievements(
+            userId,
+            data as MessageEventData,
+            client,
+            channelId,
+          );
           break;
 
         case 'vote':
@@ -765,7 +772,7 @@ export class AchievementService {
 
         case 'hub_create':
           // Hub Creator achievement
-          await this.unlockAchievement(userId, 'hub-creator', client);
+          await this.unlockAchievement(userId, 'hub-creator', client, channelId);
           break;
 
         case 'hub_join':
@@ -818,7 +825,11 @@ export class AchievementService {
   /**
    * Tracks the unique servers a user has sent messages in
    */
-  private async processWorldTour(userId: string, serverId: string): Promise<void> {
+  private async processWorldTour(
+    userId: string,
+    serverId: string,
+    channelId?: Snowflake,
+  ): Promise<void> {
     const key = `user:${userId}:servers`;
 
     // Add server to user's set of visited servers
@@ -828,7 +839,7 @@ export class AchievementService {
     const servers = await this.cacheManager.getSetMembers<string>(key);
 
     if (servers.length >= 10) {
-      await this.unlockAchievement(userId, 'world-tour');
+      await this.unlockAchievement(userId, 'world-tour', undefined, channelId);
     }
   }
 
@@ -852,7 +863,7 @@ export class AchievementService {
   /**
    * Tracks the user's message streak (consecutive days)
    */
-  private async processMessageStreak(userId: string): Promise<void> {
+  private async processMessageStreak(userId: string, channelId?: Snowflake): Promise<void> {
     const key = `user:${userId}:streak`;
 
     const today = new Date();
@@ -905,7 +916,7 @@ export class AchievementService {
 
     // Check for Streak Master (30 days)
     if (currentStreak >= 30) {
-      await this.unlockAchievement(userId, 'streak-master');
+      await this.unlockAchievement(userId, 'streak-master', undefined, channelId);
     }
   }
 
@@ -1076,14 +1087,19 @@ export class AchievementService {
    * Track Golden Webhook achievement (active during anniversary month)
    * @param userId User ID to track
    * @param client Discord client for notifications
+   * @param channelId Channel where achievement was earned
    */
-  public async trackAnniversaryActivity(userId: string, client?: Client): Promise<void> {
+  public async trackAnniversaryActivity(
+    userId: string,
+    client?: Client,
+    channelId?: Snowflake,
+  ): Promise<void> {
     try {
       const currentMonth = new Date().getMonth();
       const anniversaryMonth = 9; // October (0-indexed, so 9 = October)
 
       if (currentMonth === anniversaryMonth) {
-        await this.unlockAchievement(userId, 'golden-webhook', client);
+        await this.unlockAchievement(userId, 'golden-webhook', client, channelId);
       }
     }
     catch (error) {
@@ -1097,15 +1113,20 @@ export class AchievementService {
    * Track first message achievement
    * @param userId User ID to track
    * @param client Discord client for notifications
+   * @param channelId Channel where achievement was earned
    */
-  public async trackFirstMessage(userId: string, client?: Client): Promise<void> {
+  public async trackFirstMessage(
+    userId: string,
+    client?: Client,
+    channelId?: Snowflake,
+  ): Promise<void> {
     try {
       // Check if user has already sent a message (has any progress on message-marathoner)
       const messageCount = await this.getProgress(userId, 'message-marathoner');
 
       if (messageCount === 1) {
         // This is their first message
-        await this.unlockAchievement(userId, 'first-steps', client);
+        await this.unlockAchievement(userId, 'first-steps', client, channelId);
       }
     }
     catch (error) {

@@ -547,6 +547,7 @@ export class MessageProcessor {
           broadcastCount: hub.connections.count,
         },
         message.client,
+        message.channelId,
       )
       .catch(handleError);
   }

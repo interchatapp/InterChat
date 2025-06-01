@@ -42,7 +42,7 @@ export default class VotesLeaderboardCommand extends BaseCommand {
     container.addTextDisplayComponents(
       ui.createHeader(
         'Global Voting Leaderboard',
-        'Resets every month. Vote on top.gg to get on it!',
+        'Vote on top.gg to get on the leaderboard!',
         'topggSparkles',
       ),
     );

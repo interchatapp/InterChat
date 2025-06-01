@@ -104,7 +104,7 @@ export default class ModPanelHandler {
   }
   private async validateUser(ctx: ComponentContext, locale: supportedLocaleCodes) {
     // Get the original message to check hub permissions
-    const originalMsg = await getOriginalMessage(ctx.customId.args[1]);
+    const originalMsg = await getOriginalMessage(ctx.customId.args[0]);
     if (!originalMsg) {
       const embed = new InfoEmbed().setDescription(
         t('errors.messageNotSentOrExpired', locale, {
