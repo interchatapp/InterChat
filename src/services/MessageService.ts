@@ -266,6 +266,11 @@ export class MessageService {
 
       const result = await db.message.deleteMany({
         where: {
+          AND: [
+            { referredMessageId: null },
+            { broadcasts: { none: {} } },
+            { reports: { none: {} } },
+          ],
           createdAt: {
             lt: cutoffDate,
           },
