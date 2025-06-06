@@ -81,7 +81,7 @@ network:
     embed:
       title: '👋 ¡Bienvenido a {hubName}!'
       description: |
-        ¡Has encontrado un hub comunitario activo! Antes de unirte a la discusión, echa un vistazo rápido a nuestras normas para mantener conversaciones atractivas y amigables para todos.
+        ¡Has encontrado un centro comunitario activo! Antes de unirte a la discusión, echa un vistazo rápido a nuestras normas para mantener conversaciones atractivas y amigables para todos.
       footer: Red InterChat | Versión {version}
     inProgress: "{emoji} {channel} ya está en proceso de configuración para unirse a un centro.\nPor favor, espera a que se complete la configuración o cancélala si fuiste quien la inició."
 blacklist:
