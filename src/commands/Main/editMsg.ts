@@ -88,7 +88,7 @@ export default class EditMessage extends BaseCommand {
     // Create a modal for editing the message
     const modal = new ModalBuilder()
       .setCustomId(new CustomID(EDIT_MSG_MODAL_ID, [originalMsg.id]).toString())
-      .setTitle(t('network.editMessage', locale) || 'Edit Message');
+      .setTitle(t('network.editMessagePrompt', locale) || 'Edit Message');
 
     // Create a text input for the new message content
     const contentInput = new TextInputBuilder()
