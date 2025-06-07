@@ -136,22 +136,16 @@ export default class NetworkReactionInteraction {
   }
 
   private async handleReactionToggle(ctx: ComponentContext, originalMessage: MessageDB) {
-    // Parse reactions from JSON string or default to empty object
-    let dbReactions: { [key: string]: Snowflake[] } = {};
+    // Get reactions from JSON or default to empty object
+    const dbReactions = (originalMessage.reactions ? originalMessage.reactions : {}) as Record<
+      string,
+      Snowflake[]
+    >;
 
-    try {
-      if (originalMessage.reactions) {
-        dbReactions = JSON.parse(originalMessage.reactions as string);
-      }
-    }
-    catch {
-      // Fallback to empty object if parsing fails
-      dbReactions = {};
-    }
-
-    const reactedEmoji = ctx.isStringSelectMenu() && ctx.values && ctx.values.length > 0
-      ? ctx.values[0]
-      : ctx.customId.suffix;
+    const reactedEmoji =
+      ctx.isStringSelectMenu() && ctx.values && ctx.values.length > 0
+        ? ctx.values[0]
+        : ctx.customId.suffix;
 
     // For select menu, we might be adding a new emoji that doesn't exist yet
     const emojiAlreadyReacted = dbReactions[reactedEmoji] || [];

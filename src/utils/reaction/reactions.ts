@@ -294,9 +294,9 @@ export const updateReactions = async (
   const reactionRow = createReactionButtons(sortedReactions);
 
   // Update each broadcast message
-  for (const connection of connections) {
+  connections.forEach(async (connection) => {
     const dbMsg = broadcastedMessages.find((e) => e.channelId === connection.channelId);
-    if (!dbMsg) continue;
+    if (!dbMsg) return;
 
     try {
       // Use the API endpoint to fetch and update the message
@@ -313,10 +313,10 @@ export const updateReactions = async (
         }),
       });
 
-      if (!response.ok) continue;
+      if (!response.ok) return;
 
       const message = await response.json();
-      if (!message.data) continue;
+      if (!message.data) return;
 
       // Update the message components
       const updatedComponents = updateMessageComponents(message.data.components || [], reactionRow);
@@ -341,7 +341,7 @@ export const updateReactions = async (
     catch {
       // Silently fail if we can't update a message
     }
-  }
+  });
 };
 
 /**
@@ -375,17 +375,14 @@ export const addNativeReactions = async (
     const context = {
       channelId: originalMessage.channelId,
       messageId: originalMessage.id,
-      _reactions: JSON.stringify(reactions),
+      reactionData: reactions,
     };
     const shardId = calculateShardId(originalMessage.guildId, client.cluster.info.TOTAL_SHARDS);
 
     // Execute the eval only on the specific shard that has access to the message
     await client.cluster.broadcastEval(
-      async (c, { channelId, messageId, _reactions }) => {
+      async (c, { channelId, messageId, reactionData }) => {
         try {
-          // Parse the reactions
-          const reactionData = JSON.parse(_reactions);
-
           // Try to get the channel
           const channel = await c.channels.fetch(channelId).catch(() => null);
           if (!channel || !('messages' in channel)) return false;
