@@ -210,11 +210,12 @@ export default class PrefixContext extends Context<{
   }
 
   public async editReply(data: string | MessageEditOptions) {
-    return (
-      (await this.lastReply?.edit(
-        typeof data === 'string' ? { content: data } : { ...data, content: data.content ?? '' },
-      )) ?? null
-    );
+    if (!this.lastReply) return null;
+
+    if (typeof data === 'string') {
+      return await this.lastReply.edit(data);
+    }
+    return await this.lastReply.edit({ ...data });
   }
 
   public async showModal(
