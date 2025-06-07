@@ -5,17 +5,17 @@ rules:
     1. **No discurso de odio ni acoso**
     -# > **Incluye:** Usar insultos o lenguaje de odio para atacar a otros, [y más]({guidelines_link}).
     2. **No contenido ilegal**
-    -# > **Incluye:** Compartir enlaces a contenido ilegal, Fomentar la violencia, [y más]({guidelines_link}).
-    3. **No contenido NSFW extremo ni gore**
-    -# > **Incluye:** Publicar gore o gore extremo en InterChat, Publicar contenido sexual en hubs no NSFW, [y más]({guidelines_link}).
-    4. **No spam ni flood**
-    -# > **Incluye:** Envío masivo de spam o bots de flood, [y más]({guidelines_link}).
+    -# > **Incluye:** Compartir enlaces a contenido ilegal, fomentar la violencia, [y más]({guidelines_link}).
+    3. **No contenido NSFW extremo ni violencia explícita**
+    -# > **Incluye:** Publicar violencia explícita o violencia extrema en InterChat, publicar contenido sexual en centros no NSFW, [y más]({guidelines_link}).
+    4. **No spam o inundación**
+    -# > **Incluye:** Envío masivo de spam o inundación de bots, [y más]({guidelines_link}).
     5. **No suplantación de identidad ni fraude**
-    -# > **Incluye:** Hacerse pasar por el personal de InterChat o moderadores de hubs, Ejecutar estafas de criptomonedas o NFT, [y más]({guidelines_link}).
+    -# > **Incluye:** Hacerse pasar por el personal de InterChat o moderadores de centros, ejecutar estafas de criptomonedas o NFT, [y más]({guidelines_link}).
     6. **No explotación ni abuso**
-    -# > **Incluye:** Grooming o comportamiento depredador hacia menores, Compartir, Solicitar, Chantajear o amenazar para Fomentar autolesiones, [y más]({guidelines_link}).
+    -# > **Incluye:** Acosos o comportamiento depredador hacia menores, compartir, solicitar, chantajear o amenazar para fomentar autolesiones, [y más]({guidelines_link}).
     7. **No compartir software malicioso**
-    -# > **Incluye:** Compartir malware, virus, enlaces de 'nitro gratis', scripts dañinos, [y más]({guidelines_link}).
+    -# > **Incluye:** Compartir programas maliciosos, virus, enlaces de 'nitro gratis', scripts dañinos, [y más]({guidelines_link}).
 
     También aceptas seguir los [Términos de servicio de Discord](https://discord.com/terms) y las [Normas de la comunidad](https://discord.com/guidelines). Consulta la [lista completa de reglas]({guidelines_link}).
   welcome: |
@@ -53,7 +53,7 @@ rules:
   hubDeclined: |
     {emoji} Has rechazado las reglas dé {hubName}.
     -# ⚠️ **No podrás enviar mensajes en este centro hasta que aceptes sus reglas.**
-    -# Para intentarlo dé nuevo, envía otro mensaje en este centro.
+    -# Para intentarlo de nuevo, envía otro mensaje en este centro.
   noHubRules: Este centro aún no ha establecido reglas específicas. Sin embargo, siguen aplicando las [reglas generales de InterChat]({rules_link}).
   hubRules: Reglas del centro
   viewbotRules: "Ver Reglas del Bot"
@@ -71,17 +71,17 @@ vote:
 network:
   accountTooNew: '{emoji} {user} Su cuenta es demasiado nueva para enviar mensajes usando InterChat. Por favor, inténtelo de nuevo más tarde.'
   deleteSuccess: '{emoji} El mensaje de {user} se ha eliminado de __**{deleted} de {total}**__ servidores.'
-  editInProgress: '{emoji} Your request has been queued. Messages will be edited shortly...'
-  editInProgressError: '{emoji} This message is already being edited by another user.'
-  emptyContent: '{emoji} Message content cannot be empty.'
-  newMessageContent: 'New Message Content'
-  editMessagePrompt: '{emoji} Please use the modal to edit your message.'
+  editInProgress: '{emoji} Tu solicitación está siendo procesada. Mensajes serán editados en breve...'
+  editInProgressError: '{emoji} Este mensaje ya está siendo editado por otro usuario.'
+  emptyContent: '{emoji} Contenido del mensaje no puede estar vacío.'
+  newMessageContent: 'Nuevo contenido de mensaje'
+  editMessagePrompt: '{emoji} Por favor use el modal para editar tu mensaje.'
   editSuccess: '{emoji} El mensaje de {user} se ha editado en __**{edited} de {total}**__ servidores.'
   onboarding:
     embed:
       title: '👋 ¡Bienvenido a {hubName}!'
       description: |
-        ¡Has encontrado un hub comunitario activo! Antes de unirte a la discusión, echa un vistazo rápido a nuestras normas para mantener conversaciones atractivas y amigables para todos.
+        ¡Has encontrado un centro comunitario activo! Antes de unirte a la discusión, echa un vistazo rápido a nuestras normas para mantener conversaciones atractivas y amigables para todos.
       footer: Red InterChat | Versión {version}
     inProgress: "{emoji} {channel} ya está en proceso de configuración para unirse a un centro.\nPor favor, espera a que se complete la configuración o cancélala si fuiste quien la inició."
 blacklist:
@@ -198,7 +198,7 @@ hub:
     actionsUpdated: '{emoji} Se han actualizado las acciones a tomar por la regla. **Nuevas acciones:** {actions}'
     selectRuleToEdit: Selecciona una regla para editar sus palabras/acciones
     listDescription: |
-      ### {emoji} Reglas contra palabrotas 
+      ### {emoji} Reglas contra palabrotas
       Este hub tiene {totalRules}/2 reglas contra palabrotas configuradas.
     listFooter: Selecciona una regla usando el menú para ver sus detalles completos.
     ruleDescription: |
@@ -238,21 +238,21 @@ hub:
     invalidName: '{emoji} Nombre de la concentración no válida. No debe contener `discord`,`clyde` o `/`. Elija otro nombre.'
     nameTaken: '{emoji} Este nombre del centro ya está tomado. Elija otro nombre.'
     success: |
-      ## ¡Centro creado! Está __private__ por defecto. 
-      Usa `/hub edit hub:{name}` para personalizar tu hub. Sigue los pasos a continuación para comenzar: 
-      ### Próximos pasos: 
-      1. **Crear una invitación:** 
-      > Usa `/hub invite create` para generar una invitación y permitir que otros se unan. 
-      2. **Vincula un canal:** 
-      > Usa `/connect` **con el enlace de invitación generado previamente** para vincular un canal al hub y empezar a chatear. 
-      3. **Configurar el hub:** (Recomendado) 
-      > Usa `/hub config settings`, `/hub config logging` y `/hub config anti-swear` para ajustar la configuración del hub. 
-      4. **Agregar moderadores:** 
-      > Usa `/hub moderator add` para asignar moderadores al hub. 
-      5. **Personalizar el hub:** 
-      > Usa `/hub edit` para cambiar el ícono, el banner y la descripción del hub. 
-      6. **Hacerlo público:** 
-      > Usa `/hub visibility` para hacer el hub público y permitir que otros lo exploren y se unan sin necesidad de una invitación. (Opcional) 
+      ## ¡Centro creado! Está __private__ por defecto.
+      Usa `/hub edit hub:{name}` para personalizar tu hub. Sigue los pasos a continuación para comenzar:
+      ### Próximos pasos:
+      1. **Crear una invitación:**
+      > Usa `/hub invite create` para generar una invitación y permitir que otros se unan.
+      2. **Vincula un canal:**
+      > Usa `/connect` **con el enlace de invitación generado previamente** para vincular un canal al hub y empezar a chatear.
+      3. **Configurar el hub:** (Recomendado)
+      > Usa `/hub config settings`, `/hub config logging` y `/hub config anti-swear` para ajustar la configuración del hub.
+      4. **Agregar moderadores:**
+      > Usa `/hub moderator add` para asignar moderadores al hub.
+      5. **Personalizar el hub:**
+      > Usa `/hub edit` para cambiar el ícono, el banner y la descripción del hub.
+      6. **Hacerlo público:**
+      > Usa `/hub visibility` para hacer el hub público y permitir que otros lo exploren y se unan sin necesidad de una invitación. (Opcional)
 
       Si tienes preguntas o necesitas ayuda, no dudes en preguntar en el [servidor de soporte]({support_invite}). Considera [donar]({donateLink}) para ayudar a cubrir los costos de desarrollo.
   delete:
