@@ -227,6 +227,11 @@ export default class PrefixContext extends Context<{
     if (typeof data === 'string') {
       return await this.lastReply.edit(data);
     }
+    const flags = new BitField(data.flags);
+
+    if (flags.has('IsComponentsV2') && data.content) {
+      throw new Error('Cannot use content with Components v2');
+    }
     return await this.lastReply.edit({ ...data });
   }
 
