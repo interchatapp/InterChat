@@ -18,12 +18,13 @@
 import type BaseCommand from '#src/core/BaseCommand.js';
 import Context from '#src/core/CommandContext/Context.js';
 import Logger from '#src/utils/Logger.js';
-import { extractUserId, extractChannelId, extractRoleId } from '#src/utils/Utils.js';
+import { extractChannelId, extractRoleId, extractUserId } from '#src/utils/Utils.js';
 import {
   type APIApplicationCommandBasicOption,
   type APIModalInteractionResponseCallbackData,
   ActionRowBuilder,
   ApplicationCommandOptionType,
+  BitField,
   ButtonBuilder,
   ButtonStyle,
   Collection,
@@ -193,11 +194,20 @@ export default class PrefixContext extends Context<{
   }
 
   public async reply(data: string | MessageReplyOptions) {
-    this.lastReply = await this.interaction.reply(
-      typeof data === 'string'
-        ? { content: data }
-        : { ...data, content: data.content ?? undefined },
-    );
+    if (typeof data === 'string') {
+      this.lastReply = await this.interaction.reply(data);
+    }
+    else {
+      const dataToSend = { ...data };
+      const flags = new BitField(dataToSend.flags);
+
+      if (flags.has('IsComponentsV2') && dataToSend.content) {
+        throw new Error('Cannot use content with Components v2');
+      }
+
+      this.lastReply = await this.interaction.reply(dataToSend);
+    }
+
     return this.lastReply;
   }
 
