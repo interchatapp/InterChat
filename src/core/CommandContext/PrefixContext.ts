@@ -24,7 +24,6 @@ import {
   type APIModalInteractionResponseCallbackData,
   ActionRowBuilder,
   ApplicationCommandOptionType,
-  BitField,
   ButtonBuilder,
   ButtonStyle,
   Collection,
@@ -32,6 +31,7 @@ import {
   type JSONEncodable,
   type Message,
   type MessageEditOptions,
+  MessageFlags,
   type MessageReplyOptions,
   type ModalComponentData,
 } from 'discord.js';
@@ -194,20 +194,7 @@ export default class PrefixContext extends Context<{
   }
 
   public async reply(data: string | MessageReplyOptions) {
-    if (typeof data === 'string') {
-      this.lastReply = await this.interaction.reply(data);
-    }
-    else {
-      const dataToSend = { ...data };
-      const flags = new BitField(dataToSend.flags);
-
-      if (flags.has('IsComponentsV2') && dataToSend.content) {
-        throw new Error('Cannot use content with Components v2');
-      }
-
-      this.lastReply = await this.interaction.reply(dataToSend);
-    }
-
+    this.lastReply = await this.interaction.reply(data);
     return this.lastReply;
   }
 
@@ -227,11 +214,14 @@ export default class PrefixContext extends Context<{
     if (typeof data === 'string') {
       return await this.lastReply.edit(data);
     }
-    const flags = new BitField(data.flags);
 
-    if (flags.has('IsComponentsV2') && data.content) {
-      throw new Error('Cannot use content with Components v2');
+    if (data.flags) {
+      const flags = Array.isArray(data.flags) ? data.flags : [data.flags];
+      if (flags.includes('IsComponentsV2') || flags.includes(MessageFlags.IsComponentsV2)) {
+        data.content = null;
+      }
     }
+
     return await this.lastReply.edit({ ...data });
   }
 

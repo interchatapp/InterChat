@@ -26,6 +26,7 @@ export default class BlacklistCommand extends BaseCommand {
       name: 'blacklist',
       description: 'Mute/Ban a user or server from your hub.',
       types: { prefix: true, slash: true },
+      aliases: ['bl'],
       subcommands: {
         user: new BlacklistUserSubcommand(),
         server: new BlacklistServerSubcommand(),

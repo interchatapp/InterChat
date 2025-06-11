@@ -34,6 +34,8 @@ import isEmpty from 'lodash/isEmpty.js';
 interface Config {
   name: string;
   description: string;
+  aliases?: string[];
+  examples?: string[];
   staffOnly?: boolean;
   contexts?: { guildOnly?: boolean; userInstall?: boolean };
   options?: APIApplicationCommandBasicOption[];
@@ -64,6 +66,8 @@ interface ContextMenuConfig extends Config {
 export default abstract class BaseCommand {
   readonly name: Config['name'];
   readonly description: Config['description'];
+  readonly aliases: Config['aliases'];
+  readonly examples: Config['examples'];
   readonly types: CommandConfig['types'] | ContextMenuConfig['types'];
   readonly contexts: Config['contexts'];
   readonly defaultPermissions: Config['defaultPermissions'];
@@ -83,6 +87,8 @@ export default abstract class BaseCommand {
   constructor(opts: ContextMenuConfig | CommandConfig) {
     this.name = opts.name;
     this.description = opts.description;
+    this.aliases = opts.aliases;
+    this.examples = opts.examples;
     this.types = opts.types;
     this.contexts = opts.contexts;
     this.options = opts.options || [];

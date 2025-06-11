@@ -202,7 +202,7 @@ export class HelpCommandData {
                 const subcommandName = `${command.name} ${option.name}`;
                 this.commandMentions[subcommandName] = {
                   id,
-                  mention: chatInputApplicationCommandMention(command.name, id, option.name),
+                  mention: chatInputApplicationCommandMention(command.name, option.name, id),
                 };
               }
               else if (option.options) {
@@ -214,9 +214,9 @@ export class HelpCommandData {
                       id,
                       mention: chatInputApplicationCommandMention(
                         command.name,
-                        id,
                         option.name,
                         subOption.name,
+                        id,
                       ),
                     };
                   }
@@ -272,4 +272,3 @@ export class HelpCommandData {
     );
   }
 }
-

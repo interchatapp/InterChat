@@ -346,7 +346,7 @@ export default abstract class Context<T extends ContextT = ContextT> {
     data: string | Omit<MessageEditOptions, 'flags'> | Omit<InteractionEditReplyOptions, 'flags'>,
     flags: Extract<
       MessageFlagsString,
-      'Ephemeral' | 'SuppressEmbeds' | 'SuppressNotifications' | 'IsComponentsV2'
+      'Ephemeral' | 'SuppressEmbeds' | 'IsComponentsV2' | 'SuppressNotifications'
     >[] = [],
   ): Promise<T['responseType'] | null> {
     try {
@@ -360,11 +360,16 @@ export default abstract class Context<T extends ContextT = ContextT> {
         });
       }
 
-      return await this.reply({
-        ...data_,
-        flags,
-        content: data_.content ?? undefined,
-      } satisfies InteractionReplyOptions);
+      if (typeof data === 'string') {
+        return await this.reply(data);
+      }
+      else {
+        return await this.reply({
+          ...data,
+          // @ts-expect-error some weird typeerror in djs
+          flags,
+        });
+      }
     }
     catch (error) {
       handleError(error);

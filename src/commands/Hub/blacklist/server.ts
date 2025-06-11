@@ -33,6 +33,7 @@ export default class BlacklistServerSubcommand extends BaseCommand {
       name: 'server',
       description: 'Mute/Ban a server from your hub.',
       types: { prefix: true, slash: true },
+      examples: ['blacklist server 12342345093845609 mySpecialHub'],
       options: [
         {
           name: 'serverid',

@@ -86,7 +86,8 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
     }
 
     const resolved = resolveCommand(message);
-    if (!resolved.command) return;
+    // Execute command even if command is null but we have subcommand errors
+    if (!resolved.command && !resolved.subcommandError) return;
 
     await executeCommand(message, resolved);
     await this.showDevAlertsIfAny(message);

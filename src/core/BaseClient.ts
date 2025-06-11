@@ -46,6 +46,7 @@ export default class InterChatClient extends Client {
   private readonly scheduler = new Scheduler();
 
   public readonly commands = new Collection<string, BaseCommand>();
+  public readonly aliases = new Collection<string, string>();
   public readonly interactions = new Collection<string, InteractionFunction>();
 
   public readonly version = Constants.ProjectVersion;
@@ -125,8 +126,8 @@ export default class InterChatClient extends Client {
     // initialize i18n for localization
     loadLocales('locales');
 
-    await loadCommands(this.commands, this.interactions);
-    Logger.info(`Loaded ${this.commands.size} commands`);
+    await loadCommands(this.commands, this.interactions, 0, undefined, this.aliases);
+    Logger.info(`Loaded ${this.commands.size} commands and ${this.aliases.size} aliases`);
 
     await loadInteractions(this.interactions);
     Logger.info(`Loaded ${this.interactions.size} interactions`);

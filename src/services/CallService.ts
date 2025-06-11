@@ -98,7 +98,7 @@ export class CallService {
 
   private async hasRecentlyMatched(userId1: string, userId2: string): Promise<boolean> {
     const key = `${RedisKeys.CallRecentMatches}:${userId1}`;
-    const recentMatches = await this.redis.lrange(key, 0, 2); // Get last 3 matches
+    const recentMatches = await this.redis.lrange(key, 0, 0); // Get last 1 match (initially, because there's less users)
     return recentMatches.includes(userId2);
   }
 
@@ -199,13 +199,13 @@ export class CallService {
         return {
           success: true,
           message:
-            '✅ Removed from call queue. You can start a new call with `/call` whenever you\'re ready!',
+            "✅ Removed from call queue. You can start a new call with `/call` whenever you're ready!",
         };
       }
 
       return {
         success: false,
-        message: '❌ This channel isn\'t in an active call. Use `/call` to start one!',
+        message: "❌ This channel isn't in an active call. Use `/call` to start one!",
       };
     }
 
@@ -308,8 +308,8 @@ export class CallService {
       // 3. Recently matched (COMMENTED OUT FOR INITIAL DAYS)
       if (
         queuedCall.guildId === callData.guildId ||
-        queuedCall.initiatorId === callData.initiatorId
-        // || (await this.hasRecentlyMatched(callData.initiatorId, queuedCall.initiatorId))
+        queuedCall.initiatorId === callData.initiatorId ||
+        (await this.hasRecentlyMatched(callData.initiatorId, queuedCall.initiatorId))
       ) {
         continue;
       }

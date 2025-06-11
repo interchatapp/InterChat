@@ -21,6 +21,11 @@ export default class SkipCommand extends BaseCommand {
     super({
       name: 'skip',
       description: '[BETA] Skip the current call and find a new match',
+      aliases: ['s'],
+      examples: [
+        'c!skip',
+        'c!s',
+      ],
       types: { slash: true, prefix: true },
       contexts: { guildOnly: true },
     });

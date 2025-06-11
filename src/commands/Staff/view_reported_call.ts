@@ -62,6 +62,7 @@ export default class ViewReportedCallCommand extends BaseCommand {
       description: '🚩 View a reported call and take action (Staff Only)',
       // staffOnly: true,
       types: { slash: true, prefix: true },
+      aliases: ['vrc'],
       options: [
         {
           type: ApplicationCommandOptionType.String,

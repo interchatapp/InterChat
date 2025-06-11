@@ -1,10 +1,18 @@
 import BaseCommand from '#src/core/BaseCommand.js';
 import { HelpCommandData, CategoryInfo } from '#src/modules/HelpCommand/DataManager.js';
 import Constants from '#src/utils/Constants.js';
+import { generateUnifiedCommandHelp } from '#src/utils/CommandUtils.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import { UIComponents } from '#src/utils/DesignSystem.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
-import { Client, ContainerBuilder, SectionBuilder, ButtonBuilder, ButtonStyle, TextDisplayBuilder } from 'discord.js';
+import {
+  Client,
+  ContainerBuilder,
+  SectionBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  TextDisplayBuilder,
+} from 'discord.js';
 
 const HELP_COMMAND_BASE = 'help';
 
@@ -204,8 +212,6 @@ export class HelpCommandUI {
    * @returns The container with the command help
    */
   public generateCommandHelp(commandName: string, client: Client): ContainerBuilder | null {
-    const container = new ContainerBuilder();
-
     // Parse the command name
     const commandPath = commandName.split(' ');
     const baseCommand = client.commands.get(commandPath[0]);
@@ -214,61 +220,37 @@ export class HelpCommandUI {
       return null;
     }
 
-    // Get command mention
-    const commandMention = this.dataManager.getCommandMention(commandName);
+    // Determine the actual command to show help for
+    let targetCommand = baseCommand;
+    let commandNameFull = commandPath[0];
 
-    // Add header
-    container.addTextDisplayComponents(
-      this.ui.createHeader(`Command: ${commandPath[0]}`, baseCommand.description, 'info_icon'),
-    );
+    // Handle subcommands
+    if (commandPath.length > 1) {
+      const subcommandName = commandPath[1];
+      const subcommand = baseCommand.subcommands?.[subcommandName];
 
-    // Add separator
-    this.ui.addSeparator(container);
-
-    // Build command details
-    let commandDetails = '';
-
-    // Add usage information
-    commandDetails += '## Usage\n';
-    commandDetails += `${commandMention}`;
-
-    // Add options if any
-    if (baseCommand.options && baseCommand.options.length > 0) {
-      commandDetails += '\n\n## Options\n';
-      for (const option of baseCommand.options) {
-        const required = option.required ? '(required)' : '(optional)';
-        commandDetails += `- \`${option.name}\`: ${option.description} ${required}\n`;
+      if (subcommand instanceof BaseCommand) {
+        targetCommand = subcommand;
+        commandNameFull = `${commandPath[0]} ${commandPath[1]}`;
       }
-    }
-
-    // Add subcommands if any
-    if (baseCommand.subcommands && Object.keys(baseCommand.subcommands).length > 0) {
-      commandDetails += '\n## Subcommands\n';
-
-      for (const [name, subCmd] of Object.entries(baseCommand.subcommands)) {
-        if (subCmd instanceof BaseCommand) {
-          // Direct subcommand
-          const subCmdName = `${baseCommand.name} ${name}`;
-          const subCmdMention = this.dataManager.getCommandMention(subCmdName);
-          commandDetails += `- ${subCmdMention}: ${subCmd.description}\n`;
-        }
-        else {
-          // Nested subcommands
-          for (const [subName, nestedCmd] of Object.entries(subCmd)) {
-            // Get nested subcommand mention
-            const nestedCmdName = `${baseCommand.name} ${name} ${subName}`;
-            const nestedCmdMention = this.dataManager.getCommandMention(nestedCmdName);
-            commandDetails += `- ${nestedCmdMention}: ${nestedCmd.description}\n`;
-          }
+      else if (subcommand && commandPath.length > 2) {
+        // Nested subcommand
+        const nestedSubcommandName = commandPath[2];
+        const nestedSubcommand = subcommand[nestedSubcommandName];
+        if (nestedSubcommand) {
+          targetCommand = nestedSubcommand;
+          commandNameFull = `${commandPath[0]} ${commandPath[1]} ${commandPath[2]}`;
         }
       }
     }
 
-    // Add examples
-    commandDetails += '\n## Examples\n';
-    commandDetails += `- ${commandMention} - Basic usage\n`;
-
-    container.addTextDisplayComponents(new TextDisplayBuilder().setContent(commandDetails));
+    // Use unified help generation with slash command format disabled
+    const container = generateUnifiedCommandHelp(targetCommand, client, {
+      commandNameFull,
+      showPrefix: false, // Help command uses slash command format
+      showSubcommands: commandPath.length === 1, // Only show subcommands for base commands
+      showBackButtons: false, // We'll add our own back buttons
+    });
 
     // Find which category this command belongs to
     const commandCategory = this.dataManager.findCategoryForCommand(commandPath[0]);

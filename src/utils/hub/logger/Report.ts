@@ -362,7 +362,6 @@ export const sendHubReport = async (
   );
   container.addSectionComponents(contentSection);
 
-  // FIXME: Add media gallery if present
   const attachmentUrl =
     reportData.content?.match(Constants.Regex.StaticImageUrl)?.[0] ??
     reportData.content.match(Constants.Regex.TenorLinks)?.[0] ??
@@ -392,6 +391,7 @@ export const sendHubReport = async (
   await sendLog(client.cluster, reportsChannelId, null, {
     components,
     flags: [MessageFlags.IsComponentsV2],
+    roleMentionIds: reportsRoleId ? [reportsRoleId] : undefined,
   });
 
   // Send immediate DM notification to reporter with report ID

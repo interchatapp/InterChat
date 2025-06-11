@@ -162,7 +162,7 @@ export default class JoinServerCommand extends BaseCommand {
     }
     const serverName = ctx.options.getString('servername');
     if (serverName) {
-      // FIXME: Use database to get server names probably
+      // FIXME: Could use database to get server names probably
       const serverId = resolveEval<string>(
         await ctx.client.cluster.broadcastEval(`
         const server = this.guilds.cache.find(g => g.name === ${JSON.stringify(serverName)});

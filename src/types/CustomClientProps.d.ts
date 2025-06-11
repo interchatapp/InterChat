@@ -49,6 +49,8 @@ declare module 'discord.js' {
     readonly prefixCommands: Collection<string, BasePrefixCommand>;
 
     readonly eventLoader: EventLoader;
+    readonly aliases: Collection<string, string>
+
     readonly commandCooldowns: CooldownService;
     readonly reactionCooldowns: Collection<string, number>;
     readonly cluster: ClusterClient<Client>;

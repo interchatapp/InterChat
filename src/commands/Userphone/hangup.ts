@@ -44,6 +44,11 @@ export default class HangupCommand extends BaseCommand {
     super({
       name: 'hangup',
       description: '📞 End the current call',
+      aliases: ['h'],
+      examples: [
+        'c!hangup',
+        'c!h',
+      ],
       types: { slash: true, prefix: true },
       contexts: { guildOnly: true },
     });

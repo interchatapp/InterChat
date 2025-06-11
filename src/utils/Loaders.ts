@@ -38,11 +38,107 @@ export const loadInteractionsForCommand = (
   loadMetadata(command, interactionMap);
 };
 
+/**
+ * Set metadata for a command based on directory structure
+ */
+const setCommandMetadata = (
+  command: BaseCommand,
+  dirName: string | undefined,
+  category: string | undefined,
+  depth: number,
+) => {
+  if (dirName) {
+    command
+      .setCategoryPath(dirName)
+      .setCategory(category || '')
+      .setIsSubcommand(depth > 1);
+  }
+};
+
+/**
+ * Process subcommands and set their metadata
+ */
+const processSubcommands = (
+  command: BaseCommand,
+  category: string | undefined,
+  dirName: string | undefined,
+) => {
+  if (!command.subcommands) return;
+
+  for (const [, subCmd] of Object.entries(command.subcommands)) {
+    if (subCmd instanceof BaseCommand) {
+      // Use setter methods for subcommands
+      subCmd
+        .setCategory(category || '')
+        .setCategoryPath(dirName || '')
+        .setIsSubcommand(true);
+    }
+    else {
+      // Handle nested subcommands
+      for (const [, nestedCmd] of Object.entries(subCmd)) {
+        // Use setter methods for nested subcommands
+        nestedCmd
+          .setCategory(category || '')
+          .setCategoryPath(dirName || '')
+          .setIsSubcommand(true);
+      }
+    }
+  }
+};
+
+/**
+ * Register command and its aliases in the map
+ */
+const registerCommand = (
+  command: BaseCommand,
+  map: Collection<string, BaseCommand>,
+  depth: number,
+  file: string,
+  aliasMap?: Collection<string, string>,
+) => {
+  if (depth <= 1 || (depth > 1 && file === 'index.js')) {
+    map.set(command.name, command);
+
+    // Register aliases in the alias map if provided
+    if (command.aliases && aliasMap) {
+      for (const alias of command.aliases) {
+        aliasMap.set(alias, command.name);
+      }
+    }
+  }
+};
+
+/**
+ * Process a single command file
+ */
+const processCommandFile = async (
+  file: string,
+  path: string,
+  map: Collection<string, BaseCommand>,
+  interactionMap: Collection<string, InteractionFunction> | undefined,
+  depth: number,
+  dirName: string | undefined,
+  category: string | undefined,
+  aliasMap?: Collection<string, string>,
+) => {
+  const { default: Command } = await import(`${path}/${file}`);
+  if (Command.prototype instanceof BaseCommand && !Command.abstract) {
+    const command: BaseCommand = new Command();
+
+    setCommandMetadata(command, dirName, category, depth);
+    registerCommand(command, map, depth, file, aliasMap);
+    processSubcommands(command, category, dirName);
+
+    if (interactionMap) loadInteractionsForCommand(command, interactionMap);
+  }
+};
+
 export const loadCommands = async (
   map: Collection<string, BaseCommand>,
   interactionMap?: Collection<string, InteractionFunction>,
   depth = 0,
   dirName?: string,
+  aliasMap?: Collection<string, string>,
 ) => {
   const path = join(__dirname, '..', `commands${dirName ? `/${dirName}` : ''}`);
   const files = await readdir(join(path));
@@ -52,47 +148,7 @@ export const loadCommands = async (
 
   for (const file of files) {
     if (file.endsWith('.js')) {
-      const { default: Command } = await import(`${path}/${file}`);
-      if (Command.prototype instanceof BaseCommand && !Command.abstract) {
-        const command: BaseCommand = new Command();
-
-        // Set directory structure metadata using setter methods
-        if (dirName) {
-          command
-            .setCategoryPath(dirName)
-            .setCategory(category || '')
-            .setIsSubcommand(depth > 1);
-        }
-
-        if (depth <= 1 || (depth > 1 && file === 'index.js')) {
-          map.set(command.name, command);
-        }
-
-        // Also set metadata for subcommands if any
-        if (command.subcommands) {
-          for (const [, subCmd] of Object.entries(command.subcommands)) {
-            if (subCmd instanceof BaseCommand) {
-              // Use setter methods for subcommands
-              subCmd
-                .setCategory(category || '')
-                .setCategoryPath(dirName || '')
-                .setIsSubcommand(true);
-            }
-            else {
-              // Handle nested subcommands
-              for (const [, nestedCmd] of Object.entries(subCmd)) {
-                // Use setter methods for nested subcommands
-                nestedCmd
-                  .setCategory(category || '')
-                  .setCategoryPath(dirName || '')
-                  .setIsSubcommand(true);
-              }
-            }
-          }
-        }
-
-        if (interactionMap) loadInteractionsForCommand(command, interactionMap);
-      }
+      await processCommandFile(file, path, map, interactionMap, depth, dirName, category, aliasMap);
     }
 
     const stats = await stat(join(path, file));
@@ -103,6 +159,7 @@ export const loadCommands = async (
         interactionMap,
         depth + 1,
         dirName ? join(dirName, file) : file,
+        aliasMap,
       );
     }
   }
