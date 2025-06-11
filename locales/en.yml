@@ -797,11 +797,10 @@ calls:
       description: 'Hubs are the main feature of InterChat, connecting servers in persistent chat communities'
   system:
     callStart: |
-      {emoji} **Amazing! Your Call is Connected!** 🎉
+      {emoji} **Your Call is Connected!** Say hello! 🎉
       > - Say hello and start chatting with the other server!
       > - Use `/hangup` when you're ready to end the call
-      > - Remember to keep things friendly and follow our [community guidelines]({guidelines})
-      > - Have fun making new friends! ✨
+      > - Remember to keep things friendly and follow our [community guidelines]({<guidelines>})
   rating:
     success: 'Thanks for rating! Your **{type}** feedback has been recorded for {count} participant{plural}.'
     alreadyRated: '{emoji} You have already rated this call.'
