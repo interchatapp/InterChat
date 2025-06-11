@@ -194,7 +194,9 @@ export default class PrefixContext extends Context<{
 
   public async reply(data: string | MessageReplyOptions) {
     this.lastReply = await this.interaction.reply(
-      typeof data === 'string' ? { content: data } : { ...data, content: data.content ?? '' },
+      typeof data === 'string'
+        ? { content: data }
+        : { ...data, content: data.content ?? undefined },
     );
     return this.lastReply;
   }
