@@ -49,8 +49,9 @@ export default class JoinServerCommand extends BaseCommand {
   async execute(ctx: Context): Promise<void> {
     // Ensure channelId is not null
     if (!ctx.channelId) {
+      const locale = await ctx.getLocale();
       await ctx.reply({
-        content: 'This command can only be used in a channel.',
+        content: t('joinserver.errors.channelOnly', locale),
         flags: ['Ephemeral'],
       });
       return;
@@ -67,8 +68,9 @@ export default class JoinServerCommand extends BaseCommand {
     const targetServerId = await this.resolveTargetServerId(ctx);
 
     if (!targetServerId) {
+      const locale = await ctx.getLocale();
       await ctx.reply({
-        content: 'You must provide a message ID or server ID',
+        content: t('joinserver.errors.missingTarget', locale),
         flags: ['Ephemeral'],
       });
       return;
@@ -95,14 +97,17 @@ export default class JoinServerCommand extends BaseCommand {
       (serverData?.inviteCode ? `https://discord.gg/${serverData.inviteCode}` : null);
 
     if (invite && targetServerId) {
+      const locale = await ctx.getLocale();
       const server = await ctx.client.fetchGuild(targetServerId);
       await ctx.reply({
-        content: `${ctx.getEmoji('tick_icon')} I have DM'd you the invite link to the server!`,
+        content: t('joinserver.success.inviteSent', locale, {
+          emoji: ctx.getEmoji('tick_icon'),
+        }),
         flags: ['Ephemeral'],
       });
       await ctx.user.send(stripIndents`
-        ### Join Request
-        You requested to join the server \`${server?.name}\` through InterChat. Here is the invite link:
+        ### ${t('joinserver.request.title', locale)}
+        ${t('joinserver.request.description', locale, { serverName: server?.name ?? 'Unknown' })}
         ${invite}
       `);
       return;
@@ -115,26 +120,32 @@ export default class JoinServerCommand extends BaseCommand {
     }
 
     // Broadcast the join request to the server administrators.
+    const locale = await ctx.getLocale();
     await BroadcastService.sendMessage(webhookURL, {
-      content: `User \`${ctx.user.username}\` from \`${ctx.guild?.name}\` has requested to join this server. Do you want to accept them?`,
+      content: t('joinserver.request.broadcast', locale, {
+        username: ctx.user.username,
+        guildName: ctx.guild?.name ?? 'Unknown',
+      }),
       components: [
         new ActionRowBuilder<ButtonBuilder>().addComponents(
           new ButtonBuilder()
             .setCustomId(
               new CustomID('joinReq:accept').setArgs(ctx.user.id, ctx.channelId || '').toString(),
             )
-            .setLabel('Accept')
+            .setLabel(t('joinserver.buttons.accept', locale))
             .setStyle(ButtonStyle.Success),
           new ButtonBuilder()
             .setCustomId(new CustomID('joinReq:reject').toString())
-            .setLabel('Reject')
+            .setLabel(t('joinserver.buttons.reject', locale))
             .setStyle(ButtonStyle.Danger),
         ),
       ],
     });
 
     await ctx.reply(
-      `${ctx.getEmoji('tick_icon')} Your request has been sent to the server. You will be DM'd the invite link if accepted.`,
+      t('joinserver.response.sent', locale, {
+        emoji: ctx.getEmoji('tick_icon'),
+      }),
     );
   }
 
@@ -193,7 +204,7 @@ export default class JoinServerCommand extends BaseCommand {
 
     const action = ctx.customId.suffix as 'accept' | 'reject';
     const [userId] = ctx.customId.args;
-    const locale = await fetchUserLocale(ctx.user.id);
+    const locale = await ctx.getLocale();
 
     if (action === 'reject') {
       await ctx.reply({
@@ -219,7 +230,9 @@ export default class JoinServerCommand extends BaseCommand {
       }
 
       await ctx.reply(
-        `${getEmoji('loading', ctx.client)} This server does not have an invite link yet. Creating one...`,
+        t('joinserver.response.creating', locale, {
+          emoji: getEmoji('loading', ctx.client),
+        }),
       );
 
       const inviteLink = await handleConnectionInviteCreation(ctx, connection, locale);
@@ -230,8 +243,8 @@ export default class JoinServerCommand extends BaseCommand {
       const dmStatus = await user
         .send(
           stripIndents`
-        ### Join Request
-        You requested to join the server \`${ctx.guild?.name}\` through InterChat. Here is the invite link:
+        ### ${t('joinserver.request.title', locale)}
+        ${t('joinserver.request.description', locale, { serverName: ctx.guild?.name })}
         ${inviteLink}
       `,
         )
@@ -239,8 +252,12 @@ export default class JoinServerCommand extends BaseCommand {
 
       await ctx.editReply(
         dmStatus
-          ? `${getEmoji('tick_icon', ctx.client)} The invite link has been sent to the user.`
-          : `${getEmoji('x_icon', ctx.client)} The invite link could not be sent to the user. They may have DMs disabled.`,
+          ? t('joinserver.response.dmSent', locale, {
+            emoji: getEmoji('tick_icon', ctx.client),
+          })
+          : t('joinserver.response.dmFailed', locale, {
+            emoji: getEmoji('x_icon', ctx.client),
+          }),
       );
 
       if (dmStatus) {
@@ -252,13 +269,10 @@ export default class JoinServerCommand extends BaseCommand {
   /**
    * Updates the state of the ctx button based on the action taken.
    */
-  private async updateButtonState(
-    ctx: ComponentContext,
-    action: 'accept' | 'reject',
-  ) {
+  private async updateButtonState(ctx: ComponentContext, action: 'accept' | 'reject') {
     if (!ctx.interaction.message) return;
 
-    const updatedButton = this.createUpdatedButton(ctx, action);
+    const updatedButton = await this.createUpdatedButton(ctx, action);
     try {
       const webhook = await ctx.interaction.message.fetchWebhook();
       await webhook.editMessage(ctx.interaction.message, { components: [updatedButton] });
@@ -271,13 +285,16 @@ export default class JoinServerCommand extends BaseCommand {
   /**
    * Creates an updated button reflecting the accepted or rejected state.
    */
-  private createUpdatedButton(
+  private async createUpdatedButton(
     ctx: ComponentContext,
     action: 'accept' | 'reject',
-  ): ActionRowBuilder<ButtonBuilder> {
+  ): Promise<ActionRowBuilder<ButtonBuilder>> {
+    const locale = await ctx.getLocale();
     const isAccepted = action === 'accept';
     const buttonStyle = isAccepted ? ButtonStyle.Success : ButtonStyle.Danger;
-    const statusLabel = `${isAccepted ? 'Accepted' : 'Rejected'} by ${ctx.user.username}`;
+    const statusLabel = isAccepted
+      ? t('joinserver.status.accepted', locale, { username: ctx.user.username })
+      : t('joinserver.status.rejected', locale, { username: ctx.user.username });
     const emoji = getEmoji(isAccepted ? 'tick_icon' : 'x_icon', ctx.client);
 
     return new ActionRowBuilder<ButtonBuilder>().addComponents(

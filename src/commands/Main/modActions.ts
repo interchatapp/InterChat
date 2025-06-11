@@ -20,9 +20,7 @@ import type Context from '#src/core/CommandContext/Context.js';
 import { buildModPanel } from '#src/interactions/ModPanel.js';
 import { HubService } from '#src/services/HubService.js';
 import db from '#src/utils/Db.js';
-import {
-  findOriginalMessage,
-} from '#src/utils/network/messageUtils.js';
+import { findOriginalMessage } from '#src/utils/network/messageUtils.js';
 import { isStaffOrHubMod } from '#utils/hub/utils.js';
 import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js';
 import type { Message as MessageDB } from '#src/generated/prisma/client/client.js';
@@ -77,7 +75,11 @@ export default class ModPanelCommand extends BaseCommand {
       return;
     }
 
-    const { container, buttons } = await buildModPanel(ctx, originalMsg);
+    const { container, buttons } = await buildModPanel(
+      originalMsg,
+      ctx.user,
+      await ctx.getLocale(),
+    );
     await ctx.editOrReply({ components: [container, ...buttons] }, ['IsComponentsV2']);
   }
 

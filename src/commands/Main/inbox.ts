@@ -7,6 +7,7 @@ import { CustomID } from '#src/utils/CustomID.js';
 import db from '#src/utils/Db.js';
 import { UIComponents } from '#src/utils/DesignSystem.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
+import { t } from '#src/utils/Locale.js';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -98,6 +99,7 @@ export async function buildInboxContainer(
     page?: number;
   },
 ): Promise<ContainerBuilder | null> {
+  const locale = await ctx.getLocale();
   const userDbService = opts?.userDbService ?? new UserDbService();
   const userData = await userDbService.getUser(ctx.user.id);
   const inboxLastRead = userData?.inboxLastReadDate || new Date();
@@ -123,14 +125,16 @@ export async function buildInboxContainer(
   // If there are no announcements, show a message
   if (announcements.length === 0) {
     const container = ui.createInfoMessage(
-      '📬 All caught up!',
-      `I'll let you know when there's more. But for now, there's only Chipi here: ${getEmoji('chipi_smile', ctx.client)}`,
+      t('inbox.empty.title', locale),
+      t('inbox.empty.description', locale, {
+        emoji: getEmoji('chipi_smile', ctx.client),
+      }),
     );
 
     // Add "View Older" button if we're not already viewing older announcements
     if (!opts?.showOlder) {
       ui.createActionButtons(container, {
-        label: 'View Older',
+        label: t('inbox.buttons.viewOlder', locale),
         customId: new CustomID().setIdentifier('inbox', 'viewOlder').toString(),
         emoji: '🕒',
       });
@@ -152,8 +156,10 @@ export async function buildInboxContainer(
   // Add header
   container.addTextDisplayComponents(
     ui.createHeader(
-      '📬 InterChat Inbox',
-      opts?.showOlder ? 'Viewing older announcements' : 'Latest announcements and updates',
+      t('inbox.title', locale),
+      opts?.showOlder
+        ? t('inbox.subtitle.older', locale)
+        : t('inbox.subtitle.new', locale),
     ),
   );
 
@@ -162,7 +168,7 @@ export async function buildInboxContainer(
 
   // Add announcement content
   const announcementContent = new TextDisplayBuilder().setContent(
-    `## ${announcement.title}\n${announcement.content}\n\n*Posted on ${time(announcement.createdAt)}*`,
+    `## ${announcement.title}\n${announcement.content}\n\n*${t('inbox.postedOn', locale, { date: time(announcement.createdAt) })}*`,
   );
   container.addTextDisplayComponents(announcementContent);
 
@@ -201,7 +207,7 @@ export async function buildInboxContainer(
         .setArgs(opts?.showOlder ? 'older' : 'new')
         .toString(),
     )
-    .setLabel('Previous')
+    .setLabel(t('inbox.buttons.previous', locale))
     .setEmoji(getEmoji('arrow_left', ctx.client))
     .setStyle(ButtonStyle.Secondary)
     .setDisabled(validPage === 0);
@@ -222,7 +228,7 @@ export async function buildInboxContainer(
         .setArgs(opts?.showOlder ? 'older' : 'new')
         .toString(),
     )
-    .setLabel('Next')
+    .setLabel(t('inbox.buttons.next', locale))
     .setEmoji(getEmoji('arrow_right', ctx.client))
     .setStyle(ButtonStyle.Secondary)
     .setDisabled(validPage >= totalPages - 1);
@@ -233,7 +239,7 @@ export async function buildInboxContainer(
   if (!opts?.showOlder) {
     const viewOlderButton = new ButtonBuilder()
       .setCustomId(new CustomID().setIdentifier('inbox', 'viewOlder').toString())
-      .setLabel('View Older')
+      .setLabel(t('inbox.buttons.viewOlder', locale))
       .setEmoji('🕒')
       .setStyle(ButtonStyle.Secondary);
 

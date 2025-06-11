@@ -17,6 +17,7 @@
 
 import BaseCommand from '#src/core/BaseCommand.js';
 import Context from '#src/core/CommandContext/Context.js';
+import { t } from '#src/utils/Locale.js';
 import { buildProfileEmbed } from '#src/utils/ProfileUtils.js';
 import { ApplicationCommandOptionType } from 'discord.js';
 
@@ -41,7 +42,8 @@ export default class ProfileCommand extends BaseCommand {
 
     const profileEmbed = await buildProfileEmbed(user, ctx.client);
     if (!profileEmbed) {
-      await ctx.reply('User not found.');
+      const locale = await ctx.getLocale();
+      await ctx.reply(t('profile.errors.userNotFound', locale));
       return;
     }
 

@@ -2,14 +2,14 @@ import BaseCommand from '#src/core/BaseCommand.js';
 import Context from '#src/core/CommandContext/Context.js';
 import { CallService } from '#src/services/CallService.js';
 import { UIComponents } from '#src/utils/DesignSystem.js';
+import { t } from '#src/utils/Locale.js';
+import { fetchUserLocale } from '#src/utils/Utils.js';
 import { CustomID } from '#utils/CustomID.js';
-import { stripIndents } from 'common-tags';
 import {
   ButtonBuilder,
   ButtonStyle,
   ContainerBuilder,
   MessageFlags,
-  TextDisplayBuilder,
 } from 'discord.js';
 
 /**
@@ -33,14 +33,15 @@ export default class SkipCommand extends BaseCommand {
   async execute(ctx: Context) {
     await ctx.deferReply();
 
+    const locale = await fetchUserLocale(ctx.user.id);
     const callService = new CallService(ctx.client);
     const ui = new UIComponents(ctx.client);
 
     // Ensure channelId is not null
     if (!ctx.inGuild()) {
-      const container = ui.createErrorMessage(
-        'Error',
-        'Cannot skip call - invalid channel',
+      const container = ui.createCompactErrorMessage(
+        t('skip.errors.error', locale),
+        t('calls.failed.reasons.channelInvalid', locale),
       );
 
       await ctx.editReply({
@@ -59,19 +60,10 @@ export default class SkipCommand extends BaseCommand {
         // In queue - waiting for match
         const container = new ContainerBuilder();
 
-        // Add beta notice and hub promotion at the top
         container.addTextDisplayComponents(
-          ui.createSubsection(
-            '🌟 Discover InterChat Hubs!',
-            'Calls are in beta. For a more reliable experience, try InterChat Hubs - our main feature for connecting servers!',
-            'info_icon',
-          ),
-        );
-
-        container.addTextDisplayComponents(
-          ui.createHeader(
-            'Finding New Call',
-            'Previous call ended • Waiting for another server • Use `/hangup` to cancel',
+          ui.createCompactHeader(
+            t('calls.skip.title', locale),
+            t('calls.skip.description', locale),
             'call_icon',
           ),
         );
@@ -81,12 +73,12 @@ export default class SkipCommand extends BaseCommand {
           row.addComponents(
             new ButtonBuilder()
               .setCustomId(new CustomID().setIdentifier('call', 'cancel').toString())
-              .setLabel('Cancel Call')
+              .setLabel(t('calls.buttons.cancelCall', locale))
               .setStyle(ButtonStyle.Danger)
               .setEmoji('📞'),
             new ButtonBuilder()
               .setCustomId(new CustomID().setIdentifier('call', 'explore-hubs').toString())
-              .setLabel('Explore Hubs')
+              .setLabel(t('calls.buttons.exploreHubs', locale))
               .setStyle(ButtonStyle.Primary)
               .setEmoji('🏠'),
           ),
@@ -101,17 +93,8 @@ export default class SkipCommand extends BaseCommand {
         // Connected immediately
         const container = new ContainerBuilder();
 
-        // Add beta notice and hub promotion at the top
         container.addTextDisplayComponents(
-          ui.createSubsection(
-            '🌟 Discover InterChat Hubs!',
-            'Calls are in beta. For a more reliable experience, try InterChat Hubs - our main feature for connecting servers!',
-            'info_icon',
-          ),
-        );
-
-        container.addTextDisplayComponents(
-          ui.createHeader(
+          ui.createCompactHeader(
             'New Call Connected!',
             'You\'ve been connected to a different server • Use `/hangup` to end',
             'tick_icon',
@@ -123,17 +106,17 @@ export default class SkipCommand extends BaseCommand {
           row.addComponents(
             new ButtonBuilder()
               .setCustomId(new CustomID().setIdentifier('call', 'hangup').toString())
-              .setLabel('End Call')
+              .setLabel(t('calls.buttons.endCall', locale))
               .setStyle(ButtonStyle.Danger)
               .setEmoji('📞'),
             new ButtonBuilder()
               .setCustomId(new CustomID().setIdentifier('call', 'skip').toString())
-              .setLabel('Skip Again')
+              .setLabel(t('calls.buttons.skipAgain', locale))
               .setStyle(ButtonStyle.Secondary)
               .setEmoji('⏭️'),
             new ButtonBuilder()
               .setCustomId(new CustomID().setIdentifier('call', 'explore-hubs').toString())
-              .setLabel('Explore Hubs')
+              .setLabel(t('calls.buttons.exploreHubs', locale))
               .setStyle(ButtonStyle.Primary)
               .setEmoji('🏠'),
           ),
@@ -147,25 +130,9 @@ export default class SkipCommand extends BaseCommand {
     }
     else {
       // Error occurred
-      const container = new ContainerBuilder();
-
-      container.addTextDisplayComponents(
-        ui.createHeader(
-          'Skip Failed',
-          result.message,
-          'x_icon',
-        ),
-      );
-
-      // Add hub promotion
-      container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          stripIndents`
-          ### Try InterChat Hubs Instead!
-          Hubs are our main feature - persistent communities that connect multiple servers together.
-          Unlike calls, hubs stay connected 24/7 and offer more features.
-          `,
-        ),
+      const container = ui.createCompactErrorMessage(
+        t('skip.errors.skipFailed', locale),
+        result.message,
       );
 
       // Add explore hubs button
@@ -173,7 +140,7 @@ export default class SkipCommand extends BaseCommand {
         row.addComponents(
           new ButtonBuilder()
             .setCustomId(new CustomID().setIdentifier('call', 'explore-hubs').toString())
-            .setLabel('Explore Hubs')
+            .setLabel(t('calls.buttons.exploreHubs', locale))
             .setStyle(ButtonStyle.Primary)
             .setEmoji('🏠'),
         ),

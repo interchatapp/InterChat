@@ -53,11 +53,19 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
       await message.channel
         .send(
           stripIndents`
-            ### Hey there! I'm InterChat, a bot that connects servers together. ${this.getEmoji('clipart')}
-            - To get started, type \`/setup\` to set up InterChat with a hub.
-            - If you're new here, read the rules by typing \`/rules\`.
-            - Use the [hub browser](${Constants.Links.Website}/hubs) to find and join more cross-server communities.
-            -# ***Need help?** Join our [support server](<${Constants.Links.SupportInvite}>).*
+            ### Hello there! 👋 I'm InterChat, and I'm so excited to meet you! ${this.getEmoji('clipart')}
+
+            I'm here to help you connect with amazing communities from all around Discord! Think of me as your friendly bridge to thousands of servers and millions of new friends waiting to chat with you.
+
+            **🚀 Ready to start your adventure?**
+            - **New here?** Type \`/setup\` and I'll guide you through everything step by step!
+            - **Want to explore?** Check out the [Discovery Page](${Constants.Links.Website}/hubs) to find and join active hubs
+            - **Need the basics?** Type \`/tutorial\` for interactive guides
+            - **Feeling adventurous?** Try \`/call\` for instant connections with other servers!
+
+            **💝 Need a helping hand?** Don't worry - we've all been beginners! Join our welcoming [support community](<${Constants.Links.SupportInvite}>) where real people are excited to help you get started. No question is too small!
+
+            *Ready to make some new friends? Let's do this!* ✨
       `,
         )
         .catch(() => null);
@@ -145,5 +153,4 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
 
     await redis.set(key, Date.now().toString(), 'EX', 600);
   }
-
 }

@@ -16,13 +16,13 @@
  */
 
 import BaseCommand from '#src/core/BaseCommand.js';
-import type Context from '#src/core/CommandContext/Context.js';
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
+import type Context from '#src/core/CommandContext/Context.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import { HubService } from '#src/services/HubService.js';
 import { UIComponents } from '#src/utils/DesignSystem.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
-import { escapeRegexChars, fetchUserLocale } from '#src/utils/Utils.js';
+import { escapeRegexChars } from '#src/utils/Utils.js';
 import Constants from '#utils/Constants.js';
 import { CustomID } from '#utils/CustomID.js';
 import { supportedLocaleCodes, t } from '#utils/Locale.js';
@@ -119,7 +119,11 @@ export default class Rules extends BaseCommand {
 
     // Add header with hub name and icon
     container.addTextDisplayComponents(
-      ui.createHeader(`${hubName} Rules`, 'The following rules apply to this hub', 'rules_icon'),
+      ui.createHeader(
+        t('commands.rules.hubRules.title', locale, { hubName }),
+        t('commands.rules.hubRules.description', locale),
+        'rules_icon',
+      ),
     );
 
     // Add separator
@@ -197,13 +201,17 @@ export default class Rules extends BaseCommand {
   async handlebotRulesButton(ctx: ComponentContext) {
     await ctx.deferUpdate();
 
-    const locale = await fetchUserLocale(ctx.user.id);
+    const locale = await ctx.getLocale();
     const ui = new UIComponents(ctx.client);
     const container = new ContainerBuilder();
 
     // Add header
     container.addTextDisplayComponents(
-      ui.createHeader('InterChat Rules', 'Bot-wide rules for all users', 'rules_icon'),
+      ui.createHeader(
+        t('commands.rules.botRules.title', locale),
+        t('commands.rules.botRules.description', locale),
+        'rules_icon',
+      ),
     );
 
     // Add separator

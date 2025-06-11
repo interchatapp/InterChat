@@ -24,9 +24,8 @@ import { HubService } from '#src/services/HubService.js';
 import UserDbService from '#src/services/UserDbService.js';
 import Constants, { RedisKeys } from '#src/utils/Constants.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
-import Logger from '#src/utils/Logger.js';
 import getRedis from '#src/utils/Redis.js';
-import { fetchUserLocale, getReplyMethod } from '#src/utils/Utils.js';
+import { fetchUserLocale, getReplyMethod, handleError } from '#src/utils/Utils.js';
 import { CustomID } from '#utils/CustomID.js';
 import db from '#utils/Db.js';
 import { InfoEmbed } from '#utils/EmbedUtils.js';
@@ -103,8 +102,8 @@ export const showRulesScreening = async (
       await showHubRules(repliable, author.id, hub, locale);
     }
   }
-  catch (e) {
-    Logger.error(e);
+  catch (err) {
+    handleError(err, { comment: 'Error in showRulesScreening:' });
   }
 };
 
@@ -238,6 +237,7 @@ export default class RulesScreeningInteraction {
         support_invite: Constants.Links.SupportInvite,
         donateLink: Constants.Links.Donate,
         emoji: getEmoji('tick_icon', ctx.client),
+        dashboard_link: `${Constants.Links.Website}/dashboard`,
       }),
     );
 
@@ -286,14 +286,8 @@ export default class RulesScreeningInteraction {
       // Clear both the rules shown cache and the hub connections cache
       await this.redis.del(`${RedisKeys.HubRules}:shown:${hubId}:${ctx.user.id}`);
     }
-    catch (error) {
-      Logger.error('Error in handleHubRulesAccept:', error);
-      await ctx
-        .reply({
-          content: `${getEmoji('x_icon', ctx.client)} An error occurred while processing your request.`,
-          flags: ['Ephemeral'],
-        })
-        .catch(() => null);
+    catch (err) {
+      handleError(err, { comment: 'Error in handleHubRulesAccept:', repliable: ctx.interaction });
     }
   }
 

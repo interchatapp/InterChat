@@ -19,6 +19,7 @@ import BaseCommand from '#src/core/BaseCommand.js';
 import Context from '#src/core/CommandContext/Context.js';
 import { HubService } from '#src/services/HubService.js';
 import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
+import { t } from '#src/utils/Locale.js';
 import { showModeratedHubsAutocomplete } from '#src/utils/moderation/blacklistUtils.js';
 import { warnUser } from '#utils/moderation/warnUtils.js';
 import { ApplicationCommandOptionType, type AutocompleteInteraction } from 'discord.js';
@@ -69,8 +70,11 @@ export default class WarnCommand extends BaseCommand {
     const reason = ctx.options.getString('reason', true);
 
     if (user.id === ctx.user.id) {
+      const locale = await ctx.getLocale();
       await ctx.reply({
-        content: `${ctx.getEmoji('x_icon')} You cannot warn yourself.`,
+        content: t('warn.errors.cannotWarnSelf', locale, {
+          emoji: ctx.getEmoji('x_icon'),
+        }),
         flags: ['Ephemeral'],
       });
       return;

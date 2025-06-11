@@ -73,7 +73,9 @@ export default class ReportMessageHandler {
     const selectedReason = ctx.values?.[0] as ReportReason | undefined;
     if (!selectedReason) {
       await ctx.reply({
-        content: `${getEmoji('x_icon', ctx.client)} No reason selected. Please try again.`,
+        content: t('report.errors.noReasonSelected', locale, {
+          emoji: getEmoji('x_icon', ctx.client),
+        }),
         flags: ['Ephemeral'],
       });
       return;
@@ -84,7 +86,9 @@ export default class ReportMessageHandler {
     const hub = await new HubService().fetchHub(originalMsg.hubId);
     if (!hub) {
       await ctx.reply({
-        content: `${getEmoji('x_icon', ctx.client)} Hub not found. Please try again.`,
+        content: t('report.errors.hubNotFound', locale, {
+          emoji: getEmoji('x_icon', ctx.client),
+        }),
         flags: ['Ephemeral'],
       });
       return;

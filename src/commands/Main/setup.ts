@@ -31,6 +31,7 @@ import db from '#src/utils/Db.js';
 import { UIComponents } from '#src/utils/DesignSystem.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { fetchUserLocale, handleError } from '#src/utils/Utils.js';
+import { t } from '#src/utils/Locale.js';
 import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
@@ -74,11 +75,13 @@ export default class SetupCommand extends BaseCommand {
   private readonly hubService = new HubService();
 
   async execute(ctx: Context): Promise<void> {
-    if (!this.validateSetupPrerequisites(ctx)) return;
+    if (!(await this.validateSetupPrerequisites(ctx))) return;
     await this.startSetupFlow(ctx);
   }
 
-  private validateSetupPrerequisites(ctx: Context): boolean {
+  private async validateSetupPrerequisites(ctx: Context): Promise<boolean> {
+    const locale = await ctx.getLocale();
+
     if (!ctx.inGuild()) {
       // Create UI components helper
       const ui = new UIComponents(ctx.client);
@@ -86,7 +89,7 @@ export default class SetupCommand extends BaseCommand {
       // Create error container
       const container = ui.createErrorMessage(
         'Server Only Command',
-        'This command can only be used in a server.',
+        t('commands.setup.errors.serverOnly', locale),
       );
 
       ctx.reply({
@@ -105,16 +108,9 @@ export default class SetupCommand extends BaseCommand {
       // Create error container
       const container = ui.createErrorMessage(
         '❌ Missing Permissions',
-        stripIndents`
-        I need the following permissions to work properly:
-        - Manage Webhooks
-        - Send Messages
-        - Manage Messages
-        - Embed Links
-
-        Please give me these permissions and try again!
-        Need help? [Join our support server](${Constants.Links.SupportInvite})
-        `,
+        t('commands.setup.errors.missingPermissions', locale, {
+          supportInvite: Constants.Links.SupportInvite,
+        }),
       );
 
       ctx.reply({
@@ -129,6 +125,8 @@ export default class SetupCommand extends BaseCommand {
 
   private async startSetupFlow(ctx: Context): Promise<void> {
     try {
+      const locale = await ctx.getLocale();
+
       // Create UI components helper
       const ui = new UIComponents(ctx.client);
 
@@ -138,17 +136,8 @@ export default class SetupCommand extends BaseCommand {
       // Add header
       container.addTextDisplayComponents(
         ui.createHeader(
-          'InterChat Setup (1/4)',
-          stripIndents`
-          Welcome to InterChat Setup!
-
-          Let's get your server connected to the InterChat hub network. This setup will guide you through:
-          1. Selecting a channel for InterChat messages
-          2. Connecting to a hub community or creating your own
-          3. Configuring basic settings
-
-          InterChat's main feature is Hubs - persistent chat communities that connect multiple servers together!
-          `,
+          t('commands.setup.welcome.title', locale),
+          t('commands.setup.welcome.description', locale),
           'info_icon',
         ),
       );
@@ -159,8 +148,8 @@ export default class SetupCommand extends BaseCommand {
       // Add channel selection section
       container.addTextDisplayComponents(
         ui.createSection(
-          'Step 1: Choose a Channel',
-          'First, select the channel where you want InterChat messages to appear.\nThis can be any text channel in your server.',
+          t('commands.setup.channelSelection.title', locale),
+          t('commands.setup.channelSelection.description', locale),
         ),
       );
 
@@ -169,7 +158,7 @@ export default class SetupCommand extends BaseCommand {
         const channelSelect = new ChannelSelectMenuBuilder()
           .setCustomId(new CustomID('setup_channel').toString())
           .setChannelTypes([ChannelType.GuildText])
-          .setPlaceholder('Select a channel');
+          .setPlaceholder(t('commands.setup.channelSelection.placeholder', locale));
 
         return row.addComponents(channelSelect);
       });
@@ -177,12 +166,8 @@ export default class SetupCommand extends BaseCommand {
       // Add tips section
       container.addTextDisplayComponents(
         ui.createSubsection(
-          'Channel Selection Tips',
-          stripIndents`
-          - Create a dedicated channel named \`#interchat\` or \`#global-chat\`
-          - Make sure the channel is visible to members who should see messages
-          - You can connect multiple channels to different hubs later
-          `,
+          t('commands.setup.channelSelection.tips.title', locale),
+          t('commands.setup.channelSelection.tips.content', locale),
           'info_icon',
         ),
       );
@@ -191,13 +176,13 @@ export default class SetupCommand extends BaseCommand {
       ui.createActionButtons(
         container,
         {
-          label: 'Support Server',
+          label: t('commands.setup.buttons.supportServer', locale),
           url: Constants.Links.SupportInvite,
           emoji: 'question_icon',
         },
         undefined,
         {
-          label: 'Documentation',
+          label: t('commands.setup.buttons.documentation', locale),
           url: `${Constants.Links.Website}/docs/setup`,
           emoji: 'wiki_icon',
         },
@@ -216,16 +201,18 @@ export default class SetupCommand extends BaseCommand {
       collector?.on('collect', async (i) => {
         try {
           if (!i.inCachedGuild()) {
+            const userLocale = await fetchUserLocale(i.user.id);
             await i.reply({
-              content: 'You must be in a server to use this.',
+              content: t('commands.setup.errors.serverRequired', userLocale),
               flags: ['Ephemeral'],
             });
             return;
           }
 
           if (i.user.id !== ctx.user.id) {
+            const userLocale = await fetchUserLocale(i.user.id);
             await i.reply({
-              content: 'This setup is for another user.',
+              content: t('commands.setup.errors.userMismatch', userLocale),
               flags: ['Ephemeral'],
             });
             return;
@@ -259,9 +246,12 @@ export default class SetupCommand extends BaseCommand {
             comment: 'Error handling interaction in setup flow',
           });
 
+          const userLocale = await fetchUserLocale(i.user.id);
           await i
             .reply({
-              content: `${getEmoji('x_icon', i.client)} There was an error processing your request. Please try again.`,
+              content: t('commands.setup.errors.interactionError', userLocale, {
+                emoji: getEmoji('x_icon', i.client),
+              }),
               flags: ['Ephemeral'],
             })
             .catch(() => null);
@@ -275,8 +265,8 @@ export default class SetupCommand extends BaseCommand {
 
           // Create timeout message container
           const end_container = end_ui.createWarningMessage(
-            'Setup Timed Out',
-            'The setup process has timed out. Please run the setup command again.',
+            '⏰ Setup Paused',
+            t('commands.setup.errors.timeout', locale),
           );
 
           await ctx
@@ -293,13 +283,15 @@ export default class SetupCommand extends BaseCommand {
         comment: 'Error starting setup flow',
       });
 
+      const errorLocale = await ctx.getLocale();
+
       // Create UI components helper
       const ui = new UIComponents(ctx.client);
 
       // Create error container
       const container = ui.createErrorMessage(
         'Setup Error',
-        'There was an error starting the setup process. Please try again later.',
+        t('commands.setup.errors.setupError', errorLocale),
       );
 
       await ctx
@@ -315,6 +307,7 @@ export default class SetupCommand extends BaseCommand {
     try {
       if (!ctx.isChannelSelectMenu() || !ctx.guildId || !ctx.guild) return;
 
+      const locale = await ctx.getLocale();
       const selectedChannel = ctx.channels?.first();
       if (!selectedChannel) {
         // Create UI components helper
@@ -323,7 +316,7 @@ export default class SetupCommand extends BaseCommand {
         // Create error container
         const container = ui.createErrorMessage(
           'No Channel Selected',
-          'No channel was selected. Please try again.',
+          t('commands.setup.errors.channelNotSelected', locale),
         );
 
         await ctx.reply({
@@ -340,7 +333,7 @@ export default class SetupCommand extends BaseCommand {
         // Create error container
         const container = ui.createErrorMessage(
           'Invalid Channel Type',
-          'Please select a text channel. Voice channels, forums, and other channel types are not supported.',
+          t('commands.setup.errors.invalidChannelType', locale),
         );
 
         await ctx.reply({
@@ -362,15 +355,9 @@ export default class SetupCommand extends BaseCommand {
         // Create error container
         const container = ui.createErrorMessage(
           '❌ Missing Channel Permissions',
-          stripIndents`
-          I need the following permissions in ${selectedChannel}:
-          - Manage Webhooks
-          - Send Messages
-          - Manage Messages
-          - Embed Links
-
-          Please update the channel permissions and try again!
-          `,
+          t('commands.setup.errors.missingChannelPermissions', locale, {
+            channel: selectedChannel.toString(),
+          }),
         );
 
         await ctx.reply({
@@ -393,7 +380,9 @@ export default class SetupCommand extends BaseCommand {
         // Create error container
         const container = ui.createErrorMessage(
           'Channel Already Connected',
-          `This channel is already connected to the hub "${existingConnection.hub.name}". Please select a different channel.`,
+          t('commands.setup.errors.channelAlreadyConnected', locale, {
+            hubName: existingConnection.hub.name,
+          }),
         );
 
         await ctx.reply({
@@ -424,14 +413,10 @@ export default class SetupCommand extends BaseCommand {
         // Add header
         container.addTextDisplayComponents(
           ui.createHeader(
-            'Existing Connections',
-            stripIndents`
-            Your server is already connected to the following hubs:
-
-            ${connectionList}
-
-            You can continue to add more connections if you'd like.
-            `,
+            t('commands.setup.existingConnections.title', locale),
+            t('commands.setup.existingConnections.description', locale, {
+              connectionList,
+            }),
             'info_icon',
           ),
         );
@@ -455,13 +440,15 @@ export default class SetupCommand extends BaseCommand {
         comment: 'Error in handleChannelSelection',
       });
 
+      const errorLocale = await ctx.getLocale();
+
       // Create UI components helper
       const ui = new UIComponents(ctx.client);
 
       // Create error container
       const container = ui.createErrorMessage(
         'Error',
-        'There was an error processing your channel selection. Please try again.',
+        t('commands.setup.errors.completionError', errorLocale),
       );
 
       await ctx
@@ -477,6 +464,7 @@ export default class SetupCommand extends BaseCommand {
     if (!ctx.inGuild()) return;
 
     try {
+      const locale = await ctx.getLocale();
       const [channelId] = ctx.customId.args;
 
       // Get server's existing connections to exclude those hubs
@@ -498,12 +486,12 @@ export default class SetupCommand extends BaseCommand {
         // Create container for Components v2
         const container = ui.createWarningMessage(
           'No Available Hubs',
-          'Your server is already connected to all available popular hubs! Try creating a new hub instead.',
+          t('commands.setup.errors.noAvailableHubs', locale),
         );
 
         // Add back button
         ui.createActionButtons(container, {
-          label: 'Go Back',
+          label: t('commands.setup.buttons.goBack', locale),
           customId: new CustomID(`back_to_hub_choice:${channelId}`).toString(),
           emoji: '⬅️',
         });
@@ -524,8 +512,8 @@ export default class SetupCommand extends BaseCommand {
       // Add header
       container.addTextDisplayComponents(
         ui.createHeader(
-          'InterChat Setup (2/4)',
-          'Choose a hub to join from our most active communities:',
+          t('commands.setup.hubSelection.title', locale),
+          t('commands.setup.hubSelection.description', locale),
           'info_icon',
         ),
       );
@@ -547,7 +535,7 @@ export default class SetupCommand extends BaseCommand {
       container.addActionRowComponents((row) => {
         const hubSelect = new StringSelectMenuBuilder()
           .setCustomId(new CustomID('select_hub').setArgs(channelId).toString())
-          .setPlaceholder('Choose a hub to join')
+          .setPlaceholder(t('commands.setup.hubSelection.placeholder', locale))
           .addOptions(
             availableHubs.map(({ hub, totalConnections }) => ({
               label: hub.data.name,
@@ -562,14 +550,12 @@ export default class SetupCommand extends BaseCommand {
 
       // Add tip about joining more hubs later
       container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          '> **Tip:** You can always join more hubs later using `/connect` and [the hub list](https://interchat.app/hubs).',
-        ),
+        new TextDisplayBuilder().setContent(t('commands.setup.hubSelection.tip', locale)),
       );
 
       // Add back button
       ui.createActionButtons(container, {
-        label: 'Go Back',
+        label: t('commands.setup.buttons.goBack', locale),
         customId: new CustomID(`back_to_hub_choice:${channelId}`).toString(),
         emoji: '⬅️',
       });
@@ -584,13 +570,15 @@ export default class SetupCommand extends BaseCommand {
         comment: 'Error in handlePopularHubs',
       });
 
+      const errorLocale = await ctx.getLocale();
+
       // Create UI components helper
       const ui = new UIComponents(ctx.client);
 
       // Create error container
       const container = ui.createErrorMessage(
-        'Error Loading Hubs',
-        'There was an error loading popular hubs. Please try again.',
+        t('errors.unknown', errorLocale),
+        t('commands.setup.errors.commandLoadingError', errorLocale),
       );
 
       await ctx
@@ -608,6 +596,7 @@ export default class SetupCommand extends BaseCommand {
     const values = ctx.values;
     if (!values || values.length === 0) return;
 
+    const locale = await ctx.getLocale();
     const [selectedHubId, selectedChannelId] = values[0].split('|');
 
     const hub = await this.hubService.fetchHub(selectedHubId);
@@ -618,7 +607,7 @@ export default class SetupCommand extends BaseCommand {
       // Create error container
       const container = ui.createErrorMessage(
         'Hub Not Found',
-        'This hub no longer exists. Please choose another one.',
+        t('commands.setup.errors.hubNotFound', locale),
       );
 
       await ctx.editReply({
@@ -663,7 +652,7 @@ export default class SetupCommand extends BaseCommand {
 
   @RegisterInteractionHandler('setup_hub_create_modal')
   async handleHubCreation(ctx: ComponentContext): Promise<void> {
-    const locale = await fetchUserLocale(ctx.user.id);
+    const locale = await ctx.getLocale();
     const [channelId] = ctx.customId.args;
 
     const hubData: HubCreationData = {
@@ -702,11 +691,7 @@ export default class SetupCommand extends BaseCommand {
 
       // Track Hub Creator achievement
       const achievementService = new AchievementService();
-      await achievementService.processEvent(
-        'hub_create',
-        { userId: ctx.user.id },
-        ctx.client,
-      );
+      await achievementService.processEvent('hub_create', { userId: ctx.user.id }, ctx.client);
 
       await this.showNextSteps(ctx, 'created', hubData.name, hub.id, channelId);
     }
@@ -1093,6 +1078,8 @@ export default class SetupCommand extends BaseCommand {
 
   private async showHubChoiceScreen(ctx: ComponentContext, channel: TextChannel): Promise<void> {
     try {
+      const locale = await ctx.getLocale();
+
       // Create UI components helper
       const ui = new UIComponents(ctx.client);
 
@@ -1102,8 +1089,8 @@ export default class SetupCommand extends BaseCommand {
       // Add header
       container.addTextDisplayComponents(
         ui.createHeader(
-          'InterChat Setup (2/4)',
-          `Great! Messages will appear in ${channel}. Now, let's connect to a hub!`,
+          t('commands.setup.hubChoice.title', locale),
+          t('commands.setup.hubChoice.description', locale, { channel: channel.toString() }),
           'info_icon',
         ),
       );
@@ -1114,54 +1101,42 @@ export default class SetupCommand extends BaseCommand {
       // Add what is a hub section
       container.addTextDisplayComponents(
         ui.createSection(
-          'What is a Hub?',
-          'A hub is InterChat\'s main feature - a shared chat space where multiple servers can talk together. Hubs are persistent communities that stay connected 24/7, unlike temporary calls.',
+          t('commands.setup.hubChoice.whatIsHub.title', locale),
+          t('commands.setup.hubChoice.whatIsHub.description', locale),
         ),
       );
 
       // Add hub types section
       container.addTextDisplayComponents(
         ui.createSubsection(
-          'Popular Hubs',
-          stripIndents`
-          - Join thriving active communities with thousands of users
-          - Start chatting immediately with other servers
-          - Perfect for new users to experience InterChat
-          - No additional setup required - just connect and chat!
-          `,
+          t('commands.setup.hubChoice.popularHubs.title', locale),
+          t('commands.setup.hubChoice.popularHubs.description', locale),
         ),
       );
 
       container.addTextDisplayComponents(
         ui.createSubsection(
-          'Create Your Own Hub',
-          stripIndents`
-          - Start your own community themed around your interests
-          - Full control over settings, moderation, and features
-          - Invite specific servers to create a private network
-          - Set custom rules, welcome messages, and more
-          `,
+          t('commands.setup.hubChoice.createHub.title', locale),
+          t('commands.setup.hubChoice.createHub.description', locale),
         ),
       );
 
       // Add note about joining more hubs later
       container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          '> You can always join more hubs later with the `/connect` command!',
-        ),
+        new TextDisplayBuilder().setContent(t('commands.setup.hubChoice.note', locale)),
       );
 
       // Add hub choice buttons
       container.addActionRowComponents((row) => {
         const joinPopularButton = new ButtonBuilder()
           .setCustomId(new CustomID('join_popular', [channel.id]).toString())
-          .setLabel('Join Popular Hub')
+          .setLabel(t('commands.setup.buttons.joinPopularHub', locale))
           .setEmoji({ name: '🌟' }) // Use emoji object format for Unicode emojis
           .setStyle(ButtonStyle.Primary);
 
         const createHubButton = new ButtonBuilder()
           .setCustomId(new CustomID('create_hub', [channel.id]).toString())
-          .setLabel('Create New Hub')
+          .setLabel(t('commands.setup.buttons.createNewHub', locale))
           .setEmoji({ name: '🆕' }) // Use emoji object format for Unicode emojis
           .setStyle(ButtonStyle.Secondary);
 
@@ -1172,13 +1147,13 @@ export default class SetupCommand extends BaseCommand {
       ui.createActionButtons(
         container,
         {
-          label: 'Hub Directory',
+          label: t('commands.setup.buttons.hubDirectory', locale),
           url: `${Constants.Links.Website}/hubs`,
           emoji: 'search_icon',
         },
         undefined,
         {
-          label: 'Learn More',
+          label: t('commands.setup.buttons.learnMore', locale),
           url: `${Constants.Links.Website}/docs/hubs`,
           emoji: 'info_icon',
         },
@@ -1191,13 +1166,15 @@ export default class SetupCommand extends BaseCommand {
         comment: 'Error in showHubChoiceScreen',
       });
 
+      const errorLocale = await ctx.getLocale();
+
       // Create UI components helper
       const ui = new UIComponents(ctx.client);
 
       // Create error container
       const container = ui.createErrorMessage(
-        'Error',
-        'There was an error showing the hub selection screen. Please try again.',
+        t('errors.unknown', errorLocale),
+        t('commands.setup.errors.setupError', errorLocale),
       );
 
       await ctx

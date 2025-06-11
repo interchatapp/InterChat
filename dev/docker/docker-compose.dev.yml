@@ -1,0 +1,6 @@
+services:
+  # redis with multithread support
+  keydb:
+    image: eqalpha/keydb
+    ports:
+      - 127.0.0.1:6379:6379

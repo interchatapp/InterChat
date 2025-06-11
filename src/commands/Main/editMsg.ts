@@ -16,28 +16,28 @@
  */
 
 import BaseCommand from '#src/core/BaseCommand.js';
-import type HubManager from '#src/managers/HubManager.js';
-import { findOriginalMessage } from '#src/utils/network/messageUtils.js';
-import type Context from '#src/core/CommandContext/Context.js';
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
-import { fetchUserLocale, handleError } from '#src/utils/Utils.js';
+import type Context from '#src/core/CommandContext/Context.js';
+import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
+import type { Message as MessageDB } from '#src/generated/prisma/client/client.js';
+import type HubManager from '#src/managers/HubManager.js';
+import { HubService } from '#src/services/HubService.js';
+import { CustomID } from '#src/utils/CustomID.js';
+import { handleError } from '#src/utils/Utils.js';
+import { replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
+import { findOriginalMessage } from '#src/utils/network/messageUtils.js';
 import { t } from '#utils/Locale.js';
 import { logMsgEdit } from '#utils/hub/logger/ModLogs.js';
 import { isStaffOrHubMod } from '#utils/hub/utils.js';
+import { editMessageInHub, isEditInProgress } from '#utils/moderation/editMessage.js';
 import {
+  ActionRowBuilder,
   ApplicationCommandOptionType,
   ApplicationCommandType,
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
-  ActionRowBuilder,
 } from 'discord.js';
-import { replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
-import { HubService } from '#src/services/HubService.js';
-import type { Message as MessageDB } from '#src/generated/prisma/client/client.js';
-import { CustomID } from '#src/utils/CustomID.js';
-import { editMessageInHub, isEditInProgress } from '#utils/moderation/editMessage.js';
-import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 
 const EDIT_MSG_MODAL_ID = 'editMsgModal';
 
@@ -83,17 +83,18 @@ export default class EditMessage extends BaseCommand {
   }
 
   private async showEditModal(ctx: Context, originalMsg: MessageDB): Promise<void> {
-    const locale = await fetchUserLocale(ctx.user.id);
+    const locale = await ctx.getLocale();
 
     // Create a modal for editing the message
     const modal = new ModalBuilder()
       .setCustomId(new CustomID(EDIT_MSG_MODAL_ID, [originalMsg.id]).toString())
-      .setTitle(t('network.editMessagePrompt', locale) || 'Edit Message');
+      .setTitle(t('editMsg.modal.title', locale));
 
     // Create a text input for the new message content
     const contentInput = new TextInputBuilder()
       .setCustomId('content')
-      .setLabel(t('network.newMessageContent', locale) || 'New Message Content')
+      .setLabel(t('editMsg.modal.content.label', locale))
+      .setPlaceholder(t('editMsg.modal.content.placeholder', locale))
       .setStyle(TextInputStyle.Paragraph)
       .setValue(originalMsg.content)
       .setRequired(true)
@@ -113,7 +114,9 @@ export default class EditMessage extends BaseCommand {
     }
     catch (e) {
       await ctx.editReply(
-        `${ctx.getEmoji('x_icon')} There was an error showing the edit modal. Please try again.`,
+        t('errors.modalError', locale, {
+          emoji: ctx.getEmoji('x_icon'),
+        }),
       );
       handleError(e);
     }
@@ -129,7 +132,7 @@ export default class EditMessage extends BaseCommand {
     const newContent = ctx.getModalFieldValue('content');
 
     if (!newContent || newContent.trim().length === 0) {
-      const locale = await fetchUserLocale(ctx.user.id);
+      const locale = await ctx.getLocale();
       await ctx.editReply(
         t('network.emptyContent', locale, {
           emoji: ctx.getEmoji('x_icon'),
@@ -155,13 +158,12 @@ export default class EditMessage extends BaseCommand {
     hub: HubManager,
     newContent: string,
   ): Promise<void> {
-    const locale = await fetchUserLocale(ctx.user.id);
+    const locale = await ctx.getLocale();
 
     await ctx.reply(
-      t('network.editInProgress', locale, {
+      t('editMsg.processing', locale, {
         emoji: ctx.getEmoji('loading'),
-      }) ||
-        `${ctx.getEmoji('loading')} Your request has been queued. Messages will be edited shortly...`,
+      }),
     );
 
     const { editedCount, totalCount } = await editMessageInHub(
@@ -191,7 +193,7 @@ export default class EditMessage extends BaseCommand {
     originalMsg: MessageDB | null,
     hub: HubManager | null,
   ) {
-    const locale = await fetchUserLocale(ctx.user.id);
+    const locale = await ctx.getLocale();
 
     if (!originalMsg || !hub) {
       await replyWithUnknownMessage(ctx);
@@ -199,12 +201,10 @@ export default class EditMessage extends BaseCommand {
     }
 
     if (await isEditInProgress(originalMsg.id)) {
-      await ctx.replyEmbed(
-        t('network.editInProgressError', locale, {
+      await ctx.editReply(
+        t('editMsg.alreadyEdited', locale, {
           emoji: ctx.getEmoji('neutral'),
-        }) ||
-          `${ctx.getEmoji('neutral')} This message is already in the process of being edited in all connected servers. Please wait.`,
-        { flags: ['Ephemeral'], edit: true },
+        }),
       );
       return false;
     }

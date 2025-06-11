@@ -27,6 +27,7 @@ import {
   type AutocompleteInteraction,
 } from 'discord.js';
 import BlacklistManager from '#src/managers/BlacklistManager.js';
+import { t } from '#src/utils/Locale.js';
 
 export default class BlacklistUserSubcommand extends BaseCommand {
   private readonly hubService = new HubService();
@@ -97,9 +98,12 @@ export default class BlacklistUserSubcommand extends BaseCommand {
     }
 
     // Show duration selection buttons
+    const locale = await ctx.getLocale();
     const durationButtons = buildDurationButtons('user', hub.id, user.id);
     await ctx.reply({
-      content: `Select blacklist duration for ${user.username}:`,
+      content: t('blacklist.user.selectDuration', locale, {
+        username: user.username,
+      }),
       components: durationButtons,
       flags: ['Ephemeral'],
     });

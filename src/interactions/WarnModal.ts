@@ -42,7 +42,11 @@ export default class WarnModalHandler {
       flags: ['Ephemeral'],
     });
 
-    const { container, buttons } = await buildModPanel(ctx, originalMsg);
+    const { container, buttons } = await buildModPanel(
+      originalMsg,
+      ctx.user,
+      await ctx.getLocale(),
+    );
     await ctx.editReply({ components: [container, ...buttons], flags: ['IsComponentsV2'] });
   }
 }

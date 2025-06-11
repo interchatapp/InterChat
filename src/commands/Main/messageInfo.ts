@@ -229,8 +229,9 @@ export default class MessageInfo extends BaseCommand {
 
     const profileEmbed = await buildProfileEmbed(author, ctx.client);
     if (!profileEmbed) {
+      const locale = await fetchUserLocale(ctx.user.id);
       await ctx.editReply({
-        content: 'Failed to fetch user profile.',
+        content: t('messageInfo.errors.profileFetch', locale),
         embeds: [],
         components: [],
       });
@@ -339,7 +340,7 @@ export default class MessageInfo extends BaseCommand {
     if (opts?.inviteButtonUrl) {
       extras.push(
         new ButtonBuilder()
-          .setLabel('Join Server')
+          .setLabel(t('global.buttons.joinServer', locale))
           .setEmoji(getEmoji('join', client))
           .setStyle(ButtonStyle.Link)
           .setURL(opts.inviteButtonUrl)

@@ -50,19 +50,20 @@ export default class ReportCallHandler {
   async execute(ctx: ComponentContext) {
     const [callId] = ctx.customId.args;
 
+    const locale = await fetchUserLocale(ctx.user.id);
+
     if (!callId) {
       await ctx.reply({
-        content: `${getEmoji('x_icon', ctx.client)} Invalid report button. Please try again.`,
+        content: t('calls.report.invalidButton', locale, { emoji: getEmoji('x_icon', ctx.client) }),
         flags: ['Ephemeral'],
       });
       return;
     }
 
-    const locale = await fetchUserLocale(ctx.user.id);
     const selectMenu = buildReportCallReasonDropdown(callId, locale);
 
     await ctx.reply({
-      content: `${getEmoji('info_icon', ctx.client)} Please select a reason for your report:`,
+      content: t('calls.report.prompt', locale, { emoji: getEmoji('info_icon', ctx.client) }),
       components: [selectMenu],
       flags: ['Ephemeral'],
     });

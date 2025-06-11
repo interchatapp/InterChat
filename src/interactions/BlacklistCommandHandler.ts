@@ -21,6 +21,7 @@ import BlacklistManager from '#src/managers/BlacklistManager.js';
 import { HubService } from '#src/services/HubService.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
+import { t } from '#src/utils/Locale.js';
 import { sendBlacklistNotif } from '#src/utils/moderation/blacklistUtils.js';
 import { deleteConnection } from '#utils/ConnectedListUtils.js';
 import {
@@ -261,14 +262,22 @@ export default class BlacklistCommandHandler {
 
     if (duration === 'custom') {
       // For custom duration, show the modal with both fields
+      const locale = await ctx.getLocale();
       await ctx.showModal(
-        buildCustomDurationModal('Blacklist User', 'user', hubId, userId),
+        buildCustomDurationModal(t('modPanel.modals.blacklistUser', locale), 'user', hubId, userId),
       );
     }
     else {
       // For predefined durations, show modal with only reason field
+      const locale = await ctx.getLocale();
       await ctx.showModal(
-        buildReasonOnlyModal('Blacklist User', 'user', hubId, userId, duration),
+        buildReasonOnlyModal(
+          t('modPanel.modals.blacklistUser', locale),
+          'user',
+          hubId,
+          userId,
+          duration,
+        ),
       );
     }
   }
@@ -300,7 +309,7 @@ export default class BlacklistCommandHandler {
 
     if (userId === ctx.user.id) {
       await ctx.reply({
-        content: '<a:nuhuh:1256859727158050838> Nuh uh! You can\'t blacklist yourself.',
+        content: "<a:nuhuh:1256859727158050838> Nuh uh! You can't blacklist yourself.",
         flags: ['Ephemeral'],
       });
       return;
@@ -334,14 +343,27 @@ export default class BlacklistCommandHandler {
 
     if (duration === 'custom') {
       // For custom duration, show the modal with both fields
+      const locale = await ctx.getLocale();
       await ctx.showModal(
-        buildCustomDurationModal('Blacklist Server', 'server', hubId, serverId),
+        buildCustomDurationModal(
+          t('modPanel.modals.blacklistServer', locale),
+          'server',
+          hubId,
+          serverId,
+        ),
       );
     }
     else {
       // For predefined durations, show modal with only reason field
+      const locale = await ctx.getLocale();
       await ctx.showModal(
-        buildReasonOnlyModal('Blacklist Server', 'server', hubId, serverId, duration),
+        buildReasonOnlyModal(
+          t('modPanel.modals.blacklistServer', locale),
+          'server',
+          hubId,
+          serverId,
+          duration,
+        ),
       );
     }
   }

@@ -21,6 +21,8 @@ import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import UserDbService from '#src/services/UserDbService.js';
 import { CustomID } from '#src/utils/CustomID.js';
+import { fetchUserLocale } from '#src/utils/Utils.js';
+import { t } from '#src/utils/Locale.js';
 import {
   ApplicationCommandOptionType,
   ActionRowBuilder,
@@ -61,7 +63,7 @@ export default class AchievementsCommand extends BaseCommand {
   constructor() {
     super({
       name: 'achievements',
-      description: '🏆 View your achievements or another user\'s achievements',
+      description: "🏆 View your achievements or another user's achievements",
       types: { slash: true, prefix: true },
       options: [
         {
@@ -196,15 +198,25 @@ export default class AchievementsCommand extends BaseCommand {
     const unlockedCount = achievements.filter((a) => a.unlocked).length;
     const totalCount = achievements.length;
 
+    const locale = await fetchUserLocale(ctx.user.id);
     const embed = new EmbedBuilder()
-      .setTitle(`🏆 ${targetUser.username}'s Achievements`)
-      .setDescription(`**Progress:** ${unlockedCount}/${totalCount} achievements unlocked`)
+      .setTitle(t('achievements.title', locale, { username: targetUser.username }))
+      .setDescription(
+        t('achievements.progress', locale, {
+          unlocked: unlockedCount.toString(),
+          total: totalCount.toString(),
+        }),
+      )
       .setColor('#FFD700')
       .setThumbnail(targetUser.displayAvatarURL({ size: 128 }));
 
     // Add achievements as fields
     for (const achievement of pageAchievements) {
-      const statusEmoji = achievement.unlocked ? '🏆' : achievement.secret ? '❓' : ctx.getEmoji('lock_icon');
+      const statusEmoji = achievement.unlocked
+        ? '🏆'
+        : achievement.secret
+          ? '❓'
+          : ctx.getEmoji('lock_icon');
       const progressBar = this.createProgressBar(achievement.progress, achievement.threshold);
 
       let fieldValue = achievement.description;
@@ -363,9 +375,13 @@ export default class AchievementsCommand extends BaseCommand {
     if (!newFilter) return;
 
     // Fetch target user
+    const locale = await fetchUserLocale(ctx.user.id);
     const targetUser = await ctx.client.users.fetch(targetUserId).catch(() => null);
     if (!targetUser) {
-      await ctx.editOrReply({ content: 'User not found.', components: [] });
+      await ctx.editOrReply({
+        content: t('achievements.errors.userNotFound', locale),
+        components: [],
+      });
       return;
     }
 
@@ -388,9 +404,13 @@ export default class AchievementsCommand extends BaseCommand {
     const newPage = parseInt(ctx.customId.args[2], 10);
 
     // Fetch target user
+    const locale = await fetchUserLocale(ctx.user.id);
     const targetUser = await ctx.client.users.fetch(targetUserId).catch(() => null);
     if (!targetUser) {
-      await ctx.editOrReply({ content: 'User not found.', components: [] });
+      await ctx.editOrReply({
+        content: t('achievements.errors.userNotFound', locale),
+        components: [],
+      });
       return;
     }
 

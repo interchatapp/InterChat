@@ -21,11 +21,9 @@ import { HubService } from '#src/services/HubService.js';
 import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
 import { buildDurationButtons } from '#src/interactions/BlacklistCommandHandler.js';
 import { showModeratedHubsAutocomplete } from '#src/utils/moderation/blacklistUtils.js';
-import {
-  ApplicationCommandOptionType,
-  type AutocompleteInteraction,
-} from 'discord.js';
+import { ApplicationCommandOptionType, type AutocompleteInteraction } from 'discord.js';
 import BlacklistManager from '#src/managers/BlacklistManager.js';
+import { t } from '#src/utils/Locale.js';
 
 export default class BlacklistServerSubcommand extends BaseCommand {
   private readonly hubService = new HubService();
@@ -38,8 +36,7 @@ export default class BlacklistServerSubcommand extends BaseCommand {
       options: [
         {
           name: 'serverid',
-          description:
-						'The serverid to blacklist (get id using /messageinfo command)',
+          description: 'The serverid to blacklist (get id using /messageinfo command)',
           type: ApplicationCommandOptionType.String,
           required: true,
         },
@@ -63,9 +60,9 @@ export default class BlacklistServerSubcommand extends BaseCommand {
     const hub = (await this.hubService.findHubsByName(hubName)).at(0);
     if (
       !hub ||
-			!(await runHubRoleChecksAndReply(hub, ctx, {
-			  checkIfMod: true,
-			}))
+      !(await runHubRoleChecksAndReply(hub, ctx, {
+        checkIfMod: true,
+      }))
     ) return;
 
     const server = await ctx.client.fetchGuild(serverId);
@@ -88,9 +85,12 @@ export default class BlacklistServerSubcommand extends BaseCommand {
     }
 
     // Show duration selection buttons
+    const locale = await ctx.getLocale();
     const durationButtons = buildDurationButtons('server', hub.id, serverId);
     await ctx.reply({
-      content: `Select blacklist duration for ${server.name}:`,
+      content: t('blacklist.server.selectDuration', locale, {
+        serverName: server.name,
+      }),
       components: durationButtons,
       flags: ['Ephemeral'],
     });

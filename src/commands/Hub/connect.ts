@@ -24,7 +24,8 @@ import { HubService } from '#src/services/HubService.js';
 import db from '#src/utils/Db.js';
 import { UIComponents } from '#src/utils/DesignSystem.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
-import { escapeRegexChars } from '#src/utils/Utils.js';
+import { escapeRegexChars, fetchUserLocale } from '#src/utils/Utils.js';
+import { t } from '#src/utils/Locale.js';
 import Constants from '#utils/Constants.js';
 import { CustomID } from '#utils/CustomID.js';
 import {
@@ -162,10 +163,7 @@ export default class ConnectCommand extends BaseCommand {
       },
       {
         label: 'Create New Hub',
-        customId: new CustomID()
-          .setIdentifier('connect', 'create')
-          .setArgs(channel.id)
-          .toString(),
+        customId: new CustomID().setIdentifier('connect', 'create').setArgs(channel.id).toString(),
         emoji: 'plus_icon',
       },
     );
@@ -227,18 +225,24 @@ export default class ConnectCommand extends BaseCommand {
     const [hubId, channelId] = ctx.customId.args;
 
     if (!hubId || !channelId) {
+      const locale = await fetchUserLocale(ctx.user.id);
       await ctx.reply({
-        content: `${ctx.getEmoji('x_icon')} Invalid hub or channel ID.`,
+        content: t('connect.errors.invalidIds', locale, {
+          emoji: ctx.getEmoji('x_icon'),
+        }),
         flags: ['Ephemeral'],
       });
       return;
     }
 
     // Get the channel
+    const locale = await fetchUserLocale(ctx.user.id);
     const channel = await ctx.guild?.channels.fetch(channelId).catch(() => null);
     if (!channel || !channel.isTextBased()) {
       await ctx.reply({
-        content: `${ctx.getEmoji('x_icon')} Channel not found or not a text channel.`,
+        content: t('connect.errors.channelNotFound', locale, {
+          emoji: ctx.getEmoji('x_icon'),
+        }),
         flags: ['Ephemeral'],
       });
       return;
@@ -260,28 +264,9 @@ export default class ConnectCommand extends BaseCommand {
       'To create your own hub, use the `/hub create` command and follow the prompts.',
     );
 
-    // Add button to create hub
-    ui.createActionButtons(container, {
-      label: 'Create Hub',
-      customId: new CustomID().setIdentifier('connect', 'redirect-create').toString(),
-      emoji: 'plus_icon',
-    });
-
     await ctx.reply({
       components: [container],
       flags: [MessageFlags.IsComponentsV2, 'Ephemeral'],
-    });
-  }
-
-  @RegisterInteractionHandler('connect', 'redirect-create')
-  async handleRedirectCreateButton(ctx: ComponentContext) {
-    await ctx.deferReply({ flags: ['Ephemeral'] });
-
-    // This would normally redirect to the hub create command
-    // For now, just show a message
-    await ctx.editReply({
-      content:
-        'This would normally redirect to the `/hub create` command. Since this is a demo, please use that command directly.',
     });
   }
 }
