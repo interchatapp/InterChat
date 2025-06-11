@@ -463,9 +463,6 @@ export type TranslationKeys = {
   'calls.connected.messages': 'count';
   'calls.waiting.title': never;
   'calls.waiting.description': never;
-  'calls.waiting.queuePosition': 'position';
-  'calls.waiting.estimatedWait': 'time';
-  'calls.waiting.tips': never;
   'calls.failed.title': never;
   'calls.failed.description': never;
   'calls.failed.reasons.alreadyInCall': never;

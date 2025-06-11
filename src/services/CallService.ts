@@ -463,7 +463,7 @@ export class CallService {
     // Use default locale for system messages - could be enhanced to use user's locale
     const content = t('calls.system.callStart', 'en', {
       emoji: callEmoji,
-      guidelines: `${Constants.Links.Website}/guidelines`,
+      guidelines: `<${Constants.Links.Website}/guidelines>`,
     });
 
     return content;
