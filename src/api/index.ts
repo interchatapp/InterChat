@@ -17,10 +17,7 @@
 
 import { serve } from '@hono/node-server';
 import type { ClusterManager } from 'discord-hybrid-sharding';
-import {
-  Collection,
-  WebhookClient,
-} from 'discord.js';
+import { Collection, WebhookClient } from 'discord.js';
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import { ZodError } from 'zod';
@@ -33,18 +30,12 @@ import type MainMetricsService from '#src/services/MainMetricsService.js';
 import Constants from '#src/utils/Constants.js';
 import { handleError } from '#src/utils/Utils.js';
 import { findOriginalMessage } from '#src/utils/network/messageUtils.js';
-import {
-  storeReactions,
-  updateReactions,
-} from '#src/utils/reaction/reactions.js';
+import { storeReactions, updateReactions } from '#src/utils/reaction/reactions.js';
 import Logger from '#utils/Logger.js';
 
 export const webhookMap = new Collection<string, WebhookClient>();
 
-export const startApi = (
-  metrics: MainMetricsService,
-  clusterManager?: ClusterManager,
-) => {
+export const startApi = (metrics: MainMetricsService, clusterManager?: ClusterManager) => {
   const app = new Hono({});
   const voteManager = new VoteManager();
 
@@ -58,26 +49,37 @@ export const startApi = (
 
       if (cause instanceof ZodError) {
         // Format Zod validation errors
-        return c.json({
-          message: err.message,
-          errors: cause.errors.map((e) => ({
-            path: e.path.join('.'),
-            message: e.message,
-          })),
-        }, err.status);
+        return c.json(
+          {
+            message: err.message,
+            errors: cause.errors.map((e) => ({
+              path: e.path.join('.'),
+              message: e.message,
+            })),
+          },
+          err.status,
+        );
       }
 
-      return c.json({
-        message: err.message,
-        ...(cause ? { details: cause } : {}),
-      }, err.status);
+      return c.json(
+        {
+          message: err.message,
+          ...(cause ? { details: cause } : {}),
+        },
+        err.status,
+      );
     }
 
     // Handle unexpected errors
-    Logger.debug(`[app.onError] Unexpected error type: ${err instanceof Error ? err.name : typeof err}`);
-    return c.json({
-      message: 'Internal Server Error',
-    }, 500);
+    Logger.debug(
+      `[app.onError] Unexpected error type: ${err instanceof Error ? err.name : typeof err}`,
+    );
+    return c.json(
+      {
+        message: 'Internal Server Error',
+      },
+      500,
+    );
   });
 
   if (clusterManager) {
@@ -88,7 +90,9 @@ export const startApi = (
 
   app.post('/dbl', async (c) => {
     try {
-      Logger.debug(`[dbl] Processing top.gg webhook request from ${c.req.header('X-Forwarded-For')}`);
+      Logger.debug(
+        `[dbl] Processing top.gg webhook request from ${c.req.header('X-Forwarded-For')}`,
+      );
       const dblHeader = c.req.header('Authorization');
       if (dblHeader !== process.env.TOPGG_WEBHOOK_SECRET) {
         Logger.warn('[dbl] Unauthorized request - invalid webhook secret');
@@ -113,13 +117,15 @@ export const startApi = (
 
       // Convert the validated payload to the WebhookPayload type
       const webhookPayload = toWebhookPayload(result.data);
-      Logger.debug(`[dbl] Processing vote of type: ${webhookPayload.type} from user: ${webhookPayload.user}`);
+      Logger.debug(
+        `[dbl] Processing vote of type: ${webhookPayload.type} from user: ${webhookPayload.user}`,
+      );
 
       if (webhookPayload.type === 'upvote') {
         Logger.debug(`[dbl] Incrementing vote count for user: ${webhookPayload.user}`);
         await voteManager.incrementUserVote(webhookPayload.user);
         Logger.debug(`[dbl] Adding voter role for user: ${webhookPayload.user}`);
-        await voteManager.addVoterRole(webhookPayload.user);
+        await voteManager.addVoterRole(webhookPayload.user).catch(() => null);
       }
 
       Logger.debug(`[dbl] Announcing vote for user: ${webhookPayload.user}`);
@@ -127,13 +133,15 @@ export const startApi = (
 
       // Send DM to the user who voted
       Logger.debug(`[dbl] Sending DM to user: ${webhookPayload.user}`);
-      await voteManager.sendVoteDM(webhookPayload);
+      await voteManager.sendVoteDM(webhookPayload).catch(() => null);
 
       Logger.debug(`[dbl] Successfully processed vote for user: ${webhookPayload.user}`);
       return c.body(null, 204);
     }
     catch (err) {
-      Logger.debug(`[dbl] Error caught in dbl handler: ${err instanceof Error ? err.message : String(err)}`);
+      Logger.debug(
+        `[dbl] Error caught in dbl handler: ${err instanceof Error ? err.message : String(err)}`,
+      );
       handleError(err, { comment: 'Failed to process top.gg webhook' });
 
       // If it's already an HTTPException, just rethrow it
@@ -156,11 +164,15 @@ export const startApi = (
 
   app.post('/webhook', validateBody(webhookSchema), async (c) => {
     const body = c.req.valid('json');
-    Logger.debug(`[webhook] Processing webhook request with ID: ${body.webhookUrl.split('/').at(-2)}...`);
+    Logger.debug(
+      `[webhook] Processing webhook request with ID: ${body.webhookUrl.split('/').at(-2)}...`,
+    );
 
     let client = webhookMap.get(body.webhookUrl);
     if (!client) {
-      Logger.debug(`[webhook] Creating new WebhookClient ID: ${body.webhookUrl.split('/').at(-2)}...`);
+      Logger.debug(
+        `[webhook] Creating new WebhookClient ID: ${body.webhookUrl.split('/').at(-2)}...`,
+      );
       client = new WebhookClient({ url: body.webhookUrl });
       webhookMap.set(body.webhookUrl, client);
     }
@@ -177,8 +189,8 @@ export const startApi = (
 
       // Check if the error is related to an invalid webhook
       const errorMessage = err instanceof Error ? err.message : String(err);
-      const isWebhookError = errorMessage.includes('Unknown Webhook') ||
-                             errorMessage.includes('Invalid Webhook Token');
+      const isWebhookError =
+        errorMessage.includes('Unknown Webhook') || errorMessage.includes('Invalid Webhook Token');
 
       if (isWebhookError) {
         Logger.debug('[webhook] Detected invalid webhook, removing from cache');
@@ -187,11 +199,14 @@ export const startApi = (
       }
 
       // Return a proper error response instead of throwing
-      return c.json({
-        message: 'Failed to send webhook message',
-        error: errorMessage,
-        isWebhookError,
-      }, 500);
+      return c.json(
+        {
+          message: 'Failed to send webhook message',
+          error: errorMessage,
+          isWebhookError,
+        },
+        500,
+      );
     }
   });
 
@@ -199,11 +214,15 @@ export const startApi = (
 
   app.post('/webhook/message', validateBody(webhookMessageSchema), async (c) => {
     const body = c.req.valid('json');
-    Logger.debug(`[webhook/message] Processing webhook message request with action: ${body.action}`);
+    Logger.debug(
+      `[webhook/message] Processing webhook message request with action: ${body.action}`,
+    );
 
     let client = webhookMap.get(body.webhookUrl);
     if (!client) {
-      Logger.debug(`[webhook/message] Creating new WebhookClient for URL: ${body.webhookUrl.substring(0, 20)}...`);
+      Logger.debug(
+        `[webhook/message] Creating new WebhookClient for URL: ${body.webhookUrl.substring(0, 20)}...`,
+      );
       client = new WebhookClient({ url: body.webhookUrl });
       webhookMap.set(body.webhookUrl, client);
     }
@@ -244,13 +263,15 @@ export const startApi = (
       throw new HTTPException(400, { message: 'Invalid action' });
     }
     catch (err) {
-      Logger.debug(`[webhook/message] Error caught in webhook/message handler: ${err instanceof Error ? err.message : String(err)}`);
+      Logger.debug(
+        `[webhook/message] Error caught in webhook/message handler: ${err instanceof Error ? err.message : String(err)}`,
+      );
       handleError(err, { comment: `Failed to ${body.action} webhook message` });
 
       // Check if the error is related to an invalid webhook
       const errorMessage = err instanceof Error ? err.message : String(err);
-      const isWebhookError = errorMessage.includes('Unknown Webhook') ||
-                             errorMessage.includes('Invalid Webhook Token');
+      const isWebhookError =
+        errorMessage.includes('Unknown Webhook') || errorMessage.includes('Invalid Webhook Token');
 
       if (isWebhookError) {
         Logger.debug('[webhook/message] Detected invalid webhook, removing from cache');
@@ -259,11 +280,14 @@ export const startApi = (
       }
 
       // Return a proper error response instead of throwing
-      return c.json({
-        message: `Failed to ${body.action} webhook message`,
-        error: errorMessage,
-        isWebhookError,
-      }, 500);
+      return c.json(
+        {
+          message: `Failed to ${body.action} webhook message`,
+          error: errorMessage,
+          isWebhookError,
+        },
+        500,
+      );
     }
   });
 
@@ -287,22 +311,29 @@ export const startApi = (
       await storeReactions(originalMessage, reactions);
 
       // Update all broadcast messages with the new reactions
-      Logger.debug(`[reactions] Updating broadcast messages with new reactions for message ID: ${messageId}`);
+      Logger.debug(
+        `[reactions] Updating broadcast messages with new reactions for message ID: ${messageId}`,
+      );
       await updateReactions(originalMessage, reactions);
 
       Logger.debug(`[reactions] Successfully updated reactions for message ID: ${messageId}`);
       return c.json({ success: true });
     }
     catch (err) {
-      Logger.debug(`[reactions] Error caught in reactions handler: ${err instanceof Error ? err.message : String(err)}`);
+      Logger.debug(
+        `[reactions] Error caught in reactions handler: ${err instanceof Error ? err.message : String(err)}`,
+      );
       handleError(err, { comment: 'Failed to update reactions' });
 
       // Return a proper error response instead of throwing
       const errorMessage = err instanceof Error ? err.message : String(err);
-      return c.json({
-        message: 'Failed to update reactions',
-        error: errorMessage,
-      }, 500);
+      return c.json(
+        {
+          message: 'Failed to update reactions',
+          error: errorMessage,
+        },
+        500,
+      );
     }
   });
 
