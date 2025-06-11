@@ -80,7 +80,9 @@ export default class DeleteMessage extends BaseCommand {
     const locale = await fetchUserLocale(ctx.user.id);
 
     await ctx.editReply(
-      `${ctx.getEmoji('tick_icon')} Your request has been queued. Messages will be deleted shortly...`,
+      t('deleteMsg.processing', locale, {
+        emoji: ctx.getEmoji('tick_icon'),
+      }),
     );
 
     const { deletedCount, totalCount } = await deleteMessageFromHub(hub.id, originalMsg.id);
@@ -112,9 +114,10 @@ export default class DeleteMessage extends BaseCommand {
     }
 
     if (await isDeleteInProgress(originalMsg.id)) {
-      await ctx.replyEmbed(
-        `${ctx.getEmoji('neutral')} This message is already deleted or is being deleted by another moderator.`,
-        { flags: ['Ephemeral'], edit: true },
+      await ctx.editReply(
+        t('deleteMsg.alreadyDeleted', locale, {
+          emoji: ctx.getEmoji('neutral'),
+        }),
       );
       return false;
     }

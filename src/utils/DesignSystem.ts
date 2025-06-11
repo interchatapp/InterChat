@@ -172,6 +172,55 @@ export class UIComponents {
   }
 
   /**
+   * Creates a compact header for smaller command responses (uses H3 instead of H2)
+   */
+  createCompactHeader(
+    title: string,
+    description?: string,
+    emojiKey?: EmojiKeys,
+  ): TextDisplayBuilder {
+    // Use a safe default emoji if the requested one doesn't exist
+    let emoji = '';
+    if (emojiKey) emoji = `${getEmoji(emojiKey, this.client)} `;
+
+    const content = `### ${emoji}${title}${description ? `\n${description}` : ''}`;
+    return new TextDisplayBuilder().setContent(content);
+  }
+
+  /**
+   * Creates a compact success message
+   */
+  createCompactSuccessMessage(title: string, description: string): ContainerBuilder {
+    const container = new ContainerBuilder();
+
+    container.addTextDisplayComponents(this.createCompactHeader(title, description, 'tick_icon'));
+
+    return container;
+  }
+
+  /**
+   * Creates a compact info message
+   */
+  createCompactInfoMessage(title: string, description: string): ContainerBuilder {
+    const container = new ContainerBuilder();
+
+    container.addTextDisplayComponents(this.createCompactHeader(title, description, 'info_icon'));
+
+    return container;
+  }
+
+  /**
+   * Creates a compact error message
+   */
+  createCompactErrorMessage(title: string, description: string): ContainerBuilder {
+    const container = new ContainerBuilder();
+
+    container.addTextDisplayComponents(this.createCompactHeader(title, description, 'x_icon'));
+
+    return container;
+  }
+
+  /**
    * Creates a standard button row with primary and secondary actions
    */
   createActionButtons(

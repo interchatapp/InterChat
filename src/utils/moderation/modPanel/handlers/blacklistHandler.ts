@@ -371,7 +371,7 @@ export class BlacklistUserHandler extends BaseBlacklistHandler {
 
     if (originalMsg.authorId === ctx.user.id) {
       await ctx.reply({
-        content: '<a:nuhuh:1256859727158050838> Nuh uh! You can\'t blacklist yourself.',
+        content: "<a:nuhuh:1256859727158050838> Nuh uh! You can't blacklist yourself.",
         flags: ['Ephemeral'],
       });
       return;
@@ -397,7 +397,7 @@ export class BlacklistUserHandler extends BaseBlacklistHandler {
       `User ${user?.username} blacklisted by ${ctx.user.username} in ${originalMsg.hubId}`,
     );
 
-    const { container, buttons } = await buildModPanel(ctx, originalMsg);
+    const { container, buttons } = await buildModPanel(originalMsg, ctx.user, locale);
     await ctx.editReply({ components: [container, ...buttons], flags: ['IsComponentsV2'] });
 
     const successEmbed = this.buildSuccessEmbed(
@@ -511,7 +511,7 @@ export class BlacklistServerHandler extends BaseBlacklistHandler {
 
     const successEmbed = this.buildSuccessEmbed(server.name, reason, expiresAt, client, locale);
 
-    const { container, buttons } = await buildModPanel(ctx, originalMsg);
+    const { container, buttons } = await buildModPanel(originalMsg, ctx.user, locale);
     await ctx.editReply({ components: [container, ...buttons], flags: ['IsComponentsV2'] });
     await ctx.reply({ embeds: [successEmbed], components: [], flags: ['Ephemeral'] });
   }

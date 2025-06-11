@@ -16,14 +16,15 @@
  */
 
 import BaseCommand from '#src/core/BaseCommand.js';
-import Context from '#src/core/CommandContext/Context.js';
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
+import Context from '#src/core/CommandContext/Context.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import { CallService } from '#src/services/CallService.js';
 import Constants from '#src/utils/Constants.js';
 import { UIComponents } from '#src/utils/DesignSystem.js';
-import { CustomID } from '#utils/CustomID.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
+import { t } from '#src/utils/Locale.js';
+import { CustomID } from '#utils/CustomID.js';
 import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
@@ -53,6 +54,7 @@ export default class HangupCommand extends BaseCommand {
 
     await ctx.deferReply();
 
+    const locale = await ctx.getLocale();
     const callService = new CallService(ctx.client);
     const result = await callService.hangup(ctx.channelId);
 
@@ -63,8 +65,8 @@ export default class HangupCommand extends BaseCommand {
       if (result.message.includes('queue')) {
         // Was in queue, not in active call
         const container = ui.createSuccessMessage(
-          'Call Cancelled',
-          'You have been removed from the call queue',
+          t('calls.cancelled.title', locale),
+          t('calls.cancelled.queueExit', locale),
         );
 
         // Add new call button
@@ -72,7 +74,7 @@ export default class HangupCommand extends BaseCommand {
           row.addComponents(
             new ButtonBuilder()
               .setCustomId(new CustomID().setIdentifier('hangup', 'new-call').toString())
-              .setLabel('New Call')
+              .setLabel(t('calls.buttons.newCall', locale))
               .setStyle(ButtonStyle.Primary)
               .setEmoji(ctx.getEmoji('call_icon')),
           ),
@@ -84,41 +86,52 @@ export default class HangupCommand extends BaseCommand {
         });
       }
       else {
-        // Was in active call
         // Create combined rating and report UI
         const ratingRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
           new ButtonBuilder()
             .setCustomId(new CustomID('rate_call:like', [result.callId || '']).toString())
-            .setLabel('👍 Like')
+            .setLabel(t('calls.buttons.ratePositive', locale))
             .setStyle(ButtonStyle.Success),
           new ButtonBuilder()
             .setCustomId(new CustomID('rate_call:dislike', [result.callId || '']).toString())
-            .setLabel('👎 Dislike')
+            .setLabel(t('calls.buttons.rateNegative', locale))
             .setStyle(ButtonStyle.Danger),
           new ButtonBuilder()
             .setCustomId(new CustomID('report_call', [result.callId || '']).toString())
-            .setLabel('Report')
+            .setLabel(t('calls.buttons.reportCall', locale))
             .setStyle(ButtonStyle.Secondary)
             .setEmoji('🚩'),
         );
 
         // Create success message
-        const container = ui.createSuccessMessage(
-          'Call Ended',
-          'Rate your experience or try InterChat\'s main feature - Hubs!',
+        const container = ui.createCompactSuccessMessage(
+          t('calls.ended.title', locale),
+          t('calls.ended.description', locale),
+        );
+
+        // Add small hub promotion
+        container.addSectionComponents((s) =>
+          s
+            .addTextDisplayComponents(
+              new TextDisplayBuilder().setContent(
+                '💡 **Tip:** Try InterChat Hubs for a more reliable experience!',
+              ),
+            )
+            .setButtonAccessory(
+              new ButtonBuilder()
+                .setCustomId(new CustomID().setIdentifier('hangup', 'explore-hubs').toString())
+                .setLabel(t('calls.buttons.exploreHubs', locale))
+                .setStyle(ButtonStyle.Primary)
+                .setEmoji(ctx.getEmoji('house_icon')),
+            ),
         );
 
         // Add hub and call buttons
         container.addActionRowComponents((row) =>
           row.addComponents(
             new ButtonBuilder()
-              .setCustomId(new CustomID().setIdentifier('hangup', 'explore-hubs').toString())
-              .setLabel('Explore Hubs')
-              .setStyle(ButtonStyle.Primary)
-              .setEmoji(ctx.getEmoji('house_icon')),
-            new ButtonBuilder()
               .setCustomId(new CustomID().setIdentifier('hangup', 'new-call').toString())
-              .setLabel('New Call')
+              .setLabel(t('calls.buttons.newCall', locale))
               .setStyle(ButtonStyle.Secondary)
               .setEmoji(ctx.getEmoji('call_icon')),
           ),
@@ -132,14 +145,17 @@ export default class HangupCommand extends BaseCommand {
         // Also send a message to the channel to notify everyone
         if (ctx.channel && 'send' in ctx.channel) {
           await ctx.channel.send({
-            content: `${ctx.user} ended the call.`,
+            content: t('hangup.callEnded', locale, { user: ctx.user.toString() }),
           });
         }
       }
     }
     else {
       // Error occurred
-      const container = ui.createErrorMessage('Error', result.message);
+      const container = ui.createCompactErrorMessage(
+        t('hangup.errors.error', locale),
+        result.message,
+      );
 
       await ctx.editReply({
         components: [container],
@@ -151,6 +167,7 @@ export default class HangupCommand extends BaseCommand {
   @RegisterInteractionHandler('hangup', 'explore-hubs')
   async handleExploreHubsButton(ctx: ComponentContext) {
     await ctx.deferUpdate();
+    const locale = await ctx.getLocale();
 
     const ui = new UIComponents(ctx.client);
     const container = new ContainerBuilder();
@@ -189,28 +206,20 @@ export default class HangupCommand extends BaseCommand {
     );
 
     // Add action buttons for URL button
-    ui.createActionButtons(
-      container,
-      {
-        label: 'Browse All Hubs',
-        url: `${Constants.Links.Website}/hubs`,
-        emoji: 'globe_icon',
-      },
-    );
+    ui.createActionButtons(container, {
+      label: 'Browse All Hubs',
+      url: `${Constants.Links.Website}/hubs`,
+      emoji: 'globe_icon',
+    });
 
     // Add custom buttons separately
     container.addActionRowComponents((row) =>
       row.addComponents(
         new ButtonBuilder()
           .setCustomId(new CustomID().setIdentifier('hangup', 'redirect-connect').toString())
-          .setLabel('Connect to a Hub')
+          .setLabel(t('global.buttons.connectToHub', locale))
           .setStyle(ButtonStyle.Primary)
           .setEmoji(ctx.getEmoji('connect')),
-        new ButtonBuilder()
-          .setCustomId(new CustomID().setIdentifier('hangup', 'redirect-create').toString())
-          .setLabel('Create Your Hub')
-          .setStyle(ButtonStyle.Secondary)
-          .setEmoji(ctx.getEmoji('plus_icon')),
       ),
     );
 
@@ -230,34 +239,14 @@ export default class HangupCommand extends BaseCommand {
       await connectCommand.execute(ctx);
     }
     else {
+      const locale = await ctx.getLocale();
       await ctx.reply({
-        content: `${ctx.getEmoji('x_icon')} Could not find the connect command. Please use \`/connect\` manually.`,
+        content: t('hangup.errors.connectNotFound', locale, {
+          emoji: ctx.getEmoji('x_icon'),
+        }),
         flags: ['Ephemeral'],
       });
     }
-  }
-
-  @RegisterInteractionHandler('hangup', 'redirect-create')
-  async handleRedirectCreateButton(ctx: ComponentContext) {
-    await ctx.deferUpdate();
-
-    const ui = new UIComponents(ctx.client);
-    const container = ui.createInfoMessage(
-      'Create a New Hub',
-      'To create your own hub, use the `/hub create` command and follow the prompts.',
-    );
-
-    // Add button to create hub
-    ui.createActionButtons(container, {
-      label: 'Create Hub',
-      customId: new CustomID().setIdentifier('connect', 'redirect-create').toString(),
-      emoji: 'plus_icon',
-    });
-
-    await ctx.reply({
-      components: [container],
-      flags: [MessageFlags.IsComponentsV2, 'Ephemeral'],
-    });
   }
 
   @RegisterInteractionHandler('hangup', 'new-call')
@@ -272,8 +261,11 @@ export default class HangupCommand extends BaseCommand {
 
     // Check if this is a guild channel (has guildId)
     if (!('guildId' in channel)) {
+      const locale = await ctx.getLocale();
       await ctx.reply({
-        content: `${getEmoji('x_icon', ctx.client)} This command can only be used in a server text channel.`,
+        content: t('hangup.errors.guildOnly', locale, {
+          emoji: getEmoji('x_icon', ctx.client),
+        }),
         flags: ['Ephemeral'],
       });
       return;
@@ -282,45 +274,32 @@ export default class HangupCommand extends BaseCommand {
     await ctx.deferUpdate();
 
     const callService = new CallService(ctx.client);
-    const result = await callService.initiateCall(
-      channel as GuildTextBasedChannel,
-      ctx.user.id,
-    );
+    const result = await callService.initiateCall(channel as GuildTextBasedChannel, ctx.user.id);
+
+    const locale = await ctx.getLocale();
 
     const ui = new UIComponents(ctx.client);
 
-    // Add beta notice and hub promotion at the top
     const container = new ContainerBuilder();
-
-    container.addTextDisplayComponents(
-      ui.createSubsection(
-        '🌟 Discover InterChat Hubs!',
-        'Calls are in beta. For a more reliable experience, try InterChat Hubs - our main feature for connecting servers!',
-        'info_icon',
-      ),
-    );
 
     if (result.success) {
       // Call was initiated successfully
       if (result.message.includes('queue')) {
         // In queue - waiting for match
         container.addTextDisplayComponents(
-          ui.createHeader(
-            'Call Initiated',
-            'Waiting for another server • Use </hangup:1350402702760218624> to cancel • Follow our [guidelines](https://interchat.tech/guidelines)',
+          ui.createCompactHeader(
+            t('calls.waiting.title', locale),
+            t('calls.waiting.description', locale),
             'call_icon',
           ),
         );
 
         // Add cancel button
-        ui.createActionButtons(
-          container,
-          {
-            label: 'Cancel Call',
-            customId: new CustomID().setIdentifier('call', 'cancel').toString(),
-            emoji: 'hangup_icon',
-          },
-        );
+        ui.createActionButtons(container, {
+          label: t('global.buttons.cancelCall', locale),
+          customId: new CustomID().setIdentifier('call', 'cancel').toString(),
+          emoji: 'hangup_icon',
+        });
 
         await ctx.editReply({
           components: [container],
@@ -330,9 +309,9 @@ export default class HangupCommand extends BaseCommand {
       else {
         // Connected immediately
         container.addTextDisplayComponents(
-          ui.createHeader(
-            'Call Connected!',
-            'You\'ve been connected to another server • Use `/hangup` to end • `/skip` to find another server',
+          ui.createCompactHeader(
+            t('calls.connected.title', locale),
+            t('calls.connected.instructions', locale),
             'tick_icon',
           ),
         );
@@ -341,12 +320,12 @@ export default class HangupCommand extends BaseCommand {
         ui.createActionButtons(
           container,
           {
-            label: 'End Call',
+            label: t('calls.buttons.endCall', locale),
             customId: new CustomID().setIdentifier('call', 'hangup').toString(),
             emoji: 'hangup_icon',
           },
           {
-            label: 'Skip Server',
+            label: t('calls.buttons.skipServer', locale),
             customId: new CustomID().setIdentifier('call', 'skip').toString(),
             emoji: 'skip_icon',
           },
@@ -361,22 +340,15 @@ export default class HangupCommand extends BaseCommand {
     else {
       // Error occurred
       container.addTextDisplayComponents(
-        ui.createHeader(
-          'Call Failed',
-          result.message,
-          'x_icon',
-        ),
+        ui.createCompactHeader(t('hangup.errors.callFailed', locale), result.message, 'x_icon'),
       );
 
       // Add explore hubs button
-      ui.createActionButtons(
-        container,
-        {
-          label: 'Explore Hubs',
-          customId: new CustomID().setIdentifier('hangup', 'explore-hubs').toString(),
-          emoji: 'house_icon',
-        },
-      );
+      ui.createActionButtons(container, {
+        label: 'Explore Hubs',
+        customId: new CustomID().setIdentifier('hangup', 'explore-hubs').toString(),
+        emoji: 'house_icon',
+      });
 
       await ctx.editReply({
         components: [container],

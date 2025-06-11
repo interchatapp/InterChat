@@ -246,7 +246,7 @@ export class TutorialUIBuilder {
    */
   public createListHeader(): TextDisplayBuilder {
     return new TextDisplayBuilder().setContent(
-      `# ${getEmoji('wand_icon', this.client)} InterChat Tutorials\nLearn how to use InterChat with these interactive tutorials.`,
+      `# ${getEmoji('wand_icon', this.client)} Welcome to InterChat Tutorials! 🎉\nReady to become an InterChat expert? These friendly, interactive tutorials will guide you through everything step by step. Let's learn together! ✨`,
     );
   }
 
@@ -255,7 +255,7 @@ export class TutorialUIBuilder {
    */
   public createNoTutorialsMessage(): TextDisplayBuilder {
     return new TextDisplayBuilder().setContent(
-      '## No Tutorials Available\nThere are currently no tutorials available. Please check back later or contact an administrator.',
+      '## 🚧 Tutorials Coming Soon!\nWe\'re working hard to create some amazing tutorials for you! Check back soon, or feel free to explore InterChat on your own - you\'ve got this! If you need help, our friendly support community is always here for you. 😊',
     );
   }
 

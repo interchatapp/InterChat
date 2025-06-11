@@ -39,7 +39,7 @@ export default class DeleteMessageHandler implements ModAction {
 
     const deleteInProgress = await isDeleteInProgress(originalMsg.id);
     if (deleteInProgress) {
-      const { container, buttons } = await buildModPanel(ctx, originalMsg);
+      const { container, buttons } = await buildModPanel(originalMsg, ctx.user, locale);
       await ctx.editReply({ components: [container, ...buttons], flags: ['IsComponentsV2'] });
 
       const errorEmbed = new InfoEmbed().setDescription(

@@ -22,10 +22,12 @@ import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionH
 import { CallService } from '#src/services/CallService.js';
 import Constants from '#src/utils/Constants.js';
 import { UIComponents } from '#src/utils/DesignSystem.js';
-import { getEmoji } from '#src/utils/EmojiUtils.js';
+
 import { formatUserLeaderboard, getCallLeaderboard } from '#src/utils/Leaderboard.js';
+import { t } from '#src/utils/Locale.js';
+import { fetchUserLocale } from '#src/utils/Utils.js';
 import { CustomID } from '#utils/CustomID.js';
-import { stripIndents } from 'common-tags';
+
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -51,6 +53,7 @@ export default class CallCommand extends BaseCommand {
 
   async execute(ctx: Context) {
     const ui = new UIComponents(ctx.client);
+    const locale = await fetchUserLocale(ctx.user.id);
 
     await ctx.deferReply();
 
@@ -63,22 +66,15 @@ export default class CallCommand extends BaseCommand {
     // Create a container for the call status
     const container = new ContainerBuilder();
 
-    // Add beta notice and hub promotion at the top
-    container.addTextDisplayComponents(
-      ui.createSubsection(
-        '🌟 Discover InterChat Hubs!',
-        'Calls are in beta. For a more reliable experience, try InterChat Hubs - our main feature for connecting servers!',
-        'info_icon',
-      ),
-    );
-
     if (result.success) {
       // Call was initiated successfully
       if (result.message.includes('queue')) {
         // In queue - waiting for match
-        const headerText = ui.createHeader(
-          'Call Initiated',
-          'Waiting for another server • Use </hangup:1350402702760218624> to cancel • Follow our [guidelines](https://interchat.tech/guidelines)',
+        const description = t('calls.waiting.description', locale);
+
+        const headerText = ui.createCompactHeader(
+          t('calls.waiting.title', locale),
+          description,
           'call_icon',
         );
         container.addTextDisplayComponents(headerText);
@@ -87,7 +83,7 @@ export default class CallCommand extends BaseCommand {
         ui.createActionButtons(
           container,
           {
-            label: 'Cancel Call',
+            label: t('calls.buttons.cancelCall', locale),
             customId: new CustomID().setIdentifier('call', 'cancel').toString(),
             emoji: 'hangup_icon',
           },
@@ -99,9 +95,13 @@ export default class CallCommand extends BaseCommand {
         );
       }
       else {
-        // Connected immediately
-        const successText = new TextDisplayBuilder().setContent(
-          `## ${getEmoji('tick_icon', ctx.client)} Call Connected!\nYou've been connected to another server • Use \`/hangup\` to end • \`/skip\` to find another server`,
+        // Connected immediately - use compact display
+        const description = t('calls.connected.instructions', locale);
+
+        const successText = ui.createCompactHeader(
+          t('calls.connected.title', locale),
+          description,
+          'tick_icon',
         );
         container.addTextDisplayComponents(successText);
 
@@ -109,12 +109,12 @@ export default class CallCommand extends BaseCommand {
         ui.createActionButtons(
           container,
           {
-            label: 'End Call',
+            label: t('calls.buttons.endCall', locale),
             customId: new CustomID().setIdentifier('call', 'hangup').toString(),
             emoji: 'hangup_icon',
           },
           {
-            label: 'Skip Server',
+            label: t('calls.buttons.skipServer', locale),
             customId: new CustomID().setIdentifier('call', 'skip').toString(),
             emoji: 'skip_icon',
           },
@@ -123,20 +123,29 @@ export default class CallCommand extends BaseCommand {
     }
     else {
       // Error occurred
-      const errorText = new TextDisplayBuilder().setContent(
-        `## ${getEmoji('x_icon', ctx.client)} Call Failed\n${result.message}\n\nCheck you're not already in a call and try again in a few moments.`,
+      const errorText = ui.createCompactHeader(
+        t('calls.failed.title', locale),
+        result.message,
+        'x_icon',
       );
       container.addTextDisplayComponents(errorText);
     }
 
-    // Add hub exploration button at the bottom
-    ui.createActionButtons(
-      container,
-      {
-        label: 'Explore Hubs',
-        customId: new CustomID().setIdentifier('call', 'explore-hubs').toString(),
-        emoji: 'house_icon',
-      },
+    // Add small hub promotion at the bottom
+    container.addSectionComponents((s) =>
+      s
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            '💡 **Tip:** Try InterChat Hubs for a more reliable experience!',
+          ),
+        )
+        .setButtonAccessory(
+          new ButtonBuilder()
+            .setCustomId(new CustomID().setIdentifier('hangup', 'explore-hubs').toString())
+            .setLabel(t('calls.buttons.exploreHubs', locale))
+            .setStyle(ButtonStyle.Primary)
+            .setEmoji(ctx.getEmoji('house_icon')),
+        ),
     );
 
     await ctx.editOrReply({ components: [container] }, ['IsComponentsV2']);
@@ -148,13 +157,14 @@ export default class CallCommand extends BaseCommand {
 
     if (!ctx.inGuild()) return;
 
+    const locale = await fetchUserLocale(ctx.user.id);
     const callService = new CallService(ctx.client);
     await callService.hangup(ctx.channelId);
 
     const ui = new UIComponents(ctx.client);
-    const container = ui.createSuccessMessage(
-      'Call Cancelled',
-      'Call queue exited. Use `/call` to start a new call.',
+    const container = ui.createCompactSuccessMessage(
+      t('calls.cancelled.title', locale),
+      t('calls.cancelled.description', locale),
     );
 
     await ctx.editReply({
@@ -169,6 +179,7 @@ export default class CallCommand extends BaseCommand {
 
     if (!ctx.inGuild()) return;
 
+    const locale = await fetchUserLocale(ctx.user.id);
     const callService = new CallService(ctx.client);
     const result = await callService.hangup(ctx.channelId);
 
@@ -176,23 +187,23 @@ export default class CallCommand extends BaseCommand {
     const ratingRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
         .setCustomId(new CustomID('rate_call:like', [result.callId || '']).toString())
-        .setLabel('👍 Like')
+        .setLabel(t('calls.buttons.ratePositive', locale))
         .setStyle(ButtonStyle.Success),
       new ButtonBuilder()
         .setCustomId(new CustomID('rate_call:dislike', [result.callId || '']).toString())
-        .setLabel('👎 Dislike')
+        .setLabel(t('calls.buttons.rateNegative', locale))
         .setStyle(ButtonStyle.Danger),
       new ButtonBuilder()
         .setCustomId(new CustomID('report_call', [result.callId || '']).toString())
-        .setLabel('Report')
+        .setLabel(t('calls.buttons.reportCall', locale))
         .setStyle(ButtonStyle.Secondary)
         .setEmoji('🚩'),
     );
 
     const ui = new UIComponents(ctx.client);
-    const container = ui.createInfoMessage(
-      'Call Ended',
-      'Rate your experience or start a new call',
+    const container = ui.createCompactInfoMessage(
+      t('calls.ended.title', locale),
+      t('calls.ended.description', locale),
     );
 
     // Add new call button
@@ -200,7 +211,7 @@ export default class CallCommand extends BaseCommand {
       row.addComponents(
         new ButtonBuilder()
           .setCustomId(new CustomID().setIdentifier('hangup', 'new-call').toString())
-          .setLabel('New Call')
+          .setLabel(t('calls.buttons.newCall', locale))
           .setStyle(ButtonStyle.Primary)
           .setEmoji(ctx.getEmoji('call_icon')),
       ),
@@ -218,6 +229,7 @@ export default class CallCommand extends BaseCommand {
 
     if (!ctx.inGuild()) return;
 
+    const locale = await fetchUserLocale(ctx.user.id);
     const callService = new CallService(ctx.client);
     const result = await callService.skip(ctx.channelId, ctx.user.id);
 
@@ -230,16 +242,16 @@ export default class CallCommand extends BaseCommand {
         const container = new ContainerBuilder();
 
         container.addTextDisplayComponents(
-          ui.createHeader(
-            'Finding New Call',
-            'Previous call ended • Waiting for another server • Use </hangup:1350402702760218624> to cancel',
+          ui.createCompactHeader(
+            t('calls.skip.title', locale),
+            t('calls.skip.description', locale),
             'call_icon',
           ),
         );
 
         // Add cancel button
         ui.createActionButtons(container, {
-          label: 'Cancel Call',
+          label: t('calls.buttons.cancelCall', locale),
           customId: new CustomID().setIdentifier('call', 'cancel').toString(),
           emoji: 'hangup_icon',
         });
@@ -254,9 +266,9 @@ export default class CallCommand extends BaseCommand {
         const container = new ContainerBuilder();
 
         container.addTextDisplayComponents(
-          ui.createHeader(
-            'New Call Connected!',
-            'You\'ve been connected to a different server • Use `/hangup` to end',
+          ui.createCompactHeader(
+            t('calls.skip.newConnected.title', locale),
+            t('calls.skip.newConnected.description', locale),
             'tick_icon',
           ),
         );
@@ -265,12 +277,12 @@ export default class CallCommand extends BaseCommand {
         ui.createActionButtons(
           container,
           {
-            label: 'End Call',
+            label: t('calls.buttons.endCall', locale),
             customId: new CustomID().setIdentifier('call', 'hangup').toString(),
             emoji: 'hangup_icon',
           },
           {
-            label: 'Skip Again',
+            label: t('calls.buttons.skipAgain', locale),
             customId: new CustomID().setIdentifier('call', 'skip').toString(),
             emoji: 'skip_icon',
           },
@@ -284,7 +296,7 @@ export default class CallCommand extends BaseCommand {
     }
     else {
       // Error occurred
-      const container = ui.createErrorMessage('Skip Failed', result.message);
+      const container = ui.createCompactErrorMessage(t('calls.skip.error', locale), result.message);
 
       await ctx.editReply({
         components: [container],
@@ -297,22 +309,34 @@ export default class CallCommand extends BaseCommand {
   async handleLeaderboardButton(ctx: ComponentContext) {
     await ctx.deferUpdate();
 
+    const locale = await fetchUserLocale(ctx.user.id);
+
     // Default to user leaderboard
     const userLeaderboard = await getCallLeaderboard('user', 10);
-    const userLeaderboardFormatted = await formatUserLeaderboard(userLeaderboard, ctx.client, 'calls');
+    const userLeaderboardFormatted = await formatUserLeaderboard(
+      userLeaderboard,
+      ctx.client,
+      'calls',
+    );
 
     const ui = new UIComponents(ctx.client);
     const container = new ContainerBuilder();
 
     // Add header
     container.addTextDisplayComponents(
-      ui.createHeader('Global Calls Leaderboard', 'Shows data from this month', 'call_icon'),
+      ui.createCompactHeader(
+        t('calls.leaderboard.title', locale),
+        t('calls.leaderboard.description', locale),
+        'call_icon',
+      ),
     );
 
     // Add leaderboard content
     container.addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
-        userLeaderboardFormatted.length > 0 ? userLeaderboardFormatted : 'No data available.',
+        userLeaderboardFormatted.length > 0
+          ? userLeaderboardFormatted
+          : t('calls.leaderboard.noData', locale),
       ),
     );
 
@@ -321,12 +345,12 @@ export default class CallCommand extends BaseCommand {
       row.addComponents(
         new ButtonBuilder()
           .setCustomId(new CustomID('calls_lb:user').toString())
-          .setLabel('User Leaderboard')
+          .setLabel(t('calls.leaderboard.userTab', locale))
           .setStyle(ButtonStyle.Primary)
           .setDisabled(true),
         new ButtonBuilder()
           .setCustomId(new CustomID('calls_lb:server').toString())
-          .setLabel('Server Leaderboard')
+          .setLabel(t('calls.leaderboard.serverTab', locale))
           .setStyle(ButtonStyle.Secondary),
       ),
     );
@@ -341,14 +365,15 @@ export default class CallCommand extends BaseCommand {
   async handleExploreHubsButton(ctx: ComponentContext) {
     await ctx.deferUpdate();
 
+    const locale = await fetchUserLocale(ctx.user.id);
     const ui = new UIComponents(ctx.client);
     const container = new ContainerBuilder();
 
     // Add header
     container.addTextDisplayComponents(
       ui.createHeader(
-        'InterChat Hubs',
-        'Hubs are the main feature of InterChat, connecting servers in persistent chat communities',
+        t('calls.hubs.main.title', locale),
+        t('calls.hubs.main.description', locale),
         'house_icon',
       ),
     );
@@ -359,33 +384,22 @@ export default class CallCommand extends BaseCommand {
     // Add hub description
     container.addTextDisplayComponents(
       ui.createSection(
-        'Why Choose Hubs?',
-        'Hubs offer a more reliable and feature-rich experience than calls:',
+        t('calls.hubs.benefits.title', locale),
+        t('calls.hubs.benefits.description', locale),
       ),
     );
 
     // Add hub benefits
     container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        stripIndents`
-        • **Persistent Connections** - Messages stay even when you're offline
-        • **Multiple Communities** - Join various themed hubs or create your own
-        • **Advanced Moderation** - Content filtering, anti-spam, and more
-        • **Rich Features** - Custom welcome messages, rules, and settings
-        • **Active Communities** - Thousands of servers already connected
-        `,
-      ),
+      new TextDisplayBuilder().setContent(t('calls.hubs.benefits.list', locale)),
     );
 
     // Add URL button
-    ui.createActionButtons(
-      container,
-      {
-        label: 'Browse All Hubs',
-        url: `${Constants.Links.Website}/hubs`,
-        emoji: 'globe_icon',
-      },
-    );
+    ui.createActionButtons(container, {
+      label: t('calls.buttons.browseAllHubs', locale),
+      url: `${Constants.Links.Website}/hubs`,
+      emoji: 'globe_icon',
+    });
 
     // Add connect button separately
     container.addActionRowComponents((row) =>
@@ -395,17 +409,6 @@ export default class CallCommand extends BaseCommand {
           .setLabel('Connect to a Hub')
           .setStyle(ButtonStyle.Primary)
           .setEmoji('🔗'),
-      ),
-    );
-
-    // Add create hub button separately since it needs customId
-    container.addActionRowComponents((row) =>
-      row.addComponents(
-        new ButtonBuilder()
-          .setCustomId(new CustomID().setIdentifier('call', 'redirect-create').toString())
-          .setLabel('Create Your Hub')
-          .setStyle(ButtonStyle.Secondary)
-          .setEmoji(ctx.getEmoji('plus_icon')),
       ),
     );
 
@@ -425,33 +428,13 @@ export default class CallCommand extends BaseCommand {
       await connectCommand.execute(ctx);
     }
     else {
+      const locale = await fetchUserLocale(ctx.user.id);
       await ctx.reply({
-        content: `${ctx.getEmoji('x_icon')} Could not find the connect command. Please use \`/connect\` manually.`,
+        content: t('call.errors.connectNotFound', locale, {
+          emoji: ctx.getEmoji('x_icon'),
+        }),
         flags: ['Ephemeral'],
       });
     }
-  }
-
-  @RegisterInteractionHandler('call', 'redirect-create')
-  async handleRedirectCreateButton(ctx: ComponentContext) {
-    await ctx.deferUpdate();
-
-    const ui = new UIComponents(ctx.client);
-    const container = ui.createInfoMessage(
-      'Create a New Hub',
-      'To create your own hub, use the `/hub create` command and follow the prompts.',
-    );
-
-    // Add button to create hub
-    ui.createActionButtons(container, {
-      label: 'Create Hub',
-      customId: new CustomID().setIdentifier('connect', 'redirect-create').toString(),
-      emoji: 'plus_icon',
-    });
-
-    await ctx.reply({
-      components: [container],
-      flags: [MessageFlags.IsComponentsV2, 'Ephemeral'],
-    });
   }
 }

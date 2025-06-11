@@ -84,12 +84,25 @@ export default class ModPanelBanFlowHandler {
     container.addActionRowComponents((row) => {
       row.addComponents(
         new ButtonBuilder()
-          .setCustomId(new CustomID('modPanel:showReasonModal', [targetId, originalMsgId, banType, 'PERMANENT']).toString())
+          .setCustomId(
+            new CustomID('modPanel:showReasonModal', [
+              targetId,
+              originalMsgId,
+              banType,
+              'PERMANENT',
+            ]).toString(),
+          )
           .setLabel('Permanent')
           .setStyle(ButtonStyle.Danger)
           .setEmoji(ctx.getEmoji('hammer_icon')),
         new ButtonBuilder()
-          .setCustomId(new CustomID('modPanel:showTempDuration', [targetId, originalMsgId, banType]).toString())
+          .setCustomId(
+            new CustomID('modPanel:showTempDuration', [
+              targetId,
+              originalMsgId,
+              banType,
+            ]).toString(),
+          )
           .setLabel('Temporary')
           .setStyle(ButtonStyle.Primary)
           .setEmoji(ctx.getEmoji('clock_icon')),
@@ -116,7 +129,12 @@ export default class ModPanelBanFlowHandler {
     await ctx.deferUpdate();
 
     const [targetId, originalMsgId, banType] = ctx.customId.args;
-    await this.showTemporaryBanDurationSelection(ctx, targetId, originalMsgId, banType as 'user' | 'server');
+    await this.showTemporaryBanDurationSelection(
+      ctx,
+      targetId,
+      originalMsgId,
+      banType as 'user' | 'server',
+    );
   }
 
   /**
@@ -133,30 +151,58 @@ export default class ModPanelBanFlowHandler {
 
     // Add compact header
     container.addTextDisplayComponents(
-      ui.createHeader(
-        'Temporary Ban Duration',
-        'Quick duration selection',
-        'clock_icon',
-      ),
+      ui.createHeader('Temporary Ban Duration', 'Quick duration selection', 'clock_icon'),
     );
 
     // Add duration selection buttons in compact layout
     container.addActionRowComponents((row) => {
       row.addComponents(
         new ButtonBuilder()
-          .setCustomId(new CustomID('modPanel:showReasonModal', [targetId, originalMsgId, banType, 'TEMPORARY', '3600000']).toString()) // 1 hour
+          .setCustomId(
+            new CustomID('modPanel:showReasonModal', [
+              targetId,
+              originalMsgId,
+              banType,
+              'TEMPORARY',
+              '3600000',
+            ]).toString(),
+          ) // 1 hour
           .setLabel('1h')
           .setStyle(ButtonStyle.Secondary),
         new ButtonBuilder()
-          .setCustomId(new CustomID('modPanel:showReasonModal', [targetId, originalMsgId, banType, 'TEMPORARY', '86400000']).toString()) // 1 day
+          .setCustomId(
+            new CustomID('modPanel:showReasonModal', [
+              targetId,
+              originalMsgId,
+              banType,
+              'TEMPORARY',
+              '86400000',
+            ]).toString(),
+          ) // 1 day
           .setLabel('1d')
           .setStyle(ButtonStyle.Secondary),
         new ButtonBuilder()
-          .setCustomId(new CustomID('modPanel:showReasonModal', [targetId, originalMsgId, banType, 'TEMPORARY', '604800000']).toString()) // 1 week
+          .setCustomId(
+            new CustomID('modPanel:showReasonModal', [
+              targetId,
+              originalMsgId,
+              banType,
+              'TEMPORARY',
+              '604800000',
+            ]).toString(),
+          ) // 1 week
           .setLabel('1w')
           .setStyle(ButtonStyle.Primary),
         new ButtonBuilder()
-          .setCustomId(new CustomID('modPanel:showReasonModal', [targetId, originalMsgId, banType, 'TEMPORARY', '2592000000']).toString()) // 30 days
+          .setCustomId(
+            new CustomID('modPanel:showReasonModal', [
+              targetId,
+              originalMsgId,
+              banType,
+              'TEMPORARY',
+              '2592000000',
+            ]).toString(),
+          ) // 30 days
           .setLabel('30d')
           .setStyle(ButtonStyle.Primary),
         new ButtonBuilder()
@@ -182,14 +228,21 @@ export default class ModPanelBanFlowHandler {
     const [targetId, originalMsgId, banType, banDuration, duration] = ctx.customId.args;
 
     const targetType = banType === 'user' ? 'User' : 'Server';
-    const durationText = banDuration === 'TEMPORARY' && duration
-      ? ` (${this.formatDuration(parseInt(duration, 10))})`
-      : ' (Permanent)';
+    const durationText =
+      banDuration === 'TEMPORARY' && duration
+        ? ` (${this.formatDuration(parseInt(duration, 10))})`
+        : ' (Permanent)';
 
     const modal = new ModalBuilder()
       .setTitle(`Ban ${targetType}${durationText}`)
       .setCustomId(
-        new CustomID('modPanel:executeBan', [targetId, originalMsgId, banType, banDuration, duration || '0']).toString(),
+        new CustomID('modPanel:executeBan', [
+          targetId,
+          originalMsgId,
+          banType,
+          banDuration,
+          duration || '0',
+        ]).toString(),
       )
       .addComponents(
         new ActionRowBuilder<TextInputBuilder>().addComponents(
@@ -218,10 +271,24 @@ export default class ModPanelBanFlowHandler {
     const duration = durationStr !== '0' ? parseInt(durationStr, 10) : undefined;
 
     if (banType === 'user') {
-      await this.executeUserBan(ctx, targetId, originalMsgId, banDuration as 'PERMANENT' | 'TEMPORARY', reason, duration);
+      await this.executeUserBan(
+        ctx,
+        targetId,
+        originalMsgId,
+        banDuration as 'PERMANENT' | 'TEMPORARY',
+        reason,
+        duration,
+      );
     }
     else if (banType === 'server') {
-      await this.executeServerBan(ctx, targetId, originalMsgId, banDuration as 'PERMANENT' | 'TEMPORARY', reason, duration);
+      await this.executeServerBan(
+        ctx,
+        targetId,
+        originalMsgId,
+        banDuration as 'PERMANENT' | 'TEMPORARY',
+        reason,
+        duration,
+      );
     }
   }
 
@@ -249,9 +316,10 @@ export default class ModPanelBanFlowHandler {
 
       const user = await ctx.client.users.fetch(userId).catch(() => null);
       const username = user?.username || `Unknown User (${userId})`;
-      const durationText = banType === 'TEMPORARY' && duration
-        ? ` for ${this.formatDuration(duration)}`
-        : ' permanently';
+      const durationText =
+        banType === 'TEMPORARY' && duration
+          ? ` for ${this.formatDuration(duration)}`
+          : ' permanently';
 
       const ui = new UIComponents(ctx.client);
       const container = ui.createSuccessMessage(
@@ -325,9 +393,10 @@ export default class ModPanelBanFlowHandler {
 
       const server = await ctx.client.guilds.fetch(serverId).catch(() => null);
       const serverName = server?.name || `Unknown Server (${serverId})`;
-      const durationText = banType === 'TEMPORARY' && duration
-        ? ` for ${this.formatDuration(duration)}`
-        : ' permanently';
+      const durationText =
+        banType === 'TEMPORARY' && duration
+          ? ` for ${this.formatDuration(duration)}`
+          : ' permanently';
 
       const ui = new UIComponents(ctx.client);
       const container = ui.createSuccessMessage(
@@ -396,7 +465,11 @@ export default class ModPanelBanFlowHandler {
     }
 
     // Rebuild the modpanel
-    const { container, buttons } = await buildModPanel(ctx, originalMsg);
+    const { container, buttons } = await buildModPanel(
+      originalMsg,
+      ctx.user,
+      await ctx.getLocale(),
+    );
     await ctx.editReply({
       components: [container, ...buttons],
       flags: [MessageFlags.IsComponentsV2],

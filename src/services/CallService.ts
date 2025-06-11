@@ -19,10 +19,11 @@ import AchievementService from '#src/services/AchievementService.js';
 import { BroadcastService } from '#src/services/BroadcastService.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
+import { updateCallLeaderboards } from '#src/utils/Leaderboard.js';
+import { t } from '#src/utils/Locale.js';
 import { getOrCreateWebhook } from '#src/utils/Utils.js';
 import Constants, { RedisKeys } from '#utils/Constants.js';
 import { getRedis } from '#utils/Redis.js';
-import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -31,7 +32,6 @@ import {
   GuildTextBasedChannel,
   type TextChannel,
 } from 'discord.js';
-import { updateCallLeaderboards } from '#src/utils/Leaderboard.js';
 
 export interface CallData {
   callId: string;
@@ -305,11 +305,11 @@ export class CallService {
       // Don't match if:
       // 1. Same server
       // 2. Same initiator
-      // 3. Recently matched
+      // 3. Recently matched (COMMENTED OUT FOR INITIAL DAYS)
       if (
         queuedCall.guildId === callData.guildId ||
-        queuedCall.initiatorId === callData.initiatorId ||
-        (await this.hasRecentlyMatched(callData.initiatorId, queuedCall.initiatorId))
+        queuedCall.initiatorId === callData.initiatorId
+        // || (await this.hasRecentlyMatched(callData.initiatorId, queuedCall.initiatorId))
       ) {
         continue;
       }
@@ -460,10 +460,11 @@ export class CallService {
 
   private async getCallStartMessage() {
     const callEmoji = getEmoji('call_icon', this.client);
-    const content = stripIndents`${callEmoji} **Call Connected!**
-      > - You can now chat with the other server
-      > - Use \`/hangup\` to end the call
-      > - Keep conversations friendly and follow our [guidelines](${Constants.Links.Website}/guidelines).`;
+    // Use default locale for system messages - could be enhanced to use user's locale
+    const content = t('calls.system.callStart', 'en', {
+      emoji: callEmoji,
+      guidelines: `${Constants.Links.Website}/guidelines`,
+    });
 
     return content;
   }
@@ -488,7 +489,8 @@ export class CallService {
     );
 
     return {
-      content: '**Call ended!** How was your experience?',
+      content:
+        '**Call ended!** 👋 Thanks for connecting with another community! How was your experience? Your feedback helps us make InterChat even better! 😊',
       components: [ratingRow, reportRow],
     };
   }

@@ -19,8 +19,9 @@ import BaseCommand from '#src/core/BaseCommand.js';
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
-import { HelpCommandData, CategoryInfo } from '#src/modules/HelpCommand/DataManager.js';
+import { CategoryInfo, HelpCommandData } from '#src/modules/HelpCommand/DataManager.js';
 import { HelpCommandUI } from '#src/modules/HelpCommand/HelpCommandUI.js';
+import { t } from '#src/utils/Locale.js';
 import Logger from '#src/utils/Logger.js';
 import { PaginationManager } from '#src/utils/ui/PaginationManager.js';
 import { ApplicationCommandOptionType, AutocompleteInteraction, MessageFlags } from 'discord.js';
@@ -98,8 +99,11 @@ export default class HelpCommand extends BaseCommand {
     }
     catch (error) {
       Logger.error('Error executing help command', error);
+      const locale = await ctx.getLocale();
       await ctx.reply({
-        content: `${ctx.getEmoji('x_icon')} An error occurred while showing the help menu.`,
+        content: t('commands.help.errors.showingMenu', locale, {
+          emoji: ctx.getEmoji('x_icon'),
+        }),
         flags: [MessageFlags.Ephemeral],
       });
     }
@@ -129,8 +133,11 @@ export default class HelpCommand extends BaseCommand {
     }
     catch (error) {
       Logger.error('Error showing main help menu', error);
+      const locale = await ctx.getLocale();
       await ctx.reply({
-        content: `${ctx.getEmoji('x_icon')} An error occurred while showing the help menu.`,
+        content: t('commands.help.errors.showingMenu', locale, {
+          emoji: ctx.getEmoji('x_icon'),
+        }),
         flags: [MessageFlags.Ephemeral],
       });
     }
@@ -146,10 +153,13 @@ export default class HelpCommand extends BaseCommand {
     categoryId: string,
   ): Promise<void> {
     try {
+      const locale = await ctx.getLocale();
       const category = this.dataManager.findCategory(categoryId);
 
       if (!category) {
-        const errorMessage = `${ctx.getEmoji('x_icon')} Category not found.`;
+        const errorMessage = t('commands.help.errors.categoryNotFound', locale, {
+          emoji: ctx.getEmoji('x_icon'),
+        });
 
         if (ctx instanceof ComponentContext) {
           await ctx.editReply({
@@ -184,7 +194,10 @@ export default class HelpCommand extends BaseCommand {
     }
     catch (error) {
       Logger.error('Error showing category help', error);
-      const errorMessage = `${ctx.getEmoji('x_icon')} An error occurred while showing the category.`;
+      const locale = await ctx.getLocale();
+      const errorMessage = t('commands.help.errors.showingCategory', locale, {
+        emoji: ctx.getEmoji('x_icon'),
+      });
 
       if (ctx instanceof ComponentContext) {
         await ctx.editReply({
@@ -210,11 +223,16 @@ export default class HelpCommand extends BaseCommand {
     commandName: string,
   ): Promise<void> {
     try {
+      const locale = await ctx.getLocale();
+
       // Generate command help container
       const container = this.uiManager.generateCommandHelp(commandName, ctx.client);
 
       if (!container) {
-        const errorMessage = `${ctx.getEmoji('x_icon')} Command \`${commandName.split(' ')[0]}\` not found.`;
+        const errorMessage = t('commands.help.errors.commandNotFound', locale, {
+          emoji: ctx.getEmoji('x_icon'),
+          command: commandName.split(' ')[0],
+        });
 
         await ctx.reply({
           content: errorMessage,
@@ -231,7 +249,10 @@ export default class HelpCommand extends BaseCommand {
     }
     catch (error) {
       Logger.error('Error showing command help', error);
-      const errorMessage = `${ctx.getEmoji('x_icon')} An error occurred while showing the command help.`;
+      const locale = await ctx.getLocale();
+      const errorMessage = t('commands.help.errors.showingCommand', locale, {
+        emoji: ctx.getEmoji('x_icon'),
+      });
 
       if (ctx instanceof ComponentContext) {
         await ctx.editReply({
@@ -418,9 +439,12 @@ export default class HelpCommand extends BaseCommand {
     }
     catch (error) {
       Logger.error('Error handling main button', error);
+      const locale = await ctx.getLocale();
       const errorContainer = this.uiManager.generateErrorContainer(
         'Error',
-        `${ctx.getEmoji('x_icon')} An error occurred while showing the help menu.`,
+        t('commands.help.errors.showingMenu', locale, {
+          emoji: ctx.getEmoji('x_icon'),
+        }),
       );
       await ctx.editReply({
         components: [errorContainer],
@@ -448,9 +472,12 @@ export default class HelpCommand extends BaseCommand {
     }
     catch (error) {
       Logger.error('Error handling category button', error);
+      const locale = await ctx.getLocale();
       const errorContainer = this.uiManager.generateErrorContainer(
         'Error',
-        `${ctx.getEmoji('x_icon')} An error occurred while showing the category.`,
+        t('commands.help.errors.showingCategory', locale, {
+          emoji: ctx.getEmoji('x_icon'),
+        }),
       );
       await ctx.editReply({
         components: [errorContainer],
@@ -478,9 +505,12 @@ export default class HelpCommand extends BaseCommand {
     }
     catch (error) {
       Logger.error('Error handling command button', error);
+      const locale = await ctx.getLocale();
       const errorContainer = this.uiManager.generateErrorContainer(
         'Error',
-        `${ctx.getEmoji('x_icon')} An error occurred while showing the command help.`,
+        t('commands.help.errors.showingCommand', locale, {
+          emoji: ctx.getEmoji('x_icon'),
+        }),
       );
       await ctx.editReply({
         components: [errorContainer],
@@ -514,9 +544,12 @@ export default class HelpCommand extends BaseCommand {
     }
     catch (error) {
       Logger.error('Error handling search button', error);
+      const locale = await ctx.getLocale();
       const errorContainer = this.uiManager.generateErrorContainer(
         'Error',
-        `${ctx.getEmoji('x_icon')} An error occurred while showing the search interface.`,
+        t('commands.help.errors.showingSearch', locale, {
+          emoji: ctx.getEmoji('x_icon'),
+        }),
       );
       await ctx.editReply({
         components: [errorContainer],

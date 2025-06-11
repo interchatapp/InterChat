@@ -22,6 +22,8 @@ import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionH
 import { donateButton } from '#src/utils/ComponentUtils.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
+import { fetchUserLocale } from '#src/utils/Utils.js';
+import { t } from '#src/utils/Locale.js';
 import Constants from '#utils/Constants.js';
 import { InfoEmbed } from '#utils/EmbedUtils.js';
 import { getCredits } from '#utils/Utils.js';
@@ -46,18 +48,15 @@ export default class About extends BaseCommand {
   }
 
   async execute(ctx: Context) {
+    const locale = await fetchUserLocale(ctx.user.id);
     const container = new ContainerBuilder();
 
     const text1 = new TextDisplayBuilder().setContent(
       stripIndents`
-      # ${ctx.getEmoji('wand_icon')} About InterChat
-      InterChat connects Discord communities through active cross-server discussions. Messages flow naturally between servers in real-time, helping you build engaged topic-focused communities.
-      ## What makes InterChat different:
-      - Built for real communities - Designed with Discord server owners' needs in mind
-      - Active hubs - Find and join thriving communities around shared interests
-      - Privacy first - Full control over your hub's connections and settings
-      - Smart moderation - AI-powered image filtering and advanced content filtering keeps discussions healthy
-      - Visual dashboard - Manage your hubs, servers, and settings through our web interface
+      # ${ctx.getEmoji('wand_icon')} ${t('commands.about.title', locale)}
+      ${t('commands.about.description_text', locale)}
+      ## ${t('commands.about.features.title', locale)}
+      ${t('commands.about.features.list', locale)}
       `,
     );
 
@@ -65,35 +64,36 @@ export default class About extends BaseCommand {
 
     const inviteButton = new ButtonBuilder()
       .setStyle(ButtonStyle.Link)
-      .setLabel('Invite')
+      .setLabel(t('commands.about.buttons.invite', locale))
       .setEmoji(ctx.getEmoji('plus_icon'))
       .setURL('https://discord.com/application-directory/769921109209907241');
 
     const dashboardButton = new ButtonBuilder()
       .setStyle(ButtonStyle.Link)
-      .setLabel('Dashboard')
+      .setLabel(t('commands.about.buttons.dashboard', locale))
       .setEmoji(ctx.getEmoji('wand_icon'))
       .setURL(`${Constants.Links.Website}/dashboard`);
 
     const supportButton = new ButtonBuilder()
       .setStyle(ButtonStyle.Link)
-      .setLabel('Support Server')
+      .setLabel(t('commands.about.buttons.support', locale))
       .setEmoji(ctx.getEmoji('code_icon'))
       .setURL(Constants.Links.SupportInvite);
 
-
     const sectionInvite = new SectionBuilder()
       .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('Invite InterChat to your server:'),
+        new TextDisplayBuilder().setContent(t('commands.about.sections.invite', locale)),
       )
       .setButtonAccessory(inviteButton);
     const sectionDashboard = new SectionBuilder()
       .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('Visit the InterChat dashboard:'),
+        new TextDisplayBuilder().setContent(t('commands.about.sections.dashboard', locale)),
       )
       .setButtonAccessory(dashboardButton);
     const sectionSupport = new SectionBuilder()
-      .addTextDisplayComponents(new TextDisplayBuilder().setContent('Join our support server:'))
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(t('commands.about.sections.support', locale)),
+      )
       .setButtonAccessory(supportButton);
 
     container
@@ -102,13 +102,13 @@ export default class About extends BaseCommand {
 
     const creditsSection = new SectionBuilder()
       .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('Check out the InterChat team!'),
+        new TextDisplayBuilder().setContent(t('commands.about.sections.credits', locale)),
       )
       .setButtonAccessory(
         new ButtonBuilder()
           .setCustomId(new CustomID('about:credits').toString())
           .setStyle(ButtonStyle.Primary)
-          .setLabel('Credits & Team')
+          .setLabel(t('commands.about.buttons.credits', locale))
           .setEmoji(`${ctx.getEmoji('ghost_heart')}`),
       );
 
@@ -116,13 +116,11 @@ export default class About extends BaseCommand {
       .addSectionComponents(creditsSection)
       .addSeparatorComponents((separator) => separator.setSpacing(SeparatorSpacingSize.Large));
 
-    const text4 = new TextDisplayBuilder().setContent(
-      'InterChat is completely free to use. If you like InterChat, consider supporting us on Ko-fi! Or even a vote on top.gg helps us a lot!',
-    );
+    const text4 = new TextDisplayBuilder().setContent(t('commands.about.support_text', locale));
 
     const voteButton = new ButtonBuilder()
       .setStyle(ButtonStyle.Link)
-      .setLabel('Vote!')
+      .setLabel(t('commands.about.buttons.vote', locale))
       .setEmoji(ctx.getEmoji('topggSparkles'))
       .setURL('https://top.gg/bot/769921109209907241/vote');
 
@@ -137,8 +135,9 @@ export default class About extends BaseCommand {
   public async handleCreditsButton(ctx: ComponentContext) {
     await ctx.deferReply({ flags: ['Ephemeral'] });
 
+    const locale = await fetchUserLocale(ctx.user.id);
     const usernames = await this.getUsernames(ctx.client);
-    const creditsDivider = `${getEmoji('blueLine', ctx.client).repeat(9)} **CREDITS** ${getEmoji('blueLine', ctx.client).repeat(9)}`;
+    const creditsDivider = `${getEmoji('blueLine', ctx.client).repeat(9)} **${t('commands.about.credits.title', locale)}** ${getEmoji('blueLine', ctx.client).repeat(9)}`;
     const dotBlue = getEmoji('dot', ctx.client);
 
     const creditsEmbed = new InfoEmbed()
@@ -146,28 +145,28 @@ export default class About extends BaseCommand {
         stripIndents`
 
         ${creditsDivider}
-        ${getEmoji('developer_badge', ctx.client)} **Developers:**
+        ${getEmoji('developer_badge', ctx.client)} **${t('commands.about.credits.developers', locale)}**
         ${dotBlue} @${usernames[0]}
 
-        ${getEmoji('staff_badge', ctx.client)} **Staff: ([Check Applications!](${Constants.Links.Website}/apply))**
+        ${getEmoji('staff_badge', ctx.client)} **${t('commands.about.credits.staff', locale, { website: Constants.Links.Website })}**
         ${dotBlue} @${usernames[1]}
         ${dotBlue} @${usernames[2]}
         ${dotBlue} @${usernames[3]}
         ${dotBlue} @${usernames[4]}
 
-        ${getEmoji('translator_badge', ctx.client)} **Translators:**
+        ${getEmoji('translator_badge', ctx.client)} **${t('commands.about.credits.translators', locale)}**
         ${dotBlue} @${usernames[5]}
         ${dotBlue} @${usernames[6]}
         ${dotBlue} @${usernames[7]}
 
-        ✨ **Deserving Mentions:**
-        ${dotBlue} @${usernames[8]} (maker of our cute mascot chipi ${getEmoji('chipi_smile', ctx.client)})
-        ${dotBlue} @${usernames[9]} ([top voter](${Constants.Links.Vote}) of all time ${getEmoji('topggSparkles', ctx.client)})
+        ✨ **${t('commands.about.credits.mentions', locale)}**
+        ${dotBlue} @${usernames[8]} ${t('commands.about.credits.mascot', locale, { emoji: getEmoji('chipi_smile', ctx.client) })}
+        ${dotBlue} @${usernames[9]} ${t('commands.about.credits.top_voter', locale, { vote_url: Constants.Links.Vote, emoji: getEmoji('topggSparkles', ctx.client) })}
         ${creditsDivider}
       `,
       )
       .setFooter({
-        text: ` InterChat v${ctx.client.version} • Made with ❤️ by the InterChat Team`,
+        text: t('commands.about.credits.footer', locale, { version: ctx.client.version }),
       });
 
     await ctx.editReply({ embeds: [creditsEmbed] });

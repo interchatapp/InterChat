@@ -35,7 +35,7 @@ export default class Vote extends BaseCommand {
   constructor() {
     super({
       name: 'vote',
-      description: '✨ Voting perks and vote link.',
+      description: t('voteCommand.description', 'en'),
       types: { slash: true, prefix: true },
     });
   }
@@ -50,30 +50,30 @@ export default class Vote extends BaseCommand {
     const voteStatusEmoji = ctx.getEmoji(hasVoted ? 'tick_icon' : 'slash');
 
     const perksEmbed = new EmbedBuilder()
-      .setAuthor({ name: 'Vote for InterChat' })
+      .setAuthor({ name: t('vote.embed.title', locale) })
       .setDescription(t('vote.description', locale))
       .setFields(
         {
-          name: `${ctx.getEmoji('topggSparkles')} Current Streak:`,
+          name: `${ctx.getEmoji('topggSparkles')} ${t('vote.fields.currentStreak', locale)}`,
           value: codeBlock(voteCount),
           inline: true,
         },
         {
-          name: 'Last Vote',
+          name: t('vote.fields.lastVote', locale),
           value: userData?.lastVoted
             ? time(userData.lastVoted, 'R')
-            : `[Vote Now](${Constants.Links.Vote})!`,
+            : t('vote.fields.voteNow', locale, { vote_url: Constants.Links.Vote }),
           inline: true,
         },
         {
-          name: 'Voter Perks',
+          name: t('vote.fields.voterPerks', locale),
           value: stripIndents`
-            ${voteStatusEmoji} Increased message length (2000 characters)
-            ${voteStatusEmoji} Send stickers in hubs
-            ${voteStatusEmoji} Create up to 4 hubs
-            ${voteStatusEmoji} Custom welcome messages
-            ${voteStatusEmoji} Voter role in support server
-            ${voteStatusEmoji} Exclusive voter badge in /profile
+            ${voteStatusEmoji} ${t('vote.fields.perks.messageLength', locale)}
+            ${voteStatusEmoji} ${t('vote.fields.perks.stickers', locale)}
+            ${voteStatusEmoji} ${t('vote.fields.perks.createHubs', locale)}
+            ${voteStatusEmoji} ${t('vote.fields.perks.welcomeMessages', locale)}
+            ${voteStatusEmoji} ${t('vote.fields.perks.voterRole', locale)}
+            ${voteStatusEmoji} ${t('vote.fields.perks.voterBadge', locale)}
             -# ${t('vote.perks.moreComingSoon', locale, { support_invite: Constants.Links.SupportInvite })}
             `,
         },

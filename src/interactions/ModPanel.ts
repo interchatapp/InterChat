@@ -16,7 +16,6 @@
  */
 
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
-import type Context from '#src/core/CommandContext/Context.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import BlacklistManager from '#src/managers/BlacklistManager.js';
 import ServerBanManager from '#src/managers/ServerBanManager.js';
@@ -50,9 +49,9 @@ import {
   ButtonStyle,
   type Client,
   ContainerBuilder,
-  type Interaction,
   type Snowflake,
   TextDisplayBuilder,
+  User,
 } from 'discord.js';
 
 type BuilderOpts = {
@@ -172,9 +171,13 @@ export default class ModPanelHandler {
   }
 }
 
-export async function buildModPanel(ctx: Context | Interaction, originalMsg: MessageDB) {
-  const user = await ctx.client.users.fetch(originalMsg.authorId);
-  const server = await ctx.client.fetchGuild(originalMsg.guildId);
+export async function buildModPanel(
+  originalMsg: MessageDB,
+  mod: User,
+  locale: supportedLocaleCodes,
+) {
+  const user = await mod.client.users.fetch(originalMsg.authorId);
+  const server = await mod.client.fetchGuild(originalMsg.guildId);
   const deleteInProgress = await isDeleteInProgress(originalMsg.id);
 
   const userBlManager = new BlacklistManager('user', originalMsg.authorId);
@@ -196,7 +199,7 @@ export async function buildModPanel(ctx: Context | Interaction, originalMsg: Mes
   const container = buildModPanelContainer(
     user.username,
     server?.name ?? 'Unknown Server',
-    ctx.client,
+    mod.client,
     {
       isUserBlacklisted,
       isServerBlacklisted,
@@ -207,7 +210,7 @@ export async function buildModPanel(ctx: Context | Interaction, originalMsg: Mes
     originalMsg.id,
   );
 
-  const buttons = buildButtons(ctx, originalMsg.id, {
+  const buttons = buildButtons(mod, originalMsg.id, locale, {
     isUserBlacklisted,
     isServerBlacklisted,
     isBanned,
@@ -218,8 +221,12 @@ export async function buildModPanel(ctx: Context | Interaction, originalMsg: Mes
   return { container, buttons };
 }
 
-function buildButtons(ctx: Context | Interaction, messageId: Snowflake, opts: BuilderOpts) {
-  const author = ctx.user;
+function buildButtons(
+  mod: User,
+  messageId: Snowflake,
+  locale: supportedLocaleCodes,
+  opts: BuilderOpts,
+) {
   const rows: ActionRowBuilder<ButtonBuilder>[] = [];
 
   // Create main action row with view infractions
@@ -231,25 +238,29 @@ function buildButtons(ctx: Context | Interaction, messageId: Snowflake, opts: Bu
       .setCustomId(new CustomID('modPanel:viewInfractions', [messageId]).toString())
       .setLabel('View History')
       .setStyle(ButtonStyle.Secondary)
-      .setEmoji(getEmoji('exclamation', ctx.client)),
+      .setEmoji(getEmoji('exclamation', mod.client)),
   );
 
   // Add staff-only ban buttons with clear visual distinction
-  if (checkIfStaff(author.id)) {
+  if (checkIfStaff(mod.id)) {
     // User ban button
     const userBanButton = new ButtonBuilder()
       .setCustomId(new CustomID('modPanel:banUser', [messageId]).toString())
       .setLabel(opts.isBanned ? 'User Banned' : 'Ban User')
       .setStyle(opts.isBanned ? ButtonStyle.Secondary : ButtonStyle.Danger)
-      .setEmoji(getEmoji('hammer_icon', ctx.client))
+      .setEmoji(getEmoji('hammer_icon', mod.client))
       .setDisabled(opts.isBanned);
 
     // Server ban button
     const serverBanButton = new ButtonBuilder()
       .setCustomId(new CustomID('modPanel:banServer', [messageId]).toString())
-      .setLabel(opts.isServerBanned ? 'Server Banned' : 'Ban Server')
+      .setLabel(
+        opts.isServerBanned
+          ? t('modPanel.buttons.serverBanned', locale)
+          : t('modPanel.buttons.banServer', locale),
+      )
       .setStyle(opts.isServerBanned ? ButtonStyle.Secondary : ButtonStyle.Danger)
-      .setEmoji(getEmoji('staff', ctx.client))
+      .setEmoji(getEmoji('staff', mod.client))
       .setDisabled(opts.isServerBanned);
 
     mainRow.addComponents(userBanButton, serverBanButton);

@@ -1,15 +1,70 @@
 {
+  // "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
+    // "source.organizeImports": "explicit"
   },
-
-  "eslint.validate": ["javascript", "typescript"],
-  "eslint.useFlatConfig": true,
   "typescript.tsdk": "node_modules/typescript/lib",
+  "window.commandCenter": true,
+  "workbench.experimental.share.enabled": true,
   "typescript.preferences.importModuleSpecifier": "non-relative",
-  "sonarlint.connectedMode.project": {
-    "connectionId": "discord-interchat",
-    "projectKey": "Discord-InterChat_InterChat"
+  "eslint.useFlatConfig": true,
+  "editor.inlayHints.enabled": "on",
+  "typescript.inlayHints.enumMemberValues.enabled": true,
+  "typescript.inlayHints.parameterNames.enabled": "all",
+  "typescript.inlayHints.functionLikeReturnTypes.enabled": true,
+  "typescript.inlayHints.parameterNames.suppressWhenArgumentMatchesName": true,
+  "typescript.inlayHints.parameterTypes.enabled": true,
+  "typescript.inlayHints.variableTypes.enabled": true,
+  "typescript.inlayHints.propertyDeclarationTypes.enabled": true,
+  "typescript.inlayHints.variableTypes.suppressWhenTypeMatchesName": true,
+  "todo-tree.tree.showBadges": true,
+  "files.exclude": {
+    "**/.git/objects/**": true,
+    "**/build/**": true,
+    "**/coverage/**": true,
+    "**/.nyc_output/**": true,
+    "**/.DS_Store": true
   },
-  "codescene.previewCodeHealthMonitoring": true
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/tmp/**": true,
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/coverage/**": true
+  },
+  "search.exclude": {
+    "**/node_modules/**": true,
+    "**/build/**": true,
+    "**/tmp/**": true,
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true
+  },
+  "search.followSymlinks": false,
+  "editor.rulers": [100, 120],
+  "editor.wordWrap": "bounded",
+  "editor.wordWrapColumn": 120,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "*.ts": "${capture}.js, ${capture}.d.ts, ${capture}.js.map",
+    "*.tsx": "${capture}.js, ${capture}.d.ts, ${capture}.js.map",
+    "package.json": "package-lock.json, pnpm-lock.yaml, yarn.lock, bun.lock",
+    "tsconfig.json": "tsconfig.*.json",
+    ".env": ".env.*",
+    "docker-compose.yml": "docker-compose.*.yml, Dockerfile*",
+    "README.md": "CHANGELOG.md, CONTRIBUTING.md, LICENSE, CODE_OF_CONDUCT.md",
+  },
+  "workbench.editor.enablePreview": false,
+  "workbench.editor.enablePreviewFromQuickOpen": false,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+  "editor.inlineSuggest.enabled": true,
+  "git.ignoreLimitWarning": true
 }

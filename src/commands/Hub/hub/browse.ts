@@ -18,7 +18,8 @@
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import Constants from '#utils/Constants.js';
-import { stripIndents } from 'common-tags';
+import { fetchUserLocale } from '#src/utils/Utils.js';
+import { t } from '#src/utils/Locale.js';
 
 export default class BrowseCommand extends BaseCommand {
   constructor() {
@@ -30,13 +31,12 @@ export default class BrowseCommand extends BaseCommand {
   }
 
   async execute(ctx: Context): Promise<void> {
+    const locale = await fetchUserLocale(ctx.user.id);
     await ctx.reply({
-      content: stripIndents`
-      ### [🔍 Use the hub-browser on the website!](${Constants.Links.Website}/hubs)
-      Hey there! This command has been moved to InterChat's website: ${Constants.Links.Website}/hubs as it is much easier to use there with a better interface and more features!
-
-      ${ctx.getEmoji('wand_icon')} **Pro tip:** Check out our full [dashboard](${Constants.Links.Website}/dashboard) to manage your hubs, view analytics, and configure settings visually!
-      `,
+      content: t('hubBrowse.content', locale, {
+        website: Constants.Links.Website,
+        emoji: ctx.getEmoji('wand_icon'),
+      }),
       flags: ['Ephemeral'],
     });
   }

@@ -18,6 +18,7 @@
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import { buildReportReasonDropdown } from '#src/interactions/ReportMessage.js';
+import { t } from '#src/utils/Locale.js';
 import { findOriginalMessage, getBroadcasts } from '#src/utils/network/messageUtils.js';
 import { fetchUserLocale } from '#src/utils/Utils.js';
 import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js';
@@ -66,7 +67,9 @@ export default class ReportPrefixCommand extends BaseCommand {
     const selectMenu = buildReportReasonDropdown(reportedMsgId, locale);
 
     await ctx.reply({
-      content: `${ctx.getEmoji('info_icon')} Please select a reason for your report:`,
+      content: t('report.selectReason', locale, {
+        emoji: ctx.getEmoji('info_icon'),
+      }),
       components: [selectMenu],
       flags: ['Ephemeral'],
     });

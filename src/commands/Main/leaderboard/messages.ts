@@ -16,16 +16,17 @@
  */
 
 import BaseCommand from '#src/core/BaseCommand.js';
-import Context from '#src/core/CommandContext/Context.js';
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
+import Context from '#src/core/CommandContext/Context.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
-import { UIComponents } from '#src/utils/DesignSystem.js';
 import { CustomID } from '#src/utils/CustomID.js';
+import { UIComponents } from '#src/utils/DesignSystem.js';
 import {
   formatServerLeaderboard,
   formatUserLeaderboard,
   getLeaderboard,
 } from '#src/utils/Leaderboard.js';
+import { t } from '#utils/Locale.js';
 import {
   ButtonBuilder,
   ButtonStyle,
@@ -44,6 +45,8 @@ export default class MessagesLeaderboardCommand extends BaseCommand {
   }
 
   async execute(ctx: Context) {
+    const locale = await ctx.getLocale();
+
     // Default to user leaderboard
     const userLeaderboard = await getLeaderboard('user', 10);
     const userLeaderboardFormatted = await formatUserLeaderboard(userLeaderboard, ctx.client);
@@ -55,8 +58,8 @@ export default class MessagesLeaderboardCommand extends BaseCommand {
     // Add header
     container.addTextDisplayComponents(
       ui.createHeader(
-        'Global Message Leaderboard',
-        'Resets every month. Send a message in any hub to get on it!',
+        t('leaderboard.title', locale),
+        t('leaderboard.description', locale),
         'hash_icon',
       ),
     );
@@ -64,7 +67,9 @@ export default class MessagesLeaderboardCommand extends BaseCommand {
     // Add leaderboard content
     container.addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
-        userLeaderboardFormatted.length > 0 ? userLeaderboardFormatted : 'No data available.',
+        userLeaderboardFormatted.length > 0
+          ? userLeaderboardFormatted
+          : t('global.messages.noDataAvailable', locale),
       ),
     );
 
@@ -73,13 +78,13 @@ export default class MessagesLeaderboardCommand extends BaseCommand {
       row.addComponents(
         new ButtonBuilder()
           .setCustomId(new CustomID('messages_lb:user').toString())
-          .setLabel('Users')
+          .setLabel(t('global.buttons.userLeaderboard', locale))
           .setEmoji('👥')
           .setStyle(ButtonStyle.Primary)
           .setDisabled(true),
         new ButtonBuilder()
           .setCustomId(new CustomID('messages_lb:server').toString())
-          .setLabel('Servers')
+          .setLabel(t('global.buttons.serverLeaderboard', locale))
           .setEmoji('🏠')
           .setStyle(ButtonStyle.Secondary),
       ),
@@ -95,6 +100,7 @@ export default class MessagesLeaderboardCommand extends BaseCommand {
   async handleLeaderboardSwitch(ctx: ComponentContext) {
     await ctx.deferUpdate();
 
+    const locale = await ctx.getLocale();
     const currentType = ctx.customId.suffix as 'user' | 'server';
 
     const leaderboard = await getLeaderboard(currentType, 10);
@@ -110,8 +116,8 @@ export default class MessagesLeaderboardCommand extends BaseCommand {
     // Add header
     container.addTextDisplayComponents(
       ui.createHeader(
-        'Global Message Leaderboard',
-        'Resets every month. Send a message in any hub to get on it!',
+        t('leaderboard.title', locale),
+        t('leaderboard.description', locale),
         'hash_icon',
       ),
     );
@@ -119,7 +125,9 @@ export default class MessagesLeaderboardCommand extends BaseCommand {
     // Add leaderboard content
     container.addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
-        leaderboardFormatted.length > 0 ? leaderboardFormatted : 'No data available.',
+        leaderboardFormatted.length > 0
+          ? leaderboardFormatted
+          : t('global.messages.noDataAvailable', locale),
       ),
     );
 
@@ -128,13 +136,13 @@ export default class MessagesLeaderboardCommand extends BaseCommand {
       row.addComponents(
         new ButtonBuilder()
           .setCustomId(new CustomID('messages_lb:user').toString())
-          .setLabel('Users')
+          .setLabel(t('global.buttons.userLeaderboard', locale))
           .setEmoji('👥')
           .setStyle(currentType === 'user' ? ButtonStyle.Primary : ButtonStyle.Secondary)
           .setDisabled(currentType === 'user'),
         new ButtonBuilder()
           .setCustomId(new CustomID('messages_lb:server').toString())
-          .setLabel('Servers')
+          .setLabel(t('global.buttons.serverLeaderboard', locale))
           .setEmoji('🏠')
           .setStyle(currentType === 'server' ? ButtonStyle.Primary : ButtonStyle.Secondary)
           .setDisabled(currentType === 'server'),

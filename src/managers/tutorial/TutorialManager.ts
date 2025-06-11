@@ -19,6 +19,8 @@ import type Context from '#src/core/CommandContext/Context.js';
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import TutorialService from '#src/services/TutorialService.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
+import { fetchUserLocale } from '#src/utils/Utils.js';
+import { t } from '#src/utils/Locale.js';
 import { MessageFlags, type Client, type InteractionResponse, type Message } from 'discord.js';
 import { TutorialInteractionHandler } from './TutorialInteractionHandler.js';
 import { TutorialListBuilder } from './TutorialListBuilder.js';
@@ -49,11 +51,14 @@ export class TutorialManager {
     ctx: ComponentContext | Context,
     tutorialId: string,
   ): Promise<InteractionResponse | Message | null> {
+    const locale = await fetchUserLocale(ctx.user.id);
     const tutorial = await this.tutorialService.getTutorialById(tutorialId);
 
     if (!tutorial) {
       return await ctx.reply({
-        content: `${getEmoji('x_icon', ctx.client)} Tutorial not found.`,
+        content: t('tutorial.errors.notFound', locale, {
+          emoji: getEmoji('x_icon', ctx.client),
+        }),
         flags: ['Ephemeral'],
       });
     }
@@ -66,7 +71,9 @@ export class TutorialManager {
 
     if (!hasPrereqs) {
       return await ctx.reply({
-        content: `${getEmoji('x_icon', ctx.client)} You need to complete the prerequisite tutorials first.`,
+        content: t('tutorial.errors.prerequisitesRequired', locale, {
+          emoji: getEmoji('x_icon', ctx.client),
+        }),
         flags: ['Ephemeral'],
       });
     }
@@ -85,11 +92,14 @@ export class TutorialManager {
     ctx: Context | ComponentContext,
     tutorialId: string,
   ): Promise<InteractionResponse | Message | null> {
+    const locale = await fetchUserLocale(ctx.user.id);
     const tutorial = await this.tutorialService.getTutorialById(tutorialId);
 
     if (!tutorial) {
       return await ctx.reply({
-        content: `${getEmoji('x_icon', ctx.client)} Tutorial not found.`,
+        content: t('tutorial.errors.notFound', locale, {
+          emoji: getEmoji('x_icon', ctx.client),
+        }),
         flags: ['Ephemeral'],
       });
     }
@@ -113,11 +123,14 @@ export class TutorialManager {
     tutorialId: string,
     stepIndex: number,
   ): Promise<InteractionResponse | Message | null> {
+    const locale = await fetchUserLocale(ctx.user.id);
     const tutorial = await this.tutorialService.getTutorialById(tutorialId);
 
     if (!tutorial) {
       return await ctx.reply({
-        content: `${getEmoji('x_icon', this.client)} Tutorial not found.`,
+        content: t('tutorial.errors.notFound', locale, {
+          emoji: getEmoji('x_icon', this.client),
+        }),
         flags: ['Ephemeral'],
       });
     }
@@ -126,7 +139,9 @@ export class TutorialManager {
 
     if (steps.length === 0) {
       return await ctx.reply({
-        content: `${getEmoji('x_icon', this.client)} This tutorial has no steps.`,
+        content: t('tutorial.errors.noSteps', locale, {
+          emoji: getEmoji('x_icon', this.client),
+        }),
         flags: ['Ephemeral'],
       });
     }
@@ -166,11 +181,14 @@ export class TutorialManager {
     ctx: Context | ComponentContext,
     tutorialId: string,
   ): Promise<InteractionResponse | Message | null> {
+    const locale = await fetchUserLocale(ctx.user.id);
     const tutorial = await this.tutorialService.getTutorialById(tutorialId);
 
     if (!tutorial) {
       return await ctx.reply({
-        content: `${getEmoji('x_icon', this.client)} Tutorial not found.`,
+        content: t('tutorial.errors.notFound', locale, {
+          emoji: getEmoji('x_icon', this.client),
+        }),
         flags: ['Ephemeral'],
       });
     }
@@ -192,11 +210,14 @@ export class TutorialManager {
     tutorialId: string,
     stepIndex: number = 0,
   ): Promise<void> {
+    const locale = await fetchUserLocale(ctx.user.id);
     const tutorial = await this.tutorialService.getTutorialById(tutorialId);
 
     if (!tutorial) {
       await ctx.reply({
-        content: `${getEmoji('x_icon', ctx.client)} Tutorial not found.`,
+        content: t('tutorial.errors.notFound', locale, {
+          emoji: getEmoji('x_icon', ctx.client),
+        }),
         flags: ['Ephemeral'],
       });
       return;
@@ -207,7 +228,9 @@ export class TutorialManager {
 
     if (steps.length === 0) {
       await ctx.reply({
-        content: `${getEmoji('x_icon', ctx.client)} This tutorial has no steps.`,
+        content: t('tutorial.errors.noSteps', locale, {
+          emoji: getEmoji('x_icon', ctx.client),
+        }),
         flags: ['Ephemeral'],
       });
       return;

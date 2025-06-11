@@ -20,6 +20,7 @@ import type Context from '#src/core/CommandContext/Context.js';
 import { UIComponents } from '#src/utils/DesignSystem.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
+import { t } from '#src/utils/Locale.js';
 import {
   ApplicationCommandOptionType,
   ButtonBuilder,
@@ -81,9 +82,13 @@ export default class Ban extends BaseCommand {
     const reason = ctx.options.getString('reason', true);
 
     // Validation
+    const locale = await ctx.getLocale();
+
     if (user && serverId) {
       await ctx.reply({
-        content: `${getEmoji('x_icon', ctx.client)} Please specify either a user or a server, not both.`,
+        content: t('ban.errors.bothSpecified', locale, {
+          emoji: getEmoji('x_icon', ctx.client),
+        }),
         flags: ['Ephemeral'],
       });
       return;
@@ -91,7 +96,9 @@ export default class Ban extends BaseCommand {
 
     if (!user && !serverId) {
       await ctx.reply({
-        content: `${getEmoji('x_icon', ctx.client)} Please specify either a user or a server to ban.`,
+        content: t('ban.errors.noneSpecified', locale, {
+          emoji: getEmoji('x_icon', ctx.client),
+        }),
         flags: ['Ephemeral'],
       });
       return;

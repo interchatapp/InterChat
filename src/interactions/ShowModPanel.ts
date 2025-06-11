@@ -29,12 +29,7 @@ import { ButtonBuilder, ButtonStyle } from 'discord.js';
 
 export const modPanelButton = (targetMsgId: string, emoji: string, opts?: { label?: string }) =>
   new ButtonBuilder()
-    .setCustomId(
-      new CustomID()
-        .setIdentifier('showModPanel')
-        .setArgs(targetMsgId)
-        .toString(),
-    )
+    .setCustomId(new CustomID().setIdentifier('showModPanel').setArgs(targetMsgId).toString())
     .setStyle(ButtonStyle.Danger)
     .setLabel(opts?.label ?? 'Mod Panel')
     .setEmoji(emoji);
@@ -66,7 +61,7 @@ export default class ModActionsButton {
 
     if (!(await isStaffOrHubMod(ctx.user.id, hub))) return;
 
-    const panel = await buildModPanel(ctx, originalMessage);
+    const panel = await buildModPanel(originalMessage, ctx.user, await ctx.getLocale());
     await ctx.reply({
       components: [panel.container, ...panel.buttons],
       flags: ['Ephemeral', 'IsComponentsV2'],

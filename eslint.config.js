@@ -33,7 +33,14 @@ export default config({
     'max-nested-callbacks': ['error', { max: 4 }],
     curly: ['error', 'multi-line', 'consistent'],
 
-    '@typescript-eslint/no-unused-vars': 'error',
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+      },
+    ],
     '@typescript-eslint/no-explicit-any': 'error',
     '@typescript-eslint/no-var-requires': 'off',
     '@typescript-eslint/no-shadow': ['error', { allow: ['err', 'resolve', 'reject'] }],
@@ -90,7 +97,7 @@ export default config({
     '@stylistic/no-floating-decimal': 'error',
     '@stylistic/indent': ['error', 2],
     '@stylistic/semi': ['error', 'always'],
-    '@stylistic/quotes': ['error', 'single'],
+    '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],
     '@stylistic/no-trailing-spaces': ['error'],
     '@stylistic/dot-location': ['error', 'property'],
     '@stylistic/object-curly-spacing': ['error', 'always'],

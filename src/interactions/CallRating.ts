@@ -3,18 +3,22 @@ import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionH
 import { CallService } from '#src/services/CallService.js';
 import { ReputationService } from '#src/services/ReputationService.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
+import { t } from '#src/utils/Locale.js';
 import getRedis from '#src/utils/Redis.js';
 
 export default class CallRatingHandler {
   @RegisterInteractionHandler('rate_call')
   async execute(ctx: ComponentContext) {
-    const { suffix: rating, args: [callId] } = ctx.customId;
-
+    const {
+      suffix: rating,
+      args: [callId],
+    } = ctx.customId;
+    const locale = await ctx.getLocale();
     const x_icon = getEmoji('x_icon', ctx.client);
 
     if (!callId) {
       await ctx.reply({
-        content: `${x_icon} Invalid rating button. Please try again.`,
+        content: t('calls.rating.invalidButton', locale, { emoji: x_icon }),
         flags: ['Ephemeral'],
       });
       return;
@@ -25,7 +29,7 @@ export default class CallRatingHandler {
 
     if (!callData) {
       await ctx.reply({
-        content: `${x_icon} Unable to find call data. The call might have ended too long ago.`,
+        content: t('calls.rating.noCallData', locale, { emoji: x_icon }),
         flags: ['Ephemeral'],
       });
       return;
@@ -37,7 +41,7 @@ export default class CallRatingHandler {
 
     if (hasRated) {
       await ctx.reply({
-        content: `${x_icon} You have already rated this call.`,
+        content: t('calls.rating.alreadyRated', locale, { emoji: x_icon }),
         flags: ['Ephemeral'],
       });
       return;
@@ -50,7 +54,7 @@ export default class CallRatingHandler {
 
     if (!otherChannelParticipants || otherChannelParticipants.users.size === 0) {
       await ctx.reply({
-        content: `${x_icon} Unable to find participants from the other channel.`,
+        content: t('calls.rating.noParticipants', locale, { emoji: x_icon }),
         flags: ['Ephemeral'],
       });
       return;
@@ -71,9 +75,14 @@ export default class CallRatingHandler {
     await getRedis().set(ratingKey, '1', 'EX', 3600 * 24); // 24 hour expiry
 
     const tick_icon = getEmoji('tick_icon', ctx.client);
+    const participantCount = otherChannelParticipants.users.size;
 
     await ctx.reply({
-      content: `${tick_icon} Thanks for rating! Your **${rating === 'like' ? 'positive' : 'negative'}** feedback has been recorded for ${otherChannelParticipants.users.size} participant${otherChannelParticipants.users.size > 1 ? 's' : ''}.`,
+      content: `${tick_icon} ${t('calls.rating.success', locale, {
+        type: rating === 'like' ? 'positive' : 'negative',
+        count: participantCount.toString(),
+        plural: participantCount > 1 ? 's' : '',
+      })}`,
       flags: ['Ephemeral'],
     });
   }

@@ -15,24 +15,25 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { getRandomBlockedMessageResponse } from '#src/config/contentFilter.js';
 import type { Hub, User } from '#src/generated/prisma/client/client.js';
 import { showRulesScreening } from '#src/interactions/RulesScreening.js';
+import ContentFilterManager from '#src/managers/ContentFilterManager.js';
 import HubManager from '#src/managers/HubManager.js';
+import AchievementService from '#src/services/AchievementService.js';
 import { CallService } from '#src/services/CallService.js';
 import type { ConvertDatesToString } from '#src/types/Utils.d.ts';
 import { RedisKeys } from '#src/utils/Constants.js';
 import db from '#src/utils/Db.js';
+import { logBlockedMessage } from '#src/utils/hub/logger/ContentFilter.js';
 import { updateLeaderboards } from '#src/utils/Leaderboard.js';
 import Logger from '#src/utils/Logger.js';
 import { runCallChecks, runChecks } from '#src/utils/network/runChecks.js';
 import { getRedis } from '#src/utils/Redis.js';
 import { fetchUserData, getOrCreateWebhook, handleError } from '#src/utils/Utils.js';
+import { stripIndents } from 'common-tags';
 import type { Client, GuildTextBasedChannel, Message } from 'discord.js';
 import { BroadcastService } from './BroadcastService.js';
-import { getRandomBlockedMessageResponse } from '#src/config/contentFilter.js';
-import ContentFilterManager from '#src/managers/ContentFilterManager.js';
-import { logBlockedMessage } from '#src/utils/hub/logger/ContentFilter.js';
-import AchievementService from '#src/services/AchievementService.js';
 
 /**
  * Result of processing a message in a hub channel
@@ -399,6 +400,9 @@ export class MessageProcessor {
 
       const broadcastStartTime = performance.now();
 
+      // Check if user seems confused and needs help (before broadcasting)
+      await this.checkForConfusedUser(message, hub);
+
       // Broadcast the message to all connected channels
       await this.broadcastService.broadcastMessage(
         message,
@@ -520,6 +524,90 @@ export class MessageProcessor {
       attachmentURL,
       totalHubConnections: connectionCount + 1,
     });
+  }
+
+  /**
+   * Checks if a user seems confused and provides helpful guidance
+   * @param message The Discord message
+   * @param hub The hub manager instance
+   */
+  private async checkForConfusedUser(message: Message<true>, hub: HubManager): Promise<void> {
+    const content = message.content.toLowerCase().trim();
+
+    // Common phrases that indicate confusion
+    const confusedPhrases = [
+      'how do i use this bot',
+      'how does this bot work',
+      'what is this bot',
+      'how to use this',
+      'what does this do',
+      'how does this work',
+      'what is interchat',
+      'how do i use interchat',
+      'what is this',
+      'how does this work',
+      "i don't understand",
+      "what's going on",
+      'what is happening',
+      'i need help',
+      'what am i supposed to do',
+      'how does cross chat work',
+      'what is cross chat',
+      'how to cross chat',
+    ];
+
+    // Check if the message contains any confused phrases
+    const isConfused = confusedPhrases.some((phrase) => content.includes(phrase));
+
+    if (!isConfused) return;
+
+    // Check cooldown to prevent spam (5 minutes per user per hub)
+    const redis = getRedis();
+    const cooldownKey = `confused_help:${hub.id}:${message.author.id}`;
+    const cooldown = await redis.get(cooldownKey);
+
+    if (cooldown) return; // User was already helped recently
+
+    // Set cooldown
+    await redis.set(cooldownKey, '1', 'EX', 300); // 5 minutes
+
+    const messageContent = stripIndents`
+          ### 👋 Hey there! I can see you might be a bit confused - I'm here to help!
+
+          **You're in a cross-server chat!** This channel is connected to **${hub.data.name}**, which means you're chatting with people from multiple Discord servers all at once! Pretty cool, right? ✨
+
+          **🚀 Here's how it works:**
+          - Messages you send here go to **all connected servers** in this hub
+          - People from other servers can see and reply to your messages
+          - It's like having one big conversation across multiple communities!
+
+          **💝 Need more help?**
+          - Type \`/help\` to see all available commands or try \`/tutorial\` for interactive guides
+          - Join our friendly [support server](https://discord.gg/interchat) if you have questions!
+
+          **Welcome to the InterChat community!** 🎉 Feel free to introduce yourself - everyone loves meeting new friends!
+        `;
+
+    // Send helpful response
+    try {
+      await message.reply({
+        content: messageContent,
+        allowedMentions: { repliedUser: false },
+      });
+    }
+    catch {
+      // If reply fails, try sending a regular message
+      try {
+        await message.channel.send({
+          content: messageContent,
+          allowedMentions: { parse: [] },
+        });
+      }
+      catch (sendError) {
+        // Log error but don't throw to avoid disrupting message flow
+        Logger.error('Failed to send confused user help message:', sendError);
+      }
+    }
   }
 
   /**

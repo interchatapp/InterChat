@@ -22,6 +22,7 @@ import ServerBanManager from '#src/managers/ServerBanManager.js';
 import { UIComponents } from '#src/utils/DesignSystem.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
+import { t } from '#src/utils/Locale.js';
 import Logger from '#src/utils/Logger.js';
 import { escapeRegexChars } from '#src/utils/Utils.js';
 import {
@@ -58,10 +59,13 @@ export default class Unban extends BaseCommand {
     const target = ctx.options.getString('target', true);
 
     // Parse the target to determine ban type and ID
+    const locale = await ctx.getLocale();
     const banInfo = this.parseBanTarget(target);
     if (!banInfo) {
       await ctx.reply({
-        content: `${getEmoji('x_icon', ctx.client)} Invalid ban target. Please use the autocomplete to select a valid ban.`,
+        content: t('unban.errors.invalidTarget', locale, {
+          emoji: getEmoji('x_icon', ctx.client),
+        }),
         flags: ['Ephemeral'],
       });
       return;
@@ -88,7 +92,8 @@ export default class Unban extends BaseCommand {
       const choices: Array<{ name: string; value: string }> = [];
 
       // Add user bans to choices
-      for (const ban of userBans.slice(0, 15)) { // Limit to 15 user bans
+      for (const ban of userBans.slice(0, 15)) {
+        // Limit to 15 user bans
         try {
           const user = await interaction.client.users.fetch(ban.userId).catch(() => null);
           const username = user?.username || `Unknown User (${ban.userId})`;
@@ -109,7 +114,8 @@ export default class Unban extends BaseCommand {
       }
 
       // Add server bans to choices
-      for (const ban of serverBans.slice(0, 10)) { // Limit to 10 server bans
+      for (const ban of serverBans.slice(0, 10)) {
+        // Limit to 10 server bans
         try {
           const server = await interaction.client.guilds.fetch(ban.serverId).catch(() => null);
           const serverName = server?.name || `Unknown Server (${ban.serverId})`;
@@ -178,8 +184,8 @@ export default class Unban extends BaseCommand {
         const ban = await banManager.getBanById(banInfo.banId);
 
         if (!ban) {
-          await ctx.reply({
-            content: `${getEmoji('x_icon', ctx.client)} Ban not found.`,
+          await ctx.replyEmbed('unban.errors.banNotFound', {
+            t: { emoji: getEmoji('x_icon', ctx.client) },
             flags: ['Ephemeral'],
           });
           return;
@@ -203,8 +209,8 @@ export default class Unban extends BaseCommand {
         const ban = await serverBanManager.getBanById(banInfo.banId);
 
         if (!ban) {
-          await ctx.reply({
-            content: `${getEmoji('x_icon', ctx.client)} Server ban not found.`,
+          await ctx.replyEmbed('unban.errors.serverBanNotFound', {
+            t: { emoji: getEmoji('x_icon', ctx.client) },
             flags: ['Ephemeral'],
           });
           return;
@@ -226,17 +232,11 @@ export default class Unban extends BaseCommand {
 
       // Add confirmation header
       container.addTextDisplayComponents(
-        ui.createHeader(
-          'Confirm Unban',
-          'Review ban details before removal',
-          'alert_icon',
-        ),
+        ui.createHeader('Confirm Unban', 'Review ban details before removal', 'alert_icon'),
       );
 
       // Add ban details
-      container.addTextDisplayComponents(
-        ui.createSubsection('Ban Information', banDetails),
-      );
+      container.addTextDisplayComponents(ui.createSubsection('Ban Information', banDetails));
 
       // Add confirmation buttons
       container.addActionRowComponents((row) => {
@@ -262,8 +262,11 @@ export default class Unban extends BaseCommand {
     }
     catch (error) {
       Logger.error('Error showing unban confirmation:', error);
+      const locale = await ctx.getLocale();
       await ctx.reply({
-        content: `${getEmoji('x_icon', ctx.client)} Failed to load ban information.`,
+        content: t('unban.errors.loadFailed', locale, {
+          emoji: getEmoji('x_icon', ctx.client),
+        }),
         flags: ['Ephemeral'],
       });
     }
