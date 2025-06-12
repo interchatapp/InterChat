@@ -39,7 +39,7 @@ rules:
     You're now part of an incredible community that connects thousands of servers and millions of people worldwide! We're thrilled to have you aboard this amazing journey.
 
     ### 🚀 Ready to Start Your Adventure?
-    - **Discover Communities:** Use `/hub browse` to explore vibrant, active communities waiting for you
+    - **Discover Communities:** Use the [hub directory]({hubs_link}) to explore vibrant, active communities waiting for you
     - **Jump Into Conversations:** Join discussions that spark your interest, or create your own hub through our [dashboard]({dashboard_link})
     - **Try Quick Connections:** Use our `/call` command for instant one-on-one server connections - perfect for making new friends!
     - **Get Personalized Help:** Use `/setup` for a guided tour if you're feeling a bit lost
@@ -205,7 +205,7 @@ connection:
     tips: |
       提示：使用{unpause_cmd}来恢复连接，或使用{leave_cmd}来永久停收信息。
 hub:
-  notFound: "{emoji} Hmm, we couldn't find that hub. Double-check the name you entered, or try browsing available hubs with `/hub browse` to discover some amazing communities! 🔍"
+  notFound: "{emoji} Hmm, we couldn't find that hub. Double-check the name you entered, or try browsing available hubs with [hub directory]({hubs_link}) to discover some amazing communities! 🔍"
   notFound_mod: '{emoji}无法找到中心。请确保您输入了正确的中心名字以及您是此中心的所有者或监管员。'
   notManager: '{emoji}您必须是中心管理员才能执行此操作。'
   notModerator: '{emoji}您需要成为中心监管员才能执行此操作。'
@@ -337,7 +337,7 @@ hub:
       noInvites: '{emoji}此中心尚未收到邀请。使用“／创建中心邀请”来创建邀请。'
       notPrivate: '{emoji}只有私人中心才能收到邀请。使用“／编辑编辑”将此中心设置为私有。'
   joined:
-    noJoinedHubs: '{emoji}此服务器尚未加入如何中心。使用“／浏览中心”查看中心列表。'
+    noJoinedHubs: '{emoji} This server has not joined any hubs yet. Use [hub directory]({hubs_link}) to view a list of hubs.'
     joinedHubs: 此服务器已连接**{total}**中心(群)。使用“/断开连接”离开中心。
   leave:
     noHub: '{emoji}该频道无效或尚未加入任何中心。'
@@ -883,7 +883,7 @@ commands:
       setupError: 'There was an error starting the setup process. Please try again later.'
       completionError: 'There was an error completing the setup. Please try again or contact support if the issue persists.'
       channelNotSelected: 'No channel was selected. Please try again.'
-      invalidChannelType: 'Please select a text channel. Voice channels, forums, and other channel types are not supported.'
+      invalidChannelType: 'Please select a text or thread channel. Voice channels, forums, and other channel types are not supported.'
       missingChannelPermissions: |
         I need the following permissions in {channel}:
         - Manage Webhooks
