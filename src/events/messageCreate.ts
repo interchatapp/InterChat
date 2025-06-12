@@ -26,11 +26,13 @@ import { t } from '#src/utils/Locale.js';
 import getRedis from '#src/utils/Redis.js';
 import {
   createUnreadDevAlertEmbed,
+  ensureUserExists,
   fetchUserData,
   fetchUserLocale,
   handleError,
   hasUnreadDevAlert,
   isHumanMessage,
+  updateUserInfoIfChanged,
 } from '#utils/Utils.js';
 import { stripIndents } from 'common-tags';
 import { EmbedBuilder, type Message } from 'discord.js';
@@ -78,6 +80,9 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
   }
 
   private async handlePrefixCommand(message: Message): Promise<void> {
+    // Ensure user exists in database when using commands
+    await ensureUserExists(message.author.id, message.author.username, message.author.avatarURL());
+
     const resolved = resolveCommand(message);
     // Execute command even if command is null but we have subcommand errors
     if (!resolved.command && !resolved.subcommandError) return;
@@ -88,6 +93,14 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
     }
 
     await executeCommand(message, resolved);
+
+    // Update user info if changed (after successful command execution)
+    updateUserInfoIfChanged(
+      message.author.id,
+      message.author.username,
+      message.author.avatarURL(),
+    ).catch(() => null); // Don't let this fail the whole process
+
     await this.showDevAlertsIfAny(message);
   }
 

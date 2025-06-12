@@ -66,7 +66,6 @@ export const msToReadable = (milliseconds: number, short = true): string => {
   for (const unit of timeUnits) {
     const value = Math.floor(remainingMs / unit.div);
     if (value > 0) {
-
       const suffix = short ? unit.short : value === 1 ? ` ${unit.long}` : ` ${unit.long}s`;
 
       parts.push(`${value}${suffix}`);
@@ -234,6 +233,53 @@ export const trimAndCensorBannedWebhookWords = (content: string) =>
 export const fetchUserData = async (userId: Snowflake) => {
   const user = await new UserDbService().getUser(userId);
   return user;
+};
+
+/**
+ * Ensures a user exists in the database, creating them if they don't exist
+ * @param userId Discord user ID
+ * @param username Discord username
+ * @param avatarURL Discord avatar URL
+ * @returns The user data from the database
+ */
+export const ensureUserExists = async (
+  userId: Snowflake,
+  username: string,
+  avatarURL: string | null,
+) => {
+  let userData = await fetchUserData(userId);
+
+  if (!userData) {
+    const userService = new UserDbService();
+    userData = await userService.upsertUser(userId, {
+      name: username,
+      image: avatarURL,
+    });
+  }
+
+  return userData;
+};
+
+/**
+ * Updates user info (username and avatar) if it has changed
+ * @param userId Discord user ID
+ * @param username Current Discord username
+ * @param avatarURL Current Discord avatar URL
+ */
+export const updateUserInfoIfChanged = async (
+  userId: Snowflake,
+  username: string,
+  avatarURL: string | null,
+) => {
+  const userData = await fetchUserData(userId);
+
+  if (userData && (userData.name !== username || userData.image !== avatarURL)) {
+    const userService = new UserDbService();
+    await userService.upsertUser(userId, {
+      name: username,
+      image: avatarURL,
+    });
+  }
 };
 
 export const fetchUserLocale = async (user: Snowflake | User) => {

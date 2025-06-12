@@ -30,10 +30,11 @@ import { t } from '#utils/Locale.js';
 import {
   checkIfStaff,
   createUnreadDevAlertEmbed,
-  fetchUserData,
+  ensureUserExists,
   fetchUserLocale,
   handleError,
   hasUnreadDevAlert,
+  updateUserInfoIfChanged,
 } from '#utils/Utils.js';
 import type {
   AutocompleteInteraction,
@@ -55,6 +56,13 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
       await this.handleInteraction(interaction, preCheckResult.dbUser).catch((e) => {
         handleError(e, { repliable: interaction });
       });
+
+      // Update user info if changed (after successful interaction handling)
+      updateUserInfoIfChanged(
+        interaction.user.id,
+        interaction.user.username,
+        interaction.user.avatarURL(),
+      ).catch(() => null);
 
       await this.showDevAlertIfAny(interaction, preCheckResult.dbUser);
     }
@@ -83,7 +91,12 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
       return { shouldContinue: false, dbUser: null };
     }
 
-    const dbUser = await fetchUserData(interaction.user.id);
+    // Fetch user data from database and create if not exists
+    const dbUser = await ensureUserExists(
+      interaction.user.id,
+      interaction.user.username,
+      interaction.user.avatarURL(),
+    );
 
     if (await this.isUserBanned(interaction, dbUser ?? undefined)) {
       return { shouldContinue: false, dbUser: null };

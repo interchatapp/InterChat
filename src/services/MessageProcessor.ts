@@ -30,7 +30,7 @@ import { updateLeaderboards } from '#src/utils/Leaderboard.js';
 import Logger from '#src/utils/Logger.js';
 import { runCallChecks, runChecks } from '#src/utils/network/runChecks.js';
 import { getRedis } from '#src/utils/Redis.js';
-import { fetchUserData, getOrCreateWebhook, handleError } from '#src/utils/Utils.js';
+import { ensureUserExists, getOrCreateWebhook, handleError, updateUserInfoIfChanged } from '#src/utils/Utils.js';
 import { stripIndents } from 'common-tags';
 import type { Client, GuildTextBasedChannel, Message } from 'discord.js';
 import { BroadcastService } from './BroadcastService.js';
@@ -350,7 +350,11 @@ export class MessageProcessor {
 
       // Get user data for rules checking and other operations - this is now cached
       const userDataStartTime = performance.now();
-      const userData = await fetchUserData(message.author.id);
+      const userData = await ensureUserExists(
+        message.author.id,
+        message.author.username,
+        message.author.avatarURL(),
+      );
       timings.fetchUserData = performance.now() - userDataStartTime;
 
       // Check if user has accepted the hub's specific rules
@@ -414,6 +418,15 @@ export class MessageProcessor {
         connections: { count: hubConnections.length },
       });
       timings.updateStatsAfterBroadcast = performance.now() - statsStartTime;
+
+      // Update user info if changed (after successful processing)
+      const updateUserStartTime = performance.now();
+      updateUserInfoIfChanged(
+        message.author.id,
+        message.author.username,
+        message.author.avatarURL(),
+      ).catch(() => null); // Don't let this fail the whole process
+      timings.updateUserInfo = performance.now() - updateUserStartTime;
 
       // Log performance metrics
       const totalTime = performance.now() - startTime;
@@ -654,7 +667,7 @@ export class MessageProcessor {
       const parallelStartTime = performance.now();
       const [activeCall, userData] = await Promise.all([
         this.callService.getActiveCallData(message.channelId),
-        fetchUserData(message.author.id),
+        ensureUserExists(message.author.id, message.author.username, message.author.avatarURL()),
       ]);
       timings.getParallelData = performance.now() - parallelStartTime;
 
@@ -760,6 +773,15 @@ export class MessageProcessor {
         attachmentURL,
       );
       timings.updateCallParticipant = performance.now() - updateStartTime;
+
+      // Update user info if changed (after successful processing)
+      const updateUserStartTime = performance.now();
+      updateUserInfoIfChanged(
+        message.author.id,
+        message.author.username,
+        message.author.avatarURL(),
+      ).catch(() => null); // Don't let this fail the whole process
+      timings.updateUserInfo = performance.now() - updateUserStartTime;
 
       // Log performance metrics
       const totalTime = performance.now() - startTime;
