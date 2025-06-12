@@ -36,6 +36,7 @@ import {
   EmbedBuilder,
 } from 'discord.js';
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
+import Constants from '#src/utils/Constants.js';
 
 export default class HubDeleteSubcommand extends BaseCommand {
   private readonly hubService = new HubService();
@@ -150,6 +151,7 @@ export default class HubDeleteSubcommand extends BaseCommand {
       const infoEmbed = new InfoEmbed().setDescription(
         t('hub.notFound', locale, {
           emoji: getEmoji('x_icon', ctx.client),
+          hubs_link: `${Constants.Links.Website}/hubs}`,
         }),
       );
 

@@ -22,7 +22,7 @@ export type TranslationKeys = {
   'rules.decline': never;
   'rules.agreementNote': never;
   'rules.hubAgreementNote': never;
-  'rules.accepted': 'emoji' | 'dashboard_link' | 'support_invite' | 'donateLink';
+  'rules.accepted': 'emoji' | 'hubs_link' | 'dashboard_link' | 'support_invite' | 'donateLink';
   'rules.declined': 'emoji';
   'rules.hubAccepted': 'emoji';
   'rules.hubDeclined': 'emoji' | 'hubName';
@@ -111,7 +111,7 @@ export type TranslationKeys = {
   'connection.unpaused.tips': 'pause_cmd' | 'edit_cmd';
   'connection.paused.desc': 'clock_emoji' | 'channel';
   'connection.paused.tips': 'unpause_cmd' | 'leave_cmd';
-  'hub.notFound': 'emoji';
+  'hub.notFound': 'emoji' | 'hubs_link';
   'hub.notFound_mod': 'emoji';
   'hub.notManager': 'emoji';
   'hub.notModerator': 'emoji';
@@ -180,7 +180,7 @@ export type TranslationKeys = {
   'hub.invite.list.title': never;
   'hub.invite.list.noInvites': 'emoji';
   'hub.invite.list.notPrivate': 'emoji';
-  'hub.joined.noJoinedHubs': 'emoji';
+  'hub.joined.noJoinedHubs': 'emoji' | 'hubs_link';
   'hub.joined.joinedHubs': 'total';
   'hub.leave.noHub': 'emoji';
   'hub.leave.confirm': 'hub' | 'channel';

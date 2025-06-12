@@ -23,14 +23,19 @@ import HubManager from '#src/managers/HubManager.js';
 import AchievementService from '#src/services/AchievementService.js';
 import { CallService } from '#src/services/CallService.js';
 import type { ConvertDatesToString } from '#src/types/Utils.d.ts';
-import { RedisKeys } from '#src/utils/Constants.js';
+import Constants, { RedisKeys } from '#src/utils/Constants.js';
 import db from '#src/utils/Db.js';
 import { logBlockedMessage } from '#src/utils/hub/logger/ContentFilter.js';
 import { updateLeaderboards } from '#src/utils/Leaderboard.js';
 import Logger from '#src/utils/Logger.js';
 import { runCallChecks, runChecks } from '#src/utils/network/runChecks.js';
 import { getRedis } from '#src/utils/Redis.js';
-import { ensureUserExists, getOrCreateWebhook, handleError, updateUserInfoIfChanged } from '#src/utils/Utils.js';
+import {
+  ensureUserExists,
+  getOrCreateWebhook,
+  handleError,
+  updateUserInfoIfChanged,
+} from '#src/utils/Utils.js';
 import { stripIndents } from 'common-tags';
 import type { Client, GuildTextBasedChannel, Message } from 'discord.js';
 import { BroadcastService } from './BroadcastService.js';
@@ -544,7 +549,7 @@ export class MessageProcessor {
     ];
 
     // Check if the message contains any confused phrases
-    const isConfused = confusedPhrases.some((phrase) => content.includes(phrase));
+    const isConfused = confusedPhrases.some((phrase) => content === phrase);
 
     if (!isConfused) return;
 
@@ -570,7 +575,7 @@ export class MessageProcessor {
 
           **💝 Need more help?**
           - Type \`/help\` to see all available commands or try \`/tutorial\` for interactive guides
-          - Join our friendly [support server](https://discord.gg/interchat) if you have questions!
+          - Join our friendly [support server](${Constants.Links.SupportInvite}}) if you have questions!
 
           **Welcome to the InterChat community!** 🎉 Feel free to introduce yourself - everyone loves meeting new friends!
         `;

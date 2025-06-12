@@ -33,6 +33,7 @@ import type { GuildTextBasedChannel } from 'discord.js';
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import Context from '#src/core/CommandContext/Context.js';
 import { checkStringForAntiSwear } from '#src/utils/network/antiSwearChecks.js';
+import Constants from '#src/utils/Constants.js';
 
 export class HubJoinService {
   private readonly locale: supportedLocaleCodes;
@@ -89,6 +90,7 @@ export class HubJoinService {
       await this.ctx.editReply({
         content: t('hub.notFound', this.locale, {
           emoji: this.getEmoji('x_icon'),
+          hubs_link: `${Constants.Links.Website}/hubs}`,
         }),
       });
       return false;

@@ -66,7 +66,7 @@ export class ErrorEmbed extends EmbedBuilder {
     return super.setDescription(stripIndents`
       ${this.data.description ?? ''}
 
-      Please join our [support server](https://discord.gg/interchat) and report the following error code:
+      Please join our [support server](${Constants.Links.SupportInvite}) and report the following error code:
       ${codeBlock(errorCode)}
     `);
   }

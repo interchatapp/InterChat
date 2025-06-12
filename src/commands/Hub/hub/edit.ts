@@ -520,6 +520,7 @@ export default class HubEditSubcommand extends BaseCommand {
         ctx,
         t('hub.notFound', locale, {
           emoji: getEmoji('x_icon', ctx.client),
+          hubs_link: `${Constants.Links.Website}/hubs}`,
         }),
         true,
       );

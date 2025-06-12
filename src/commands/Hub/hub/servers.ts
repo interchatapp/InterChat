@@ -57,8 +57,7 @@ export default class HubServersSubcommand extends BaseCommand {
         {
           type: ApplicationCommandOptionType.String,
           name: 'server',
-          description:
-						'Show details about a specific server that is in the hub by its ID.',
+          description: 'Show details about a specific server that is in the hub by its ID.',
           required: false,
         },
       ],
@@ -72,9 +71,7 @@ export default class HubServersSubcommand extends BaseCommand {
     channel: GuildBasedChannel | null,
   ) {
     return new EmbedBuilder()
-      .setTitle(
-        `${server?.name ?? 'Unknown Server'} \`(${connection.data.serverId})\``,
-      )
+      .setTitle(`${server?.name ?? 'Unknown Server'} \`(${connection.data.serverId})\``)
       .setColor(Constants.Colors.primary)
       .setDescription(
         t('hub.servers.connectionInfo', locale, {
@@ -96,9 +93,7 @@ export default class HubServersSubcommand extends BaseCommand {
       async (c, ctx) => {
         const server = c.guilds.cache.get(ctx.connection.serverId);
         if (server) {
-          const channel = await server.channels
-            .fetch(ctx.connection.channelId)
-            .catch(() => null);
+          const channel = await server.channels.fetch(ctx.connection.channelId).catch(() => null);
           return { serverName: server.name, channelName: channel?.name };
         }
         return null;
@@ -117,10 +112,7 @@ export default class HubServersSubcommand extends BaseCommand {
   ): Promise<{ name: string; value: string }[]> {
     return await Promise.all(
       connections.map(async (connection, index) => {
-        const displayData = await this.fetchConnectionDisplayData(
-          client,
-          connection,
-        );
+        const displayData = await this.fetchConnectionDisplayData(client, connection);
         const value = t('hub.servers.connectionInfo', locale, {
           serverId: connection.data.serverId,
           channelName: `${displayData?.channelName ?? 'Unknown Channel'}`,
@@ -148,15 +140,16 @@ export default class HubServersSubcommand extends BaseCommand {
     const hub = (await this.hubService.findHubsByName(hubName)).at(0);
     if (!hub) {
       await ctx.replyEmbed(
-        t('hub.notFound', locale, { emoji: ctx.getEmoji('x_icon') }),
+        t('hub.notFound', locale, {
+          emoji: ctx.getEmoji('x_icon'),
+          hubs_link: `${Constants.Links.Website}/hubs}`,
+        }),
       );
       return;
     }
 
     if (!(await hub.isMod(ctx.user.id))) {
-      await ctx.replyEmbed(
-        t('hub.notFound_mod', locale, { emoji: ctx.getEmoji('x_icon') }),
-      );
+      await ctx.replyEmbed(t('hub.notFound_mod', locale, { emoji: ctx.getEmoji('x_icon') }));
       return;
     }
 
@@ -171,9 +164,7 @@ export default class HubServersSubcommand extends BaseCommand {
     }
 
     if (serverId) {
-      const connection = connections.find(
-        (con) => con.data.serverId === serverId,
-      );
+      const connection = connections.find((con) => con.data.serverId === serverId);
       if (!connection) {
         await ctx.replyEmbed(
           t('hub.servers.notConnected', locale, {
@@ -184,15 +175,8 @@ export default class HubServersSubcommand extends BaseCommand {
         return;
       }
       const server = await client.guilds.fetch(serverId).catch(() => null);
-      const channel = await server?.channels
-        .fetch(connection.channelId)
-        .catch(() => null);
-      const embed = this.getConnectionInfoEmbed(
-        locale,
-        connection,
-        server,
-        channel ?? null,
-      );
+      const channel = await server?.channels.fetch(connection.channelId).catch(() => null);
+      const embed = this.getConnectionInfoEmbed(locale, connection, server, channel ?? null);
       await ctx.editReply({ embeds: [embed] });
       return;
     }

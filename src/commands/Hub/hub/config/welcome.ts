@@ -18,6 +18,7 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from 'discord.js';
+import Constants from '#src/utils/Constants.js';
 
 export default class HubConfigWelcomeSubcommand extends BaseCommand {
   constructor() {
@@ -87,7 +88,10 @@ export default class HubConfigWelcomeSubcommand extends BaseCommand {
     const hub = await this.hubService.fetchHub(hubId);
     if (!hub) {
       await ctx.reply({
-        content: t('hub.notFound', locale, { emoji: getEmoji('x_icon', ctx.client) }),
+        content: t('hub.notFound', locale, {
+          emoji: getEmoji('x_icon', ctx.client),
+          hubs_link: `${Constants.Links.Website}/hubs}`,
+        }),
         flags: ['Ephemeral'],
       });
       return;

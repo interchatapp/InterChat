@@ -105,6 +105,7 @@ export default class Rules extends BaseCommand {
       await ctx.editReply({
         content: t('hub.notFound', locale, {
           emoji: ctx.getEmoji('x_icon'),
+          hubs_link: `${Constants.Links.Website}/hubs}`,
         }),
       });
       return;

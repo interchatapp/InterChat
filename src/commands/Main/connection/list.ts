@@ -45,6 +45,7 @@ export default class ConnectionListSubcommand extends BaseCommand {
       await ctx.reply(
         t('hub.joined.noJoinedHubs', locale, {
           emoji: ctx.getEmoji('x_icon'),
+          hubs_link: `${Constants.Links.Website}/hubs}`,
         }),
       );
       return;

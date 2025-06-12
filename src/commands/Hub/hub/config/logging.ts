@@ -32,6 +32,7 @@ import {
   type MessageActionRowComponentBuilder,
   type SelectMenuComponentOptionData,
 } from 'discord.js';
+import Constants from '#src/utils/Constants.js';
 
 const CUSTOM_ID_PREFIX = 'hubConfig' as const;
 const ALLOWED_CHANNEL_TYPES = [
@@ -60,7 +61,9 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
   public async execute(ctx: Context): Promise<void> {
     const hub = await this.getHubForUser(ctx);
     if (!hub) {
-      await ctx.replyEmbed('hub.notFound', { t: { emoji: ctx.getEmoji('slash') } });
+      await ctx.replyEmbed('hub.notFound', {
+        t: { emoji: ctx.getEmoji('slash'), hubs_link: `${Constants.Links.Website}/hubs}` },
+      });
       return;
     }
 
