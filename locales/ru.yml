@@ -39,7 +39,7 @@ rules:
     You're now part of an incredible community that connects thousands of servers and millions of people worldwide! We're thrilled to have you aboard this amazing journey.
 
     ### 🚀 Ready to Start Your Adventure?
-    - **Discover Communities:** Use `/hub browse` to explore vibrant, active communities waiting for you
+    - **Discover Communities:** Use the [hub directory]({hubs_link}) to explore vibrant, active communities waiting for you
     - **Jump Into Conversations:** Join discussions that spark your interest, or create your own hub through our [dashboard]({dashboard_link})
     - **Try Quick Connections:** Use our `/call` command for instant one-on-one server connections - perfect for making new friends!
     - **Get Personalized Help:** Use `/setup` for a guided tour if you're feeling a bit lost
@@ -206,7 +206,7 @@ connection:
     tips: |
       **💡 Совет:** Используйте {unpause_cmd} чтобы снять с паузы соединение или {leave_cmd} чтобы полностью отключить его.
 hub:
-  notFound: "{emoji} Hmm, we couldn't find that hub. Double-check the name you entered, or try browsing available hubs with `/hub browse` to discover some amazing communities! 🔍"
+  notFound: "{emoji} Hmm, we couldn't find that hub. Double-check the name you entered, or try browsing available hubs with [hub directory]({hubs_link}) to discover some amazing communities! 🔍"
   notFound_mod: '{emoji} Невозможно найти хаб. Убедитесь что вы ввели правильное название и являетесь владельцем/модератором хаба.'
   notManager: '{emoji} Вы должны быть менеджером хаба чтобы это сделать.'
   notModerator: '{emoji} Вы должны быть модератором хаба чтобы это сделать.'
@@ -339,7 +339,7 @@ hub:
       noInvites: '{emoji} Этот хаб еще не имеет приглашений. Используйте `/hub invite create` чтобы создать одно.'
       notPrivate: '{emoji} Только приватные хабы могут иметь приглашения. Используйте `/hub edit` чтобы сделать этот хаб приватным.'
   joined:
-    noJoinedHubs: '{emoji} Этот сервер еще не присоединился ни к одному хабу. Используйте `/hub browse` чтобы просмотреть список хабов.'
+    noJoinedHubs: '{emoji} This server has not joined any hubs yet. Use [hub directory]({hubs_link}) to view a list of hubs.'
     joinedHubs: Этот сервер является частью **{total}** хаба(-ов). Используйте `/disconnect` чтобы выйти из хаба.
   leave:
     noHub: '{emoji} Этот канал некорректный или не соединён ни с каким хабом.'
@@ -885,7 +885,7 @@ commands:
       setupError: 'There was an error starting the setup process. Please try again later.'
       completionError: 'There was an error completing the setup. Please try again or contact support if the issue persists.'
       channelNotSelected: 'No channel was selected. Please try again.'
-      invalidChannelType: 'Please select a text channel. Voice channels, forums, and other channel types are not supported.'
+      invalidChannelType: 'Please select a text or thread channel. Voice channels, forums, and other channel types are not supported.'
       missingChannelPermissions: |
         I need the following permissions in {channel}:
         - Manage Webhooks
