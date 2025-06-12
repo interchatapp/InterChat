@@ -353,15 +353,6 @@ export class MessageProcessor {
       const userData = await fetchUserData(message.author.id);
       timings.fetchUserData = performance.now() - userDataStartTime;
 
-      // Check if user has accepted the bot's global rules
-      const botRulesStartTime = performance.now();
-      const botRulesAccepted = await this.checkBotRulesAcceptance(message, userData);
-      timings.checkBotRulesAcceptance = performance.now() - botRulesStartTime;
-
-      if (!botRulesAccepted) {
-        return { handled: false, hub: null };
-      }
-
       // Check if user has accepted the hub's specific rules
       const hubRulesStartTime = performance.now();
       const hubRulesAccepted = await this.checkHubRulesAcceptance(message, userData, hub);
@@ -435,23 +426,6 @@ export class MessageProcessor {
       handleError(error, { comment: 'Error processing hub message' });
       return { handled: false, hub: null };
     }
-  }
-
-  /**
-   * Checks if a user has accepted the bot's global rules
-   * @param message The Discord message
-   * @param userData The user's data from the database
-   * @returns Whether the user has accepted the rules
-   */
-  private async checkBotRulesAcceptance(
-    message: Message<true>,
-    userData: User | null,
-  ): Promise<boolean> {
-    if (!userData?.acceptedRules) {
-      await showRulesScreening(message, userData);
-      return false;
-    }
-    return true;
   }
 
   /**
@@ -689,14 +663,6 @@ export class MessageProcessor {
         Logger.debug(
           `Call message processing failed: ${!activeCall ? 'No active call' : 'No user data'}`,
         );
-        return;
-      }
-
-      // Check if user has accepted the bot's rules
-      if (!userData.acceptedRules) {
-        const rulesStartTime = performance.now();
-        await showRulesScreening(message, userData);
-        timings.showRulesScreening = performance.now() - rulesStartTime;
         return;
       }
 

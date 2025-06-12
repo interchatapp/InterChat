@@ -323,14 +323,14 @@ function buildModPanelContainer(
     const userButton = new ButtonBuilder()
       .setCustomId(new CustomID('modPanel:blacklistUser', [messageId]).toString())
       .setLabel(opts.isUserBlacklisted ? 'User Blacklisted' : 'Blacklist User')
-      .setStyle(opts.isUserBlacklisted ? ButtonStyle.Secondary : ButtonStyle.Secondary)
+      .setStyle(ButtonStyle.Secondary)
       .setEmoji(getEmoji('person_icon', client))
       .setDisabled(opts.isUserBlacklisted);
 
     const serverButton = new ButtonBuilder()
       .setCustomId(new CustomID('modPanel:blacklistServer', [messageId]).toString())
       .setLabel(opts.isServerBlacklisted ? 'Server Blacklisted' : 'Blacklist Server')
-      .setStyle(opts.isServerBlacklisted ? ButtonStyle.Secondary : ButtonStyle.Secondary)
+      .setStyle(ButtonStyle.Secondary)
       .setEmoji(getEmoji('globe_icon', client))
       .setDisabled(opts.isServerBlacklisted);
 

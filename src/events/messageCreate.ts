@@ -16,7 +16,6 @@
  */
 
 import BaseEventListener from '#src/core/BaseEventListener.js';
-import { showRulesScreening } from '#src/interactions/RulesScreening.js';
 import { openInboxButton } from '#src/interactions/ShowInboxButton.js';
 import HubManager from '#src/managers/HubManager.js';
 import InfractionManager from '#src/managers/InfractionManager.js';
@@ -79,15 +78,14 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
   }
 
   private async handlePrefixCommand(message: Message): Promise<void> {
-    const userData = await fetchUserData(message.author.id);
-    if (!userData?.acceptedRules) {
-      await showRulesScreening(message, userData);
-      return;
-    }
-
     const resolved = resolveCommand(message);
     // Execute command even if command is null but we have subcommand errors
     if (!resolved.command && !resolved.subcommandError) return;
+
+    if (resolved.command?.contexts?.guildOnly && !message.inGuild()) {
+      await message.reply('This command can only be used in a server.');
+      return;
+    }
 
     await executeCommand(message, resolved);
     await this.showDevAlertsIfAny(message);

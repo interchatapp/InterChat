@@ -17,9 +17,12 @@
 
 import type BaseCommand from '#src/core/BaseCommand.js';
 import BaseEventListener from '#src/core/BaseEventListener.js';
-import { showRulesScreening } from '#src/interactions/RulesScreening.js';
+import type { User as DbUser } from '#src/generated/prisma/client/client.js';
 import { openInboxButton } from '#src/interactions/ShowInboxButton.js';
+import ServerBanManager from '#src/managers/ServerBanManager.js';
+import BanManager from '#src/managers/UserBanManager.js';
 import { executeCommand, resolveCommand } from '#src/utils/CommandUtils.js';
+import { createComponentContext } from '#src/utils/ContextUtils.js';
 import Constants from '#utils/Constants.js';
 import { CustomID, type ParsedCustomId } from '#utils/CustomID.js';
 import { InfoEmbed } from '#utils/EmbedUtils.js';
@@ -32,7 +35,6 @@ import {
   handleError,
   hasUnreadDevAlert,
 } from '#utils/Utils.js';
-import type { User as DbUser } from '#src/generated/prisma/client/client.js';
 import type {
   AutocompleteInteraction,
   CacheType,
@@ -42,9 +44,6 @@ import type {
   MessageComponentInteraction,
   ModalSubmitInteraction,
 } from 'discord.js';
-import { createComponentContext } from '#src/utils/ContextUtils.js';
-import BanManager from '#src/managers/UserBanManager.js';
-import ServerBanManager from '#src/managers/ServerBanManager.js';
 
 export default class InteractionCreate extends BaseEventListener<'interactionCreate'> {
   readonly name = 'interactionCreate';
@@ -90,10 +89,6 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
       return { shouldContinue: false, dbUser: null };
     }
 
-    if (this.shouldShowRules(interaction, dbUser) && interaction.isRepliable()) {
-      await showRulesScreening(interaction, dbUser);
-      return { shouldContinue: false, dbUser: null };
-    }
 
     return { shouldContinue: true, dbUser };
   }
@@ -183,13 +178,6 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
     return true;
   }
 
-  private shouldShowRules(interaction: Interaction, dbUser: DbUser | null) {
-    const isRulesScreenButton =
-      interaction.isButton() &&
-      CustomID.parseCustomId(interaction.customId).prefix === 'rulesScreen';
-
-    return !dbUser?.acceptedRules && !isRulesScreenButton;
-  }
 
   private isInMaintenance(interaction: Interaction) {
     if (!interaction.client.cluster.maintenance || !interaction.isRepliable()) {

@@ -21,7 +21,6 @@ import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionH
 import type { User as DbUser } from '#src/generated/prisma/client/client.js';
 import HubManager from '#src/managers/HubManager.js';
 import { HubService } from '#src/services/HubService.js';
-import UserDbService from '#src/services/UserDbService.js';
 import Constants, { RedisKeys } from '#src/utils/Constants.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import getRedis from '#src/utils/Redis.js';
@@ -30,7 +29,6 @@ import { CustomID } from '#utils/CustomID.js';
 import db from '#utils/Db.js';
 import { InfoEmbed } from '#utils/EmbedUtils.js';
 import { type supportedLocaleCodes, t } from '#utils/Locale.js';
-import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
   type BaseMessageOptions,
@@ -76,28 +74,7 @@ export const showRulesScreening = async (
     const author = repliable instanceof Message ? repliable.author : repliable.user;
     const locale = userData ? await fetchUserLocale(userData) : 'en';
 
-    // If user hasn't accepted bot rules, show them first regardless of hub
-    if (!userData?.acceptedRules) {
-      const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder()
-          .setCustomId(new CustomID('rulesScreen:continue').setArgs(author.id).toString())
-          .setLabel(t('rules.continue', locale))
-          .setStyle(ButtonStyle.Primary),
-      );
-
-      const welcomeMsg = {
-        content: t('rules.welcome', locale, {
-          emoji: getEmoji('wave_anim', repliable.client),
-          user: author.username,
-        }),
-        components: [buttons],
-      };
-
-      await sendRulesReply(repliable, welcomeMsg, true);
-      return;
-    }
-
-    // If user has accepted bot rules but there's a hub with rules to accept, show hub rules
+    // Only show hub rules if there's a hub with rules to accept
     if (hub && hub.getRules().length > 0) {
       await showHubRules(repliable, author.id, hub, locale);
     }
@@ -147,102 +124,6 @@ async function showHubRules(
 export default class RulesScreeningInteraction {
   private readonly redis = getRedis();
 
-  @RegisterInteractionHandler('rulesScreen', 'continue')
-  async showRules(ctx: ComponentContext): Promise<void> {
-    await ctx.deferUpdate();
-
-    const customId = ctx.customId;
-    const [userId] = customId.args;
-    const locale = await fetchUserLocale(ctx.user.id);
-
-    if (ctx.user.id !== userId) {
-      await ctx.reply({
-        content: `${getEmoji('x_icon', ctx.client)} These rules are not for you!`,
-        flags: ['Ephemeral'],
-      });
-      return;
-    }
-
-    const rulesContent = stripIndents`
-      ${t('rules.header', locale)}
-      ${t('rules.botRulesNote', locale)}
-      ${t('rules.rules', locale, { guidelines_link: `${Constants.Links.Website}/guidelines` })}
-      ${t('rules.agreementNote', locale)}
-    `;
-
-    const components = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setCustomId(new CustomID('rulesScreen:accept').setArgs(userId).toString())
-        .setLabel(t('rules.accept', locale))
-        .setStyle(ButtonStyle.Success)
-        .setEmoji(getEmoji('tick_icon', ctx.client)),
-      new ButtonBuilder()
-        .setCustomId(new CustomID('rulesScreen:decline').setArgs(userId).toString())
-        .setLabel(t('rules.decline', locale))
-        .setStyle(ButtonStyle.Danger)
-        .setEmoji(getEmoji('x_icon', ctx.client)),
-    );
-
-    const rulesEmbed = new InfoEmbed()
-      .setDescription(rulesContent)
-      .setColor(Constants.Colors.invisible);
-
-    await ctx.editReply({ content: null, embeds: [rulesEmbed], components: [components] });
-  }
-
-  @RegisterInteractionHandler('rulesScreen', 'accept')
-  async handleBotRulesAccept(ctx: ComponentContext): Promise<void> {
-    await ctx.deferUpdate();
-
-    const [userId] = ctx.customId.args;
-
-    // Add security check
-    if (ctx.user.id !== userId) {
-      await ctx.reply({
-        content: `${getEmoji('x_icon', ctx.client)} You cannot accept rules for other users!`,
-        flags: ['Ephemeral'],
-      });
-      return;
-    }
-
-    const userService = new UserDbService();
-    await userService.upsertUser(ctx.user.id, {
-      acceptedRules: true,
-      name: ctx.user.username,
-      image: ctx.user.avatarURL(),
-    });
-
-    // Check if there's a pending hub rules acceptance needed
-    const locale = await fetchUserLocale(ctx.user.id);
-
-    if (ctx.channelId) {
-      // Try to get hub context from MessageProcessor
-      const hubContext = await db.connection.findFirst({
-        where: { channelId: ctx.channelId },
-        include: { hub: { include: { rulesAcceptances: { where: { userId } } } } },
-      });
-
-      // Show hub rules immediately after accepting bot rules
-      if (hubContext?.hub.rulesAcceptances.length === 0 && hubContext.hub.rules.length > 0) {
-        await showHubRules(ctx, userId, new HubManager(hubContext.hub), locale);
-        return;
-      }
-    }
-
-    await ctx.deleteReply();
-
-    // If no hub rules to show, display success message
-    const embed = new InfoEmbed().setDescription(
-      t('rules.accepted', locale, {
-        support_invite: Constants.Links.SupportInvite,
-        donateLink: Constants.Links.Donate,
-        emoji: getEmoji('tick_icon', ctx.client),
-        dashboard_link: `${Constants.Links.Website}/dashboard`,
-      }),
-    );
-
-    await ctx.reply({ embeds: [embed], components: [], flags: ['Ephemeral'] });
-  }
 
   @RegisterInteractionHandler('rulesScreen', 'acceptHub')
   async handleHubRulesAccept(ctx: ComponentContext): Promise<void> {
@@ -291,21 +172,6 @@ export default class RulesScreeningInteraction {
     }
   }
 
-  @RegisterInteractionHandler('rulesScreen', 'decline')
-  async handleBotRulesDecline(ctx: ComponentContext): Promise<void> {
-    await ctx.deferUpdate();
-    const locale = await fetchUserLocale(ctx.user.id);
-
-    const embed = new InfoEmbed()
-      .setDescription(
-        t('rules.declined', locale, {
-          emoji: getEmoji('x_icon', ctx.client),
-        }),
-      )
-      .setColor('Red');
-
-    await ctx.editReply({ embeds: [embed], components: [] });
-  }
 
   @RegisterInteractionHandler('rulesScreen', 'declineHub')
   async handleHubRulesDecline(ctx: ComponentContext): Promise<void> {
