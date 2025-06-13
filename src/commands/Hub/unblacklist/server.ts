@@ -19,7 +19,7 @@ import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import BlacklistManager from '#src/managers/BlacklistManager.js';
 import { HubService } from '#src/services/HubService.js';
-import { logUserUnblacklist } from '#src/utils/hub/logger/ModLogs.js';
+import { logServerUnblacklist } from '#src/utils/hub/logger/ModLogs.js';
 import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
 import { showModeratedHubsAutocomplete } from '#src/utils/moderation/blacklistUtils.js';
 import { ApplicationCommandOptionType, type AutocompleteInteraction } from 'discord.js';
@@ -73,7 +73,7 @@ export default class UnblacklistserverSubcommand extends BaseCommand {
     }
 
     await blacklistManager.removeBlacklist(hub.id);
-    await logUserUnblacklist(ctx.client, hub, { id: serverId, mod: ctx.user });
+    await logServerUnblacklist(ctx.client, hub, { id: serverId, mod: ctx.user });
 
     await ctx.replyEmbed('blacklist.removed', {
       t: {

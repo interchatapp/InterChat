@@ -29,9 +29,9 @@ import {
   roleMention,
 } from 'discord.js';
 
-export type RoleIdLogConfigs = 'appeals' | 'reports' | 'networkAlerts';
-export type LogConfigTypes = 'modLogs' | 'joinLeaves' | 'appeals' | 'reports' | 'networkAlerts';
-export const logsWithRoleId = ['appeals', 'reports', 'networkAlerts'];
+export type RoleIdLogConfigs = 'appeals' | 'reports' | 'networkAlerts' | 'messageModeration';
+export type LogConfigTypes = 'modLogs' | 'joinLeaves' | 'appeals' | 'reports' | 'networkAlerts' | 'messageModeration';
+export const logsWithRoleId = ['appeals', 'reports', 'networkAlerts', 'messageModeration'];
 
 export default class HubLogManager {
   public readonly hubId: string;
@@ -48,6 +48,7 @@ export default class HubLogManager {
       'appeals',
       'reports',
       'networkAlerts',
+      'messageModeration',
     ] as LogConfigTypes[];
   }
 

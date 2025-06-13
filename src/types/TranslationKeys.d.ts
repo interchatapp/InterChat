@@ -256,6 +256,12 @@ export type TranslationKeys = {
   'hub.manage.logs.appeals.description': never;
   'hub.manage.logs.networkAlerts.label': never;
   'hub.manage.logs.networkAlerts.description': never;
+  'hub.manage.logs.messageModeration.label': never;
+  'hub.manage.logs.messageModeration.description': never;
+  'hub.manage.logs.messageDeletions.label': never;
+  'hub.manage.logs.messageDeletions.description': never;
+  'hub.manage.logs.messageEdits.label': never;
+  'hub.manage.logs.messageEdits.description': never;
   'hub.transfer.invalidUser': 'emoji';
   'hub.transfer.selfTransfer': 'emoji';
   'hub.transfer.botUser': 'emoji';
@@ -731,6 +737,8 @@ export type TranslationKeys = {
   'hubConfig.logging.types.appeals.description': never;
   'hubConfig.logging.types.networkAlerts.label': never;
   'hubConfig.logging.types.networkAlerts.description': never;
+  'hubConfig.logging.types.messageModeration.label': never;
+  'hubConfig.logging.types.messageModeration.description': never;
   'hubConfig.rules.title': never;
   'hubConfig.rules.description': never;
   'hubConfig.rules.noRules': never;

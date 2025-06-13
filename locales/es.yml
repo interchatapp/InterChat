@@ -439,12 +439,6 @@ hub:
       messageModeration:
         label: Moderación de mensajes
         description: Registrar eliminaciones y ediciones de mensajes por moderadores.
-      messageDeletions:
-        label: Message Deletions
-        description: Log when messages are deleted from the hub.
-      messageEdits:
-        label: Message Edits
-        description: Log when messages are edited in the hub.
   transfer:
     invalidUser: '{emoji} No se encontró el usuario especificado.'
     selfTransfer: '{emoji} No puedes transferirte la propiedad a ti mismo.'

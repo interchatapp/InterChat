@@ -327,6 +327,12 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
         emoji: '👋',
       },
       {
+        label: t('hub.manage.logs.messageModeration.label', locale),
+        value: 'messageModeration',
+        description: t('hub.manage.logs.messageModeration.description', locale),
+        emoji: '📝',
+      },
+      {
         label: t('hub.manage.logs.appeals.label', locale),
         value: 'appeals',
         description: t('hub.manage.logs.appeals.description', locale),
