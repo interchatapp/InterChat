@@ -118,6 +118,20 @@ export const getCredits = () => [
   ...Constants.SupporterIds,
 ];
 
+export interface CreditsByType {
+  developers: string[];
+  staff: string[];
+  translators: string[];
+  supporters: string[];
+}
+
+export const getCreditsByType = (): CreditsByType => ({
+  developers: Constants.DeveloperIds,
+  staff: Constants.StaffIds,
+  translators: Constants.TranslatorIds,
+  supporters: Constants.SupporterIds,
+});
+
 export const checkIfStaff = (userId: string, onlyCheckForDev = false) => {
   const staffMembers = [...Constants.DeveloperIds, ...(onlyCheckForDev ? [] : Constants.StaffIds)];
   return staffMembers.includes(userId);

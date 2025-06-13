@@ -26,7 +26,7 @@ import { fetchUserLocale } from '#src/utils/Utils.js';
 import { t } from '#src/utils/Locale.js';
 import Constants from '#utils/Constants.js';
 import { InfoEmbed } from '#utils/EmbedUtils.js';
-import { getCredits } from '#utils/Utils.js';
+import { getCreditsByType } from '#utils/Utils.js';
 import { stripIndents } from 'common-tags';
 import {
   ButtonBuilder,
@@ -136,35 +136,62 @@ export default class About extends BaseCommand {
     await ctx.deferReply({ flags: ['Ephemeral'] });
 
     const locale = await fetchUserLocale(ctx.user.id);
-    const usernames = await this.getUsernames(ctx.client);
+    const creditsByType = await this.getUsernamesByType(ctx.client);
     const creditsDivider = `${getEmoji('blueLine', ctx.client).repeat(9)} **${t('commands.about.credits.title', locale)}** ${getEmoji('blueLine', ctx.client).repeat(9)}`;
     const dotBlue = getEmoji('dot', ctx.client);
 
+    // Build credits sections dynamically
+    const creditsContent: string[] = [creditsDivider];
+
+    // Developers section
+    if (creditsByType.developers.length > 0) {
+      creditsContent.push(
+        `${getEmoji('developer_badge', ctx.client)} **${t('commands.about.credits.developers', locale)}**`,
+        ...creditsByType.developers.map((username) => `${dotBlue} @${username}`),
+        '',
+      );
+    }
+
+    // Staff section
+    if (creditsByType.staff.length > 0) {
+      creditsContent.push(
+        `${getEmoji('staff_badge', ctx.client)} **${t('commands.about.credits.staff', locale, { website: Constants.Links.Website })}**`,
+        ...creditsByType.staff.map((username) => `${dotBlue} @${username}`),
+        '',
+      );
+    }
+
+    // Translators section
+    if (creditsByType.translators.length > 0) {
+      creditsContent.push(
+        `${getEmoji('translator_badge', ctx.client)} **${t('commands.about.credits.translators', locale)}**`,
+        ...creditsByType.translators.map((username) => `${dotBlue} @${username}`),
+        '',
+      );
+    }
+
+    // Special mentions section (supporters)
+    if (creditsByType.supporters.length > 0) {
+      creditsContent.push(
+        `✨ **${t('commands.about.credits.mentions', locale)}**`,
+        ...creditsByType.supporters.map((username, index) => {
+          // First supporter gets mascot mention, second gets top voter mention
+          if (index === 0) {
+            return `${dotBlue} @${username} ${t('commands.about.credits.mascot', locale, { emoji: getEmoji('chipi_smile', ctx.client) })}`;
+          }
+          else if (index === 1) {
+            return `${dotBlue} @${username} ${t('commands.about.credits.top_voter', locale, { vote_url: Constants.Links.Vote, emoji: getEmoji('topggSparkles', ctx.client) })}`;
+          }
+          return `${dotBlue} @${username}`;
+        }),
+        '',
+      );
+    }
+
+    creditsContent.push(creditsDivider);
+
     const creditsEmbed = new InfoEmbed()
-      .setDescription(
-        stripIndents`
-
-        ${creditsDivider}
-        ${getEmoji('developer_badge', ctx.client)} **${t('commands.about.credits.developers', locale)}**
-        ${dotBlue} @${usernames[0]}
-
-        ${getEmoji('staff_badge', ctx.client)} **${t('commands.about.credits.staff', locale, { website: Constants.Links.Website })}**
-        ${dotBlue} @${usernames[1]}
-        ${dotBlue} @${usernames[2]}
-        ${dotBlue} @${usernames[3]}
-        ${dotBlue} @${usernames[4]}
-
-        ${getEmoji('translator_badge', ctx.client)} **${t('commands.about.credits.translators', locale)}**
-        ${dotBlue} @${usernames[5]}
-        ${dotBlue} @${usernames[6]}
-        ${dotBlue} @${usernames[7]}
-
-        ✨ **${t('commands.about.credits.mentions', locale)}**
-        ${dotBlue} @${usernames[8]} ${t('commands.about.credits.mascot', locale, { emoji: getEmoji('chipi_smile', ctx.client) })}
-        ${dotBlue} @${usernames[9]} ${t('commands.about.credits.top_voter', locale, { vote_url: Constants.Links.Vote, emoji: getEmoji('topggSparkles', ctx.client) })}
-        ${creditsDivider}
-      `,
-      )
+      .setDescription(creditsContent.join('\n'))
       .setFooter({
         text: t('commands.about.credits.footer', locale, { version: ctx.client.version }),
       });
@@ -172,14 +199,36 @@ export default class About extends BaseCommand {
     await ctx.editReply({ embeds: [creditsEmbed] });
   }
 
-  private async getUsernames(client: Client): Promise<string[]> {
-    const members: string[] = [];
+  private async getUsernamesByType(client: Client): Promise<{
+    developers: string[];
+    staff: string[];
+    translators: string[];
+    supporters: string[];
+  }> {
+    const creditsByType = getCreditsByType();
+    const result = {
+      developers: [] as string[],
+      staff: [] as string[],
+      translators: [] as string[],
+      supporters: [] as string[],
+    };
 
-    for (const credit of getCredits()) {
-      const member = await client.users.fetch(credit);
-      members.push(member.username.replaceAll('_', '\\_'));
+    // Fetch usernames for each type
+    for (const [type, userIds] of Object.entries(creditsByType)) {
+      const usernames: string[] = [];
+      for (const userId of userIds) {
+        try {
+          const user = await client.users.fetch(userId);
+          usernames.push(user.username.replaceAll('_', '\\_'));
+        }
+        catch {
+          // If user fetch fails, skip this user but continue with others
+          // This can happen if a user account is deleted or inaccessible
+        }
+      }
+      result[type as keyof typeof result] = usernames;
     }
 
-    return members;
+    return result;
   }
 }
