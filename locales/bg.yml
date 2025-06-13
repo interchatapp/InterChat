@@ -19,16 +19,16 @@ rules:
 
     You also agree to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines). Check out the [full list of rules]({guidelines_link}).
   welcome: |
-    {emoji} Здравейте, {user} Добре дошли в InterChat! 🎉
+    {emoji} Здравейте, {user} Добре дошли в ИнтерЧат! 🎉
 
-    Много се радваме, че се присъединявате към нашата страхотна общност от сървъри, свързващи се в Discord! Преди да започнете да говорите с хора от различни краища на света, желателно е набързо да ви запознаем с нашите правила.
+    Много се радваме, че се присъединявате към нашата страхотна общност от сървъри, свързващи се в Дискорд! Преди да започнете да говорите с хора от различни краища на света, желателно е набързо да ви запознаем с нашите правила.
 
-    Тези насоки са създадени, за да гарантират, че InterChat ще остане едно забавно и безопасно пространство за всички, които искат да се сприятелят с други и да почват приятни разговори! ✨
-  alreadyAccepted: "{emoji} Welcome back, {user}! You're all set to explore and chat with amazing communities. Have fun connecting with new friends! 🌟"
-  continue: Continue
-  accept: Accept
-  decline: Decline
-  agreementNote: By accepting these rules, you agree to follow them while using InterChat. Breaking these rules may result in restrictions or bans.
+    Тези насоки са създадени, за да гарантират, че ИнтерЧат ще остане едно забавно и безопасно пространство за всички, които искат да се сприятелят с други и да почват приятни разговори! ✨
+  alreadyAccepted: "{emoji} Добре дошли отново, {user}! Готови сте да говорите с невероятни общности. Дано ви е приятно да си говорите и да намирате нови приятели! 🌟"
+  continue: Продължете
+  accept: Приеми
+  decline: Откажи
+  agreementNote: Чрез приемането на тези правила, вие се съгласявате да ги следвате по време на използването на InterChat. При нарушаването на следните правила може да се доведе до налагане на ограничения или отстранения.
   hubAgreementNote: |
     By accepting these rules, you agree to follow them while chatting in this hub. Breaking these rules may result in removal from the hub.
 
@@ -90,7 +90,7 @@ vote:
   embed:
     title: 'Vote for InterChat'
 network:
-  accountTooNew: '{emoji} Hey {user}! Your Discord account is still pretty new, so we need to wait a little bit before you can send messages through InterChat. This helps keep our community safe! Please try again in a little while. 😊'
+  accountTooNew: '{emoji} Hey {user}! Your Discord account is still pretty new, so we need to wait a little bit before you can send messages through InterChat. This helps keep our community safe! Please try again in a little while.'
   deleteSuccess: '{emoji} Message by {user} has been deleted from __**{deleted}/{total}**__ servers.'
   editInProgress: '{emoji} Your request has been queued. Messages will be edited shortly...'
   editInProgressError: '{emoji} This message is already being edited by another user.'
@@ -923,7 +923,7 @@ commands:
         Let's get this set up and running. 🚀
     channelSelection:
       title: '📍 Step 1: Choose Your Perfect Channel'
-      description: "Let's pick the channel where all the exciting InterChat conversations will happen! This can be any text channel in your server - maybe create a special one just for this? 😊"
+      description: "Let's pick the channel where all the exciting InterChat conversations will happen! This can be any text channel in your server - maybe create a special one just for this?"
       placeholder: 'Select a channel'
       tips:
         title: '💡 Helpful Tips for Success'
