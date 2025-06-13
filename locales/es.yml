@@ -19,11 +19,11 @@ rules:
 
     También aceptas seguir los [Términos de servicio de Discord](https://discord.com/terms) y las [Normas de la comunidad](https://discord.com/guidelines). Consulta la [lista completa de reglas]({guidelines_link}).
   welcome: |
-    {emoji} Hey there, {user}! Welcome to InterChat! 🎉
+    {emoji} ¡Hola {user}! Bienvenido/a a InterChat! 🎉
 
-    We're so excited to have you join our amazing community of servers connecting across Discord! Before you dive into chatting with people from around the world, let's take a quick moment to go over our friendly community guidelines.
+    ¡Estamos muy emocionados de que te hayas unido a nuestra increíble comunidad de servidores conectados a través de Discord! Antes de sumergirte en charlar con personas de todo el mundo, déjame que pase un momento para revisar nuestras amables directrices comunitarias.
 
-    These simple rules help keep InterChat a warm, welcoming, and safe space for everyone to make new friends and share great conversations! ✨
+    Estas simples normas ayudan a mantener InterChat como un espacio cálido, acogedor y seguro para que todos puedan hacer novios y compartir conversaciones maravillosas! ✨
   alreadyAccepted: "{emoji} Welcome back, {user}! You're all set to explore and chat with amazing communities. Have fun connecting with new friends! 🌟"
   continue: Continuar
   accept: Aceptar
@@ -308,16 +308,6 @@ hub:
     ownerOnly: '{emoji} Solo el propietario de este centro puede eliminarlo.'
     success: '{emoji} El centro **{hub}** se ha eliminado.'
     cancelled: '{emoji} La eliminación de concentración ha sido cancelada.'
-  browse:
-    joinConfirm: |
-      ¿Estás seguro qué deseas unirte a {hub} dé {channel}?
-
-      **Nota:** Siempre puede cambiar esto más tarde usando `/connection`.
-    joinFooter: '¿Quieres usar un canal diferente? Use el menú desplegable a continuación.'
-    noHubs: '{emoji} No hay centros enumerados aquí en este momento. ¡Por favor, inténtelo de nuevo más tarde!'
-    rating:
-      invalid: Calificación inválida. Debe ingresar un número entre 1 y 5.
-      success: '¡Calificación enviada! Gracias por tus comentarios.'
   invite:
     create:
       success: |
@@ -446,6 +436,15 @@ hub:
       networkAlerts:
         label: Alertas de la red
         description: Recibir alertas sobre mensajes bloqueados automáticamente.
+      messageModeration:
+        label: Moderación de mensajes
+        description: Registrar eliminaciones y ediciones de mensajes por moderadores.
+      messageDeletions:
+        label: Message Deletions
+        description: Log when messages are deleted from the hub.
+      messageEdits:
+        label: Message Edits
+        description: Log when messages are edited in the hub.
   transfer:
     invalidUser: '{emoji} No se encontró el usuario especificado.'
     selfTransfer: '{emoji} No puedes transferirte la propiedad a ti mismo.'
@@ -1184,6 +1183,9 @@ hubConfig:
       networkAlerts:
         label: 'Network Alerts'
         description: 'Recieve alerts about automatically blocked messages.'
+      messageModeration:
+        label: 'Message Moderation'
+        description: 'Log message deletions and edits by moderators.'
   rules:
     title: 'Hub Rules Configuration'
     description: 'Manage rules and guidelines for your hub'
@@ -1438,14 +1440,6 @@ skip:
   errors:
     error: 'Error'
     skipFailed: 'Skip Failed'
-#Hub commands
-hubBrowse:
-  description: '🔍 Browse public hubs and join them!'
-  content: |
-    ### [🔍 Use the hub-browser on the website!]({website}/hubs)
-    Hey there! This command has been moved to InterChat's website: {website}/hubs as it is much easier to use there with a better interface and more features!
-
-    {emoji} **Pro tip:** Check out our full [dashboard]({website}/dashboard) to manage your hubs, view analytics, and configure settings visually!
 voteCommand:
   description: '✨ Voting perks and vote link.'
 #Welcome message system for new servers
