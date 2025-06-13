@@ -23,7 +23,9 @@ import { CustomID } from '#src/utils/CustomID.js';
 import { UIComponents } from '#src/utils/DesignSystem.js';
 import {
   formatServerLeaderboard,
+  formatServerPosition,
   formatUserLeaderboard,
+  formatUserPosition,
   getLeaderboard,
 } from '#src/utils/Leaderboard.js';
 import { t } from '#utils/Locale.js';
@@ -51,6 +53,9 @@ export default class MessagesLeaderboardCommand extends BaseCommand {
     const userLeaderboard = await getLeaderboard('user', 10);
     const userLeaderboardFormatted = await formatUserLeaderboard(userLeaderboard, ctx.client);
 
+    // Get user's position for display
+    const userPosition = await formatUserPosition(ctx.user.id, ctx.user.username, 'messages', ctx.client);
+
     // Create UI components helper
     const ui = new UIComponents(ctx.client);
     const container = new ContainerBuilder();
@@ -64,13 +69,13 @@ export default class MessagesLeaderboardCommand extends BaseCommand {
       ),
     );
 
-    // Add leaderboard content
+    // Add leaderboard content with user position
+    const leaderboardContent = userLeaderboardFormatted.length > 0
+      ? userLeaderboardFormatted + userPosition
+      : t('global.messages.noDataAvailable', locale);
+
     container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        userLeaderboardFormatted.length > 0
-          ? userLeaderboardFormatted
-          : t('global.messages.noDataAvailable', locale),
-      ),
+      new TextDisplayBuilder().setContent(leaderboardContent),
     );
 
     // Add toggle buttons
@@ -109,6 +114,22 @@ export default class MessagesLeaderboardCommand extends BaseCommand {
         ? await formatUserLeaderboard(leaderboard, ctx.client)
         : await formatServerLeaderboard(leaderboard, ctx.client);
 
+    // Get position for display (user or server based on leaderboard type)
+    let leaderboardContent = leaderboardFormatted.length > 0
+      ? leaderboardFormatted
+      : t('global.messages.noDataAvailable', locale);
+
+    if (leaderboardFormatted.length > 0) {
+      if (currentType === 'user') {
+        const userPosition = await formatUserPosition(ctx.user.id, ctx.user.username, 'messages', ctx.client);
+        leaderboardContent += userPosition;
+      }
+      else if (currentType === 'server' && ctx.guild) {
+        const serverPosition = await formatServerPosition(ctx.guild.id, ctx.guild.name, 'messages', ctx.client);
+        leaderboardContent += serverPosition;
+      }
+    }
+
     // Create UI components helper
     const ui = new UIComponents(ctx.client);
     const container = new ContainerBuilder();
@@ -124,11 +145,7 @@ export default class MessagesLeaderboardCommand extends BaseCommand {
 
     // Add leaderboard content
     container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        leaderboardFormatted.length > 0
-          ? leaderboardFormatted
-          : t('global.messages.noDataAvailable', locale),
-      ),
+      new TextDisplayBuilder().setContent(leaderboardContent),
     );
 
     // Add toggle buttons with current selection

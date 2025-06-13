@@ -99,7 +99,7 @@ export default class ContentFilterManager {
    * Log a blocked message for moderation purposes
    * @param message The Discord message that was blocked
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   private async logBlockedMessage(message: Message<true>, _term: string): Promise<void> {
     try {
       const logData = {

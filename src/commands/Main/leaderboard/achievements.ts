@@ -5,6 +5,7 @@ import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionH
 import { CustomID } from '#src/utils/CustomID.js';
 import db from '#src/utils/Db.js';
 import { UIComponents } from '#src/utils/DesignSystem.js';
+import { formatUserPosition } from '#src/utils/Leaderboard.js';
 import {
   ButtonBuilder,
   ButtonStyle,
@@ -36,6 +37,9 @@ export default class AchievementsLeaderboardCommand extends BaseCommand {
     const leaderboard = await this.getAchievementsLeaderboard(10);
     const leaderboardFormatted = await this.formatAchievementsLeaderboard(leaderboard);
 
+    // Get user's position for display
+    const userPosition = await formatUserPosition(ctx.user.id, ctx.user.username, 'achievements', ctx.client);
+
     // Create UI components helper
     const ui = new UIComponents(ctx.client);
     const container = new ContainerBuilder();
@@ -49,11 +53,13 @@ export default class AchievementsLeaderboardCommand extends BaseCommand {
       ),
     );
 
-    // Add leaderboard content
+    // Add leaderboard content with user position
+    const leaderboardContent = leaderboardFormatted.length > 0
+      ? leaderboardFormatted + userPosition
+      : 'No data available.';
+
     container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        leaderboardFormatted.length > 0 ? leaderboardFormatted : 'No data available.',
-      ),
+      new TextDisplayBuilder().setContent(leaderboardContent),
     );
 
     // Add sorting buttons
@@ -86,6 +92,9 @@ export default class AchievementsLeaderboardCommand extends BaseCommand {
     const leaderboard = await this.getAchievementsLeaderboard(10, sortType);
     const leaderboardFormatted = await this.formatAchievementsLeaderboard(leaderboard);
 
+    // Get user's position for display
+    const userPosition = await formatUserPosition(ctx.user.id, ctx.user.username, 'achievements', ctx.client);
+
     // Create UI components helper
     const ui = new UIComponents(ctx.client);
     const container = new ContainerBuilder();
@@ -100,11 +109,13 @@ export default class AchievementsLeaderboardCommand extends BaseCommand {
       ui.createHeader('Global Achievements Leaderboard', headerText, 'trophy_icon'),
     );
 
-    // Add leaderboard content
+    // Add leaderboard content with user position
+    const leaderboardContent = leaderboardFormatted.length > 0
+      ? leaderboardFormatted + userPosition
+      : 'No data available.';
+
     container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        leaderboardFormatted.length > 0 ? leaderboardFormatted : 'No data available.',
-      ),
+      new TextDisplayBuilder().setContent(leaderboardContent),
     );
 
     // Add sorting buttons

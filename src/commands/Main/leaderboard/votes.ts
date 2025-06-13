@@ -18,7 +18,7 @@
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import { UIComponents } from '#src/utils/DesignSystem.js';
-import { formatVotingLeaderboard, getVotingLeaderboard } from '#src/utils/Leaderboard.js';
+import { formatVotingLeaderboard, formatUserPosition, getVotingLeaderboard } from '#src/utils/Leaderboard.js';
 import { ContainerBuilder, MessageFlags, TextDisplayBuilder } from 'discord.js';
 
 export default class VotesLeaderboardCommand extends BaseCommand {
@@ -34,6 +34,9 @@ export default class VotesLeaderboardCommand extends BaseCommand {
     const leaderboard = await getVotingLeaderboard(10);
     const leaderboardTable = await formatVotingLeaderboard(leaderboard, ctx.client);
 
+    // Get user's position for display
+    const userPosition = await formatUserPosition(ctx.user.id, ctx.user.username, 'votes', ctx.client);
+
     // Create UI components helper
     const ui = new UIComponents(ctx.client);
     const container = new ContainerBuilder();
@@ -47,11 +50,13 @@ export default class VotesLeaderboardCommand extends BaseCommand {
       ),
     );
 
-    // Add leaderboard content
+    // Add leaderboard content with user position
+    const leaderboardContent = leaderboardTable.length > 0
+      ? leaderboardTable + userPosition
+      : 'No voting data available.';
+
     container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        leaderboardTable.length > 0 ? leaderboardTable : 'No voting data available.',
-      ),
+      new TextDisplayBuilder().setContent(leaderboardContent),
     );
 
     await ctx.reply({

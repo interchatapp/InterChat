@@ -1,6 +1,7 @@
 import db from '#src/utils/Db.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import getRedis from '#src/utils/Redis.js';
+import { getVotingLeaderboard as getVotingLeaderboardRank } from '#src/utils/VotingUtils.js';
 import { Client } from 'discord.js';
 
 /**
@@ -66,6 +67,59 @@ export async function getUserLeaderboardRank(userId: string): Promise<number | n
   const leaderboardKey = getLeaderboardKey('leaderboard:messages:users');
   const rank = await redis.zrevrank(leaderboardKey, userId);
   return rank !== null ? rank + 1 : null;
+}
+
+/**
+ * Retrieves the calls leaderboard rank for a given user.
+ * Redis' zrevrank returns a 0-indexed rank, so we add 1.
+ */
+export async function getUserCallsLeaderboardRank(userId: string): Promise<number | null> {
+  const redis = getRedis();
+  const leaderboardKey = getLeaderboardKey('leaderboard:calls:users');
+  const rank = await redis.zrevrank(leaderboardKey, userId);
+  return rank !== null ? rank + 1 : null;
+}
+
+/**
+ * Retrieves the achievements leaderboard rank for a given user.
+ * This is calculated from the database since achievements are stored there.
+ */
+export async function getUserAchievementsLeaderboardRank(userId: string): Promise<number | null> {
+  try {
+    // Get all users with their achievement counts, ordered by count descending
+    const usersWithAchievements = await db.user.findMany({
+      select: {
+        id: true,
+        _count: {
+          select: {
+            achievements: true,
+          },
+        },
+      },
+      where: {
+        achievements: {
+          some: {},
+        },
+      },
+      orderBy: {
+        achievements: {
+          _count: 'desc',
+        },
+      },
+    });
+
+    // Find the user's position in the list
+    const userIndex = usersWithAchievements.findIndex((user) => user.id === userId);
+
+    if (userIndex === -1) {
+      return null; // User not found or has no achievements
+    }
+
+    return userIndex + 1; // Convert 0-based index to 1-based rank
+  }
+  catch {
+    return null;
+  }
 }
 
 /**
@@ -231,4 +285,213 @@ export async function getCallLeaderboard(type: 'user' | 'server', limit = 10): P
   const redis = getRedis();
   const results = await redis.zrevrange(leaderboardKey, 0, limit - 1, 'WITHSCORES');
   return results;
+}
+
+/**
+ * Interface for comprehensive user ranking data
+ */
+export interface UserRankingData {
+  messages: {
+    rank: number | null;
+    count: number;
+  };
+  calls: {
+    rank: number | null;
+    count: number;
+  };
+  votes: {
+    rank: number | null;
+    count: number;
+  };
+  achievements: {
+    rank: number | null;
+    count: number;
+    percentage: number;
+  };
+}
+
+/**
+ * Retrieves comprehensive ranking data for a user across all leaderboards
+ */
+export async function getAllUserRankings(userId: string): Promise<UserRankingData> {
+  const redis = getRedis();
+
+  // Get user data from database
+  const userData = await db.user.findUnique({
+    where: { id: userId },
+    select: {
+      messageCount: true,
+      voteCount: true,
+      _count: {
+        select: {
+          achievements: true,
+        },
+      },
+    },
+  });
+
+  // Get total achievements count for percentage calculation
+  const totalAchievements = await db.achievement.count();
+
+  // Get ranks from Redis and database
+  const [messagesRank, callsRank, votesRankRaw, achievementsRank] = await Promise.all([
+    getUserLeaderboardRank(userId),
+    getUserCallsLeaderboardRank(userId),
+    getVotingLeaderboardRank(userId), // This function exists in VotingUtils.ts
+    getUserAchievementsLeaderboardRank(userId),
+  ]);
+
+  // Convert voting rank (0 means unranked)
+  const votesRank = votesRankRaw > 0 ? votesRankRaw : null;
+
+  // Get calls count from Redis
+  const callsKey = getLeaderboardKey('leaderboard:calls:users');
+  const callsScore = await redis.zscore(callsKey, userId);
+  const callsCount = callsScore ? parseInt(callsScore, 10) : 0;
+
+  return {
+    messages: {
+      rank: messagesRank,
+      count: userData?.messageCount ?? 0,
+    },
+    calls: {
+      rank: callsRank,
+      count: callsCount,
+    },
+    votes: {
+      rank: votesRank,
+      count: userData?.voteCount ?? 0,
+    },
+    achievements: {
+      rank: achievementsRank,
+      count: userData?._count.achievements ?? 0,
+      percentage: totalAchievements > 0
+        ? Math.round(((userData?._count.achievements ?? 0) / totalAchievements) * 100)
+        : 0,
+    },
+  };
+}
+
+/**
+ * Gets the server's leaderboard rank for messages or calls
+ */
+export async function getServerLeaderboardRank(
+  serverId: string,
+  type: 'messages' | 'calls',
+): Promise<number | null> {
+  const redis = getRedis();
+  const leaderboardKey = getLeaderboardKey(`leaderboard:${type}:servers`);
+  const rank = await redis.zrevrank(leaderboardKey, serverId);
+  return rank !== null ? rank + 1 : null;
+}
+
+/**
+ * Formats a user's current position for display at the bottom of leaderboards
+ */
+export async function formatUserPosition(
+  userId: string,
+  username: string,
+  type: 'messages' | 'calls' | 'votes' | 'achievements',
+  client: Client,
+): Promise<string> {
+  let rank: number | null = null;
+  let count = 0;
+  let additionalInfo = '';
+
+  switch (type) {
+    case 'messages': {
+      rank = await getUserLeaderboardRank(userId);
+      const userData = await db.user.findUnique({
+        where: { id: userId },
+        select: { messageCount: true },
+      });
+      count = userData?.messageCount ?? 0;
+      break;
+    }
+    case 'calls': {
+      rank = await getUserCallsLeaderboardRank(userId);
+      const redis = getRedis();
+      const callsKey = getLeaderboardKey('leaderboard:calls:users');
+      const callsScore = await redis.zscore(callsKey, userId);
+      count = callsScore ? parseInt(callsScore, 10) : 0;
+      break;
+    }
+    case 'votes': {
+      const votesRankRaw = await getVotingLeaderboardRank(userId);
+      rank = votesRankRaw > 0 ? votesRankRaw : null;
+      const userData = await db.user.findUnique({
+        where: { id: userId },
+        select: { voteCount: true },
+      });
+      count = userData?.voteCount ?? 0;
+      break;
+    }
+    case 'achievements': {
+      rank = await getUserAchievementsLeaderboardRank(userId);
+      const userData = await db.user.findUnique({
+        where: { id: userId },
+        select: {
+          _count: {
+            select: { achievements: true },
+          },
+        },
+      });
+      count = userData?._count.achievements ?? 0;
+
+      // Add percentage for achievements
+      const totalAchievements = await db.achievement.count();
+      const percentage = totalAchievements > 0
+        ? Math.round((count / totalAchievements) * 100)
+        : 0;
+      additionalInfo = ` (${percentage}%)`;
+      break;
+    }
+  }
+
+  const dotEmoji = getEmoji('dot', client);
+  const rankDisplay = rank ? `#${rank}` : 'Unranked';
+  const countLabel = type === 'calls' ? 'calls' :
+    type === 'votes' ? 'votes' :
+      type === 'achievements' ? 'achievements' : 'msgs';
+
+  return `\n${dotEmoji} **Your Position:** ${rankDisplay} - \`${count} ${countLabel}${additionalInfo}\` ${username}`;
+}
+
+/**
+ * Formats a server's current position for display at the bottom of server leaderboards
+ */
+export async function formatServerPosition(
+  serverId: string,
+  serverName: string,
+  type: 'messages' | 'calls',
+  client: Client,
+): Promise<string> {
+  let rank: number | null = null;
+  let count = 0;
+
+  switch (type) {
+    case 'messages': {
+      rank = await getServerLeaderboardRank(serverId, 'messages');
+      const serverData = await db.serverData.findUnique({
+        where: { id: serverId },
+        select: { messageCount: true },
+      });
+      count = serverData?.messageCount ?? 0;
+      break;
+    }
+    case 'calls': {
+      rank = await getServerLeaderboardRank(serverId, 'calls');
+      const redis = getRedis();
+      const callsKey = getLeaderboardKey('leaderboard:calls:servers');
+      const callsScore = await redis.zscore(callsKey, serverId);
+      count = callsScore ? parseInt(callsScore, 10) : 0;
+      break;
+    }
+  }
+
+  const dotEmoji = getEmoji('dot', client);
+  const rankDisplay = rank ? `#${rank}` : 'Unranked';
+  const countLabel = type === 'calls' ? 'calls' : 'msgs';
+
+  return `\n${dotEmoji} **This Server's Position:** ${rankDisplay} - \`${count} ${countLabel}\` ${serverName}`;
 }

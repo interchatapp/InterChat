@@ -6,7 +6,9 @@ import { UIComponents } from '#src/utils/DesignSystem.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import {
   formatServerLeaderboard,
+  formatServerPosition,
   formatUserLeaderboard,
+  formatUserPosition,
   getCallLeaderboard,
 } from '#src/utils/Leaderboard.js';
 import { t } from '#src/utils/Locale.js';
@@ -38,6 +40,9 @@ export default class CallsLeaderboardCommand extends BaseCommand {
       'calls',
     );
 
+    // Get user's position for display
+    const userPosition = await formatUserPosition(ctx.user.id, ctx.user.username, 'calls', ctx.client);
+
     // Create UI components helper
     const ui = new UIComponents(ctx.client);
     const container = new ContainerBuilder();
@@ -51,13 +56,13 @@ export default class CallsLeaderboardCommand extends BaseCommand {
       ),
     );
 
-    // Add leaderboard content
+    // Add leaderboard content with user position
+    const leaderboardContent = userLeaderboardFormatted.length > 0
+      ? userLeaderboardFormatted + userPosition
+      : t('calls.leaderboard.noData', locale);
+
     container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        userLeaderboardFormatted.length > 0
-          ? userLeaderboardFormatted
-          : t('calls.leaderboard.noData', locale),
-      ),
+      new TextDisplayBuilder().setContent(leaderboardContent),
     );
 
     // Add toggle buttons
@@ -93,6 +98,22 @@ export default class CallsLeaderboardCommand extends BaseCommand {
         ? await formatUserLeaderboard(leaderboard, ctx.client, 'calls')
         : await formatServerLeaderboard(leaderboard, ctx.client, 'calls');
 
+    // Get position for display (user or server based on leaderboard type)
+    let leaderboardContent = leaderboardFormatted.length > 0
+      ? leaderboardFormatted
+      : 'No data available.';
+
+    if (leaderboardFormatted.length > 0) {
+      if (currentType === 'user') {
+        const userPosition = await formatUserPosition(ctx.user.id, ctx.user.username, 'calls', ctx.client);
+        leaderboardContent += userPosition;
+      }
+      else if (currentType === 'server' && ctx.guild) {
+        const serverPosition = await formatServerPosition(ctx.guild.id, ctx.guild.name, 'calls', ctx.client);
+        leaderboardContent += serverPosition;
+      }
+    }
+
     // Create UI components helper
     const ui = new UIComponents(ctx.client);
     const container = new ContainerBuilder();
@@ -104,9 +125,7 @@ export default class CallsLeaderboardCommand extends BaseCommand {
 
     // Add leaderboard content
     container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        leaderboardFormatted.length > 0 ? leaderboardFormatted : 'No data available.',
-      ),
+      new TextDisplayBuilder().setContent(leaderboardContent),
     );
 
     // Add toggle buttons
