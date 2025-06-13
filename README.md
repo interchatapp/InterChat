@@ -57,7 +57,7 @@ With InterChat, messages flow naturally between connected servers, creating vibr
 1. **Invite the Bot**: Visit [interchat.tech/invite](https://interchat.tech/invite)
 2. **Run Setup**: Type `/setup` in your server to start the guided setup process
 3. **Choose Your Path**:
-   - **Join a Hub**: Use `/hub browse` to find and join existing communities
+   - **Join a Hub**: Use [interchat.tech/hubs] to find and join existing cross-server groups
    - **Create a Hub**: Use `/hub create` to start your own community
    - **Quick Connect**: Use `/call` for one-to-one server connections
 
@@ -65,7 +65,6 @@ With InterChat, messages flow naturally between connected servers, creating vibr
 
 ```
 /setup - Start the guided setup process
-/hub browse - Browse available public hubs
 /hub create - Create your own hub
 /connect - Connect a channel to a hub
 /call - Start a direct call with another server

@@ -127,8 +127,11 @@ export const logMsgDelete = async (
   logConfig: HubLogManager,
   opts: { hubName: string; modName: string },
 ) => {
+  // Try to use the specific message moderation channel first, fallback to modLogs
+  const messageModerationChannelId = logConfig.config.messageModerationChannelId;
   const modLogsChannelId = logConfig.config.modLogsChannelId;
-  if (!modLogsChannelId) return;
+  const channelId = messageModerationChannelId || modLogsChannelId;
+  if (!channelId) return;
 
   const { authorId, guildId, content } = originalMsg;
   const user = await client.users.fetch(authorId).catch(() => null);
@@ -157,7 +160,7 @@ export const logMsgDelete = async (
     ])
     .setFooter({ text: `Deleted by: ${opts.modName}` });
 
-  await sendLog(client.cluster, modLogsChannelId, embed);
+  await sendLog(client.cluster, channelId, embed);
 };
 
 export const logMsgEdit = async (
@@ -167,8 +170,11 @@ export const logMsgEdit = async (
   logConfig: HubLogManager,
   opts: { hubName: string; modName: string },
 ) => {
+  // Try to use the specific message moderation channel first, fallback to modLogs
+  const messageModerationChannelId = logConfig.config.messageModerationChannelId;
   const modLogsChannelId = logConfig.config.modLogsChannelId;
-  if (!modLogsChannelId) return;
+  const channelId = messageModerationChannelId || modLogsChannelId;
+  if (!channelId) return;
 
   const { authorId, guildId, content } = originalMsg;
   const user = await client.users.fetch(authorId).catch(() => null);
@@ -199,5 +205,5 @@ export const logMsgEdit = async (
     ])
     .setFooter({ text: `Edited by: ${opts.modName}` });
 
-  await sendLog(client.cluster, modLogsChannelId, embed);
+  await sendLog(client.cluster, channelId, embed);
 };

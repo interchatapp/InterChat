@@ -248,19 +248,21 @@ model AntiSwearPattern {
 }
 
 model HubLogConfig {
-    id                     String  @id @default(cuid())
-    hubId                  String  @unique
-    hub                    Hub     @relation(fields: [hubId], references: [id], onDelete: Cascade)
-    modLogsChannelId       String?
-    modLogsRoleId          String?
-    joinLeavesChannelId    String?
-    joinLeavesRoleId       String?
-    appealsChannelId       String?
-    appealsRoleId          String?
-    reportsChannelId       String?
-    reportsRoleId          String?
-    networkAlertsChannelId String?
-    networkAlertsRoleId    String?
+    id                         String  @id @default(cuid())
+    hubId                      String  @unique
+    hub                        Hub     @relation(fields: [hubId], references: [id], onDelete: Cascade)
+    modLogsChannelId           String?
+    modLogsRoleId              String?
+    joinLeavesChannelId        String?
+    joinLeavesRoleId           String?
+    appealsChannelId           String?
+    appealsRoleId              String?
+    reportsChannelId           String?
+    reportsRoleId              String?
+    networkAlertsChannelId     String?
+    networkAlertsRoleId        String?
+    messageModerationChannelId String?
+    messageModerationRoleId    String?
 }
 
 model HubInvite {

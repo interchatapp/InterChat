@@ -30,17 +30,6 @@ rules:
     By accepting these rules, you agree to follow them while chatting in this hub. Breaking these rules may result in removal from the hub.
 
     ⚠️ **You cannot send messages in this hub until you accept these rules.**
-  accepted: |
-    {emoji} You're all set! Welcome to the InterChat community.
-
-    Quick tips to get started:
-    - Use `/hub browse` to find active communities
-    - Join discussions that interest you
-    - Use our new `/call` command to connect with single servers
-
-    Need help? Join our [community]({support_invite}) - we're happy to help!
-
-    Love what we're building? Consider [supporting us]({donateLink}) to help keep InterChat running.
   declined: |
     {emoji} You have declined the InterChat rules.
     -# ⚠️ **You won't be able to use InterChat or chat with other servers until you accept the rules.**
@@ -284,7 +273,6 @@ hub:
       noInvites: '{emoji} This hub has no invites yet. Use `/hub invite create` to create one.'
       notPrivate: '{emoji} Only private hubs can have invites. Use `/hub edit` to make this hub private.'
   joined:
-    noJoinedHubs: '{emoji} This server has not joined any hubs yet. Use `/hub browse` to view a list of hubs.'
     joinedHubs: This server is a part of **{total}** hub(s). Use `/disconnect` to leave a hub.
   leave:
     noHub: '{emoji} That channel is invalid or has not joined any hubs.'

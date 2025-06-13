@@ -308,16 +308,6 @@ hub:
     ownerOnly: '{emoji} Only the owner of this hub can delete it.'
     success: '{emoji} Hub **{hub}** has been deleted.'
     cancelled: '{emoji} Hub deletion has been cancelled.'
-  browse:
-    joinConfirm: |
-      Are you sure you wish to join {hub} from {channel}?
-
-      **Note:** You can always change this later using `/connection`.
-    joinFooter: Want to use a different channel? Use the dropdown below.
-    noHubs: '{emoji} There are no hubs listed here at the moment. Please try again later!'
-    rating:
-      invalid: Invalid rating. You must enter a number between 1 and 5.
-      success: Rating submitted! Thank you for your feedback.
   invite:
     create:
       success: |
@@ -446,6 +436,15 @@ hub:
       networkAlerts:
         label: Network Alerts
         description: Recieve alerts about automatically blocked messages.
+      messageModeration:
+        label: Message Moderation
+        description: Log message deletions and edits by moderators.
+      messageDeletions:
+        label: Message Deletions
+        description: Log when messages are deleted from the hub.
+      messageEdits:
+        label: Message Edits
+        description: Log when messages are edited in the hub.
   transfer:
     invalidUser: '{emoji} The specified user was not found.'
     selfTransfer: '{emoji} You cannot transfer ownership to yourself.'
@@ -1188,6 +1187,9 @@ hubConfig:
       networkAlerts:
         label: 'Network Alerts'
         description: 'Recieve alerts about automatically blocked messages.'
+      messageModeration:
+        label: 'Message Moderation'
+        description: 'Log message deletions and edits by moderators.'
   rules:
     title: 'Hub Rules Configuration'
     description: 'Manage rules and guidelines for your hub'
@@ -1459,15 +1461,6 @@ skip:
   errors:
     error: 'Error'
     skipFailed: 'Skip Failed'
-
-# Hub commands
-hubBrowse:
-  description: '🔍 Browse public hubs and join them!'
-  content: |
-    ### [🔍 Use the hub-browser on the website!]({website}/hubs)
-    Hey there! This command has been moved to InterChat's website: {website}/hubs as it is much easier to use there with a better interface and more features!
-
-    {emoji} **Pro tip:** Check out our full [dashboard]({website}/dashboard) to manage your hubs, view analytics, and configure settings visually!
 
 voteCommand:
   description: '✨ Voting perks and vote link.'

@@ -446,6 +446,9 @@ hub:
       networkAlerts:
         label: Alertas de la red
         description: Recibir alertas sobre mensajes bloqueados automáticamente.
+      messageModeration:
+        label: Moderación de mensajes
+        description: Registrar eliminaciones y ediciones de mensajes por moderadores.
   transfer:
     invalidUser: '{emoji} No se encontró el usuario especificado.'
     selfTransfer: '{emoji} No puedes transferirte la propiedad a ti mismo.'
@@ -1184,6 +1187,9 @@ hubConfig:
       networkAlerts:
         label: 'Network Alerts'
         description: 'Recieve alerts about automatically blocked messages.'
+      messageModeration:
+        label: 'Message Moderation'
+        description: 'Log message deletions and edits by moderators.'
   rules:
     title: 'Hub Rules Configuration'
     description: 'Manage rules and guidelines for your hub'
