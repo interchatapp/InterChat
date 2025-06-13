@@ -15,17 +15,26 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { stripIndents } from 'common-tags';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, type Guild } from 'discord.js';
 import BaseEventListener from '#src/core/BaseEventListener.js';
-import { donateButton } from '#src/utils/ComponentUtils.js';
+import { CustomID } from '#src/utils/CustomID.js';
+import db from '#src/utils/Db.js';
+import { UIComponents } from '#src/utils/DesignSystem.js';
+import { getEmoji } from '#src/utils/EmojiUtils.js';
 import Constants from '#utils/Constants.js';
 import {
   getGuildOwnerOrFirstChannel as getGuildOwnerAndFirstChannel,
   logGuildJoin,
 } from '#utils/GuildUtils.js';
 import Logger from '#utils/Logger.js';
-import db from '#src/utils/Db.js';
+import {
+  type Guild,
+  ButtonBuilder,
+  ButtonStyle,
+  ContainerBuilder,
+  MessageFlags,
+  SectionBuilder,
+  TextDisplayBuilder,
+} from 'discord.js';
 
 export default class Ready extends BaseEventListener<'guildCreate'> {
   readonly name = 'guildCreate';
@@ -35,65 +44,15 @@ export default class Ready extends BaseEventListener<'guildCreate'> {
     // log that bot joined a guild to goal channel in support server
     await logGuildJoin(guild);
 
-    const { guildOwner, guildChannel } = await getGuildOwnerAndFirstChannel(guild);
-    const purpleDot = this.getEmoji('dot');
+    const { guildChannel } = await getGuildOwnerAndFirstChannel(guild);
 
-    const embed = new EmbedBuilder()
-      .setTitle('👋 Welcome to InterChat!')
-      .setThumbnail(guild.client.user.displayAvatarURL())
-      .setDescription(
-        stripIndents`
-        Thanks for adding InterChat! Let's get you started with cross-server chatting in just a few steps:
+    // Create the new interactive welcome message
+    const welcomeContainer = await Ready.createWelcomeMessage(guild);
 
-        ### 🚀 Quick Setup
-        1. Run \`/setup\` to connect to your first hub
-        2. Choose from our curated list of active hubs
-        3. Start chatting across servers instantly!
-
-        ### 💡 Key Features
-        ${purpleDot} Real-time cross-server messaging
-        ${purpleDot} Custom moderation tools & filters
-        ${purpleDot} Message reactions & formatting
-        ${purpleDot} Server stats & analytics
-
-        ### 🔗 Useful Links
-        ${purpleDot} [Browse All Hubs](${Constants.Links.Website}/hubs)
-        ${purpleDot} [Support Server](${Constants.Links.SupportInvite})
-        ${purpleDot} [Documentation](${Constants.Links.Website}/docs)
-        ${purpleDot} [Vote for Us](${Constants.Links.Vote})
-
-        Need help? Join our [support server](${Constants.Links.SupportInvite}) - we're here to help! 
-        If you enjoy InterChat, consider [supporting us](${Constants.Links.Donate}) 💝
-        `,
-      )
-      .setColor(Constants.Colors.primary)
-      .setFooter({
-        text: `Sent for server: ${guild.name}`,
-        iconURL: guild.iconURL() ?? undefined,
-      });
-
-    const buttonsRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setLabel('Setup Guide')
-        .setURL(`${Constants.Links.Website}/docs`)
-        .setEmoji(this.getEmoji('link_icon'))
-        .setStyle(ButtonStyle.Link),
-      new ButtonBuilder()
-        .setLabel('Support Server')
-        .setURL(Constants.Links.SupportInvite)
-        .setEmoji(this.getEmoji('code_icon'))
-        .setStyle(ButtonStyle.Link),
-      new ButtonBuilder()
-        .setLabel('ToS & Privacy')
-        .setURL(`${Constants.Links.Website}/terms`)
-        .setEmoji(this.getEmoji('lock_icon'))
-        .setStyle(ButtonStyle.Link),
-      donateButton,
-    );
-
-    const welcomeMsg = { embeds: [embed], components: [buttonsRow] };
-    guildOwner?.send(welcomeMsg).catch(() => null);
-    guildChannel?.send(welcomeMsg).catch(() => null);
+    // Send to first available channel
+    guildChannel
+      ?.send({ components: [welcomeContainer], flags: [MessageFlags.IsComponentsV2] })
+      .catch(() => null);
 
     // store guild in database
     await db.serverData.upsert({
@@ -102,4 +61,88 @@ export default class Ready extends BaseEventListener<'guildCreate'> {
       update: { name: guild.name, iconUrl: guild.iconURL() },
     });
   }
+
+  static async createWelcomeMessage(guild: Guild): Promise<ContainerBuilder> {
+    const ui = new UIComponents(guild.client);
+    const container = new ContainerBuilder();
+
+    // Main welcome header
+    container.addTextDisplayComponents(
+      ui.createHeader(
+        'Welcome to InterChat!',
+        `Thanks for adding InterChat to **${guild.name}**! Let's get you started with cross-server chatting in just a few steps.`,
+      ),
+    );
+
+    // Section 1: Setup Calls
+    const callsSection = new SectionBuilder();
+    callsSection
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          '### 📞 Setup Calls\nTry our beta call feature for instant server-to-server connections!',
+        ),
+      )
+      .setButtonAccessory(
+        new ButtonBuilder()
+          .setCustomId(new CustomID().setIdentifier('welcome', 'calls').toString())
+          .setLabel('Setup Calls')
+          .setStyle(ButtonStyle.Secondary)
+          .setEmoji(getEmoji('call_icon', guild.client)),
+      );
+    container.addSectionComponents(callsSection);
+
+    // Section 2: Setup Hubs
+    const hubsSection = new SectionBuilder();
+    hubsSection
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          '### 🏠 Setup Cross-Server Chat\nConnect to hubs for persistent cross-server communities!',
+        ),
+      )
+      .setButtonAccessory(
+        new ButtonBuilder()
+          .setCustomId(new CustomID().setIdentifier('welcome', 'setup').toString())
+          .setLabel('Setup Hubs')
+          .setStyle(ButtonStyle.Primary)
+          .setEmoji(getEmoji('house_icon', guild.client)),
+      );
+    container.addSectionComponents(hubsSection);
+
+    // Section 3: Visit Dashboard
+    const dashboardSection = new SectionBuilder();
+    dashboardSection
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          '### 🛠️ Visit Dashboard\nManage your hubs, connections, and settings with our web interface!',
+        ),
+      )
+      .setButtonAccessory(
+        new ButtonBuilder()
+          .setLabel('Open Dashboard')
+          .setURL(`${Constants.Links.Website}/dashboard`)
+          .setStyle(ButtonStyle.Link)
+          .setEmoji(getEmoji('wand_icon', guild.client)),
+      );
+    container.addSectionComponents(dashboardSection);
+
+    // Section 4: Browse Hubs
+    const browseSection = new SectionBuilder();
+    browseSection
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          '### 🔍 Browse Hubs\nDiscover active communities and find the perfect hub for your interests!',
+        ),
+      )
+      .setButtonAccessory(
+        new ButtonBuilder()
+          .setLabel('Browse All Hubs')
+          .setURL(`${Constants.Links.Website}/hubs`)
+          .setStyle(ButtonStyle.Link)
+          .setEmoji(getEmoji('globe_icon', guild.client)),
+      );
+    container.addSectionComponents(browseSection);
+
+    return container;
+  }
+
 }

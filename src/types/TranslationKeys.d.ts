@@ -895,6 +895,17 @@ export type TranslationKeys = {
   'hubBrowse.description': never;
   'hubBrowse.content': 'website' | 'website' | 'emoji' | 'website';
   'voteCommand.description': never;
+  'welcome.buttons.back': never;
+  'welcome.calls.title': never;
+  'welcome.calls.description': never;
+  'welcome.calls.commands': 'callCommand' | 'skipCommand' | 'hangupCommand' | 'leaderboardCommand';
+  'welcome.calls.examples.title': never;
+  'welcome.calls.examples.content': never;
+  'welcome.setup.title': never;
+  'welcome.setup.description': never;
+  'welcome.setup.instructions': 'setupCommand' | 'connectCommand';
+  'welcome.setup.buttons.runSetup': never;
+  'welcome.setup.errors.commandNotFound': 'emoji';
 };
 
 export type ErrorLocaleKeys = Extract<keyof TranslationKeys, `errors.${string}`>;
