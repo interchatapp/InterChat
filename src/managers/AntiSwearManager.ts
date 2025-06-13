@@ -311,7 +311,7 @@ export default class AntiSwearManager {
             //    And "*word" matches "myword" but not "mywordings".
             //    And "*word*" matches "mywordings" or "keyword".
             try {
-              // Use lookahead/lookbehind for better word boundary detection.
+              // Uses lookahead/lookbehind for better word boundary detection.
               // This helps with partial word matches and special characters correctly.
               const finalPattern = `(?<![\\w])${regexStr}(?![\\w])`;
               new RegExp(finalPattern); // Test if the regex compiles

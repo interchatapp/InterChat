@@ -296,7 +296,9 @@ model User {
     lastVoted         DateTime?
     banReason         String?
     mentionOnReply    Boolean        @default(true)
-    /** @deprecated Not used anymore */
+    /**
+     * @deprecated Not used anymore
+     */
     acceptedRules     Boolean        @default(false)
     messageCount      Int            @default(0)
     lastMessageAt     DateTime       @default(now())
@@ -361,9 +363,83 @@ model ServerData {
     serverBans  ServerBan[]
 }
 
+enum CallStatus {
+    QUEUED
+    ACTIVE
+    ENDED
+}
+
+model Call {
+    id          String     @id @default(cuid())
+    initiatorId String
+    status      CallStatus @default(QUEUED)
+    startTime   DateTime   @default(now())
+    endTime     DateTime?
+    createdAt   DateTime   @default(now())
+    updatedAt   DateTime   @updatedAt
+
+    // Relations
+    participants CallParticipant[]
+    messages     CallMessage[]
+    ratings      CallRating[]
+
+    @@index([status])
+    @@index([startTime])
+    @@index([initiatorId])
+}
+
+model CallParticipant {
+    id           String    @id @default(cuid())
+    callId       String
+    call         Call      @relation(fields: [callId], references: [id], onDelete: Cascade)
+    channelId    String
+    guildId      String
+    webhookUrl   String
+    messageCount Int       @default(0)
+    joinedAt     DateTime  @default(now())
+    leftAt       DateTime?
+
+    // Relations
+    users CallParticipantUser[]
+
+    @@unique([callId, channelId])
+    @@index([callId])
+    @@index([channelId])
+    @@index([guildId])
+}
+
+model CallParticipantUser {
+    id            String          @id @default(cuid())
+    participantId String
+    participant   CallParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+    userId        String
+    joinedAt      DateTime        @default(now())
+    leftAt        DateTime?
+
+    @@unique([participantId, userId])
+    @@index([participantId])
+    @@index([userId])
+}
+
+model CallMessage {
+    id             String   @id @default(cuid())
+    callId         String
+    call           Call     @relation(fields: [callId], references: [id], onDelete: Cascade)
+    authorId       String
+    authorUsername String
+    content        String
+    attachmentUrl  String?
+    timestamp      DateTime @default(now())
+
+    @@index([callId])
+    @@index([authorId])
+    @@index([timestamp])
+}
+
 model CallRating {
     id        String           @id @default(cuid())
     callId    String
+    call      Call             @relation(fields: [callId], references: [id], onDelete: Cascade)
     raterId   String
     rater     User             @relation("RatingsMade", fields: [raterId], references: [id])
     targetId  String
@@ -374,6 +450,7 @@ model CallRating {
     @@unique([callId, raterId, targetId])
     @@index([targetId])
     @@index([raterId])
+    @@index([callId])
 }
 
 model ReputationLog {

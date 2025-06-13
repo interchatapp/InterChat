@@ -22,6 +22,7 @@ import ContentFilterManager from '#src/managers/ContentFilterManager.js';
 import HubManager from '#src/managers/HubManager.js';
 import AchievementService from '#src/services/AchievementService.js';
 import { CallService } from '#src/services/CallService.js';
+import { CallReplyService } from '#src/services/CallReplyService.js';
 import type { ConvertDatesToString } from '#src/types/Utils.d.ts';
 import Constants, { RedisKeys } from '#src/utils/Constants.js';
 import db from '#src/utils/Db.js';
@@ -37,7 +38,7 @@ import {
   updateUserInfoIfChanged,
 } from '#src/utils/Utils.js';
 import { stripIndents } from 'common-tags';
-import type { Client, GuildTextBasedChannel, Message } from 'discord.js';
+import { type Client, type GuildTextBasedChannel, type Message } from 'discord.js';
 import { BroadcastService } from './BroadcastService.js';
 
 /**
@@ -73,6 +74,7 @@ export interface HubConnectionData {
 export class MessageProcessor {
   private readonly broadcastService: BroadcastService;
   private readonly callService: CallService;
+  private readonly callReplyService: CallReplyService;
 
   // Redis cache manager
   private static readonly redis = getRedis();
@@ -84,6 +86,7 @@ export class MessageProcessor {
   constructor(client: Client) {
     this.broadcastService = new BroadcastService();
     this.callService = new CallService(client);
+    this.callReplyService = new CallReplyService();
   }
 
   /**
@@ -731,7 +734,7 @@ export class MessageProcessor {
         // Get a random humorous response
         const humorousResponse = getRandomBlockedMessageResponse();
 
-        // Send notification to the other participant
+        // Send notification to the other participant with simple content
         await BroadcastService.sendMessage(otherParticipant.webhookUrl, {
           content: `**The user's message was blocked by our content filter.**\n${humorousResponse}`,
           username: 'InterChat Calls',
@@ -758,15 +761,34 @@ export class MessageProcessor {
         return;
       }
 
-      // Send the message to the other participant
-      const webhookStartTime = performance.now();
-      await BroadcastService.sendMessage(otherParticipant.webhookUrl, {
-        content: message.content,
-        username: message.author.username,
-        avatarURL: message.author.displayAvatarURL(),
-        allowedMentions: { parse: [] },
-      });
-      timings.sendWebhook = performance.now() - webhookStartTime;
+      // Check if this is a reply message and handle accordingly
+      const replyStartTime = performance.now();
+      const referencedMessage = message.reference?.messageId
+        ? await message.channel.messages.fetch(message.reference.messageId).catch(() => null)
+        : null;
+
+      if (referencedMessage) {
+        // Process as a reply message with enhanced formatting
+        await this.callReplyService.processCallReply(message, activeCall, referencedMessage);
+      }
+      else {
+        // Send regular message with simple content
+        const webhookStartTime = performance.now();
+
+        // Include attachment URL in content if present
+        const contentWithAttachment = attachmentURL
+          ? `${message.content}\n${attachmentURL}`
+          : message.content;
+
+        await BroadcastService.sendMessage(otherParticipant.webhookUrl, {
+          content: contentWithAttachment,
+          username: message.author.username,
+          avatarURL: message.author.displayAvatarURL(),
+          allowedMentions: { parse: [] },
+        });
+        timings.sendWebhook = performance.now() - webhookStartTime;
+      }
+      timings.replyProcessing = performance.now() - replyStartTime;
 
       // Update call participation after successful message send
       const updateStartTime = performance.now();

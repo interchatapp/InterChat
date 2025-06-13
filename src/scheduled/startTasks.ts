@@ -21,6 +21,7 @@ import deleteExpiredInvites from '#src/scheduled/tasks/deleteExpiredInvites.js';
 import storeMsgTimestamps from '#src/scheduled/tasks/storeMsgTimestamps.js';
 import syncBotlistStats from '#src/scheduled/tasks/syncBotlistStats.js';
 import cleanupOldMessages from '#src/scheduled/tasks/cleanupOldMessages.js';
+import cleanupExpiredCalls from '#src/scheduled/tasks/cleanupExpiredCalls.js';
 import expireTemporaryBans from '#src/scheduled/tasks/expireTemporaryBans.js';
 import Scheduler from '#src/services/SchedulerService.js';
 import Constants from '#src/utils/Constants.js';
@@ -37,6 +38,11 @@ export default function startTasks(clusterManager: ClusterManager) {
 
   // Expire temporary bans every 5 minutes
   scheduler.addRecurringTask('expireTemporaryBans', 5 * 60 * 1000, expireTemporaryBans);
+
+  // Clean up expired call data every 15 minutes
+  scheduler.addRecurringTask('cleanupExpiredCalls', 15 * 60 * 1000, () => {
+    cleanupExpiredCalls().catch(Logger.error);
+  });
 
   // Run cleanup tasks every hour
   scheduler.addRecurringTask('cleanupTasks', 60 * 60 * 1000, () => {

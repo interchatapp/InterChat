@@ -255,7 +255,7 @@ export class TutorialUIBuilder {
    */
   public createNoTutorialsMessage(): TextDisplayBuilder {
     return new TextDisplayBuilder().setContent(
-      '## 🚧 Tutorials Coming Soon!\nWe\'re working hard to create some amazing tutorials for you! Check back soon, or feel free to explore InterChat on your own - you\'ve got this! If you need help, our friendly support community is always here for you. 😊',
+      '## 🚧 Tutorials Coming Soon!\nWe\'re working hard to create some amazing tutorials for you! Check back soon, or feel free to explore InterChat on your own - you\'ve got this! If you need help, our friendly support community is always here for you.',
     );
   }
 

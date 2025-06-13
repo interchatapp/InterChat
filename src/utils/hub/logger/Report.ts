@@ -383,9 +383,6 @@ export const sendHubReport = async (
   );
 
   const components = [container.toJSON()] as (APIContainerComponent | APITextDisplayComponent)[];
-  if (reportsRoleId) {
-    components.unshift(new TextDisplayBuilder().setContent(`<@&${reportsRoleId}>`).toJSON());
-  }
 
   // Send the log with Components v2
   await sendLog(client.cluster, reportsChannelId, null, {

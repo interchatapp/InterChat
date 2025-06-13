@@ -17,12 +17,15 @@
 
 import AchievementService from '#src/services/AchievementService.js';
 import { BroadcastService } from '#src/services/BroadcastService.js';
+import { CallDatabaseService } from '#src/services/CallDatabaseService.js';
+import { CallReplyService } from '#src/services/CallReplyService.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { updateCallLeaderboards } from '#src/utils/Leaderboard.js';
 import { t } from '#src/utils/Locale.js';
 import { getOrCreateWebhook } from '#src/utils/Utils.js';
 import Constants, { RedisKeys } from '#utils/Constants.js';
+import Logger from '#utils/Logger.js';
 import { getRedis } from '#utils/Redis.js';
 import {
   ActionRowBuilder,
@@ -73,10 +76,14 @@ export class CallService {
   private readonly redis = getRedis();
   private readonly client: Client;
   private readonly achievementService: AchievementService;
+  private readonly callDbService: CallDatabaseService;
+  private readonly callReplyService: CallReplyService;
 
   constructor(client: Client) {
     this.client = client;
     this.achievementService = new AchievementService();
+    this.callDbService = new CallDatabaseService();
+    this.callReplyService = new CallReplyService();
   }
 
   private async addRecentMatch(userId1: string, userId2: string) {
@@ -308,8 +315,10 @@ export class CallService {
       // 3. Recently matched (COMMENTED OUT FOR INITIAL DAYS)
       if (
         queuedCall.guildId === callData.guildId ||
-        queuedCall.initiatorId === callData.initiatorId ||
-        (await this.hasRecentlyMatched(callData.initiatorId, queuedCall.initiatorId))
+        queuedCall.initiatorId === callData.initiatorId
+        // FIXME: Uncomment this line
+        // ||
+        // (await this.hasRecentlyMatched(callData.initiatorId, queuedCall.initiatorId))
       ) {
         continue;
       }
@@ -328,11 +337,40 @@ export class CallService {
   }
 
   private async connectCall(call1: CallData, call2: CallData) {
-    const callId = this.generateCallId();
     const startTime = Date.now();
 
     // Store recent match
     await this.addRecentMatch(call1.initiatorId, call2.initiatorId);
+
+    // Create the call in the database first to get a proper callId
+    let dbCall;
+    try {
+      dbCall = await this.callDbService.createCall(call1.initiatorId);
+      await this.callDbService.updateCallStatus(dbCall.id, 'ACTIVE');
+
+      // Add participants to the database
+      await Promise.all([
+        this.callDbService.addParticipant(
+          dbCall.id,
+          call1.channelId,
+          call1.guildId,
+          call1.webhookUrl,
+        ),
+        this.callDbService.addParticipant(
+          dbCall.id,
+          call2.channelId,
+          call2.guildId,
+          call2.webhookUrl,
+        ),
+      ]);
+    }
+    catch (error) {
+      Logger.error('Failed to create call in database:', error);
+      // Fall back to generated ID if database creation fails
+      dbCall = { id: this.generateCallId() };
+    }
+
+    const callId = dbCall.id;
 
     // Initialize call data without updating leaderboards yet
     const activeCallData: ActiveCallData = {
@@ -490,7 +528,7 @@ export class CallService {
 
     return {
       content:
-        '**Call ended!** 👋 Thanks for connecting with another community! How was your experience? Your feedback helps us make InterChat even better! 😊',
+        '**Call ended!** 👋 Thanks for connecting with another community! How was your experience? Your feedback helps us make InterChat even better!',
       components: [ratingRow, reportRow],
     };
   }

@@ -264,17 +264,25 @@ export class MessageService {
     try {
       const cutoffDate = new Date(Date.now() - ageInHours * 60 * 60 * 1000);
 
-      const result = await db.message.deleteMany({
-        where: {
-          AND: [
-            { referredMessageId: null },
-            { broadcasts: { none: {} } },
-            { reports: { none: {} } },
-          ],
-          createdAt: {
-            lt: cutoffDate,
+      const [result] = await db.$transaction(async (tx) => {
+        // Delete all broadcasts first
+        await tx.broadcast.deleteMany({
+          where: { createdAt: { lt: cutoffDate } },
+        });
+
+        // Then delete the original messages
+        const messageResult = await tx.message.deleteMany({
+          where: {
+            AND: [
+              { referredMessageId: null },
+              { broadcasts: { none: {} } },
+              { reports: { none: {} } },
+            ],
+            createdAt: { lt: cutoffDate },
           },
-        },
+        });
+
+        return [messageResult];
       });
 
       return result.count;

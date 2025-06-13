@@ -153,6 +153,24 @@ export default class CallCommand extends BaseCommand {
         ),
     );
 
+    // Add call management buttons for enhanced UX
+    if (result.success && !result.message.includes('queue')) {
+      container.addActionRowComponents((row) =>
+        row.addComponents(
+          new ButtonBuilder()
+            .setCustomId(new CustomID().setIdentifier('call', 'hangup').toString())
+            .setLabel('End Call')
+            .setStyle(ButtonStyle.Danger)
+            .setEmoji(ctx.getEmoji('x_icon')),
+          new ButtonBuilder()
+            .setCustomId(new CustomID().setIdentifier('call', 'skip').toString())
+            .setLabel('Skip Call')
+            .setStyle(ButtonStyle.Secondary)
+            .setEmoji(ctx.getEmoji('forward')),
+        ),
+      );
+    }
+
     await ctx.editOrReply({ components: [container] }, ['IsComponentsV2']);
   }
 

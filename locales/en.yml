@@ -90,7 +90,7 @@ vote:
   embed:
     title: 'Vote for InterChat'
 network:
-  accountTooNew: '{emoji} Hey {user}! Your Discord account is still pretty new, so we need to wait a little bit before you can send messages through InterChat. This helps keep our community safe! Please try again in a little while. 😊'
+  accountTooNew: '{emoji} Hey {user}! Your Discord account is still pretty new, so we need to wait a little bit before you can send messages through InterChat. This helps keep our community safe! Please try again in a little while.'
   deleteSuccess: '{emoji} Message by {user} has been deleted from __**{deleted}/{total}**__ servers.'
   editInProgress: '{emoji} Your request has been queued. Messages will be edited shortly...'
   editInProgressError: '{emoji} This message is already being edited by another user.'
@@ -925,7 +925,7 @@ commands:
         Let's get this set up and running. 🚀
     channelSelection:
       title: '📍 Step 1: Choose Your Perfect Channel'
-      description: "Let's pick the channel where all the exciting InterChat conversations will happen! This can be any text channel in your server - maybe create a special one just for this? 😊"
+      description: "Let's pick the channel where all the exciting InterChat conversations will happen! This can be any text channel in your server - maybe create a special one just for this?"
       placeholder: 'Select a channel'
       tips:
         title: '💡 Helpful Tips for Success'

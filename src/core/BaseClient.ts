@@ -104,6 +104,7 @@ export default class InterChatClient extends Client {
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.GuildMessageReactions,
         GatewayIntentBits.GuildWebhooks,
+        GatewayIntentBits.GuildMessageTyping,
       ],
       allowedMentions: { repliedUser: false },
     });

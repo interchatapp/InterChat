@@ -31,12 +31,12 @@ import storeMessageData, {
   type NetworkWebhookSendResult,
 } from '#utils/network/storeMessageData.js';
 import { getReferredContent, getReferredMsgData } from '#utils/network/utils.js';
-import type {
-  APIMessage,
-  Client,
-  HexColorString,
-  Message,
-  WebhookMessageCreateOptions,
+import {
+  type APIMessage,
+  type Client,
+  type HexColorString,
+  type Message,
+  type WebhookMessageCreateOptions,
 } from 'discord.js';
 
 export class BroadcastService {

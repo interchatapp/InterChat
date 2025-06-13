@@ -26,6 +26,7 @@ export default class LeaderboardCommand extends BaseCommand {
       name: 'leaderboard',
       description: 'View various leaderboards for InterChat.',
       types: { slash: true, prefix: true },
+      aliases: ['lb'],
       subcommands: {
         messages: new MessagesLeaderboardCommand(),
         calls: new CallsLeaderboardCommand(),

@@ -25,6 +25,9 @@ export const enum RedisKeys {
   RulesShown = 'rulesShown',
   Call = 'call', // Base prefix for all call-related keys
   CallRecentMatches = 'call:recent_matches',
+  CallTypingRateLimit = 'call:typing_rate_limit', // Rate limiting for typing indicators
+  CallQueue = 'call:queue', // Call queue (will be migrated to DB)
+  CallActive = 'call:active', // Active calls (will be migrated to DB)
   Achievement = 'achievement', // Base prefix for all achievement-related keys
   LastHubMessageUser = 'lastHubMessageUser',
   ReportReporter = 'report:reporter', // Stores reporter ID for report resolution notifications
