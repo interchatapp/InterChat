@@ -305,16 +305,6 @@ hub:
     ownerOnly: '{emoji} Ainult omanik võib kaika kodarasse visata.'
     success: '{emoji} Keskus **{hub}** on kustutatud.'
     cancelled: '{emoji} Keskus on hävingust pääsenud.'
-  browse:
-    joinConfirm: |
-      Oled kindel, et soovid liituda keskusega {hub} kanalilt {channel}?
-
-      **Märkus:** Saate seda alati hiljem muuta, kasutades nuppu `/connection`.
-    joinFooter: Tahad kasutada mõnda teist kanalit? Kasuta allolevat rippmenüüd.
-    noHubs: '{emoji} Loendis pole ühtegi keskust. Proovige hiljem uuesti!'
-    rating:
-      invalid: Kehtetu hinnang. Peate sisestama numbri vahemikus 1 kuni 5.
-      success: Hinnang on esitatud! Täname teid tagasiside eest.
   invite:
     create:
       success: |
@@ -443,6 +433,15 @@ hub:
       networkAlerts:
         label: Network Alerts
         description: Recieve alerts about automatically blocked messages.
+      messageModeration:
+        label: Message Moderation
+        description: Log message deletions and edits by moderators.
+      messageDeletions:
+        label: Message Deletions
+        description: Log when messages are deleted from the hub.
+      messageEdits:
+        label: Message Edits
+        description: Log when messages are edited in the hub.
   transfer:
     invalidUser: '{emoji} The specified user was not found.'
     selfTransfer: '{emoji} You cannot transfer ownership to yourself.'
@@ -1181,6 +1180,9 @@ hubConfig:
       networkAlerts:
         label: 'Network Alerts'
         description: 'Recieve alerts about automatically blocked messages.'
+      messageModeration:
+        label: 'Message Moderation'
+        description: 'Log message deletions and edits by moderators.'
   rules:
     title: 'Hub Rules Configuration'
     description: 'Manage rules and guidelines for your hub'
@@ -1435,14 +1437,6 @@ skip:
   errors:
     error: 'Error'
     skipFailed: 'Skip Failed'
-#Hub commands
-hubBrowse:
-  description: '🔍 Browse public hubs and join them!'
-  content: |
-    ### [🔍 Use the hub-browser on the website!]({website}/hubs)
-    Hey there! This command has been moved to InterChat's website: {website}/hubs as it is much easier to use there with a better interface and more features!
-
-    {emoji} **Pro tip:** Check out our full [dashboard]({website}/dashboard) to manage your hubs, view analytics, and configure settings visually!
 voteCommand:
   description: '✨ Voting perks and vote link.'
 #Welcome message system for new servers
