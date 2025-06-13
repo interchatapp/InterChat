@@ -40,7 +40,7 @@ rules:
     You're now part of an incredible community that connects thousands of servers and millions of people worldwide! We're thrilled to have you aboard this amazing journey.
 
     ### 🚀 Ready to Start Your Adventure?
-    - **Discover Communities:** Use `/hub browse` to explore vibrant, active communities waiting for you
+    - **Discover Communities:** Use the [hub directory]({hubs_link}) to explore vibrant, active communities waiting for you
     - **Jump Into Conversations:** Join discussions that spark your interest, or create your own hub through our [dashboard]({dashboard_link})
     - **Try Quick Connections:** Use our `/call` command for instant one-on-one server connections - perfect for making new friends!
     - **Get Personalized Help:** Use `/setup` for a guided tour if you're feeling a bit lost
@@ -207,7 +207,7 @@ connection:
     tips: |
       **💡 consejo:** Use {unpause_cmd} para despausar la conexión o {leave_cmd} para dejar de recibir mensajes permanentemente.
 hub:
-  notFound: "{emoji} Hmm, we couldn't find that hub. Double-check the name you entered, or try browsing available hubs with `/hub browse` to discover some amazing communities! 🔍"
+  notFound: "{emoji} Hmm, we couldn't find that hub. Double-check the name you entered, or try browsing available hubs with [hub directory]({hubs_link}) to discover some amazing communities! 🔍"
   notFound_mod: '{emoji} No se puede encontrar hub. Asegúrese de haber ingresado el nombre correcto del concentrador y de que usted sea el propietario o un moderador del hub.'
   notManager: '{emoji} Debes ser un administrador del hub para realizar esta acción.'
   notModerator: '{emoji} Necesitas ser un moderador del hub para realizar esta acción.'
@@ -339,7 +339,7 @@ hub:
       noInvites: '{emoji} Este centro aún no tiene invitaciones. Use `/hub invite create` para crear uno.'
       notPrivate: '{emoji} Solo los centros privados pueden tener invitaciones. Use `/Hub Management` para que este centro sea privado.'
   joined:
-    noJoinedHubs: '{emoji} Este servidor aún no se ha unido a ningún centro. Use `/hub browse` para ver una lista de centros.'
+    noJoinedHubs: '{emoji} This server has not joined any hubs yet. Use [hub directory]({hubs_link}) to view a list of hubs.'
     joinedHubs: Este servidor es parte de **{total}** hub(s). Use `/disconnect` para dejar un centro.
   leave:
     noHub: '{emoji} Ese canal no es válido o no ha unido ningún centro.'
@@ -885,7 +885,7 @@ commands:
       setupError: 'There was an error starting the setup process. Please try again later.'
       completionError: 'There was an error completing the setup. Please try again or contact support if the issue persists.'
       channelNotSelected: 'No channel was selected. Please try again.'
-      invalidChannelType: 'Please select a text channel. Voice channels, forums, and other channel types are not supported.'
+      invalidChannelType: 'Please select a text or thread channel. Voice channels, forums, and other channel types are not supported.'
       missingChannelPermissions: |
         I need the following permissions in {channel}:
         - Manage Webhooks
