@@ -4,6 +4,7 @@ import {
   ApplicationCommandOptionType,
   ButtonBuilder,
   ButtonStyle,
+  Client,
   ContainerBuilder,
   MessageFlags,
   SeparatorSpacingSize,
@@ -145,7 +146,7 @@ export default class ViewReportedCallCommand extends BaseCommand {
   /**
    * Display the call report with messages and action buttons
    */
-  private async displayCallReport(
+  public async displayCallReport(
     ctx: Context | ComponentContext,
     callData: ActiveCallData,
     reportData: CallReportData,
@@ -164,7 +165,11 @@ export default class ViewReportedCallCommand extends BaseCommand {
       ),
     );
 
-    // Add call metadata section
+    // Add call metadata section with enhanced server information
+    const enhancedParticipants = await this.formatParticipantsWithNames(
+      callData.participants,
+      ctx.client,
+    );
     container.addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
         stripIndents`
@@ -172,7 +177,7 @@ export default class ViewReportedCallCommand extends BaseCommand {
         **Reporter:** @${reportData.reporterTag} (${reportData.reporterId})
         **Call ID:** \`${callData.callId}\`
         **Call Duration:** ${this.formatDuration(reportData.callDuration || 0)}
-        **Participants:** ${this.formatParticipants(callData.participants)}
+        **Participants:** ${enhancedParticipants}
         `,
       ),
     );
@@ -187,7 +192,7 @@ export default class ViewReportedCallCommand extends BaseCommand {
     const endIdx = Math.min(startIdx + messagesPerPage, messages.length);
     const pageMessages = messages.slice(startIdx, endIdx);
 
-    // Add messages section
+    // Add messages section with enhanced server information
     if (messages.length > 0) {
       container.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
@@ -195,11 +200,17 @@ export default class ViewReportedCallCommand extends BaseCommand {
         ),
       );
 
+      // Create user-to-server mapping for efficient lookups
+      const userServerMap = await this.createUserServerMap(callData.participants, ctx.client);
+
       for (const msg of pageMessages) {
+        const serverInfo = userServerMap.get(msg.authorId);
+        const serverName = serverInfo ? serverInfo.name : 'Unknown Server';
+
         container.addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
             stripIndents`
-            **${msg.authorUsername}** (${msg.authorId}) - ${time(new Date(msg.timestamp), TimestampStyles.RelativeTime)}
+            **${msg.authorUsername}** (${serverName}) - ${msg.authorId} - ${time(new Date(msg.timestamp), TimestampStyles.RelativeTime)}
             \`\`\`${msg.content || '*[No text content]*'}\`\`\`
             ${msg.attachmentUrl ? `[Attachment](${msg.attachmentUrl})` : ''}
             `,
@@ -329,6 +340,51 @@ export default class ViewReportedCallCommand extends BaseCommand {
           `Server ${index + 1}: ${p.users.size} users from <#${p.channelId}> (${p.guildId})`,
       )
       .join('\n');
+  }
+
+  /**
+   * Format participants information with server names
+   */
+  private async formatParticipantsWithNames(
+    participants: CallParticipants[],
+    client: Client,
+  ): Promise<string> {
+    const formattedParticipants = await Promise.all(
+      participants.map(async (p) => {
+        const guild = await client.guilds.fetch(p.guildId).catch(() => null);
+        const guildName = guild?.name || 'Unknown Server';
+        return `**${guildName}**: ${p.users.size} users from <#${p.channelId}> (${p.guildId})`;
+      }),
+    );
+    return formattedParticipants.join('\n');
+  }
+
+  /**
+   * Create a mapping of user IDs to their server information for efficient lookups
+   */
+  private async createUserServerMap(
+    participants: CallParticipants[],
+    client: Client,
+  ): Promise<Map<string, { name: string; id: string }>> {
+    const userServerMap = new Map<string, { name: string; id: string }>();
+
+    for (const participant of participants) {
+      const guild = await client.guilds.fetch(participant.guildId).catch(() => null);
+      const guildName = guild?.name || 'Unknown Server';
+
+      const users = participant.users instanceof Set
+        ? Array.from(participant.users)
+        : participant.users as string[];
+
+      for (const userId of users) {
+        userServerMap.set(userId, {
+          name: guildName,
+          id: participant.guildId,
+        });
+      }
+    }
+
+    return userServerMap;
   }
 
   @RegisterInteractionHandler('view_call', 'next')

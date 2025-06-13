@@ -33,6 +33,8 @@ import { fetchUserLocale } from '#src/utils/Utils.js';
 import { supportedLocaleCodes, t } from '#utils/Locale.js';
 import {
   ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
   EmbedBuilder,
   StringSelectMenuBuilder,
 } from 'discord.js';
@@ -143,6 +145,63 @@ export default class ReportCallHandler {
     await ctx.editReply({ components: [], embeds: [successEmbed] });
   }
 
+  @RegisterInteractionHandler('review_call_report')
+  async handleReviewCallReport(ctx: ComponentContext) {
+    const [callId] = ctx.customId.args;
+
+    // Check if user is staff member
+    const { checkIfStaff } = await import('#src/utils/Utils.js');
+    if (!checkIfStaff(ctx.user.id)) {
+      await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} You don't have permission to review call reports.`,
+        flags: ['Ephemeral'],
+      });
+      return;
+    }
+
+    // Defer the reply while we fetch data
+    await ctx.deferReply({ flags: ['Ephemeral'] });
+
+    // Import and use the view_reported_call command logic
+    const { default: ViewReportedCallCommand } = await import('#src/commands/Staff/view_reported_call.js');
+    const viewCommand = new ViewReportedCallCommand();
+
+    // Get call data
+    const callService = new CallService(ctx.client);
+    const callData = await callService.getEndedCallData(callId);
+
+    if (!callData) {
+      await ctx.editReply({
+        content: `${getEmoji('x_icon', ctx.client)} Unable to find call data for ID: \`${callId}\`. The call might have ended too long ago.`,
+      });
+      return;
+    }
+
+    // Get report data using the same method as the command
+    const redis = getRedis();
+    const reportKey = `${RedisKeys.Call}:report:${callId}`;
+    const reportDataStr = await redis.get(reportKey);
+
+    if (!reportDataStr) {
+      await ctx.editReply({
+        content: `${getEmoji('info_icon', ctx.client)} Found call data, but no report was filed for this call.`,
+      });
+      return;
+    }
+
+    const reportData = JSON.parse(reportDataStr);
+
+    // Get messages for this call
+    const messagesKey = `${RedisKeys.Call}:messages:${callId}`;
+    const messages = await redis.lrange(messagesKey, 0, -1);
+    const parsedMessages = messages
+      .map((msg) => JSON.parse(msg))
+      .sort((a, b) => a.timestamp - b.timestamp);
+
+    // Use the same display logic as the view_reported_call command
+    await viewCommand['displayCallReport'](ctx, callData, reportData, parsedMessages);
+  }
+
   private async submitReport(opts: {
     ctx: ComponentContext;
     callId: string;
@@ -195,7 +254,15 @@ export default class ReportCallHandler {
       const reporterKey = `${RedisKeys.ReportReporter}:${callId}`;
       await redis.set(reporterKey, ctx.user.id, 'EX', 30 * 24 * 60 * 60);
 
-      // Create the embed for the reports channel
+      // Get server information for better readability
+      const reportedServerGuild = await ctx.client.guilds.fetch(serverId).catch(() => null);
+      const reportedServerName = reportedServerGuild?.name || 'Unknown Server';
+      const reporterServerGuild = ctx.guildId
+        ? await ctx.client.guilds.fetch(ctx.guildId).catch(() => null)
+        : null;
+      const reporterServerName = reporterServerGuild?.name || 'Unknown Server';
+
+      // Create the embed for the reports channel with information
       const reportEmbed = new EmbedBuilder()
         .setTitle('Call Report')
         .setColor('Red')
@@ -204,14 +271,14 @@ export default class ReportCallHandler {
         )
         .addFields([
           { name: 'Call ID', value: callId, inline: true },
-          { name: 'Server ID', value: serverId, inline: true },
+          { name: 'Reported Server', value: `${reportedServerName} (${serverId})`, inline: true },
           {
             name: 'Reported Users',
             value: reportedUsers.length > 0 ? reportedUsers.join('\n') : 'No users identified',
             inline: false,
           },
-          { name: 'Reporter Channel', value: ctx.channelId, inline: true },
-          { name: 'Reporter Server', value: ctx.guildId || 'Unknown', inline: true },
+          { name: 'Reporter Channel', value: `<#${ctx.channelId}>`, inline: true },
+          { name: 'Reporter Server', value: `${reporterServerName} (${ctx.guildId || 'Unknown'})`, inline: true },
           {
             name: 'Call Duration',
             value: callDuration ? this.formatDuration(callDuration) : 'Unknown',
@@ -219,10 +286,19 @@ export default class ReportCallHandler {
           },
         ])
         .setFooter({
-          text: `Reported by: ${ctx.user.username} | Use \`/view_reported_call ${callId}\` to view details.`,
+          text: `Reported by: ${ctx.user.username} | Use /view_reported_call ${callId} or Review Report`,
           iconURL: ctx.user.displayAvatarURL(),
         })
         .setTimestamp();
+
+      // Create Review Report button using Discord Components v2
+      const reviewButton = new ButtonBuilder()
+        .setCustomId(new CustomID('review_call_report', [callId]).toString())
+        .setLabel('Review Report')
+        .setStyle(ButtonStyle.Primary)
+        .setEmoji('🔍');
+
+      const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(reviewButton);
 
       // Send the report to the reports channel
       const reportsChannel = await ctx.client.channels
@@ -236,7 +312,10 @@ export default class ReportCallHandler {
         return false;
       }
 
-      await reportsChannel.send({ embeds: [reportEmbed] });
+      await reportsChannel.send({
+        embeds: [reportEmbed],
+        components: [actionRow],
+      });
 
       // Store call messages for review (if any)
       await this.storeCallMessages(callId, callData);
