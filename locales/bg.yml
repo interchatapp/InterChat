@@ -19,20 +19,20 @@ rules:
 
     You also agree to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines). Check out the [full list of rules]({guidelines_link}).
   welcome: |
-    {emoji} Hey there, {user}! Welcome to InterChat! 🎉
+    {emoji} Здравейте, {user} Добре дошли в ИнтерЧат! 🎉
 
-    We're so excited to have you join our amazing community of servers connecting across Discord! Before you dive into chatting with people from around the world, let's take a quick moment to go over our friendly community guidelines.
+    Много се радваме, че се присъединявате към нашата страхотна общност от сървъри, свързващи се в Дискорд! Преди да започнете да говорите с хора от различни краища на света, желателно е набързо да ви запознаем с нашите правила.
 
-    These simple rules help keep InterChat a warm, welcoming, and safe space for everyone to make new friends and share great conversations! ✨
-  alreadyAccepted: "{emoji} Welcome back, {user}! You're all set to explore and chat with amazing communities. Have fun connecting with new friends! 🌟"
-  continue: आगे बढ़ें
-  accept: स्वीकार करें
-  decline: अस्वीकार करें
-  agreementNote: इन नियमों को स्वीकार करके, आप InterChat का उपयोग करते समय इन्हें पालन करने के लिए सहमति देते हैं। इन नियमों का उल्लंघन करने पर प्रतिबंध या बैन हो सकता है।
+    Тези насоки са създадени, за да гарантират, че ИнтерЧат ще остане едно забавно и безопасно пространство за всички, които искат да се сприятелят с други и да почват приятни разговори! ✨
+  alreadyAccepted: "{emoji} Добре дошли отново, {user}! Готови сте да говорите с невероятни общности. Дано ви е приятно да си говорите и да намирате нови приятели! 🌟"
+  continue: Продължете
+  accept: Приеми
+  decline: Откажи
+  agreementNote: Чрез приемането на тези правила, вие се съгласявате да ги следвате по време на използването на InterChat. При нарушаването на следните правила може да се доведе до налагане на ограничения или отстранения.
   hubAgreementNote: |
-    इन नियमों को स्वीकार करके, आप इस हब में बात करते समय इन्हें पालन करने के लिए सहमति देते हैं। इन नियमों का उल्लंघन करने पर हब से हटा दिया जा सकता है।
+    By accepting these rules, you agree to follow them while chatting in this hub. Breaking these rules may result in removal from the hub.
 
-    ⚠️ जब तक आप इन नियमों को स्वीकार नहीं करते, आप इस हब में संदेश नहीं भेज सकते।
+    ⚠️ **You cannot send messages in this hub until you accept these rules.**
   accepted: |
     {emoji} Fantastic! Welcome to the InterChat family! 🎉✨
 
@@ -61,8 +61,8 @@ rules:
     {emoji} You have declined the rules for {hubName}.
     -# ⚠️ **You won't be able to send messages in this hub until you accept its rules.**
     -# To try again, send another message in this hub.
-  noHubRules: इस हब ने अभी तक कोई विशेष नियम निर्धारित नहीं किए हैं। हालांकि, [general InterChat rules]({rules_link}) अभी भी लागू हैं।
-  hubRules: हब नियम
+  noHubRules: This hub has not set any specific rules yet. However, the [general InterChat rules]({rules_link}) still apply.
+  hubRules: Hub Rules
   viewbotRules: 'View Bot Rules'
 vote:
   description: |
@@ -70,11 +70,11 @@ vote:
     - Helps others find active communities
     - Unlocks special features for you
     - Supports our independent development
-  footer: 'वोट हर बारह (12) घंटे में रीफ़्रेश होते हैं • InterChat का समर्थन करने के लिए धन्यवाद!'
+  footer: 'Votes refresh every 12 hours • Thanks for supporting InterChat!'
   button:
-    label: 'top.gg पर वोट करें'
+    label: 'Vote on top.gg'
   perks:
-    moreComingSoon: 'और फायदे जल्द ही आ रहे हैं! कुछ सुझाव [सपोर्ट सर्वर]({support_invite}) में दें।'
+    moreComingSoon: 'More perks coming soon! Suggest some in the [support server]({support_invite}).'
   fields:
     currentStreak: 'Current Streak:'
     lastVote: 'Last Vote'
@@ -91,13 +91,13 @@ vote:
     title: 'Vote for InterChat'
 network:
   accountTooNew: '{emoji} Hey {user}! Your Discord account is still pretty new, so we need to wait a little bit before you can send messages through InterChat. This helps keep our community safe! Please try again in a little while.'
-  deleteSuccess: '{emoji} {user} द्वारा भेजा गया संदेश __**{deleted}/{total}**__ सर्वरों से हटा दिया गया है।'
+  deleteSuccess: '{emoji} Message by {user} has been deleted from __**{deleted}/{total}**__ servers.'
   editInProgress: '{emoji} Your request has been queued. Messages will be edited shortly...'
   editInProgressError: '{emoji} This message is already being edited by another user.'
   emptyContent: '{emoji} Message content cannot be empty.'
   newMessageContent: 'New Message Content'
   editMessagePrompt: '{emoji} Please use the modal to edit your message.'
-  editSuccess: '{emoji} {user} द्वारा भेजा गया संदेश __**{edited}/{total}**__ सर्वरों में संपादित कर दिया गया है।'
+  editSuccess: '{emoji} Message by {user} has been edited in __**{edited}/{total}**__ servers.'
   onboarding:
     embed:
       title: '🎉 Welcome to {hubName}!'
@@ -108,18 +108,18 @@ network:
 
         Ready to become part of something special? Let's get started! ✨
       footer: InterChat Network | Connecting Communities Worldwide 🌍
-    inProgress: '{emoji} {channel} पहले से ही एक हब में शामिल होने के लिए सेटअप होने की प्रक्रिया में है। कृपया सेटअप को पूरा करने या रद्द करने के लिए प्रतीक्षा करें यदि आप इसे शुरू करने वाले थे।'
+    inProgress: '{emoji} {channel} is already in the process of being setup to join a hub. Please wait for the setup to complete or cancel it if you were the one who initiated it.'
 blacklist:
   description: 'Mute/Ban a user or server from your hub.'
-  success: '{emoji} **{name}** सफलतापूर्ण ब्लैकलिस्ट हो गया है!'
-  removed: '{emoji} **{name}** ब्लैकलिस्ट से हटा दिया गया है!'
+  success: '{emoji} **{name}** has been successfully blacklisted!'
+  removed: '{emoji} **{name}** has been removed from the blacklist!'
   modal:
     reason:
-      label: कारण
-      placeholder: ब्लैकलिस्ट करने का कारण
+      label: Reason
+      placeholder: Reason for blacklisting
     duration:
-      label: अवधि
-      placeholder: 'ब्लैकलिस्ट की अवधि। जैसे: 1d, 1w, 1m, 1y। स्थायी के लिए खाली छोड़ें।'
+      label: Duration
+      placeholder: 'Duration of blacklist. Eg: 1d, 1w, 1m, 1y. Leave blank for permanent.'
   user:
     description: 'Mute/Ban a user from your hub.'
     options:
@@ -129,9 +129,9 @@ blacklist:
         description: 'Hub to blacklist from'
     selectDuration: 'Select blacklist duration for {username}:'
     cannotBlacklistMod: '{emoji} You cannot blacklist a moderator. Please remove their moderator role first.'
-    alreadyBlacklisted: '{emoji} यह User पहले से ही ब्लैकलिस्टेड है।'
+    alreadyBlacklisted: '{emoji} This user is already blacklisted.'
     easterEggs:
-      blacklistBot: आप मुझे ब्लैकलिस्ट नहीं कर सकते, wtf.
+      blacklistBot: You can't blacklist me wtf.
   server:
     description: 'Mute/Ban a server from your hub.'
     options:
@@ -140,58 +140,58 @@ blacklist:
       hub:
         description: 'Hub to blacklist from'
     selectDuration: 'Select blacklist duration for {serverName}:'
-    alreadyBlacklisted: '{emoji} यह सर्वर पहले से ही ब्लैकलिस्टेड है।'
-    unknownError: '**{server}** को ब्लैकलिस्ट करने में विफल रहा। अधिक जानकारी के लिए डेवलपर्स से पूछताछ करें।'
+    alreadyBlacklisted: '{emoji} This server is already blacklisted.'
+    unknownError: Failed to blacklist **{server}**. Enquire with the developers for more information.
   list:
     description: 'List all blacklisted users and servers in your hub.'
     user: |
-      **User ID:** {id}
-      **मॉडरेटर:** {moderator}
-      **कारण:** {reason}
-      **समाप्ति:** {expires}
+      **UserID:** {id}
+      **Moderator:** {moderator}
+      **Reason:** {reason}
+      **Expires:** {expires}
     server: |
-      **सर्वर ID:** {id}
-      **मॉडरेटर:** {moderator}
-      **कारण:** {reason}
-      **समाप्ति:** {expires}
+      **ServerId:** {id}
+      **Moderator:** {moderator}
+      **Reason:** {reason}
+      **Expires:** {expires}
 msgInfo:
   buttons:
-    message: संदेश जानकारी
-    server: सर्वर जानकारी
-    user: User जानकारी
-    report: रिपोर्ट
+    message: Message Info
+    server: Server Info
+    user: User Info
+    report: Report
   report:
-    notEnabled: '{emoji} इस हब के लिए रिपोर्टिंग सक्षम नहीं है।'
-    success: '{emoji} रिपोर्ट सफलतापूर्वक सबमिट की गई। धन्यवाद!'
+    notEnabled: '{emoji} Reporting is not enabled for this hub.'
+    success: '{emoji} Report submitted successfully. Thank you!'
 invite: |
   Thank you for choosing to invite InterChat! If you have any questions or need help, we are always here to help you in the support server!
 
   **[{invite_emoji} `Invite Link`]( {invite} ) [{support_emoji} `Support Server`]( {support} )**
 connection:
   joinRequestsDisabled: '{emoji} Join requests are disabled for this hub.'
-  notFound: '{emoji} अमान्य कनेक्शन। चैनल ID की पुष्टि करें या प्रदर्शित विकल्पों से चुनें।'
-  channelNotFound: '{emoji} कनेक्टेड चैनल नहीं मिला। फिर से बात करने के लिए एक नया चैनल चुनें।'
-  alreadyConnected: '{emoji} चैनल {channel} पहले से ही एक हब से कनेक्टेड है।'
-  switchChannel: '{emoji} नीचे दिए गए चयन मेनू का उपयोग करके स्विच करने के लिए एक चैनल चुनें:'
+  notFound: '{emoji} Invalid connection. Verify the channel ID or select from displayed options.'
+  channelNotFound: '{emoji} Unable to find connected channel. To talk again choose a new channel.'
+  alreadyConnected: '{emoji} Channel {channel} is already connected to a hub.'
+  switchChannel: '{emoji} Select a channel to switch to using the select menu below:'
   switchCalled: '{emoji} Channel switch called, use the command again to view new connection.'
-  switchSuccess: '{emoji} चैनल स्विच हो गया है। आप अब **{channel}** से कनेक्ट हो गए हैं।'
-  inviteRemoved: '{emoji} इस हब के लिए सर्वर आमंत्रण हटा दिया गया है।'
+  switchSuccess: '{emoji} Channel switched. You are now connected from **{channel}**.'
+  inviteRemoved: '{emoji} Server Invite removed for this hub.'
   setInviteError: '{emoji} Unable to create invite. Please grant me  the `Create Invite` permission for the connected channel.'
   inviteAdded: '{emoji} Invite Added. Others can now join this server by using `Apps > Message Info/Report` command and `/joinserver` command.'
-  emColorInvalid: '{emoji} अमान्य रंग। कृपया सुनिश्चित करें कि आपने एक वैध हेक्स रंग कोड दर्ज किया है।'
-  emColorChange: '{emoji} एंबेड रंग सफलतापूर्वक {action}'
+  emColorInvalid: '{emoji} Invalid color. Please make sure you have entered a valid hex color code.'
+  emColorChange: '{emoji} Embed color successfully {action}'
   embed:
-    title: कनेक्शन जानकारी
+    title: Connection Details
     fields:
-      hub: हब
-      channel: चैनल
-      invite: आमंत्रण
+      hub: Hub
+      channel: Channel
+      invite: Invite
       connected: Connected
-      emColor: एंबेड रंग
+      emColor: Embed Color
       compact: Compact Mode
     footer: Use the dropdown menu below to manage your connection.
   selects:
-    placeholder: '🛠️ इस कनेक्शन को संपादित करने के लिए एक विकल्प चुनें'
+    placeholder: '🛠️ Select an option to edit this connection'
   unpaused:
     desc: |
       ### {tick_emoji} Unpaused Connection
