@@ -308,16 +308,6 @@ hub:
     ownerOnly: '{emoji} Только владелец этого хаба может его удалить.'
     success: '{emoji} Хаб **{hub}** был удалён.'
     cancelled: '{emoji} Удаление хаба было отменено.'
-  browse:
-    joinConfirm: |
-      Вы уверены, что хотите присоединиться к {hub} из {channel}?
-
-      **Примечание:** Вы всегда можете это изменить с помощью `/connection`.
-    joinFooter: Хотите использовать другой канал? Используйте меню ниже.
-    noHubs: '{emoji} Тут нет хабов в списке в данный момент. Попробуйте ещё раз позже!'
-    rating:
-      invalid: Некорректная оценка. Вы должны ввести число от 1 до 5.
-      success: Оценка отправлена! Спасибо за обратную связь.
   invite:
     create:
       success: |
@@ -446,6 +436,15 @@ hub:
       networkAlerts:
         label: Оповещения Сети
         description: Получать оповещения об автоматически заблокированных сообщениях.
+      messageModeration:
+        label: Message Moderation
+        description: Log message deletions and edits by moderators.
+      messageDeletions:
+        label: Message Deletions
+        description: Log when messages are deleted from the hub.
+      messageEdits:
+        label: Message Edits
+        description: Log when messages are edited in the hub.
   transfer:
     invalidUser: '{emoji} Указанный пользователь не найден.'
     selfTransfer: '{emoji} Вы не можете передать права владельца самому себе.'
@@ -1184,6 +1183,9 @@ hubConfig:
       networkAlerts:
         label: 'Network Alerts'
         description: 'Recieve alerts about automatically blocked messages.'
+      messageModeration:
+        label: 'Message Moderation'
+        description: 'Log message deletions and edits by moderators.'
   rules:
     title: 'Hub Rules Configuration'
     description: 'Manage rules and guidelines for your hub'
@@ -1438,13 +1440,51 @@ skip:
   errors:
     error: 'Error'
     skipFailed: 'Skip Failed'
-#Hub commands
-hubBrowse:
-  description: '🔍 Browse public hubs and join them!'
-  content: |
-    ### [🔍 Use the hub-browser on the website!]({website}/hubs)
-    Hey there! This command has been moved to InterChat's website: {website}/hubs as it is much easier to use there with a better interface and more features!
-
-    {emoji} **Pro tip:** Check out our full [dashboard]({website}/dashboard) to manage your hubs, view analytics, and configure settings visually!
 voteCommand:
   description: '✨ Voting perks and vote link.'
+#Welcome message system for new servers
+welcome:
+  buttons:
+    back: 'Back'
+  calls:
+    title: 'Setup Calls'
+    description: 'Learn about InterChat calls - instant server-to-server connections!'
+    commands: |
+      ### Available Call Commands
+
+      **{callCommand}** - Start a call with another server
+      **{skipCommand}** - Skip current call and find a new match
+      **{hangupCommand}** - End the current call
+      **{leaderboardCommand}** - View call leaderboards
+    examples:
+      title: 'How to Use Calls'
+      content: |
+        1. Run `/call` in any text channel to start
+        2. Wait to be matched with another server
+        3. Chat with the other server in real-time
+        4. Use `/skip` to find a different server
+        5. Use `/hangup` when you're done chatting
+
+        **Note:** Calls are in beta - for a more reliable experience, try InterChat Hubs!
+  setup:
+    title: '🏠 Setup Cross-Server Chat'
+    description: 'Connect to hubs for persistent cross-server communities!'
+    instructions: |
+      ### Get Started with Hubs
+
+      **{setupCommand}** - Guided setup to join your first hub
+      **{connectCommand}** - Connect to a specific hub
+
+      **What are Hubs?**
+      Hubs are persistent chat communities where multiple servers connect and chat together 24/7. Unlike calls, hub messages stay even when you're offline!
+
+      **Why Choose Hubs?**
+      - Persistent connections that stay active
+      - Join multiple themed communities
+      - Advanced moderation and filtering
+      - Custom welcome messages and rules
+      - Thousands of servers already connected
+    buttons:
+      runSetup: 'Run Setup Now'
+    errors:
+      commandNotFound: '{emoji} Setup command not found. Please try running `/setup` manually.'

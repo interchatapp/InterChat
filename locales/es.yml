@@ -19,11 +19,11 @@ rules:
 
     También aceptas seguir los [Términos de servicio de Discord](https://discord.com/terms) y las [Normas de la comunidad](https://discord.com/guidelines). Consulta la [lista completa de reglas]({guidelines_link}).
   welcome: |
-    {emoji} Hey there, {user}! Welcome to InterChat! 🎉
+    {emoji} ¡Hola {user}! Bienvenido/a a InterChat! 🎉
 
-    We're so excited to have you join our amazing community of servers connecting across Discord! Before you dive into chatting with people from around the world, let's take a quick moment to go over our friendly community guidelines.
+    ¡Estamos muy emocionados de que te hayas unido a nuestra increíble comunidad de servidores conectados a través de Discord! Antes de sumergirte en charlar con personas de todo el mundo, déjame que pase un momento para revisar nuestras amables directrices comunitarias.
 
-    These simple rules help keep InterChat a warm, welcoming, and safe space for everyone to make new friends and share great conversations! ✨
+    Estas simples normas ayudan a mantener InterChat como un espacio cálido, acogedor y seguro para que todos puedan hacer novios y compartir conversaciones maravillosas! ✨
   alreadyAccepted: "{emoji} Welcome back, {user}! You're all set to explore and chat with amazing communities. Have fun connecting with new friends! 🌟"
   continue: Continuar
   accept: Aceptar
@@ -308,16 +308,6 @@ hub:
     ownerOnly: '{emoji} Solo el propietario de este centro puede eliminarlo.'
     success: '{emoji} El centro **{hub}** se ha eliminado.'
     cancelled: '{emoji} La eliminación de concentración ha sido cancelada.'
-  browse:
-    joinConfirm: |
-      ¿Estás seguro qué deseas unirte a {hub} dé {channel}?
-
-      **Nota:** Siempre puede cambiar esto más tarde usando `/connection`.
-    joinFooter: '¿Quieres usar un canal diferente? Use el menú desplegable a continuación.'
-    noHubs: '{emoji} No hay centros enumerados aquí en este momento. ¡Por favor, inténtelo de nuevo más tarde!'
-    rating:
-      invalid: Calificación inválida. Debe ingresar un número entre 1 y 5.
-      success: '¡Calificación enviada! Gracias por tus comentarios.'
   invite:
     create:
       success: |
@@ -1444,13 +1434,51 @@ skip:
   errors:
     error: 'Error'
     skipFailed: 'Skip Failed'
-#Hub commands
-hubBrowse:
-  description: '🔍 Browse public hubs and join them!'
-  content: |
-    ### [🔍 Use the hub-browser on the website!]({website}/hubs)
-    Hey there! This command has been moved to InterChat's website: {website}/hubs as it is much easier to use there with a better interface and more features!
-
-    {emoji} **Pro tip:** Check out our full [dashboard]({website}/dashboard) to manage your hubs, view analytics, and configure settings visually!
 voteCommand:
   description: '✨ Voting perks and vote link.'
+#Welcome message system for new servers
+welcome:
+  buttons:
+    back: 'Back'
+  calls:
+    title: 'Setup Calls'
+    description: 'Learn about InterChat calls - instant server-to-server connections!'
+    commands: |
+      ### Available Call Commands
+
+      **{callCommand}** - Start a call with another server
+      **{skipCommand}** - Skip current call and find a new match
+      **{hangupCommand}** - End the current call
+      **{leaderboardCommand}** - View call leaderboards
+    examples:
+      title: 'How to Use Calls'
+      content: |
+        1. Run `/call` in any text channel to start
+        2. Wait to be matched with another server
+        3. Chat with the other server in real-time
+        4. Use `/skip` to find a different server
+        5. Use `/hangup` when you're done chatting
+
+        **Note:** Calls are in beta - for a more reliable experience, try InterChat Hubs!
+  setup:
+    title: '🏠 Setup Cross-Server Chat'
+    description: 'Connect to hubs for persistent cross-server communities!'
+    instructions: |
+      ### Get Started with Hubs
+
+      **{setupCommand}** - Guided setup to join your first hub
+      **{connectCommand}** - Connect to a specific hub
+
+      **What are Hubs?**
+      Hubs are persistent chat communities where multiple servers connect and chat together 24/7. Unlike calls, hub messages stay even when you're offline!
+
+      **Why Choose Hubs?**
+      - Persistent connections that stay active
+      - Join multiple themed communities
+      - Advanced moderation and filtering
+      - Custom welcome messages and rules
+      - Thousands of servers already connected
+    buttons:
+      runSetup: 'Run Setup Now'
+    errors:
+      commandNotFound: '{emoji} Setup command not found. Please try running `/setup` manually.'
