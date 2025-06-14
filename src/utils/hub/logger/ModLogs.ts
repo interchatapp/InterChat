@@ -15,15 +15,13 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { stripIndents } from 'common-tags';
-import { type Client, EmbedBuilder, type Snowflake, User, codeBlock } from 'discord.js';
 import BlacklistManager from '#src/managers/BlacklistManager.js';
-import type HubLogManager from '#src/managers/HubLogManager.js';
 import type HubManager from '#src/managers/HubManager.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import Constants from '#utils/Constants.js';
+import { stripIndents } from 'common-tags';
+import { type Client, EmbedBuilder, type Snowflake, User } from 'discord.js';
 import { sendLog } from './Default.js';
-import type { Message as MessageDB } from '#src/generated/prisma/client/client.js';
 
 const getUnblacklistEmbed = (
   type: 'User' | 'Server',
@@ -119,91 +117,4 @@ export const logUserUnblacklist = async (
   });
 
   await sendLog(client.cluster, modLogsChannelId, embed);
-};
-
-export const logMsgDelete = async (
-  client: Client,
-  originalMsg: MessageDB,
-  logConfig: HubLogManager,
-  opts: { hubName: string; modName: string },
-) => {
-  // Try to use the specific message moderation channel first, fallback to modLogs
-  const messageModerationChannelId = logConfig.config.messageModerationChannelId;
-  const modLogsChannelId = logConfig.config.modLogsChannelId;
-  const channelId = messageModerationChannelId || modLogsChannelId;
-  if (!channelId) return;
-
-  const { authorId, guildId, content } = originalMsg;
-  const user = await client.users.fetch(authorId).catch(() => null);
-  const server = await client.fetchGuild(guildId).catch(() => null);
-
-  const embed = new EmbedBuilder()
-    .setDescription(
-      stripIndents`
-      ### ${getEmoji('delete_icon', client)} Message Deleted
-      **Message Content:**
-      ${codeBlock(content.length > 0 ? content : 'No content provided.')}
-    `,
-    )
-    .setColor(Constants.Colors.invisible)
-    .setImage(originalMsg.imageUrl || null)
-    .addFields([
-      {
-        name: `${getEmoji('person_icon', client)} User`,
-        value: `${user?.username} (\`${authorId}\`)`,
-      },
-      {
-        name: `${getEmoji('rules_icon', client)} Server`,
-        value: `${server?.name} (\`${guildId}\`)`,
-      },
-      { name: `${getEmoji('globe_icon', client)} Hub`, value: opts.hubName },
-    ])
-    .setFooter({ text: `Deleted by: ${opts.modName}` });
-
-  await sendLog(client.cluster, channelId, embed);
-};
-
-export const logMsgEdit = async (
-  client: Client,
-  originalMsg: MessageDB,
-  newContent: string,
-  logConfig: HubLogManager,
-  opts: { hubName: string; modName: string },
-) => {
-  // Try to use the specific message moderation channel first, fallback to modLogs
-  const messageModerationChannelId = logConfig.config.messageModerationChannelId;
-  const modLogsChannelId = logConfig.config.modLogsChannelId;
-  const channelId = messageModerationChannelId || modLogsChannelId;
-  if (!channelId) return;
-
-  const { authorId, guildId, content } = originalMsg;
-  const user = await client.users.fetch(authorId).catch(() => null);
-  const server = await client.fetchGuild(guildId).catch(() => null);
-
-  const embed = new EmbedBuilder()
-    .setDescription(
-      stripIndents`
-      ### ${getEmoji('edit_icon', client)} Message Edited
-      **Before:**
-      ${codeBlock(content.length > 0 ? content : 'No content provided.')}
-      **After:**
-      ${codeBlock(newContent.length > 0 ? newContent : 'No content provided.')}
-    `,
-    )
-    .setColor(Constants.Colors.invisible)
-    .setImage(originalMsg.imageUrl || null)
-    .addFields([
-      {
-        name: `${getEmoji('person_icon', client)} User`,
-        value: `${user?.username} (\`${authorId}\`)`,
-      },
-      {
-        name: `${getEmoji('rules_icon', client)} Server`,
-        value: `${server?.name} (\`${guildId}\`)`,
-      },
-      { name: `${getEmoji('globe_icon', client)} Hub`, value: opts.hubName },
-    ])
-    .setFooter({ text: `Edited by: ${opts.modName}` });
-
-  await sendLog(client.cluster, channelId, embed);
 };

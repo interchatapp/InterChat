@@ -27,7 +27,7 @@ import { handleError } from '#src/utils/Utils.js';
 import { replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
 import { findOriginalMessage } from '#src/utils/network/messageUtils.js';
 import { t } from '#utils/Locale.js';
-import { logMsgEdit } from '#utils/hub/logger/ModLogs.js';
+import { logMsgEdit } from '#utils/hub/logger/MsgLogs.js';
 import { isStaffOrHubMod } from '#utils/hub/utils.js';
 import { editMessageInHub, isEditInProgress } from '#utils/moderation/editMessage.js';
 import {

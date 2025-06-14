@@ -68,7 +68,10 @@ export default class HubConfigAntiSwearSubcommand extends BaseCommand {
 
     const hubName = ctx.options.getString('hub') ?? undefined;
     const hub = await this.hubService.fetchHub({ name: hubName });
-    if (!hub || !(await runHubRoleChecksAndReply(hub, ctx, { checkIfManager: true }))) {
+    if (
+      !hub ||
+      !(await runHubRoleChecksAndReply(hub, ctx, { checkIfManager: true, checkIfOwner: true }))
+    ) {
       return;
     }
 

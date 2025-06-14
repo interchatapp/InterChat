@@ -18,7 +18,7 @@
 import BaseEventListener from '#src/core/BaseEventListener.js';
 import { HubService } from '#src/services/HubService.js';
 import db from '#src/utils/Db.js';
-import { logMsgEdit } from '#src/utils/hub/logger/ModLogs.js';
+import { logMsgEdit } from '#src/utils/hub/logger/MsgLogs.js';
 import { editMessageInHub, isEditInProgress } from '#src/utils/moderation/editMessage.js';
 import { getOriginalMessage } from '#src/utils/network/messageUtils.js';
 import { stripIndents } from 'common-tags';
@@ -65,7 +65,7 @@ export default class MessageUpdate extends BaseEventListener<'messageUpdate'> {
     newMessage.channel
       .send({
         content: stripIndents`
-        ${this.getEmoji('info_icon')} <@${newMessage.author.id}> you edited a message from this channel, which is connected to a hub. It will be edited in other linked servers as well. 
+        ${this.getEmoji('info_icon')} <@${newMessage.author.id}> you edited a message from this channel, which is connected to a hub. It will be edited in other linked servers as well.
         -# You can also manually edit the message from the hub by using the </editmsg:0> command.
         `,
         allowedMentions: { users: [newMessage.author.id] },

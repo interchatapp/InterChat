@@ -21,7 +21,7 @@ import { findOriginalMessage } from '#src/utils/network/messageUtils.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import { fetchUserLocale } from '#src/utils/Utils.js';
 import { t } from '#utils/Locale.js';
-import { logMsgDelete } from '#utils/hub/logger/ModLogs.js';
+import { logMsgDelete } from '#utils/hub/logger/MsgLogs.js';
 import { isStaffOrHubMod } from '#utils/hub/utils.js';
 import { deleteMessageFromHub, isDeleteInProgress } from '#utils/moderation/deleteMessage.js';
 import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js';

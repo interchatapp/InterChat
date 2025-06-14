@@ -18,7 +18,7 @@
 import BaseEventListener from '#src/core/BaseEventListener.js';
 import { HubService } from '#src/services/HubService.js';
 import db from '#src/utils/Db.js';
-import { logMsgDelete } from '#src/utils/hub/logger/ModLogs.js';
+import { logMsgDelete } from '#src/utils/hub/logger/MsgLogs.js';
 import { deleteMessageFromHub } from '#src/utils/moderation/deleteMessage.js';
 import { getOriginalMessage } from '#src/utils/network/messageUtils.js';
 import { stripIndents } from 'common-tags';
@@ -67,7 +67,7 @@ export default class MessageDelete extends BaseEventListener<'messageDelete'> {
     message.channel
       .send({
         content: stripIndents`
-        ${this.getEmoji('info_icon')} ${deletedBy} you deleted a message from this channel, which is connected to a hub. It will be deleted from other linked servers as well. 
+        ${this.getEmoji('info_icon')} ${deletedBy} you deleted a message from this channel, which is connected to a hub. It will be deleted from other linked servers as well.
         -# You can also manually delete the message from the hub by using the </deletemsg:1335981700441968695> command.
         -# Hub moderators can still see the message in the mod logs. Whatever you say in a hub is your responsibility.
         `,

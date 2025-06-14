@@ -18,7 +18,7 @@
 import { buildModPanel } from '#src/interactions/ModPanel.js';
 import { HubService } from '#src/services/HubService.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
-import { logMsgDelete } from '#src/utils/hub/logger/ModLogs.js';
+import { logMsgDelete } from '#src/utils/hub/logger/MsgLogs.js';
 import { type ModAction, replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
 import { getBroadcasts, getOriginalMessage } from '#src/utils/network/messageUtils.js';
 
