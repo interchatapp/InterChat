@@ -58,7 +58,6 @@ export default class CallCommand extends BaseCommand {
 
   async execute(ctx: Context) {
     const ui = new UIComponents(ctx.client);
-    const locale = await fetchUserLocale(ctx.user.id);
 
     await ctx.deferReply();
 
@@ -70,6 +69,7 @@ export default class CallCommand extends BaseCommand {
 
     // Create a container for the call status
     const container = new ContainerBuilder();
+    const locale = await ctx.getLocale();
 
     if (result.success) {
       // Call was initiated successfully
@@ -162,7 +162,7 @@ export default class CallCommand extends BaseCommand {
 
     if (!ctx.inGuild()) return;
 
-    const locale = await fetchUserLocale(ctx.user.id);
+    const locale = await ctx.getLocale();
     const callService = new CallService(ctx.client);
     await callService.hangup(ctx.channelId);
 
@@ -234,7 +234,7 @@ export default class CallCommand extends BaseCommand {
 
     if (!ctx.inGuild()) return;
 
-    const locale = await fetchUserLocale(ctx.user.id);
+    const locale = await ctx.getLocale();
     const callService = new CallService(ctx.client);
     const result = await callService.skip(ctx.channelId, ctx.user.id);
 
@@ -314,7 +314,7 @@ export default class CallCommand extends BaseCommand {
   async handleLeaderboardButton(ctx: ComponentContext) {
     await ctx.deferUpdate();
 
-    const locale = await fetchUserLocale(ctx.user.id);
+    const locale = await ctx.getLocale();
 
     // Default to user leaderboard
     const userLeaderboard = await getCallLeaderboard('user', 10);
@@ -370,7 +370,7 @@ export default class CallCommand extends BaseCommand {
   async handleExploreHubsButton(ctx: ComponentContext) {
     await ctx.deferUpdate();
 
-    const locale = await fetchUserLocale(ctx.user.id);
+    const locale = await ctx.getLocale();
     const ui = new UIComponents(ctx.client);
     const container = new ContainerBuilder();
 
@@ -433,7 +433,7 @@ export default class CallCommand extends BaseCommand {
       await connectCommand.execute(ctx);
     }
     else {
-      const locale = await fetchUserLocale(ctx.user.id);
+      const locale = await ctx.getLocale();
       await ctx.reply({
         content: t('call.errors.connectNotFound', locale, {
           emoji: ctx.getEmoji('x_icon'),

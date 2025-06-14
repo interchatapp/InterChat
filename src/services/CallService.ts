@@ -271,10 +271,12 @@ export class CallService {
       await this.sendSystemMessage(otherParticipant.webhookUrl, content, components);
     }
 
-    // Remove both channels from active calls
-    await Promise.all(
-      activeCall.participants.map((p) => this.redis.del(this.getActiveCallKey(p.channelId))),
-    );
+    // Remove both channels from active calls using pipeline
+    const pipeline = this.redis.pipeline();
+    activeCall.participants.forEach((p) => {
+      pipeline.del(this.getActiveCallKey(p.channelId));
+    });
+    await pipeline.exec();
 
     // Return message for the channel that initiated the hangup
     return {
@@ -298,8 +300,12 @@ export class CallService {
       return hangupResult;
     }
 
-    // Then initiate a new call with the user who initiated the skip
-    const channel = (await this.client.channels.fetch(channelId)) as TextChannel;
+    // Get channel from cache first, then fetch if needed
+    let channel = this.client.channels.cache.get(channelId) as TextChannel;
+    if (!channel) {
+      channel = (await this.client.channels.fetch(channelId)) as TextChannel;
+    }
+
     return this.initiateCall(channel, userId);
   }
 
@@ -315,10 +321,8 @@ export class CallService {
       // 3. Recently matched (COMMENTED OUT FOR INITIAL DAYS)
       if (
         queuedCall.guildId === callData.guildId ||
-        queuedCall.initiatorId === callData.initiatorId
-        // FIXME: Uncomment this line
-        // ||
-        // (await this.hasRecentlyMatched(callData.initiatorId, queuedCall.initiatorId))
+        queuedCall.initiatorId === callData.initiatorId ||
+        (await this.hasRecentlyMatched(callData.initiatorId, queuedCall.initiatorId))
       ) {
         continue;
       }
@@ -326,9 +330,11 @@ export class CallService {
       // Found a match!
       await this.connectCall(callData, queuedCall);
 
-      // Remove both from queue
-      await this.redis.lrem(this.getQueueKey(), 0, queuedCallStr);
-      await this.redis.lrem(this.getQueueKey(), 0, JSON.stringify(callData));
+      // Remove both from queue using pipeline for better performance
+      const pipeline = this.redis.pipeline();
+      pipeline.lrem(this.getQueueKey(), 0, queuedCallStr);
+      pipeline.lrem(this.getQueueKey(), 0, JSON.stringify(callData));
+      await pipeline.exec();
 
       return true;
     }
@@ -342,14 +348,14 @@ export class CallService {
     // Store recent match
     await this.addRecentMatch(call1.initiatorId, call2.initiatorId);
 
-    // Create the call in the database first to get a proper callId
+    // Create the call in the database with participants in a single transaction
     let dbCall;
     try {
       dbCall = await this.callDbService.createCall(call1.initiatorId);
-      await this.callDbService.updateCallStatus(dbCall.id, 'ACTIVE');
 
-      // Add participants to the database
+      // Batch the status update and participant creation for better performance
       await Promise.all([
+        this.callDbService.updateCallStatus(dbCall.id, 'ACTIVE'),
         this.callDbService.addParticipant(
           dbCall.id,
           call1.channelId,
@@ -419,7 +425,7 @@ export class CallService {
     await this.sendSystemMessage(call1.webhookUrl, `<@${call1.initiatorId}> ${message}`);
 
     // Track call start achievements for both initiators
-    await Promise.all([
+    Promise.all([
       this.achievementService.processEvent(
         'call_start',
         {

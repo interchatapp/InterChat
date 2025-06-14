@@ -3,7 +3,6 @@ import Context from '#src/core/CommandContext/Context.js';
 import { CallService } from '#src/services/CallService.js';
 import { UIComponents } from '#src/utils/DesignSystem.js';
 import { t } from '#src/utils/Locale.js';
-import { fetchUserLocale } from '#src/utils/Utils.js';
 import { CustomID } from '#utils/CustomID.js';
 import {
   ButtonBuilder,
@@ -38,7 +37,8 @@ export default class SkipCommand extends BaseCommand {
   async execute(ctx: Context) {
     await ctx.deferReply();
 
-    const locale = await fetchUserLocale(ctx.user.id);
+    // Use the context's getLocale method which is optimized
+    const locale = await ctx.getLocale();
     const callService = new CallService(ctx.client);
     const ui = new UIComponents(ctx.client);
 
