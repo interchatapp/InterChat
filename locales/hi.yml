@@ -480,93 +480,93 @@ hub:
         placeholder: नियम का पाठ दर्ज करें (अधिकतम 1000 अक्षर)
       edit:
         title: हब नियम संपादित करें
-        label: Rule Text
-        placeholder: Enter the new rule text (max 1000 characters)
+        label: नियम का नाम
+        placeholder: नया नियम पाठ दर्ज करें (अधिकतम 1000 अक्षर)
     select:
-      placeholder: Select a rule to edit or remove
+      placeholder: संपादन या हटाने के लिए कोई नियम चुनें
       option:
         label: नियम {number}
     buttons:
-      add: Add Rule
-      edit: Edit Rule
-      delete: Delete Rule
-      back: Back
+      add: नियम जोड़ें
+      edit: नियम संपादित करें
+      delete: नियम हटाएं
+      back: वापस जाएं
     success:
-      add: '{emoji} Rule added successfully!'
-      edit: '{emoji} Rule updated successfully!'
-      delete: '{emoji} Rule deleted successfully!'
+      add: '{emoji} नियम सफलतापूर्वक जोड़ा गया!'
+      edit: '{emoji} नियम सफलतापूर्वक अपडेट किया गया!'
+      delete: '{emoji} नियम सफलतापूर्वक हटाया गया!'
     view:
-      title: 'Rule {number}'
-      select: Select an action for this rule
+      title: 'नियम {number}'
+      select: इस नियम के लिए कोई क्रिया चुनें
   welcome:
-    set: '{emoji} Welcome message updated successfully!'
-    removed: '{emoji} Welcome message removed.'
-    voterOnly: '{emoji} Custom welcome messages are a voter-only perk! Vote to unlock this feature.'
+    set: '{emoji} वेलकम मैसेज सफलतापूर्वक अपडेट किया गया!'
+    removed: '{emoji} वेलकम मैसेज हटा दिया गया है।'
+    voterOnly: '{emoji} कस्टम वेलकम मैसेज केवल वोटर के लिए उपलब्ध सुविधा है! इस फ़ीचर को अनलॉक करने के लिए वोट करें।'
     placeholder: |
-      Welcome {user} from {serverName} to {hubName}! 🎉
-      Members: {memberCount}, Hub: {totalConnections}!
+      {user} को {serverName} से {hubName} में स्वागत है! 🎉  
+      सदस्य: {memberCount}, हब: {totalConnections}!
 report:
   modal:
-    title: Report Details
+    title: रिपोर्ट विवरण
     other:
-      label: Report Details
-      placeholder: A detailed description of the report.
+      label: "रिपोर्ट विवरण।\n"
+      placeholder: रिपोर्ट का विस्तृत विवरण।
     bug:
       input1:
-        label: Bug Details
-        placeholder: Eg. Frequent interaction failures for /help command...
+        label: बग विवरण
+        placeholder: 'उदाहरण: /help कमांड पर बार-बार फेल होना...'
       input2:
-        label: Detailed Description (Optional)
-        placeholder: Steps you took. Eg. 1. Run /help 2. Wait for 5 seconds...
+        label: विस्तृत विवरण (वैकल्पिक)
+        placeholder: "आपके द्वारा उठाए गए चरण। उदाहरण:  \n1. /help चलाएं  \n2. 5 सेकंड प्रतीक्षा करें..."
   reasons:
-    spam: Spam or excessive messages
-    advertising: Unwanted advertising or self-promotion
-    nsfw: NSFW or inappropriate content
-    harassment: Harassment or bullying
-    hate_speech: Hate speech or discrimination
-    scam: Scam, fraud, or phishing attempt
-    illegal: Illegal content or activities
-    personal_info: Sharing personal/private information
-    impersonation: Impersonating others
-    breaks_hub_rules: Violates hub rules
-    trolling: Trolling or intentional disruption
-    misinformation: False or misleading information
-    gore_violence: Gore or extreme violence
-    raid_organizing: Organizing raids or attacks
-    underage: Underage user or content
+    spam: स्पैम या अत्यधिक संदेश
+    advertising: अनचाहा विज्ञापन या स्वयं-प्रचार
+    nsfw: NSFW या अनुचित सामग्री
+    harassment: उत्पीड़न या बदमाशी
+    hate_speech: घृणास्पद भाषण या भेदभाव
+    scam: धोखाधड़ी, फ्रॉड, या फ़िशिंग प्रयास
+    illegal: अवैध सामग्री या गतिविधियाँ
+    personal_info: निजी/व्यक्तिगत जानकारी साझा करना
+    impersonation: दूसरों की नकल करना
+    breaks_hub_rules: हब नियमों का उल्लंघन
+    trolling: ट्रोलिंग या जानबूझकर बाधा उत्पन्न करना
+    misinformation: झूठी या भ्रामक जानकारी
+    gore_violence: हिंसा या अत्यधिक खून-खराबा
+    raid_organizing: रेड या हमले आयोजित करना
+    underage: कम उम्र का उपयोगकर्ता या सामग्री
   dropdown:
-    placeholder: Select a reason for your report
-  submitted: '{emoji} Report submitted successfully. Join the {support_command} to get more details. Thank you!'
+    placeholder: अपनी रिपोर्ट के लिए एक कारण चुनें
+  submitted: '{emoji} रिपोर्ट सफलतापूर्वक सबमिट की गई। अधिक जानकारी के लिए {support_command} में शामिल हों। धन्यवाद!'
   errors:
-    noReasonSelected: '{emoji} No reason selected. Please try again.'
-    hubNotFound: '{emoji} Hub not found. Please try again.'
-  description: 'Report a message'
+    noReasonSelected: '{emoji} कोई कारण नहीं चुना गया। कृपया दोबारा प्रयास करें।'
+    hubNotFound: '{emoji} हब नहीं मिला। कृपया दोबारा प्रयास करें।'
+  description: 'संदेश की रिपोर्ट करें'
   options:
     message:
-      description: 'The message to report'
+      description: 'रिपोर्ट करने वाला संदेश'
   contextMenu:
-    name: 'Report Message'
-  selectReason: '{emoji} Please select a reason for your report:'
+    name: 'संदेश की रिपोर्ट करें'
+  selectReason: '{emoji} कृपया अपनी रिपोर्ट के लिए एक कारण चुनें:'
   bug:
-    title: Bug Report
-    affected: Affected Components
-    description: Please choose what component of the bot you are facing issues with.
+    title: बग रिपोर्ट
+    affected: प्रभावित घटक
+    description: कृपया चुनें कि बॉट के किस हिस्से में आपको समस्या आ रही है।
 language:
-  set: Language set! I will now respond to you in **{lang}**.
+  set: भाषा सेट कर दी गई है! अब मैं आपसे **{lang}** में उत्तर दूंगा।
 errors:
-  messageNotSentOrExpired: '{emoji} This message was not sent in a hub, has expired, or you lack permissions to perform this action.'
-  notYourAction: "{emoji} Sorry, you can't perform this action. Please run the command yourself."
-  notMessageAuthor: '{emoji} You are not the author of this message.'
+  messageNotSentOrExpired: '{emoji} यह संदेश किसी हब में नहीं भेजा गया था, या इसकी समय-सीमा समाप्त हो गई है, या आपके पास यह कार्रवाई करने की अनुमति नहीं है।'
+  notYourAction: "{emoji} क्षमा करें, आप यह कार्रवाई नहीं कर सकते। कृपया यह कमांड स्वयं चलाएं।"
+  notMessageAuthor: '{emoji} आप इस संदेश के लेखक नहीं हैं।'
   commandError: |
-    {emoji} Oops! Something unexpected happened while running this command. Don't worry - this isn't your fault!
+    {emoji} अरे! इस कमांड को चलाते समय कुछ अप्रत्याशित हुआ। चिंता न करें – यह आपकी गलती नहीं है!
 
-    We've automatically logged this issue and our team will take a look. If this keeps happening, please drop by our friendly [support server]({support_invite}) and let us know about this error ID - we're always happy to help! 🤗
+    हमने इस समस्या को स्वचालित रूप से लॉग कर लिया है और हमारी टीम इसे देखेगी। अगर यह बार-बार होता है, तो कृपया हमारे मित्रतापूर्ण [सपोर्ट सर्वर]({support_invite}) में आकर हमें इस त्रुटि ID के बारे में बताएं – हम हमेशा आपकी सहायता करने को तैयार हैं! 🤗
 
-    **Error ID:**
+    **त्रुटि ID:** 
     ```{errorId}```
-  mustVote: Please [vote](https://top.gg/bot/769921109209907241/vote) for InterChat to use this command, your support is very much appreciated!
-  inviteLinks: '{emoji} You may not send invite links to this hub. Set an invite in `/connection` instead! Hub mods can configure this using `/hub edit settings`'
-  invalidLangCode: '{emoji} Invalid language code. Please make sure you have entered a correct [language code](https://cloud.google.com/translate/docs/languages).'
+  mustVote: कृपया इस कमांड को उपयोग करने के लिए [InterChat को वोट करें](https://top.gg/bot/769921109209907241/vote), आपका समर्थन हमारे लिए बहुत मूल्यवान है!
+  inviteLinks: '{emoji} आप इस हब में इनवाइट लिंक नहीं भेज सकते। इसके बजाय `/connection` में इनवाइट सेट करें! हब मॉड इसे `/hub edit settings` से कॉन्फ़िगर कर सकते हैं।'
+  invalidLangCode: '{emoji} अमान्य भाषा कोड। कृपया सुनिश्चित करें कि आपने सही [भाषा कोड](https://cloud.google.com/translate/docs/languages) दर्ज किया है।'
   modalError: '{emoji} There was an error showing the modal. Please try again.'
   unknownServer: '{emoji} Unknown server. Please make sure you have entered the correct **Server ID**.'
   unknownNetworkMessage: '{emoji} Unknown Message. If it has been sent in the past minute, please wait few more seconds and try again.'
