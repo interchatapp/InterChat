@@ -405,12 +405,12 @@ hub:
       announcementTitle: 'हब चैट्स अब {status} हैं।'
       announcementDescription:
         locked: 'केवल मॉडरेटर ही संदेश भेज सकते हैं।'
-        unlocked: 'Everyone can send messages.'
+        unlocked: 'हर कोई संदेश भेज सकता है।'
     embed:
-      visibility: 'Visibility'
-      connections: 'Connections'
-      chatsLocked: 'Chats Locked'
-      blacklists: 'Blacklists'
+      visibility: 'विज़िबिलिटी'
+      connections: 'कनेक्शन'
+      chatsLocked: 'चैट्स लॉक हैं'
+      blacklists: 'ब्लैकलिस्ट्स'
       total: 'Total'
       users: 'Users'
       servers: 'Servers'
@@ -420,7 +420,7 @@ hub:
     logs:
       title: Logs Configuration
       reset: '{emoji} Successfully reset the logs configuration for `{type}` logs.'
-      roleSuccess: '{emoji} Logs of type `{type}` will now mention {role}!'
+      roleSuccess: '{emoji} प्रकार के लॉग `{type}` अब {role} का उल्लेख करेंगे!'
       roleRemoved: '{emoji} Logs of type `{type}` will no longer mention a role.'
       channelSuccess: '{emoji} Logs of type `{type}` will be sent to  {channel} from now!'
       channelSelect: '#️⃣ Select a channel to send the logs'
