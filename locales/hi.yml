@@ -411,81 +411,81 @@ hub:
       connections: 'कनेक्शन'
       chatsLocked: 'चैट्स लॉक हैं'
       blacklists: 'ब्लैकलिस्ट्स'
-      total: 'Total'
-      users: 'Users'
-      servers: 'Servers'
-      hubStats: 'Hub Stats'
-      moderators: 'Moderators'
-      owner: 'Owner'
+      total: 'कुल'
+      users: 'उपयोगकर्ता'
+      servers: 'सर्वर'
+      hubStats: 'हब आँकड़े'
+      moderators: 'मॉडरेटर'
+      owner: 'ओनर'
     logs:
-      title: Logs Configuration
-      reset: '{emoji} Successfully reset the logs configuration for `{type}` logs.'
+      title: लॉग्स कॉन्फ़िगरेशन
+      reset: '{emoji} `{type}` लॉग्स के लिए लॉग्स कॉन्फ़िगरेशन सफलतापूर्वक रीसेट कर दिया गया है।'
       roleSuccess: '{emoji} प्रकार के लॉग `{type}` अब {role} का उल्लेख करेंगे!'
-      roleRemoved: '{emoji} Logs of type `{type}` will no longer mention a role.'
-      channelSuccess: '{emoji} Logs of type `{type}` will be sent to  {channel} from now!'
-      channelSelect: '#️⃣ Select a channel to send the logs'
-      roleSelect: '🏓 Select the role to mention when a log is triggered.'
-      reportChannelFirst: '{emoji} Please set a log channel first.'
+      roleRemoved: '{emoji} `{type}` प्रकार के लॉग्स अब किसी भी रोल को मेंशन नहीं करेंगे।'
+      channelSuccess: '{emoji} `{type}` प्रकार के लॉग्स अब से {channel} पर भेजे जाएंगे!'
+      channelSelect: '#️⃣ लॉग्स भेजने के लिए एक चैनल चुनें'
+      roleSelect: '🏓 जब कोई लॉग ट्रिगर हो तो मेंशन किए जाने वाला रोल चुनें।'
+      reportChannelFirst: '{emoji} कृपया पहले एक लॉग चैनल सेट करें।'
       config:
-        title: Configure `{type}` Logs
+        title: '`{type}` लॉग्स को कॉन्फ़िगर करें'
         description: |
-          {arrow} Select a log channel and/or role to be pinged from the dropdown below.
-          {arrow} You can also disable logging by using the button below.
+          {arrow} नीचे दिए गए ड्रॉपडाउन से लॉग चैनल और/या रोल को चुनें जिसे पिंग किया जाएगा।  
+          {arrow} आप नीचे दिए गए बटन का उपयोग करके लॉगिंग को बंद भी कर सकते हैं।
         fields:
-          channel: Channel
-          role: Role Mention
+          channel: चैनल
+          role: रोल मेंशन
       reports:
-        label: Reports
-        description: Receive reports from users.
+        label: रिपोर्ट्स
+        description: उपयोगकर्ताओं से रिपोर्ट प्राप्त करें।
       modLogs:
-        label: Mod Logs
-        description: Log Moderation actions. (eg. blacklist, message deletes, etc.)
+        label: मॉड लॉग्स
+        description: 'मॉडरेशन गतिविधियों के लॉग रखें। (जैसे: ब्लैकलिस्ट, संदेश हटाना आदि)'
       joinLeaves:
-        label: Join/Leave
-        description: Log when a server joins or leaves this hub.
+        label: जॉइन/लीव
+        description: जब कोई सर्वर इस हब में शामिल हो या छोड़ दे, तो लॉग करें।
       appeals:
-        label: Appeals
-        description: Recieve appeals from blacklisted users/servers.
+        label: अपील्स
+        description: ब्लैकलिस्ट किए गए उपयोगकर्ताओं/सर्वरों से अपील प्राप्त करें।
       networkAlerts:
-        label: Network Alerts
-        description: Recieve alerts about automatically blocked messages.
+        label: नेटवर्क अलर्ट्स
+        description: अपने आप ब्लॉक हुए संदेशों के अलर्ट प्राप्त करें।
       messageModeration:
-        label: Message Moderation
-        description: Log message deletions and edits by moderators.
+        label: संदेश मॉडरेशन
+        description: मॉडरेटर द्वारा हटाए या संपादित किए गए संदेशों का लॉग रखें।
       messageDeletions:
-        label: Message Deletions
-        description: Log when messages are deleted from the hub.
+        label: संदेश हटाना
+        description: जब किसी संदेश को हटाया जाए, तो लॉग करें।
       messageEdits:
-        label: Message Edits
-        description: Log when messages are edited in the hub.
+        label: संदेश संपादन
+        description: जब किसी संदेश को संपादित किया जाए, तो लॉग करें।
   transfer:
-    invalidUser: '{emoji} The specified user was not found.'
-    selfTransfer: '{emoji} You cannot transfer ownership to yourself.'
-    botUser: '{emoji} You cannot transfer ownership to a bot.'
-    confirm: 'Are you sure you want to transfer ownership of **{hub}** to {newOwner}? You will be demoted to manager role.'
-    cancelled: '{emoji} Hub transfer has been cancelled.'
-    error: '{emoji} An error occurred while transferring hub ownership.'
-    success: '{emoji} Successfully transferred ownership of **{hub}** to {newOwner}. You have been added as a manager.'
-    timeout: '{emoji} Hub transfer has timed out.'
+    invalidUser: '{emoji} निर्दिष्ट उपयोगकर्ता नहीं मिला।'
+    selfTransfer: '{emoji} आप स्वंय को ओनरशिप ट्रांसफर नहीं कर सकते।'
+    botUser: '{emoji} आप किसी बॉट को ओनरशिप ट्रांसफर नहीं कर सकते।'
+    confirm: 'क्या आप वाकई **{hub}** की ओनरशिप {newOwner} को ट्रांसफर करना चाहते हैं? आप मैनेजर रोल में डाउनग्रेड कर दिए जाएंगे।'
+    cancelled: '{emoji} हब ट्रांसफर रद्द कर दिया गया है।'
+    error: '{emoji} हब की ओनरशिप ट्रांसफर करते समय कोई त्रुटि हुई।'
+    success: '{emoji} **{hub}** की ओनरशिप सफलतापूर्वक {newOwner} को ट्रांसफर कर दी गई है। आपको मैनेजर के रूप में जोड़ दिया गया है।'
+    timeout: '{emoji} हब ट्रांसफर का समय समाप्त हो गया है।'
   rules:
-    noRules: "{emoji} This hub has no rules configured yet. Let's add some!"
-    list: "### {emoji} Hub Rules\n{rules}"
-    maxRulesReached: '{emoji} Maximum number of rules ({max}) reached.'
-    ruleExists: '{emoji} This rule already exists.'
-    selectedRule: 'Selected Rule {number}'
+    noRules: "{emoji} इस हब में अभी तक कोई नियम सेट नहीं किए गए हैं। चलिए कुछ जोड़ते हैं!"
+    list: "### {emoji} हब नियम\n{rules}"
+    maxRulesReached: '{emoji} नियमों की अधिकतम सीमा ({max}) तक पहुंच गई है।'
+    ruleExists: '{emoji} यह नियम पहले से मौजूद है।'
+    selectedRule: 'चयनित नियम {number}'
     modal:
       add:
-        title: Add Hub Rule
-        label: Rule Text
-        placeholder: Enter the rule text (max 1000 characters)
+        title: हब नियम जोड़ें
+        label: नियम का नाम
+        placeholder: नियम का पाठ दर्ज करें (अधिकतम 1000 अक्षर)
       edit:
-        title: Edit Hub Rule
+        title: हब नियम संपादित करें
         label: Rule Text
         placeholder: Enter the new rule text (max 1000 characters)
     select:
       placeholder: Select a rule to edit or remove
       option:
-        label: Rule {number}
+        label: नियम {number}
     buttons:
       add: Add Rule
       edit: Edit Rule
