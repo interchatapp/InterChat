@@ -246,74 +246,80 @@ hub:
       जुड़ाव स्थिति: {connected}
   blockwords:
     deleted: '{emoji} एंटी-गाली नियम सफलतापूर्वक हटा दिया गया!'
-    notFound: '{emoji} Anti-Swear rule not found.'
-    maxRules: '{emoji} You have reached the maximum number of anti-swear rules (2) for this hub. Please delete a rule before adding another one.'
-    configure: 'Configure actions for rule: {rule}'
-    actionsUpdated: '{emoji} Updated the actions to be taken by the rule. **New Actions:** {actions}'
-    selectRuleToEdit: Select a rule to edit it's words/actions
+    notFound: '{emoji} एंटी-गाली नियम नहीं मिला।'
+    maxRules: '{emoji} आपने इस हब के लिए एंटी-गाली नियमों की अधिकतम सीमा (2) तक पहुंच प्राप्त कर ली है। कृपया कोई नियम हटाएं, फिर नया जोड़ें।'
+    configure: 'नियम के लिए कार्रवाइयाँ कॉन्फ़िगर करें: {rule}'
+    actionsUpdated: '{emoji} नियम द्वारा ली जाने वाली कार्रवाइयाँ अपडेट कर दी गई हैं। **नई कार्रवाइयाँ:** {actions}'
+    selectRuleToEdit: किसी नियम को चुनें ताकि आप उसके शब्दों या कार्रवाइयों को संपादित कर सकें।
     listDescription: |
-      ### {emoji} Anti-Swear Rules
-      This hub has {totalRules}/2 anti-swear rules setup.
-    listFooter: Select a rule using the menu to view it's full details.
+      ### {emoji} एंटी-गाली नियम
+      इस हब में {totalRules}/2 एंटी-गाली नियम सेटअप हैं।
+    listFooter: मेनू से कोई नियम चुनें ताकि आप उसके सभी विवरण देख सकें।
     ruleDescription: |
-      ### {emoji} Editing Rule: {ruleName}
+      ### {emoji} नियम संपादन: {ruleName}  
       {words}
-    ruleFooter: 'Click the button below to edit the words or rule name!'
-    actionSelectPlaceholder: 'Select the actions this rule should perform.'
+    ruleFooter: 'शब्दों या नियम के नाम को संपादित करने के लिए नीचे दिए गए बटन पर क्लिक करें!'
+    actionSelectPlaceholder: 'इस नियम द्वारा की जाने वाली कार्रवाइयाँ चुनें।'
     embedFields:
-      noActions: '{emoji} **None!** Configure using the menu below.'
-      actionsName: 'Configured Actions:'
+      noActions: '{emoji} **कुछ भी नहीं!** नीचे दिए गए मेनू का उपयोग करके कॉन्फ़िगर करें।'
+      actionsName: 'कॉन्फ़िगर की गई कार्रवाइयाँ:'
       actionsValue: '{actions}'
     modal:
-      addRule: Add Anti-Swear Rule
-      editingRule: Editing Anti-Swear Rule
-      ruleNameLabel: Rule Name
-      wordsLabel: 'Words'
-      wordsPlaceholder: 'Words seperated by comma. (Use * for wildcard). Eg. word1, *word2*, *word3, word4*'
-    validating: '{emoji} Validating anti-swear rule...'
+      addRule: एंटी-गाली नियम जोड़ें
+      editingRule: एंटी-गाली नियम संपादन
+      ruleNameLabel: नियम का नाम
+      wordsLabel: 'शब्दों'
+      wordsPlaceholder: 'शब्दों को कॉमा से अलग करें। (वाइल्डकार्ड के लिए * का उपयोग करें)। Eg. word1, *word2*, *word3, word4*'
+    validating: '{emoji} एंटी-गाली नियम को वैध किया जा रहा है…'
     noRules: |
-      ### {emoji} Let's set up some anti-swear rules!
-      Use the `Add Rule` button to create one.
+      ### {emoji} चलिए कुछ एंटी-गाली नियम सेटअप करते हैं!
+      नया नियम बनाने के लिए `Add Rule` बटन का उपयोग करें।
   create:
     modal:
-      title: Create Hub
+      title: हब बनाएं
       name:
-        label: Hub Name
-        placeholder: Enter a name for your hub.
+        label: हब का नाम
+        placeholder: अपने हब के लिए एक नाम दर्ज करें
       description:
-        label: Description
-        placeholder: Enter a description for your hub.
+        label: विवरण
+        placeholder: अपने हब का विवरण दर्ज करें।
       icon:
-        label: Icon URL
-        placeholder: Enter an Imgur image URL.
+        label: आइकन URL
+        placeholder: एक Imgur तस्वीर का URL दर्ज करें।
       banner:
-        label: Banner URL
-        placeholder: Enter an Imgur image URL.
-    maxHubs: '{emoji} [Vote for InterChat]({voteUrl}) to create more hubs! You have reached the maximum number of hubs ({maxHubs}) you can create.'
-    invalidName: '{emoji} Invalid hub name. It must not contain `discord`, `clyde` or \`\`\` . Please choose another name.'
-    nameTaken: '{emoji} This hub name is already taken. Please choose another name.'
+        label: बैनर URL
+        placeholder: एक Imgur तस्वीर का URL दर्ज करें।
+    maxHubs: "{emoji} [InterChat के लिए वोट करें]({voteUrl}) ताकि आप और हब बना सकें! आपने अधिकतम हब्स की सीमा ({maxHubs}) तक पहुंच प्राप्त कर ली है।\n"
+    invalidName: '{emoji} अमान्य हब नाम। इसमें `discord`, `clyde` या \`\`\` शामिल नहीं होना चाहिए। कृपया कोई और नाम चुनें।'
+    nameTaken: '{emoji} यह हब नाम पहले से लिया जा चुका है। कृपया कोई और नाम चुनें।'
     success: |
-      ## Hub Created! It is __private__ by default.
-      Use `/hub edit hub:{name}` to customize your hub. Please follow the steps below to get started:
-      ### Next Steps:
-      1. **Create an Invite:**
-      > Use `/hub invite create` to create an invite for others to join.
-      2. **Link a Channel:**
-      > Use `/connect` **with the invite link previously generated** to link a channel to the hub and start chatting.
-      3. **Configure Hub:** (Recommended)
-      > Use `/hub config settings`, `/hub config logging` & `/hub config anti-swear` to configure the hub.
-      4. **Add Moderators:**
-      > Use `/hub moderator add` to add moderators to the hub.
-      5. **Customize Hub:**
-      > Use `/hub edit` to change the hub icon, banner, and description.
-      6. **Go Public:**
-      > Use `/hub visibility` to make the hub public and allow others to browse and join it without using invites. (Optional)
+      ## हब बन गया है! यह डिफ़ॉल्ट रूप से __private__ है। 
+      अपने हब को कस्टमाइज़ करने के लिए `/hub edit hub:{name}` कमांड का उपयोग करें। शुरू करने के लिए कृपया नीचे दिए गए चरणों का पालन करें:
 
-      If you have any questions or need help, feel free to ask in the [support server]({support_invite}). Consider [donating]({donateLink}) to support the development costs.
+      ### अगले कदम:
+      1. **इनवाइट बनाएं:** 
+      > दूसरों को जुड़ने के लिए इनवाइट बनाने के लिए `/hub invite create` का उपयोग करें।
+
+      2. **चैनल लिंक करें:** 
+      > पहले बनाए गए इनवाइट लिंक के साथ `/connect` का उपयोग करें ताकि हब से कोई चैनल जोड़ा जा सके और बातचीत शुरू हो सके।
+
+      3. **हब कॉन्फ़िगर करें:** (अनुशंसित) 
+      > हब कॉन्फ़िगर करने के लिए `/hub config settings`, `/hub config logging` और `/hub config anti-swear` का उपयोग करें।
+
+      4. **मॉडरेटर जोड़ें:** 
+      > हब में मॉडरेटर जोड़ने के लिए `/hub moderator add` का उपयोग करें।
+
+      5. **हब को कस्टमाइज़ करें:** 
+      > हब का आइकन, बैनर और विवरण बदलने के लिए `/hub edit` का उपयोग करें।
+
+      6. **हब को सार्वजनिक बनाएं:** 
+      > हब को पब्लिक करने और दूसरों को बिना इनवाइट के ब्राउज़/जॉइन करने की अनुमति देने के लिए `/hub visibility` का उपयोग करें। (वैकल्पिक)
+
+      अगर आपके कोई सवाल हैं या मदद चाहिए, तो बेझिझक [सपोर्ट सर्वर]({support_invite}) में पूछें। विकास लागत में सहायता के लिए [डोनेट करें]({donateLink}) पर विचार करें।
   delete:
-    confirm: Are you sure you wish to delete **{hub}**? This action is irreversible. All connected servers, invites and message data will be removed from this hub.
-    ownerOnly: '{emoji} Only the owner of this hub can delete it.'
-    success: '{emoji} Hub **{hub}** has been deleted.'
+    confirm: क्या आप वाकई **{hub}** को हटाना चाहते हैं? यह कार्रवाई अपरिवर्तनीय है। इस हब से जुड़े सभी सर्वर, इनवाइट्स और संदेश डेटा हटाए जाएंगे।
+    ownerOnly: '{emoji} केवल इस हब का ओनर ही इसे हटा सकता है।'
+    success: '{emoji} हब **{hub}** को हटा दिया गया है।'
     cancelled: '{emoji} Hub deletion has been cancelled.'
   invite:
     create:
