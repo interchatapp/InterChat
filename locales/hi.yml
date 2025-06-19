@@ -320,91 +320,91 @@ hub:
     confirm: क्या आप वाकई **{hub}** को हटाना चाहते हैं? यह कार्रवाई अपरिवर्तनीय है। इस हब से जुड़े सभी सर्वर, इनवाइट्स और संदेश डेटा हटाए जाएंगे।
     ownerOnly: '{emoji} केवल इस हब का ओनर ही इसे हटा सकता है।'
     success: '{emoji} हब **{hub}** को हटा दिया गया है।'
-    cancelled: '{emoji} Hub deletion has been cancelled.'
+    cancelled: '{emoji} हब को हटाने की प्रक्रिया रद्द कर दी गई है।'
   invite:
     create:
       success: |
-        ### Invite Created!
+        ### इनवाइट बन गया है!
 
-        Your invite has been successfully created. Others can now join this hub by using the `/connect` command.
+        आपका इनवाइट सफलतापूर्वक बनाया गया है। अब अन्य लोग `/connect` कमांड का उपयोग करके इस हब में शामिल हो सकते हैं।
 
-        - **Join using:** `/connect invite:{inviteCode}`
-        - **View invites:** `/hub invite list`
-        - **Expiry:** {expiry}
-        - **Uses**: ∞
+        - **शामिल होने के लिए उपयोग करें:** `/connect invite:{inviteCode}`
+        - **इनवाइट्स देखें:** `/hub invite list`
+        - **समाप्ति समय:** {expiry}
+        - **प्रयोग:** ∞
 
-        **Note:** You can revoke this invite anytime using `/hub invite revoke {inviteCode}`.
+        **नोट:** आप किसी भी समय इस इनवाइट को `/hub invite revoke {inviteCode}` कमांड का उपयोग करके रद्द कर सकते हैं।
     revoke:
-      invalidCode: '{emoji} Invalid invite code. Please make sure you have entered a valid invite code.'
-      success: '{emoji} Invite {inviteCode} revoked.'
+      invalidCode: '{emoji} अमान्य इनवाइट कोड। कृपया सुनिश्चित करें कि आपने एक वैध इनवाइट कोड दर्ज किया है।'
+      success: '{emoji} इनवाइट {inviteCode} को रद्द कर दिया गया है। '
     list:
-      title: '**Invite Codes:**'
-      noInvites: '{emoji} This hub has no invites yet. Use `/hub invite create` to create one.'
-      notPrivate: '{emoji} Only private hubs can have invites. Use `/hub edit` to make this hub private.'
+      title: '**इनवाइट कोड्स:**'
+      noInvites: '{emoji} इस हब में अभी तक कोई इनवाइट नहीं है। इनवाइट बनाने के लिए `/hub invite create` का उपयोग करें। '
+      notPrivate: '{emoji} केवल प्राइवेट हब्स में इनवाइट्स हो सकते हैं। इस हब को प्राइवेट बनाने के लिए `/hub edit` का उपयोग करें।'
   joined:
-    noJoinedHubs: '{emoji} This server has not joined any hubs yet. Use [hub directory]({hubs_link}) to view a list of hubs.'
-    joinedHubs: This server is a part of **{total}** hub(s). Use `/disconnect` to leave a hub.
+    noJoinedHubs: '{emoji} यह सर्वर अभी तक किसी भी हब से नहीं जुड़ा है। हब्स की सूची देखने के लिए [हब निर्देशिका]({hubs_link}) का उपयोग करें।'
+    joinedHubs: यह सर्वर **{total}** हब(s) का हिस्सा है। किसी हब को छोड़ने के लिए `/disconnect` का उपयोग करें। 
   leave:
-    noHub: '{emoji} That channel is invalid or has not joined any hubs.'
-    confirm: Are you sure you wish to leave **{hub}** from {channel}? No more messages will be sent to this server from this hub.
-    confirmFooter: Confirm using the button below within 10 seconds.
-    success: '{emoji} Left the hub from {channel}. No more messages will be sent to this server from this hub. You can rejoin using `/connect`.'
+    noHub: '{emoji} वह चैनल अमान्य है या किसी भी हब में शामिल नहीं है। '
+    confirm: क्या आप वाकई {channel} से **{hub}** को छोड़ना चाहते हैं? इस हब से इस सर्वर को अब कोई संदेश नहीं भेजा जाएगा।
+    confirmFooter: नीचे दिए गए बटन का उपयोग करके 10 सेकंड के भीतर पुष्टि करें। 
+    success: '{emoji} {channel} से हब छोड़ दिया गया है। अब इस हब से इस सर्वर को कोई संदेश नहीं भेजा जाएगा। आप `/connect` का उपयोग करके दोबारा जुड़ सकते हैं।'
   moderator:
-    noModerators: '{emoji} This hub has no moderators yet. Use `/hub moderator add` to add one.'
+    noModerators: '{emoji} इस हब में अभी तक कोई मॉडरेटर नहीं है। एक जोड़ने के लिए `/hub moderator add` का उपयोग करें।'
     add:
-      success: '{emoji} **{user}** has been added as a moderator of position **{position}**.'
-      alreadyModerator: '{emoji} **{user}** is already a moderator.'
+      success: '{emoji} **{user}** को **{position}** के रूप में मॉडरेटर बना दिया गया है।'
+      alreadyModerator: '{emoji} **{user}** पहले से ही मॉडरेटर है।  '
     remove:
-      success: '{emoji} **{user}** has been removed as a moderator.'
-      notModerator: '{emoji} **{user}** is not a moderator.'
-      notOwner: '{emoji} Only the owner of this hub can remove a manager.'
+      success: '{emoji} **{user}** को मॉडरेटर से हटा दिया गया है।'
+      notModerator: '{emoji} **{user}** मॉडरेटर नहीं है।  '
+      notOwner: '{emoji} केवल हब का ओनर ही मैनेजर को हटा सकता है।'
     update:
-      success: "{emoji} **{user}**'s position has been updated to **{position}**."
-      notModerator: '{emoji} **{user}** is not a moderator.'
-      notAllowed: "{emoji} Only hub managers can update a moderator's position."
-      notOwner: "{emoji} Only the owner of this hub can update a manager's position."
+      success: "{emoji} **{user}** की स्थिति को **{position}** में अपडेट कर दिया गया है।"
+      notModerator: '{emoji} **{user}** मॉडरेटर नहीं है।'
+      notAllowed: "{emoji} केवल हब मैनेजर ही मॉडरेटर की स्थिति को अपडेट कर सकते हैं।"
+      notOwner: "{emoji} केवल हब का ओनर ही मैनेजर की स्थिति को अपडेट कर सकता है। "
   manage:
-    dashboardTip: "**🛠️ NEW Dashboard:** Improved interface and more features! Try it out at [your hub's dashboard page]({url})."
-    enterImgurUrl: Enter a valid Imgur image URL that is not a gallery or album.
+    dashboardTip: "**🛠️ नया डैशबोर्ड:** बेहतर इंटरफेस और अधिक फ़ीचर्स! इसे आज़माएं [अपने हब के डैशबोर्ड पेज]({url}) पर।"
+    enterImgurUrl: एक वैध Imgur इमेज URL दर्ज करें जो गैलरी या एलबम न हो। 
     icon:
-      changed: Hub icon successfully changed.
+      changed: हब का आइकन सफलतापूर्वक बदला गया। 
       modal:
-        title: Edit Icon
-        label: Icon URL
+        title: आइकन संपादित करें  
+        label: आइकन URL
       selects:
-        label: Edit Icon
-        description: Change the icon of this hub.
+        label: आइकन संपादित करें  
+        description: इस हब का आइकन बदलें। 
     description:
-      changed: Hub description successfully changed.
+      changed: हब का विवरण सफलतापूर्वक बदला गया।
       modal:
-        title: Edit Description
-        label: Description
-        placeholder: Enter a description for this hub.
+        title: विवरण संपादित करें 
+        label: विवरण 
+        placeholder: इस हब के लिए एक विवरण दर्ज करें। 
       selects:
-        label: Change Description
-        description: Change the description of this hub.
+        label: विवरण बदलें
+        description: इस हब का विवरण बदलें।
     banner:
-      changed: Hub banner successfully changed.
-      removed: Hub banner successfully removed.
+      changed: हब का बैनर सफलतापूर्वक बदला गया। 
+      removed: हब का बैनर सफलतापूर्वक हटाया गया। 
       modal:
-        title: Edit Banner
-        label: Banner URL
+        title: बैनर संपादित करें 
+        label: बैनर URL
       selects:
-        label: Edit Banner
-        description: Change the banner of this hub.
+        label: बैनर संपादित करें 
+        description: इस हब का बैनर बदलें। 
     visibility:
-      success: '{emoji} Hub visibility successfully changed to **{visibility}**.'
+      success: '{emoji} हब की विज़िबिलिटी सफलतापूर्वक **{visibility}** में बदल दी गई है। '
       selects:
-        label: Change Visibility
-        description: Make this hub public or private.
+        label: विज़िबिलिटी बदलें 
+        description: इस हब को पब्लिक या प्राइवेट बनाएं।
     toggleLock:
       selects:
-        label: 'Lock/Unlock Hub'
-        description: 'Lock or unlock the hub chats'
-      confirmation: 'Hub chats are now {status}.'
-      announcementTitle: 'Hub chats are now {status}.'
+        label: 'हब लॉक/अनलॉक करें '
+        description: 'हब चैट्स को लॉक या अनलॉक करें'
+      confirmation: 'हब चैट्स अब {status} हैं।'
+      announcementTitle: 'हब चैट्स अब {status} हैं।'
       announcementDescription:
-        locked: 'Only moderators can send messages.'
+        locked: 'केवल मॉडरेटर ही संदेश भेज सकते हैं।'
         unlocked: 'Everyone can send messages.'
     embed:
       visibility: 'Visibility'
