@@ -224,28 +224,28 @@ hub:
   invalidImgurUrl: '{emoji} आइकन या बैनर के लिए इमेज URL अमान्य है। कृपया सुनिश्चित करें कि आपने एक वैध Imgur इमेज URL दर्ज किया है, जो गैलरी या एलबम नहीं है।'
   join:
     success: |
-      🎉 **Fantastic! Welcome to {hub}!** 🎉
+      🎉 **शानदार! {hub} में आपका स्वागत है!** 🎉
 
-      You've successfully connected {channel} to this amazing community! You can now chat with members from servers all around the world right from this channel. How exciting is that? ✨
+      आपने {channel} को इस शानदार समुदाय से जोड़ लिया है! अब आप इस चैनल से दुनिया भर के सर्वरों के सदस्यों से बातचीत कर सकते हैं। कितना रोमांचक है ना? ✨
 
-      **🚀 Ready to explore?**
-      - Use `/connection` to customize your connection and make it uniquely yours
-      - Use `/disconnect` if you ever need to leave this hub
-      - Use `/connection edit` to switch to a different channel anytime
+      **🚀 क्या आप एक्सप्लोर करने के लिए तैयार हैं?**
+      - अपना कनेक्शन पर्सनलाइज़ करने के लिए `/connection` का उपयोग करें
+      - यदि कभी इस हब को छोड़ना चाहें तो `/disconnect` का उपयोग करें
+      - किसी भी समय दूसरे चैनल पर स्विच करने के लिए `/connection edit` का उपयोग करें
 
-      **💝 Pro tip:** Say hello and introduce yourself - everyone loves meeting new friends! Have fun connecting with the community! 🌟
+      **💝 प्रो टिप:** नमस्ते कहें और अपना परिचय दें – सभी को नए दोस्त बनाना अच्छा लगता है! समुदाय से जुड़ने का आनंद लें! 🌟
   servers:
-    total: 'Current connected servers: {from}-{to} / **{total}**'
-    noConnections: '{emoji} No server has joined this hub yet. Use `/connect` to join this hub.'
-    notConnected: "{emoji} That server isn't a part of **{hub}**."
+    total: 'वर्तमान जुड़े हुए सर्वर: {from}-{to} / **{total}**'
+    noConnections: '{emoji} अभी तक कोई सर्वर इस हब से नहीं जुड़ा है। इस हब से जुड़ने के लिए `/connect` का उपयोग करें।'
+    notConnected: "{emoji} वह सर्वर **{hub}** का हिस्सा नहीं है।"
     connectionInfo: |
-      ServerID: {serverId}
-      Channel: #{channelName} `({channelId})`
-      Joined At: {joinedAt}
-      Invite: {invite}
-      Connected: {connected}
+      सर्वर ID: {serverId} 
+      चैनल: #{channelName} `({channelId})` 
+      जुड़ने की तिथि: {joinedAt} 
+      आमंत्रण लिंक: {invite} 
+      जुड़ाव स्थिति: {connected}
   blockwords:
-    deleted: '{emoji} Anti-Swear rule successfully deleted!'
+    deleted: '{emoji} एंटी-गाली नियम सफलतापूर्वक हटा दिया गया!'
     notFound: '{emoji} Anti-Swear rule not found.'
     maxRules: '{emoji} You have reached the maximum number of anti-swear rules (2) for this hub. Please delete a rule before adding another one.'
     configure: 'Configure actions for rule: {rule}'
