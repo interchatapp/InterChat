@@ -369,7 +369,6 @@ model User {
     rulesAcceptances      HubRulesAcceptance[]
     ratingsMade           CallRating[]              @relation("RatingsMade")
     ratingsReceived       CallRating[]              @relation("RatingsReceived")
-    tutorialProgress      UserTutorialProgress[]
     accounts              Account[]
     sessions              Session[]
     reportsSubmitted      Report[]                  @relation("ReportsSubmitted")
@@ -537,64 +536,6 @@ model ReputationLog {
 
     @@index([receiverId])
     @@index([giverId])
-}
-
-// Tutorial models
-model Tutorial {
-    id                   String                 @id @default(cuid())
-    name                 String                 @unique
-    description          String
-    targetAudience       String // 'all', 'admin', 'moderator', 'new-user'
-    estimatedTimeMinutes Int                    @default(5)
-    steps                TutorialStep[]
-    prerequisites        TutorialPrerequisite[]
-    createdAt            DateTime               @default(now())
-    updatedAt            DateTime               @updatedAt
-
-    // Relations
-    userProgress UserTutorialProgress[]
-}
-
-model TutorialStep {
-    id             String   @id @default(cuid())
-    tutorialId     String
-    tutorial       Tutorial @relation(fields: [tutorialId], references: [id], onDelete: Cascade)
-    title          String
-    description    String
-    order          Int
-    actionType     String // 'command', 'button', 'selection', 'information'
-    actionData     String? // JSON data for the action
-    timeoutSeconds Int      @default(60)
-    createdAt      DateTime @default(now())
-    updatedAt      DateTime @updatedAt
-
-    @@index([tutorialId])
-}
-
-model TutorialPrerequisite {
-    id             String   @id @default(cuid())
-    tutorialId     String
-    tutorial       Tutorial @relation(fields: [tutorialId], references: [id], onDelete: Cascade)
-    prerequisiteId String
-
-    @@unique([tutorialId, prerequisiteId])
-    @@index([tutorialId])
-}
-
-model UserTutorialProgress {
-    id               String    @id @default(cuid())
-    userId           String
-    user             User      @relation(fields: [userId], references: [id])
-    tutorialId       String
-    tutorial         Tutorial  @relation(fields: [tutorialId], references: [id], onDelete: Cascade)
-    currentStepIndex Int       @default(0)
-    completed        Boolean   @default(false)
-    startedAt        DateTime  @default(now())
-    completedAt      DateTime?
-
-    @@unique([userId, tutorialId])
-    @@index([userId])
-    @@index([tutorialId])
 }
 
 // Website / Dashboard related
