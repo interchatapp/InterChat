@@ -1483,21 +1483,22 @@ welcome:
     title: '🏠 Setup Cross-Server Chat'
     description: 'Connect to hubs for persistent cross-server communities!'
     instructions: |
-      ### Get Started with Hubs
+      ### हब्स के साथ शुरुआत करें
 
-      **{setupCommand}** - Guided setup to join your first hub
-      **{connectCommand}** - Connect to a specific hub
+      **{setupCommand}** - अपना पहला हब जॉइन करने के लिए गाइडेड सेटअप  
+      **{connectCommand}** - एक विशेष हब से कनेक्ट करें  
 
-      **What are Hubs?**
-      Hubs are persistent chat communities where multiple servers connect and chat together 24/7. Unlike calls, hub messages stay even when you're offline!
+      **हब्स क्या हैं?**  
+      हब्स वे स्थायी चैट समुदाय हैं जहां कई सर्वर आपस में कनेक्ट होकर 24/7 चैट करते रहते हैं। कॉल के विपरीत, हब संदेश तब भी रहते हैं जब आप ऑनलाइन न हों!
 
-      **Why Choose Hubs?**
-      - Persistent connections that stay active
-      - Join multiple themed communities
-      - Advanced moderation and filtering
-      - Custom welcome messages and rules
-      - Thousands of servers already connected
+      **हब्स क्यों चुनें?**  
+      - स्थायी कनेक्शन जो हमेशा सक्रिय रहते हैं  
+      - कई विषय-आधारित समुदायों में शामिल हों  
+      - उन्नत मॉडरेशन और फिल्टरिंग  
+      - कस्टम स्वागत संदेश और नियम  
+      - पहले से ही हजारों सर्वर जुड़े हुए हैं  
+
     buttons:
-      runSetup: 'Run Setup Now'
+      runSetup: "अभी सेटअप चलाएँ\n"
     errors:
-      commandNotFound: '{emoji} Setup command not found. Please try running `/setup` manually.'
+      commandNotFound: '{emoji} सेटअप कमांड नहीं मिला। कृपया इसे मैन्युअली `/setup` कमांड से चलाने का प्रयास करें।'
