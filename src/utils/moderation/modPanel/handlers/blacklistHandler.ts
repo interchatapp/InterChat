@@ -398,7 +398,11 @@ export class BlacklistUserHandler extends BaseBlacklistHandler {
     );
 
     const { container, buttons } = await buildModPanel(originalMsg, ctx.user, locale);
-    await ctx.editReply({ components: [container, ...buttons], flags: ['IsComponentsV2'] });
+    await ctx.editReply({
+      content: null,
+      components: [container, ...buttons],
+      flags: ['IsComponentsV2'],
+    });
 
     const successEmbed = this.buildSuccessEmbed(
       user.username,
@@ -512,7 +516,11 @@ export class BlacklistServerHandler extends BaseBlacklistHandler {
     const successEmbed = this.buildSuccessEmbed(server.name, reason, expiresAt, client, locale);
 
     const { container, buttons } = await buildModPanel(originalMsg, ctx.user, locale);
-    await ctx.editReply({ components: [container, ...buttons], flags: ['IsComponentsV2'] });
+    await ctx.editReply({
+      content: null,
+      components: [container, ...buttons],
+      flags: ['IsComponentsV2'],
+    });
     await ctx.reply({ embeds: [successEmbed], components: [], flags: ['Ephemeral'] });
   }
 }

@@ -42,6 +42,7 @@ export default class UserDbService {
       inboxLastReadDate: new Date(user.inboxLastReadDate ?? 0),
       createdAt: new Date(user.createdAt),
       emailVerified: user.emailVerified ? new Date(user.emailVerified) : null,
+      lastHubJoinAt: user.lastHubJoinAt ? new Date(user.lastHubJoinAt) : null,
     };
     return { ...user, ...dates };
   }

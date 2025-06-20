@@ -38,7 +38,7 @@ export const logBlockedMessage = async (message: Message<true>): Promise<void> =
       .setDescription(
         stripIndents`
         A message was blocked by the content filter during a call.
-        
+
         ${getEmoji('dot', client)} **User:** ${message.author.username} (${message.author.id})
         ${getEmoji('dot', client)} **Server:** ${message.guild?.name || 'Unknown'} (${message.guildId})
         ${getEmoji('dot', client)} **Channel:** <#${message.channelId}>
@@ -52,7 +52,6 @@ export const logBlockedMessage = async (message: Message<true>): Promise<void> =
       .setTimestamp();
 
     // Send to system log channel if configured
-    // Note: In a real implementation, you might want to send this to a specific moderation channel
     const systemLogChannelId = process.env.SYSTEM_LOG_CHANNEL;
     if (systemLogChannelId) {
       await sendLog(client.cluster, systemLogChannelId, embed);

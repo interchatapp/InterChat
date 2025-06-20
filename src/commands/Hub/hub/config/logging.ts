@@ -1,7 +1,7 @@
 import HubCommand, { hubOption } from '#src/commands/Hub/hub/index.js';
 import BaseCommand from '#src/core/BaseCommand.js';
-import type Context from '#src/core/CommandContext/Context.js';
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
+import type Context from '#src/core/CommandContext/Context.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import HubLogManager, {
   type LogConfigTypes,
@@ -9,6 +9,7 @@ import HubLogManager, {
 } from '#src/managers/HubLogManager.js';
 import type HubManager from '#src/managers/HubManager.js';
 import { HubService } from '#src/services/HubService.js';
+import Constants from '#src/utils/Constants.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
@@ -25,14 +26,10 @@ import {
   RoleSelectMenuBuilder,
   SectionBuilder,
   SeparatorSpacingSize,
-  StringSelectMenuBuilder,
   TextDisplayBuilder,
   type AutocompleteInteraction,
   type Client,
-  type MessageActionRowComponentBuilder,
-  type SelectMenuComponentOptionData,
 } from 'discord.js';
-import Constants from '#src/utils/Constants.js';
 
 const CUSTOM_ID_PREFIX = 'hubConfig' as const;
 const ALLOWED_CHANNEL_TYPES = [
@@ -41,10 +38,6 @@ const ALLOWED_CHANNEL_TYPES = [
   ChannelType.PrivateThread,
   ChannelType.GuildAnnouncement,
 ] as const;
-
-interface LogTypeOption extends SelectMenuComponentOptionData {
-  value: LogConfigTypes;
-}
 
 export default class HubConfigLoggingSubcommand extends BaseCommand {
   private readonly hubService = new HubService();
@@ -300,47 +293,6 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
     await ctx.reply({ content, flags: ['Ephemeral'] });
   }
 
-  private getLogTypeOptions(locale: supportedLocaleCodes): LogTypeOption[] {
-    return [
-      {
-        label: t('hub.manage.logs.reports.label', locale),
-        value: 'reports',
-        description: t('hub.manage.logs.reports.description', locale),
-        emoji: '📢',
-      },
-      {
-        label: t('hub.manage.logs.modLogs.label', locale),
-        value: 'modLogs',
-        description: t('hub.manage.logs.modLogs.description', locale),
-        emoji: '👮',
-      },
-      {
-        label: t('hub.manage.logs.networkAlerts.label', locale),
-        value: 'networkAlerts',
-        description: t('hub.manage.logs.networkAlerts.description', locale),
-        emoji: '🚨',
-      },
-      {
-        label: t('hub.manage.logs.joinLeaves.label', locale),
-        value: 'joinLeaves',
-        description: t('hub.manage.logs.joinLeaves.description', locale),
-        emoji: '👋',
-      },
-      {
-        label: t('hub.manage.logs.messageModeration.label', locale),
-        value: 'messageModeration',
-        description: t('hub.manage.logs.messageModeration.description', locale),
-        emoji: '📝',
-      },
-      {
-        label: t('hub.manage.logs.appeals.label', locale),
-        value: 'appeals',
-        description: t('hub.manage.logs.appeals.description', locale),
-        emoji: '🔓',
-      },
-    ];
-  }
-
   private async buildLoggingContainer(
     hub: HubManager,
     userId: string,
@@ -495,30 +447,6 @@ export default class HubConfigLoggingSubcommand extends BaseCommand {
     }
 
     return hub;
-  }
-
-  private buildComponents(
-    hubId: string,
-    userId: string,
-    locale: supportedLocaleCodes,
-  ): ActionRowBuilder<MessageActionRowComponentBuilder>[] {
-    const configSelectRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-      new StringSelectMenuBuilder()
-        .setCustomId(
-          new CustomID()
-            .setIdentifier(CUSTOM_ID_PREFIX, 'logsSelect')
-            .setArgs(userId, hubId)
-            .toString(),
-        )
-        .setPlaceholder('Select a log type to configure')
-        .addOptions(this.getLogTypeOptions(locale)),
-    );
-
-    const refreshButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      this.getRefreshButton(userId, hubId),
-    );
-
-    return [configSelectRow, refreshButtonRow];
   }
 
   private getRefreshButton(userId: string, hubId: string): ButtonBuilder {

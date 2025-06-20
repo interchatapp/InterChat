@@ -21,6 +21,7 @@ import Context from '#src/core/CommandContext/Context.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import { CallService } from '#src/services/CallService.js';
 import Constants from '#src/utils/Constants.js';
+import { createCallRatingRow } from '#src/utils/ComponentUtils.js';
 import { UIComponents } from '#src/utils/DesignSystem.js';
 
 import { formatUserLeaderboard, getCallLeaderboard } from '#src/utils/Leaderboard.js';
@@ -29,7 +30,6 @@ import { fetchUserLocale } from '#src/utils/Utils.js';
 import { CustomID } from '#utils/CustomID.js';
 
 import {
-  ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   ContainerBuilder,
@@ -189,21 +189,7 @@ export default class CallCommand extends BaseCommand {
     const result = await callService.hangup(ctx.channelId);
 
     // Create combined rating and report UI
-    const ratingRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setCustomId(new CustomID('rate_call:like', [result.callId || '']).toString())
-        .setLabel(t('calls.buttons.ratePositive', locale))
-        .setStyle(ButtonStyle.Success),
-      new ButtonBuilder()
-        .setCustomId(new CustomID('rate_call:dislike', [result.callId || '']).toString())
-        .setLabel(t('calls.buttons.rateNegative', locale))
-        .setStyle(ButtonStyle.Danger),
-      new ButtonBuilder()
-        .setCustomId(new CustomID('report_call', [result.callId || '']).toString())
-        .setLabel(t('calls.buttons.reportCall', locale))
-        .setStyle(ButtonStyle.Secondary)
-        .setEmoji('🚩'),
-    );
+    const ratingRow = createCallRatingRow(result.callId || '', locale);
 
     const ui = new UIComponents(ctx.client);
     const container = ui.createCompactInfoMessage(

@@ -21,7 +21,6 @@
   "todo-tree.tree.showBadges": true,
   "files.exclude": {
     "**/.git/objects/**": true,
-    "**/build/**": true,
     "**/coverage/**": true,
     "**/.nyc_output/**": true,
     "**/.DS_Store": true

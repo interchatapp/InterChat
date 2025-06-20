@@ -22,6 +22,9 @@ import { stripIndents } from 'common-tags';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js';
 import { ClusterManager } from 'discord-hybrid-sharding';
 
+// TODO: Use this
+
+
 /**
  * Scheduled task to send voting reminders to users who haven't voted recently
  * This task runs every 6 hours to remind active users to vote

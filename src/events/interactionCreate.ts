@@ -107,6 +107,8 @@ export default class InteractionCreate extends BaseEventListener<'interactionCre
   }
 
   private async handleInteraction(interaction: Interaction, dbUser: DbUser | null) {
+    if (interaction.isPrimaryEntryPointCommand()) return;
+
     if (interaction.isMessageComponent() || interaction.isModalSubmit()) {
       await this.handleComponentOrModal(interaction, dbUser);
       return;

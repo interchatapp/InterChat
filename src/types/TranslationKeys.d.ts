@@ -52,6 +52,8 @@ export type TranslationKeys = {
   'network.newMessageContent': never;
   'network.editMessagePrompt': 'emoji';
   'network.editSuccess': 'emoji' | 'user' | 'edited' | 'total';
+  'network.onboarding.welcome.title': never;
+  'network.onboarding.welcome.description': never;
   'network.onboarding.embed.title': 'hubName';
   'network.onboarding.embed.description': never;
   'network.onboarding.embed.footer': never;
@@ -121,6 +123,8 @@ export type TranslationKeys = {
   'hub.invalidChannel': 'emoji';
   'hub.invalidImgurUrl': 'emoji';
   'hub.join.success': 'hub' | 'channel';
+  'hub.join.nsfwChannelSfwHub': 'emoji' | 'channel' | 'hub';
+  'hub.join.sfwChannelNsfwHub': 'emoji' | 'channel' | 'hub';
   'hub.servers.total': 'from' | 'to' | 'total';
   'hub.servers.noConnections': 'emoji';
   'hub.servers.notConnected': 'emoji' | 'hub';
@@ -169,11 +173,6 @@ export type TranslationKeys = {
   'hub.delete.ownerOnly': 'emoji';
   'hub.delete.success': 'emoji' | 'hub';
   'hub.delete.cancelled': 'emoji';
-  'hub.browse.joinConfirm': 'hub' | 'channel';
-  'hub.browse.joinFooter': never;
-  'hub.browse.noHubs': 'emoji';
-  'hub.browse.rating.invalid': never;
-  'hub.browse.rating.success': never;
   'hub.invite.create.success': 'inviteCode' | 'expiry' | 'inviteCode';
   'hub.invite.revoke.invalidCode': 'emoji';
   'hub.invite.revoke.success': 'emoji' | 'inviteCode';
@@ -224,6 +223,18 @@ export type TranslationKeys = {
   'hub.manage.toggleLock.announcementTitle': 'status';
   'hub.manage.toggleLock.announcementDescription.locked': never;
   'hub.manage.toggleLock.announcementDescription.unlocked': never;
+  'hub.manage.toggleNsfw.modal.title': never;
+  'hub.manage.toggleNsfw.modal.label': never;
+  'hub.manage.toggleNsfw.modal.description': never;
+  'hub.manage.toggleNsfw.selects.label': never;
+  'hub.manage.toggleNsfw.selects.description': never;
+  'hub.manage.toggleNsfw.confirmation': 'status';
+  'hub.manage.toggleNsfw.announcementTitle': 'status';
+  'hub.manage.toggleNsfw.announcementDescription.nsfw': never;
+  'hub.manage.toggleNsfw.announcementDescription.sfw': never;
+  'hub.manage.setNsfw.success': 'emoji' | 'hub' | 'status';
+  'hub.manage.setNsfw.announcement': 'emoji' | 'status' | 'description';
+  'hub.manage.nsfwAlreadySet': 'emoji' | 'hub' | 'status';
   'hub.manage.embed.visibility': never;
   'hub.manage.embed.connections': never;
   'hub.manage.embed.chatsLocked': never;
@@ -900,8 +911,6 @@ export type TranslationKeys = {
   'skip.description': never;
   'skip.errors.error': never;
   'skip.errors.skipFailed': never;
-  'hubBrowse.description': never;
-  'hubBrowse.content': 'website' | 'website' | 'emoji' | 'website';
   'voteCommand.description': never;
   'welcome.buttons.back': never;
   'welcome.calls.title': never;

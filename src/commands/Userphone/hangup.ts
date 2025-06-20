@@ -21,13 +21,13 @@ import Context from '#src/core/CommandContext/Context.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import { CallService } from '#src/services/CallService.js';
 import Constants from '#src/utils/Constants.js';
+import { createCallRatingRow } from '#src/utils/ComponentUtils.js';
 import { UIComponents } from '#src/utils/DesignSystem.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { t } from '#src/utils/Locale.js';
 import { CustomID } from '#utils/CustomID.js';
 import { stripIndents } from 'common-tags';
 import {
-  ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   ContainerBuilder,
@@ -92,21 +92,7 @@ export default class HangupCommand extends BaseCommand {
       }
       else {
         // Create combined rating and report UI
-        const ratingRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-          new ButtonBuilder()
-            .setCustomId(new CustomID('rate_call:like', [result.callId || '']).toString())
-            .setLabel(t('calls.buttons.ratePositive', locale))
-            .setStyle(ButtonStyle.Success),
-          new ButtonBuilder()
-            .setCustomId(new CustomID('rate_call:dislike', [result.callId || '']).toString())
-            .setLabel(t('calls.buttons.rateNegative', locale))
-            .setStyle(ButtonStyle.Danger),
-          new ButtonBuilder()
-            .setCustomId(new CustomID('report_call', [result.callId || '']).toString())
-            .setLabel(t('calls.buttons.reportCall', locale))
-            .setStyle(ButtonStyle.Secondary)
-            .setEmoji('🚩'),
-        );
+        const ratingRow = createCallRatingRow(result.callId || '', locale);
 
         // Create success message
         const container = ui.createCompactSuccessMessage(

@@ -102,7 +102,6 @@ export default class BlacklistManager {
               ...blacklist.appeal.user,
               createdAt: new Date(blacklist.appeal.user.createdAt),
               updatedAt: new Date(blacklist.appeal.user.updatedAt),
-              lastMessageAt: new Date(blacklist.appeal.user.lastMessageAt),
               lastVoted: blacklist.appeal.user.lastVoted
                 ? new Date(blacklist.appeal.user.lastVoted)
                 : null,
@@ -112,6 +111,10 @@ export default class BlacklistManager {
               emailVerified: blacklist.appeal.user.emailVerified
                 ? new Date(blacklist.appeal.user.emailVerified)
                 : null,
+              lastHubJoinAt: blacklist.appeal.user.lastHubJoinAt
+                ? new Date(blacklist.appeal.user.lastHubJoinAt)
+                : null,
+              lastMessageAt: new Date(blacklist.appeal.user.lastMessageAt),
             }
             : null,
         }

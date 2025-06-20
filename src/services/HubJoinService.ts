@@ -162,6 +162,34 @@ export class HubJoinService {
       return false;
     }
 
+    // Check NSFW channel safety restrictions
+    const channelIsNsfw = 'nsfw' in channel && channel.nsfw;
+    const hubIsNsfw = hub.data.nsfw;
+
+    if (channelIsNsfw && !hubIsNsfw) {
+      await this.ctx.reply({
+        content: t('hub.join.nsfwChannelSfwHub', this.locale, {
+          emoji: this.getEmoji('x_icon'),
+          channel: `<#${channel.id}>`,
+          hub: hub.data.name,
+        }),
+        flags: ['Ephemeral'],
+      });
+      return false;
+    }
+
+    if (!channelIsNsfw && hubIsNsfw) {
+      await this.ctx.reply({
+        content: t('hub.join.sfwChannelNsfwHub', this.locale, {
+          emoji: this.getEmoji('x_icon'),
+          channel: `<#${channel.id}>`,
+          hub: hub.data.name,
+        }),
+        flags: ['Ephemeral'],
+      });
+      return false;
+    }
+
     // Check server name against anti-swear rules
     if (await checkStringForAntiSwear(channel.guild.name, hub.id)) {
       await this.replyError('errors.serverNameInappropriate', { emoji: this.getEmoji('x_icon') });

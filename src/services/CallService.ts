@@ -19,7 +19,7 @@ import AchievementService from '#src/services/AchievementService.js';
 import { BroadcastService } from '#src/services/BroadcastService.js';
 import { CallDatabaseService } from '#src/services/CallDatabaseService.js';
 import { CallReplyService } from '#src/services/CallReplyService.js';
-import { CustomID } from '#src/utils/CustomID.js';
+import { createCallRatingRow, createCallReportRow } from '#src/utils/ComponentUtils.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { updateCallLeaderboards } from '#src/utils/Leaderboard.js';
 import { t } from '#src/utils/Locale.js';
@@ -30,7 +30,6 @@ import { getRedis } from '#utils/Redis.js';
 import {
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonStyle,
   Client,
   GuildTextBasedChannel,
   type TextChannel,
@@ -514,23 +513,8 @@ export class CallService {
   }
 
   private async getCallEndMessage(callId: string) {
-    const ratingRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setCustomId(new CustomID('rate_call:like', [callId]).toString())
-        .setLabel('👍 Like')
-        .setStyle(ButtonStyle.Success),
-      new ButtonBuilder()
-        .setCustomId(new CustomID('rate_call:dislike', [callId]).toString())
-        .setLabel('👎 Dislike')
-        .setStyle(ButtonStyle.Danger),
-    );
-
-    const reportRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setCustomId(new CustomID('report_call', [callId]).toString())
-        .setLabel('🚩 Report')
-        .setStyle(ButtonStyle.Secondary),
-    );
+    const ratingRow = createCallRatingRow(callId, undefined, { separateReportRow: true });
+    const reportRow = createCallReportRow(callId);
 
     return {
       content:

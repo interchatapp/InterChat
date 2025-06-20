@@ -118,7 +118,7 @@ export default class ConnectCommand extends BaseCommand {
 
     // Add popular hubs section
     container.addTextDisplayComponents(
-      ui.createSection('Popular Hubs', 'Join one of these active communities:'),
+      ui.createSection('🔥 Popular Hubs', 'Trending communities with active members'),
     );
 
     // Fetch popular hubs

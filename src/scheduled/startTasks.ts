@@ -50,6 +50,8 @@ export default function startTasks(clusterManager: ClusterManager) {
     // pauseIdleConnections().catch(Logger.error);
   });
 
+  cleanupOldMessages().catch(Logger.error);
+
   // Clean up old messages every 12 hours
   scheduler.addRecurringTask('cleanupOldMessages', 12 * 60 * 60 * 1000, () => {
     cleanupOldMessages().catch(Logger.error);

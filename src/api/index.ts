@@ -126,14 +126,13 @@ export const startApi = (metrics: MainMetricsService, clusterManager?: ClusterMa
         await voteManager.incrementUserVote(webhookPayload.user);
         Logger.debug(`[dbl] Adding voter role for user: ${webhookPayload.user}`);
         await voteManager.addVoterRole(webhookPayload.user).catch(() => null);
+        // Send DM to the user who voted
+        Logger.debug(`[dbl] Sending DM to user: ${webhookPayload.user}`);
+        voteManager.sendVoteDM(webhookPayload).catch(() => null);
       }
 
       Logger.debug(`[dbl] Announcing vote for user: ${webhookPayload.user}`);
-      await voteManager.announceVote(webhookPayload);
-
-      // Send DM to the user who voted
-      Logger.debug(`[dbl] Sending DM to user: ${webhookPayload.user}`);
-      await voteManager.sendVoteDM(webhookPayload).catch(() => null);
+      voteManager.announceVote(webhookPayload).catch(Logger.error);
 
       Logger.debug(`[dbl] Successfully processed vote for user: ${webhookPayload.user}`);
       return c.body(null, 204);

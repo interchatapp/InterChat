@@ -15,6 +15,12 @@ enum Role {
     MANAGER
 }
 
+enum HubActivityLevel {
+    LOW // <10 messages/day
+    MEDIUM // 10-100 messages/day
+    HIGH // >100 messages/day
+}
+
 enum InfractionType {
     BLACKLIST
     WARNING
@@ -48,6 +54,7 @@ model Hub {
     id                  String   @id @default(cuid())
     name                String   @unique
     description         String
+    shortDescription    String? // Brief description for listings (max 100 chars)
     ownerId             String
     owner               User     @relation("OwnedHubs", fields: [ownerId], references: [id])
     iconUrl             String
@@ -67,6 +74,20 @@ model Hub {
     region              String?
     messageCount        Int      @default(0)
 
+    // Enhanced activity tracking fields
+    dailyMessageCount  Int      @default(0)
+    weeklyMessageCount Int      @default(0)
+    activeMemberCount  Int      @default(0) // Users active in last 7 days
+    lastActivityUpdate DateTime @default(now())
+
+    // Enhanced metadata fields
+    category      String? // Primary category for better organization
+    activityLevel HubActivityLevel @default(LOW)
+
+    // Growth tracking
+    memberGrowthRate Float    @default(0.0) // 7-day growth percentage
+    lastGrowthUpdate DateTime @default(now())
+
     // Relations
     rules            String[]
     rulesAcceptances HubRulesAcceptance[]
@@ -82,14 +103,24 @@ model Hub {
     invites          HubInvite[]
     messages         Message[]
     reports          Report[]
+    activityMetrics  HubActivityMetrics?
 
     @@index([ownerId])
 }
 
 model Tag {
-    id   String @id @default(cuid())
-    name String @unique
-    hubs Hub[]
+    id          String   @id @default(cuid())
+    name        String   @unique
+    category    String? // e.g., "Gaming", "Technology", "Art", "Music"
+    description String?
+    color       String? // Hex color for UI display
+    isOfficial  Boolean  @default(false) // Official InterChat tags vs user-created
+    usageCount  Int      @default(0) // Track popularity for autocomplete
+    createdAt   DateTime @default(now())
+    hubs        Hub[]
+
+    @@index([category])
+    @@index([usageCount])
 }
 
 model HubUpvote {
@@ -146,7 +177,6 @@ model Connection {
     embedColor           String?
     webhookURL           String
     lastActive           DateTime   @default(now())
-    joinRequestsDisabled Boolean    @default(false)
 
     @@unique([channelId, serverId])
     @@unique([hubId, serverId])
@@ -313,6 +343,19 @@ model User {
     email         String?
     emailVerified DateTime?
 
+    // Hub recommendation preferences
+    interests          String[] // User's interests for hub matching
+    achievementNotifs  Boolean  @default(true)
+    preferredLanguages String[] @default([]) // ISO 639-1 language codes
+    activityLevel      String? // "low", "medium", "high" - user's preferred activity level
+    favoriteHubs       String[] // Hub IDs user has marked as favorites
+    showNsfwHubs       Boolean  @default(false) // Whether user wants to see NSFW hubs in search/discovery
+
+    // Activity tracking for recommendations
+    hubJoinCount       Int       @default(0)
+    lastHubJoinAt      DateTime?
+    hubEngagementScore Float     @default(0.0) // Calculated engagement metric
+
     // Relations
     ownedHubs             Hub[]                     @relation("OwnedHubs")
     appeals               Appeal[]
@@ -337,6 +380,34 @@ model User {
     bans                  Ban[] // Bans received by this user
     issuedBans            Ban[]                     @relation("IssuedBans") // Bans issued by this user (if staff)
     issuedServerBans      ServerBan[]               @relation("IssuedServerBans") // Server bans issued by this user (if staff)
+}
+
+// Hub activity tracking for recommendations
+model HubActivityMetrics {
+    id    String @id @default(cuid())
+    hubId String @unique
+    hub   Hub    @relation(fields: [hubId], references: [id], onDelete: Cascade)
+
+    // Daily metrics
+    messagesLast24h       Int @default(0)
+    activeUsersLast24h    Int @default(0)
+    newConnectionsLast24h Int @default(0)
+
+    // Weekly metrics
+    messagesLast7d       Int @default(0)
+    activeUsersLast7d    Int @default(0)
+    newConnectionsLast7d Int @default(0)
+
+    // Growth metrics
+    memberGrowthRate Float @default(0.0) // Percentage growth over 7 days
+    engagementRate   Float @default(0.0) // Messages per active user
+
+    // Timestamps
+    lastUpdated DateTime @default(now())
+    createdAt   DateTime @default(now())
+
+    @@index([hubId])
+    @@index([lastUpdated])
 }
 
 model Announcement {

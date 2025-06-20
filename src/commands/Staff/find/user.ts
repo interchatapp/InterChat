@@ -107,7 +107,7 @@ export default class FindUserSubcommand extends BaseCommand {
           value: stripIndents`
             > ${ctx.getEmoji('chat_icon')} **Hubs Owned:** ${numHubOwned}
             > ${ctx.getEmoji('delete')} **Blacklisted From:** ${blacklistedFromStr}
-            > ${ctx.getEmoji('delete_icon')} **Banned:** ${banned ? 'Yes' : 'No'}
+            > ${ctx.getEmoji('delete_icon')} **Banned:** ${banned.isBanned ? 'Yes' : 'No'}
              `,
         },
       ]);

@@ -88,7 +88,7 @@ export default class HubModeratorAddSubcommand extends BaseCommand {
 
     if (!userData) {
       await ctx.replyEmbed(
-        'Please ask them to accept InterChat rules before adding them as a moderator. You can do so by asking them to use **any command** or by sending a message in **any hub**.',
+        'This user has not used the bot before. Ask them to use any command or send a message in any hub.',
         { flags: ['Ephemeral'] },
       );
       return;

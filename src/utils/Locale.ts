@@ -72,9 +72,15 @@ export const loadLocales = (localesDirectory: string) => {
   Logger.info(`${localesMap.size} Locales loaded successfully.`);
 };
 
-const getTranslationFile = (locale: supportedLocaleCodes) => {
+const getTranslationFile = (locale: supportedLocaleCodes, throwOnFail = false) => {
   const localeFile = localesMap.get(locale) || localesMap.get('en');
-  if (!localeFile) throw new Error(`Locale file for ${locale} not found! Fallback to en failed.`);
+  if (!localeFile) {
+    if (throwOnFail) throw new Error(`Locale file for ${locale} not found! Fallback to en failed.`);
+
+    // Reload locales & try again
+    loadLocales('locales');
+    return getTranslationFile(locale, true);
+  }
 
   return localeFile;
 };

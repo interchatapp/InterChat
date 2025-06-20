@@ -17,6 +17,8 @@
 
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import Constants from '#utils/Constants.js';
+import { CustomID } from '#utils/CustomID.js';
+import { t, type supportedLocaleCodes } from '#utils/Locale.js';
 import {
   type ActionRow,
   ActionRowBuilder,
@@ -84,3 +86,67 @@ export const donateButton = new ButtonBuilder()
   .setURL(`${Constants.Links.Website}/donate`)
   .setEmoji('💗')
   .setStyle(ButtonStyle.Link);
+
+/**
+ * Creates a call rating button row with like/dislike/report buttons
+ * @param callId - The call ID to associate with the buttons
+ * @param locale - The locale for button labels (optional, defaults to English hardcoded labels)
+ * @param options - Additional options for button configuration
+ * @returns ActionRowBuilder with rating buttons
+ */
+export const createCallRatingRow = (
+  callId: string,
+  locale?: supportedLocaleCodes,
+  options: { separateReportRow?: boolean } = {},
+) => {
+  const { separateReportRow = false } = options;
+
+  // Create like and dislike buttons
+  const likeButton = new ButtonBuilder()
+    .setCustomId(new CustomID('rate_call:like', [callId]).toString())
+    .setLabel(locale ? t('calls.buttons.ratePositive', locale) : '👍 Like')
+    .setStyle(ButtonStyle.Success);
+
+  const dislikeButton = new ButtonBuilder()
+    .setCustomId(new CustomID('rate_call:dislike', [callId]).toString())
+    .setLabel(locale ? t('calls.buttons.rateNegative', locale) : '👎 Dislike')
+    .setStyle(ButtonStyle.Danger);
+
+  // Create report button
+  const reportButton = new ButtonBuilder()
+    .setCustomId(new CustomID('report_call', [callId]).toString())
+    .setLabel(locale ? t('calls.buttons.reportCall', locale) : '🚩 Report')
+    .setStyle(ButtonStyle.Secondary);
+
+  // Add emoji for localized report button (matches existing pattern)
+  if (locale) {
+    reportButton.setEmoji('🚩');
+  }
+
+  if (separateReportRow) {
+    // Return rating row only (for CallService pattern)
+    return new ActionRowBuilder<ButtonBuilder>().addComponents(likeButton, dislikeButton);
+  }
+
+  // Return combined row (for call.ts and hangup.ts pattern)
+  return new ActionRowBuilder<ButtonBuilder>().addComponents(
+    likeButton,
+    dislikeButton,
+    reportButton,
+  );
+};
+
+/**
+ * Creates a separate report button row (used with separateReportRow option)
+ * @param callId - The call ID to associate with the button
+ * @param locale - The locale for button label (optional, defaults to English hardcoded label)
+ * @returns ActionRowBuilder with report button
+ */
+export const createCallReportRow = (callId: string, locale?: supportedLocaleCodes) => {
+  const reportButton = new ButtonBuilder()
+    .setCustomId(new CustomID('report_call', [callId]).toString())
+    .setLabel(locale ? t('calls.buttons.reportCall', locale) : '🚩 Report')
+    .setStyle(ButtonStyle.Secondary);
+
+  return new ActionRowBuilder<ButtonBuilder>().addComponents(reportButton);
+};
