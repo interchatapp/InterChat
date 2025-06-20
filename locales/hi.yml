@@ -517,7 +517,7 @@ report:
         placeholder: 'उदाहरण: /help कमांड पर बार-बार फेल होना...'
       input2:
         label: विस्तृत विवरण (वैकल्पिक)
-        placeholder: "आपके द्वारा उठाए गए चरण। उदाहरण:  \n1. /help चलाएं  \n2. 5 सेकंड प्रतीक्षा करें..."
+        placeholder: "आपके द्वारा उठाए गए चरण। उदाहरण:  \n1. /help चलाएं\n2. 5 सेकंड प्रतीक्षा करें..."
   reasons:
     spam: स्पैम या अत्यधिक संदेश
     advertising: अनचाहा विज्ञापन या स्वयं-प्रचार
@@ -585,7 +585,6 @@ errors:
   banned: |
     {emoji} आपको InterChat का उपयोग करने से प्रतिबंधित किया गया है क्योंकि आपने हमारे [Guidelines](https://interchat.tech/guidelines) का उल्लंघन किया है।  
     अगर आपको लगता है कि यह गलत है तो आप [सपोर्ट सर्वर]({support_invite}) में टिकट खोलकर अपील कर सकते हैं।
-
   commandLoadingError: 'कमांड लोड करने में त्रुटि हुई। कृपया थोड़ी देर बाद फिर से प्रयास करें।'
   errorLoadingHubs: 'हब लोड करने में त्रुटि'
   errorShowingHubSelection: 'हब चयन स्क्रीन दिखाने में एक त्रुटि हुई। कृपया फिर से प्रयास करें।'
@@ -607,7 +606,7 @@ badges:
     options:
       show:
         name: 'दिखाएँ'
-        description: 'बैज को संदेशों में दिखाने या छिपाने का विकल्प  '
+        description: 'बैज को संदेशों में दिखाने या छिपाने का विकल्प'
   list:
     developer: 'InterChat का मूल डेवलपर'
     staff: 'InterChat का स्टाफ सदस्य'
@@ -619,7 +618,7 @@ global:
   noDesc: कोई विवरण नहीं है।
   version: InterChat v{version}
   loading: '{emoji} कृपया प्रतीक्षा करें, मैं आपका अनुरोध प्रोसेस कर रहा हूं…'
-  reportOptionMoved: '{emoji} यह विकल्प स्थानांतरित हो गया है! अब हब मॉडरेटरों को संदेश रिपोर्ट करने के लिए `Apps > Message Info/Report` कमांड का उपयोग करें। InterChat स्टाफ़ को सीधी रिपोर्ट करने के लिए [सपोर्ट सर्वर]({support_invite}) में जाएँ और प्रमाण के साथ एक टिकट खोलें।  '
+  reportOptionMoved: '{emoji} यह विकल्प स्थानांतरित हो गया है! अब हब मॉडरेटरों को संदेश रिपोर्ट करने के लिए `Apps > Message Info/Report` कमांड का उपयोग करें। InterChat स्टाफ़ को सीधी रिपोर्ट करने के लिए [सपोर्ट सर्वर]({support_invite}) में जाएँ और प्रमाण के साथ एक टिकट खोलें।'
   private: 'प्राइवेट'
   public: 'पब्लिक'
   yes: 'हाँ'
