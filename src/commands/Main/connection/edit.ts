@@ -393,7 +393,7 @@ export default class ConnectionEditSubcommand extends BaseCommand {
         break;
 
       case 'change_hub':
-        // This would require a hub selection interface - for now, show info message
+        // would require a hub selection interface - for now, show info message
         await ctx.reply({
           content: `${getEmoji('info_icon', ctx.client)} Hub changing functionality is not yet implemented. Please use the dashboard or contact support.`,
           flags: ['Ephemeral'],
@@ -401,7 +401,6 @@ export default class ConnectionEditSubcommand extends BaseCommand {
         break;
 
       case 'change_channel_btn':
-        // This button should trigger the channel select menu - show info message
         await ctx.reply({
           content: `${getEmoji('info_icon', ctx.client)} Please use the channel select menu below to change the channel.`,
           flags: ['Ephemeral'],
