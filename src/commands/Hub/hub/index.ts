@@ -16,7 +16,6 @@
  */
 
 import AnnounceCommand from '#src/commands/Hub/hub/announce.js';
-import BrowseCommand from '#src/commands/Hub/hub/browse.js';
 import HubConfigAntiSwearSubcommand from '#src/commands/Hub/hub/config/anti-swear.js';
 import HubConfigAppealCooldownSubcommand from '#src/commands/Hub/hub/config/appealCooldown.js';
 import HubConfigLoggingSubcommand from '#src/commands/Hub/hub/config/logging.js';
@@ -35,6 +34,7 @@ import HubModeratorEditSubcommand from '#src/commands/Hub/hub/moderator/edit.js'
 import HubModeratorListSubcommand from '#src/commands/Hub/hub/moderator/list.js';
 import HubModeratorRemoveSubcommand from '#src/commands/Hub/hub/moderator/remove.js';
 import HubServersSubcommand from '#src/commands/Hub/hub/servers.js';
+import HubSetNsfwSubcommand from '#src/commands/Hub/hub/set-nsfw.js';
 import HubTransferSubcommand from '#src/commands/Hub/hub/transfer.js';
 import HubVisibilitySubcommnd from '#src/commands/Hub/hub/visibility.js';
 import BaseCommand from '#src/core/BaseCommand.js';
@@ -85,7 +85,6 @@ export default class HubCommand extends BaseCommand {
           list: new HubModeratorListSubcommand(),
         },
         announce: new AnnounceCommand(),
-        browse: new BrowseCommand(),
         create: new HubCreateSubCommand(),
         delete: new HubDeleteSubcommand(),
         edit: new HubEditSubcommand(),
@@ -93,6 +92,7 @@ export default class HubCommand extends BaseCommand {
         servers: new HubServersSubcommand(),
         transfer: new HubTransferSubcommand(),
         visibility: new HubVisibilitySubcommnd(),
+        'set-nsfw': new HubSetNsfwSubcommand(),
       },
     });
   }

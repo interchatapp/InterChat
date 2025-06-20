@@ -86,6 +86,7 @@ export default class HubManager {
         | 'appealCooldownHours'
         | 'settings'
         | 'ownerId'
+        | 'nsfw'
       >
     >,
   ): Promise<void> {

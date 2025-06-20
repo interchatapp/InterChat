@@ -58,6 +58,7 @@ const enum HubEditAction {
   Description = 'description',
   Icon = 'icon',
   ToggleLock = 'toggleLock',
+  ToggleNsfw = 'toggleNsfw',
   Banner = 'banner',
 }
 
@@ -133,6 +134,14 @@ export default class HubEditSubcommand extends BaseCommand {
         description: hub.data.locked
           ? 'Allow members to send messages in this hub'
           : 'Prevent members from sending messages in this hub',
+      },
+      {
+        label: hub.data.nsfw ? 'Mark as SFW' : 'Mark as NSFW',
+        value: HubEditAction.ToggleNsfw,
+        emoji: hub.data.nsfw ? '🔞' : '🛡️',
+        description: hub.data.nsfw
+          ? 'Mark this hub as safe for work content'
+          : 'Mark this hub as containing adult content',
       },
     ];
   }
@@ -212,6 +221,9 @@ export default class HubEditSubcommand extends BaseCommand {
         break;
       case HubEditAction.ToggleLock:
         await this.toggleHubLock(ctx, hub, locale);
+        break;
+      case HubEditAction.ToggleNsfw:
+        await this.toggleHubNsfw(ctx, hub, locale);
         break;
       default:
         break;
@@ -313,6 +325,69 @@ export default class HubEditSubcommand extends BaseCommand {
     });
   }
 
+  private async toggleHubNsfw(
+    ctx: ComponentContext,
+    hub: HubManager,
+    locale: supportedLocaleCodes,
+  ) {
+    await ctx.deferReply({ flags: ['Ephemeral'] });
+
+    const newNsfwState = !hub.data.nsfw;
+    await hub.update({ nsfw: newNsfwState });
+    const nsfwStatus = newNsfwState ? 'NSFW' : 'SFW';
+
+    // Create UI components helper
+    const ui = new UIComponents(ctx.client);
+
+    // Create success container
+    const successContainer = ui.createSuccessMessage(
+      newNsfwState ? '🔞 Hub Marked as NSFW' : '🛡️ Hub Marked as SFW',
+      t('hub.manage.toggleNsfw.confirmation', locale, { status: `**${nsfwStatus}**` }),
+    );
+
+    await ctx.editReply({
+      components: [successContainer],
+      flags: [MessageFlags.IsComponentsV2],
+    });
+
+    // Update the original message with Components v2
+    const updatedHub = await this.hubService.fetchHub(hub.id);
+    if (updatedHub) {
+      // Create hub management container
+      const container = await this.createHubManagementContainer(
+        updatedHub,
+        ctx.client,
+        locale,
+        ctx.user.id,
+      );
+
+      // Update the message with Components v2
+      await ctx.interaction.message
+        ?.edit({
+          components: [container],
+          flags: [MessageFlags.IsComponentsV2],
+        })
+        .catch(() => null);
+    }
+
+    // Create announcement container for the hub
+    const announcementContainer = new ContainerBuilder();
+
+    // Add announcement header
+    announcementContainer.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        `## ${newNsfwState ? '🔞' : '🛡️'} ${t('hub.manage.toggleNsfw.announcementTitle', locale, { status: nsfwStatus })}\n${t(`hub.manage.toggleNsfw.announcementDescription.${nsfwStatus.toLowerCase() as 'nsfw' | 'sfw'}`, locale)}`,
+      ),
+    );
+
+    await sendToHub(hub.id, {
+      username: hub.data.name ?? 'InterChat Hub Announcement',
+      avatarURL: hub.data.iconUrl,
+      components: [announcementContainer],
+      flags: [MessageFlags.IsComponentsV2],
+    });
+  }
+
   private async updateHubDescription(
     ctx: ComponentContext,
     hubId: string,
@@ -358,11 +433,7 @@ export default class HubEditSubcommand extends BaseCommand {
     });
   }
 
-  private async updateHubIcon(
-    ctx: ComponentContext,
-    hubId: string,
-    locale: supportedLocaleCodes,
-  ) {
+  private async updateHubIcon(ctx: ComponentContext, hubId: string, locale: supportedLocaleCodes) {
     const iconUrl = ctx.getModalFieldValue(HubEditAction.Icon);
 
     if (!iconUrl || !Constants.Regex.ImageURL.test(iconUrl)) {
@@ -581,7 +652,6 @@ export default class HubEditSubcommand extends BaseCommand {
       container.addMediaGalleryComponents(mediaGallery);
     }
 
-
     // Get hub stats for display
     const stats = await this.getHubStats(hub);
 
@@ -611,6 +681,7 @@ export default class HubEditSubcommand extends BaseCommand {
     // Add hub status information in a visually appealing format
     const statusEmoji = hub.data.locked ? '🔒' : '🔓';
     const visibilityEmoji = hub.data.private ? '🔐' : '🌐';
+    const nsfwEmoji = hub.data.nsfw ? '🔞' : '🛡️';
 
     container.addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
@@ -618,6 +689,7 @@ export default class HubEditSubcommand extends BaseCommand {
         ## Hub Status
         ${statusEmoji} **Status:** ${hub.data.locked ? 'Locked' : 'Unlocked'} ${hub.data.locked ? '(members cannot send messages)' : '(members can send messages)'}
         ${visibilityEmoji} **Visibility:** ${hub.data.private ? 'Private' : 'Public'} ${hub.data.private ? '(invite only)' : '(open to all)'}
+        ${nsfwEmoji} **Content:** ${hub.data.nsfw ? 'NSFW' : 'SFW'} ${hub.data.nsfw ? '(adult content, restricted channels only)' : '(safe for work)'}
         👥 **Connections:** ${stats.connections} servers
         👮 **Moderators:** ${stats.moderators} users
         `,
