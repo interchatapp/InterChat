@@ -15,54 +15,16 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { createLogger, format, transports } from 'winston';
 import 'source-map-support/register.js';
+import { LogLevel, TurboLogger, TurboLoggerConfig } from './TurboLogger.js';
 
-const custom = format.printf(
-  (info) =>
-    `\x1b[2;37m${info.timestamp}\x1b[0m ${info.level}: ${info.message} ${info.stack ? `\n${info.stack}` : ''}`,
-);
-
-const combinedFormat = format.combine(
-  format.errors({ stack: true }),
-  format.splat(),
-  format.timestamp({ format: 'DD/MM/YY-HH:mm:ss' }),
-  format((info) => {
-    info.level = info.level.toUpperCase();
-    return info;
-  })(),
-  custom,
-);
-
-const loggerConig = {
-  format: combinedFormat,
-  transports: [
-    new transports.Console({
-      format: format.combine(format.colorize(), custom),
-      level: process.env.DEBUG === 'true' ? 'debug' : 'info',
-    }),
-    new transports.File({ filename: 'logs/error.log', level: 'error' }),
-    new transports.File({
-      filename: 'logs/info.log',
-      format: format.combine(
-        format((info) => (info.level === 'INFO' ? info : false))(),
-        combinedFormat,
-      ),
-    }),
-  ],
+const config: Partial<TurboLoggerConfig> = {
+  level: process.env.DEBUG === 'true' ? LogLevel.DEBUG : LogLevel.INFO,
+  enableConsole: true,
+  enableFileLogging: true,
+  enableVisualEnhancements: true,
+  logDirectory: 'logs',
 };
 
-if (process.env.DEBUG === 'true') {
-  loggerConig.transports.push(
-    new transports.File({
-      filename: 'logs/debug.log',
-      level: 'debug',
-      format: format.combine(
-        format((info) => (info.level === 'DEBUG' ? info : false))(),
-        combinedFormat,
-      ),
-    }),
-  );
-}
-
-export default createLogger(loggerConig);
+const turboLogger = new TurboLogger(config);
+export default turboLogger;
