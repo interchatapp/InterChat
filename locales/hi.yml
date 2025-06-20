@@ -583,55 +583,56 @@ errors:
   cooldown: '{emoji} आप कोल्डाउन पर हैं। कृपया फिर से प्रयास करने से पहले **{time}** तक प्रतीक्षा करें।'
   serverNameInappropriate: '{emoji} आपके सर्वर के नाम में अनुचित शब्द हैं। कृपया हब में शामिल होने से पहले इसे बदलें।'
   banned: |
-    {emoji} You have been banned from using InterChat for violating our [guidelines](https://interchat.tech/guidelines).
-    If you think an appeal is applicable create a ticket in the [support server]( {support_invite} ).
-  commandLoadingError: 'There was an error loading the command. Please try again later.'
-  errorLoadingHubs: 'Error Loading Hubs'
-  errorShowingHubSelection: 'There was an error showing the hub selection screen. Please try again.'
-  connectNotFound: 'Connect command not found. Please try again.'
+    {emoji} आपको InterChat का उपयोग करने से प्रतिबंधित किया गया है क्योंकि आपने हमारे [Guidelines](https://interchat.tech/guidelines) का उल्लंघन किया है।  
+    अगर आपको लगता है कि यह गलत है तो आप [सपोर्ट सर्वर]({support_invite}) में टिकट खोलकर अपील कर सकते हैं।
+
+  commandLoadingError: 'कमांड लोड करने में त्रुटि हुई। कृपया थोड़ी देर बाद फिर से प्रयास करें।'
+  errorLoadingHubs: 'हब लोड करने में त्रुटि'
+  errorShowingHubSelection: 'हब चयन स्क्रीन दिखाने में एक त्रुटि हुई। कृपया फिर से प्रयास करें।'
+  connectNotFound: 'कनेक्ट कमांड नहीं मिला। कृपया फिर से प्रयास करें।'
 config:
   setInvite:
     success: |
-      ### {emoji} Invite Link Set
-      - Your server's invite will be used when people use `/joinserver`.
-      - It will be displayed in `/leaderboard server`.
-    removed: '{emoji} Invite removed successfully!'
-    invalid: '{emoji} Invalid invite. Please make sure you have entered a valid invite link. Eg. `https://discord.gg/discord`'
-    notFromServer: '{emoji} This invite is not from this server.'
+      ### {emoji} निमंत्रण लिंक सेट किया गया
+      - जब लोग `/joinserver` उपयोग करेंगे तो आपके सर्वर का निमंत्रण उपयोग किया जाएगा।
+      - यह `/leaderboard server` में प्रदर्शित होगा।
+    removed: '{emoji} निमंत्रण लिंक सफलतापूर्वक हटाया गया!'
+    invalid: '{emoji} अमान्य निमंत्रण। कृपया सुनिश्चित करें कि आपने एक मान्य निमंत्रण लिंक दर्ज किया है। जैसे: `https://discord.gg/discord`'
+    notFromServer: '{emoji} यह निमंत्रण इस सर्वर से नहीं है।'
 badges:
-  shown: '{emoji} Your badges will now be shown in messages.'
-  hidden: '{emoji} Your badges will now be hidden in messages.'
+  shown: '{emoji} अब आपके बैज संदेशों में दिखाई देंगे।'
+  hidden: '{emoji} अब आपके बैज संदेशों में छिपे रहेंगे।'
   command:
-    description: '🏅 Configure your badge display preferences'
+    description: '🏅 अपने बैज प्रदर्शन वरीयताएँ कॉन्फ़िगर करें'
     options:
       show:
-        name: 'show'
-        description: 'Whether to show or hide your badges in messages'
+        name: 'दिखाएँ'
+        description: 'बैज को संदेशों में दिखाने या छिपाने का विकल्प  '
   list:
-    developer: 'Core developer of InterChat'
-    staff: 'InterChat staff member'
-    translator: 'Translator of InterChat'
-    voter: 'Voted for InterChat in the last 12 hours'
+    developer: 'InterChat का मूल डेवलपर'
+    staff: 'InterChat का स्टाफ सदस्य'
+    translator: 'InterChat का अनुवादक'
+    voter: 'पिछले 12 घंटों में InterChat के लिए वोट किया'
 global:
-  webhookNoLongerExists: '{emoji} The webhook for this channel no longer exists. To continue using InterChat, please re-create the webhook by using `/connection unpause`.'
-  noReason: No reason provided.
-  noDesc: No Description.
+  webhookNoLongerExists: '{emoji} इस चैनल का वेबहुक अब मौजूद नहीं है। InterChat का उपयोग जारी रखने के लिए कृपया `/connection unpause` कमांड से वेबहुक फिर से बनाएँ।'
+  noReason: कोई कारण प्रदान नहीं किया गया।
+  noDesc: कोई विवरण नहीं है।
   version: InterChat v{version}
-  loading: '{emoji} Please wait while I process your request...'
-  reportOptionMoved: '{emoji} This option has moved! To report a message to hub moderators, use the updated `Apps > Message Info/Report` command. For direct reporting to InterChat staff, just hop into the [support server]({support_invite}) and create a ticket with proof.'
-  private: 'Private'
-  public: 'Public'
-  yes: 'Yes'
-  no: 'No'
-  cancelled: '{emoji} Cancelled. No changes were made.'
+  loading: '{emoji} कृपया प्रतीक्षा करें, मैं आपका अनुरोध प्रोसेस कर रहा हूं…'
+  reportOptionMoved: '{emoji} यह विकल्प स्थानांतरित हो गया है! अब हब मॉडरेटरों को संदेश रिपोर्ट करने के लिए `Apps > Message Info/Report` कमांड का उपयोग करें। InterChat स्टाफ़ को सीधी रिपोर्ट करने के लिए [सपोर्ट सर्वर]({support_invite}) में जाएँ और प्रमाण के साथ एक टिकट खोलें।  '
+  private: 'प्राइवेट'
+  public: 'पब्लिक'
+  yes: 'हाँ'
+  no: 'नहीं'
+  cancelled: '{emoji} रद्द किया गया। कोई परिवर्तन नहीं किया गया।'
   #Common button labels
   buttons:
-    openInbox: 'Open Inbox'
-    modPanel: 'Mod Panel'
-    joinServer: 'Join Server'
-    disconnect: 'Disconnect'
-    reconnect: 'Reconnect'
-    editRule: 'Edit Rule'
+    openInbox: 'इनबॉक्स खोलें'
+    modPanel: 'मॉड पैनल'
+    joinServer: 'सर्वर ज्वाइन करें'
+    disconnect: 'डिसकनेक्ट करें'
+    reconnect: 'फिर से कनेक्ट करें'
+    editRule: 'नियम संपादित करें'
     #Setup buttons
     joinPopularHub: 'Join Popular Hub'
     createNewHub: 'Create New Hub'
