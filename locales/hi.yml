@@ -705,87 +705,87 @@ global:
     privateHub: 'प्राइवेट हब'
 #Leaderboard
 leaderboard:
-  title: 'Global Message Leaderboard'
-  description: 'Resets every month. Send a message in any hub to get on it!'
+  title: 'वैश्विक संदेश लीडरबोर्ड'
+  description: 'हर महीने रीसेट होता है। इस पर आने के लिए किसी भी हब में संदेश भेजें!'
 warn:
-  description: 'Warn a user in your hub'
+  description: 'अपने हब में किसी उपयोगकर्ता को चेतावनी (warning) दें'
   options:
     user:
-      description: 'The user to warn'
+      description: 'जिस उपयोगकर्ता को चेतावनी देनी है'
     hub:
-      description: 'The hub to warn in'
+      description: 'जिस हब में चेतावनी देनी है'
     reason:
-      description: 'Reason for the warning'
+      description: 'चेतावनी देने का कारण'
   errors:
-    cannotWarnSelf: '{emoji} You cannot warn yourself.'
+    cannotWarnSelf: '{emoji} आप अपने आप को चेतावनी नहीं दे सकते।'
   modal:
-    title: Warn User
+    title: उपयोगकर्ता को चेतावनी दें
     reason:
-      label: Reason
-      placeholder: Enter the reason for warning this user...
+      label: कारण
+      placeholder: इस उपयोगकर्ता को चेतावनी देने का कारण दर्ज करें...
   success: |
-    {emoji} Successfully warned **{name}**.
+    {emoji} सफलतापूर्वक **{name}** को चेतावनी दी गई।
 
-    -# They will be notified of the most recent warning the next time they send a message in the hub. Avoid issuing multiple warnings at once.
+    -# अगली बार जब वे हब में संदेश भेजेंगे, तो उन्हें नवीनतम चेतावनी दिखाई देगी। एक साथ कई चेतावनियाँ देने से बचें।
   dm:
-    title: '{emoji} Warning Notification'
-    description: 'You have been warned in hub **{hubName}**'
+    title: '{emoji} चेतावनी सूचना'
+    description: 'आपको हब **{hubName}** में चेतावनी दी गई है'
   log:
-    title: '{emoji} User Warned'
+    title: '{emoji} उपयोगकर्ता को चेतावनी दी गई'
     description: |
-      {arrow} **User:** {user} ({userId})
-      {arrow} **Moderator:** {moderator} ({modId})
-      {arrow} **Reason:** {reason}
-    footer: 'Warned by: {moderator}'
+      {arrow} **उपयोगकर्ता:** {user} ({userId})  
+      {arrow} **मॉडरेटर:** {moderator} ({modId})  
+      {arrow} **कारण:** {reason}
+    footer: 'चेतावनी देने वाला: {moderator}'
 calls:
   connected:
-    title: "You're Connected! 🎉"
-    description: "You've been matched with another awesome server! Say hello and start chatting - this is where the magic happens! ✨"
-    instructions: 'Use `/hangup` to end the call • `/skip` to find a different server'
-    serverInfo: '**Connected to:** {serverName} ({memberCount} members)'
-    duration: '**Call Duration:** {duration}'
-    messages: '**Messages Exchanged:** {count}'
+    title: "आप कनेक्ट हो चुके हैं! 🎉"
+    description: "आपको एक अन्य शानदार सर्वर से मिलाया गया है! हैलो कहें और चैट शुरू करें — यहीं से असली जादू शुरू होता है! ✨"
+    instructions: 'कॉल समाप्त करने के लिए `/hangup` उपयोग करें • किसी अन्य सर्वर से मिलाने के लिए `/skip` उपयोग करें'
+    serverInfo: '**कनेक्ट किया गया:** {serverName} ({memberCount} सदस्य)'
+    duration: '**कॉल अवधि:** {duration}'
+    messages: '**एक्सचेंज किए गए संदेश:** {count}'
   waiting:
-    title: 'Finding Your Perfect Match'
-    description: 'Added to call queue. Waiting for another server to join...'
+    title: 'आपका सही मिलान खोज रहे हैं'
+    description: 'कॉल कतार में जोड़ा गया। अन्य सर्वर के शामिल होने की प्रतीक्षा कर रहे हैं...'
   failed:
-    title: 'Call Failed'
-    description: "Check you're not already in a call and try again in a few moments."
+    title: 'कॉल असफल'
+    description: "जांचें कि आप पहले से कॉल में नहीं हैं और कुछ क्षण बाद पुनः प्रयास करें।"
     reasons:
-      alreadyInCall: 'This channel is already in a call!'
-      alreadyInQueue: 'This channel is already in the call queue!'
-      webhookFailed: 'Failed to create webhook. Please try again later.'
-      channelInvalid: 'Cannot skip call - invalid channel'
+      alreadyInCall: 'इस चैनल पर पहले से ही एक कॉल है!'
+      alreadyInQueue: 'इस चैनल को पहले से कॉल कतार में जोड़ा गया है!'
+      webhookFailed: 'वेबहुक बनाने में विफल। कृपया कुछ देर बाद पुनः प्रयास करें।'
+      channelInvalid: 'कॉल को छोड़ नहीं सकते - अमान्य चैनल'
   cancelled:
-    title: 'Call Cancelled'
-    description: 'Call queue exited. Use `/call` to start a new call.'
-    queueExit: 'You have been removed from the call queue'
+    title: 'कॉल रद्द'
+    description: 'कॉल कतार से बाहर निकल गए। नई कॉल शुरू करने के लिए `/call` उपयोग करें।'
+    queueExit: 'आपको कॉल कतार से हटा दिया गया है'
   ended:
-    title: 'Call Ended'
-    description: 'Thanks for chatting! Hope you made some new friends! 🌟'
+    title: 'कॉल समाप्त'
+    description: 'चैट करने के लिए धन्यवाद! आशा है कि आपने कुछ नए दोस्त बनाए होंगे! 🌟'
     stats: |
-      **Call Summary:**
-      • Duration: {duration}
-      • Messages: {messages}
-      • Server: {serverName}
-    ratePrompt: 'How was your call experience?'
+      **कॉल सारांश:**
+      • अवधि: {duration}  
+      • संदेश: {messages}  
+      • सर्वर: {serverName}
+    ratePrompt: 'आपका कॉल अनुभव कैसा रहा?'
   skip:
-    title: 'Finding New Call'
-    description: 'Previous call ended • Waiting for another server • Use `/hangup` to cancel'
+    title: 'नई कॉल खोज रहे हैं'
+    description: 'पिछली कॉल समाप्त • अन्य सर्वर की प्रतीक्षा • रद्द करने के लिए `/hangup` उपयोग करें'
     newConnected:
-      title: 'New Call Connected!'
-      description: "You've been connected to a different server • Use `/hangup` to end"
-    error: 'Unable to skip call. Please try again.'
+      title: "नई कॉल कनेक्ट हुई!\n"
+      description: "आप एक अन्य सर्वर से जुड़े हैं • कॉल समाप्त करने के लिए `/hangup` उपयोग करें"
+    error: 'कॉल छोड़ना असमर्थ। कृपया पुनः प्रयास करें।'
   hangup:
-    confirm: 'Are you sure you want to end this call?'
-    success: 'Call ended successfully. Thanks for chatting!'
-    queueOnly: 'Removed from call queue.'
+    confirm: 'क्या आप वास्तव में इस कॉल को समाप्त करना चाहते हैं?'
+    success: 'कॉल सफलतापूर्वक समाप्त। चैट करने के लिए धन्यवाद!'
+    queueOnly: 'आपको कॉल कतार से हटा दिया गया है।'
   buttons:
-    endCall: 'End Call'
-    skipServer: 'Skip Server'
-    skipAgain: 'Skip Again'
-    cancelCall: 'Cancel Call'
-    newCall: 'New Call'
+    endCall: 'कॉल समाप्त करें'
+    skipServer: 'सर्वर छोड़ें'
+    skipAgain: 'फिर से छोड़ें'
+    cancelCall: 'कॉल रद्द करें'
+    newCall: 'नई कॉल'
     exploreHubs: 'Explore Hubs'
     browseAllHubs: 'Browse All Hubs'
     ratePositive: 'Good Call 👍'
