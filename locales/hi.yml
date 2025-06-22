@@ -106,14 +106,26 @@ network:
   editMessagePrompt: '{emoji} कृपया अपना संदेश संपादित करने के लिए मोडल का उपयोग करें।'
   editSuccess: '{emoji} {user} द्वारा भेजा गया संदेश __**{edited}/{total}**__ सर्वरों में संपादित कर दिया गया है।'
   onboarding:
+    welcome:
+      title: '🎉 Welcome to InterChat!'
+      description: |
+        Welcome to InterChat! Let's get you set up with a personalized experience that matches your interests and helps you find the perfect communities to join.
+
+        This quick setup will help us:
+        - Learn about your interests and preferences
+        - Find the best hubs for you to join
+        - Connect you with like-minded people
+        - Get you started with your first community
+
+        Ready to begin your InterChat journey?
     embed:
       title: '🎉 {hubName} में आपका स्वागत है!'
       description: |
-        बधाई हो! आपने एक शानदार, सक्रिय कम्युनिटी खोज लिया है! 🌟
+        Congratulations! You've discovered an amazing, active community hub! 🌟
 
-        हम आपको बातचीत में शामिल होते देखकर बेहद उत्साहित हैं! इससे पहले कि आप नए दोस्तों से मिलें और बातचीत शुरू करें, आइए हमारी आसान सी दिशानिर्देशों पर एक नज़र डाल लें। ये सभी के लिए बातचीत को मज़ेदार और सहज बनाने के लिए बनाए गए हैं, ताकि हर कोई अपनी बातें और अनुभव खुले दिल से साझा कर सके।
+        Before you dive in and start making new friends, let's take a quick peek at our simple guidelines. They're designed to help everyone have the most fun and feel comfortable sharing their thoughts and experiences.
 
-        क्या आप कुछ खास का हिस्सा बनने के लिए तैयार हैं? तो आइए शुरुआत करें! ✨
+        Let's get started!
       footer: InterChat नेटवर्क | दुनियाभर के समुदायों को जोड़ना 🌍
     inProgress: '{emoji} {channel} पहले से ही एक हब में शामिल होने के लिए सेटअप होने की प्रक्रिया में है। कृपया सेटअप को पूरा करने या रद्द करने के लिए प्रतीक्षा करें यदि आप इसे शुरू करने वाले थे।'
 blacklist:
@@ -234,6 +246,8 @@ hub:
       - किसी भी समय दूसरे चैनल पर स्विच करने के लिए `/connection edit` का उपयोग करें
 
       **💝 प्रो टिप:** नमस्ते कहें और अपना परिचय दें – सभी को नए दोस्त बनाना अच्छा लगता है! समुदाय से जुड़ने का आनंद लें! 🌟
+    nsfwChannelSfwHub: '{emoji} NSFW channels cannot connect to SFW hubs. {channel} is marked as NSFW, but **{hub}** is a safe-for-work hub. Please use a non-NSFW channel or find an NSFW hub instead.'
+    sfwChannelNsfwHub: '{emoji} SFW channels cannot connect to NSFW hubs. {channel} is not marked as NSFW, but **{hub}** is an adult content hub. Please use an NSFW channel or find a SFW hub instead.'
   servers:
     total: 'वर्तमान जुड़े हुए सर्वर: {from}-{to} / **{total}**'
     noConnections: '{emoji} अभी तक कोई सर्वर इस हब से नहीं जुड़ा है। इस हब से जुड़ने के लिए `/connect` का उपयोग करें।'
@@ -406,6 +420,23 @@ hub:
       announcementDescription:
         locked: 'केवल मॉडरेटर ही संदेश भेज सकते हैं।'
         unlocked: 'हर कोई संदेश भेज सकता है।'
+    toggleNsfw:
+      modal:
+        title: 'Toggle NSFW Status'
+        label: 'NSFW Status'
+        description: 'Mark this hub as containing adult content.'
+      selects:
+        label: 'Toggle NSFW Status'
+        description: 'Mark hub as NSFW or SFW content'
+      confirmation: 'Hub content rating is now {status}.'
+      announcementTitle: 'Hub content rating changed to {status}'
+      announcementDescription:
+        nsfw: 'This hub now contains adult content. Only NSFW Discord channels can connect to this hub.'
+        sfw: 'This hub is now safe for work. All channels can connect to this hub.'
+    setNsfw:
+      success: '{emoji} **{hub}** has been successfully marked as **{status}**.'
+      announcement: "{emoji} **Hub Content Rating Changed**\n\nThis hub is now marked as **{status}**.\n\n{description}"
+    nsfwAlreadySet: '{emoji} **{hub}** is already marked as **{status}**.'
     embed:
       visibility: 'विज़िबिलिटी'
       connections: 'कनेक्शन'
@@ -1377,7 +1408,6 @@ connect:
   errors:
     invalidIds: '{emoji} Invalid hub or channel ID.'
     channelNotFound: '{emoji} Channel not found or not a text channel.'
-  createRedirect: 'This would normally redirect to the `/hub create` command. Since this is a demo, please use that command directly.'
 disconnect:
   description: '👋 Disconnect a channel from a hub'
 #Staff commands
@@ -1420,6 +1450,10 @@ achievements:
   progress: '**Progress:** {unlocked}/{total} achievements unlocked'
   errors:
     userNotFound: 'User not found.'
+achievement:
+  settings:
+    enabled: 'Achievement notifications are now **enabled**. You will receive notifications when you unlock new achievements!'
+    disabled: 'Achievement notifications are now **disabled**. You will no longer receive notifications when you unlock achievements.'
 profile:
   description: "View your profile or someone else's InterChat profile."
   options:
