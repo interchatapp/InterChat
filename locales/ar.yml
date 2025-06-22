@@ -1,34 +1,19 @@
 rules:
-  header: 'Правилата на InterChat'
+  header: 'InterChat Rules'
   botRulesNote: 'These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:'
   rules: |
-    1. **No Hate Speech or Harassment**
-    -# > **Includes:** Using slurs or hate speech to attack others, [and more]({guidelines_link}).
-    2. **No Illegal Content**
-    -# > **Includes:** Sharing links to illegal content, Encouraging violence, [and more]({guidelines_link}).
-    3. **No Severe NSFW or Gore**
-    -# > **Includes:** Posting gore or extreme gore in InterChat, Posting sexual content in non-NSFW hubs, [and more]({guidelines_link}).
-    4. **No Spamming or Flooding**
-    -# > **Includes:** Mass spamming or bot floods, [and more]({guidelines_link})
-    5. **No Impersonation or Fraud**
-    -# > **Includes:** Impersonating InterChat staff or hub moderators, Running cryptocurrency or NFT scams, [and more]({guidelines_link}).
-    6. **No Exploitation or Abuse**
-    -# > **Includes:** Grooming or predatory behavior towards minors, Sharing, Requesting, Blackmailing or threatening to  Encouraging self-harm, [and more]({guidelines_link}).
-    7. **No Sharing Malicious Software**
-    -# > **Includes:** Sharing malware, viruses, 'free nitro' links, harmful scripts [and more]({guidelines_link}).
-
-    You also agree to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines). Check out the [full list of rules]({guidelines_link}).
+    **ممنوع خطاب الكراهية**
   welcome: |
-    {emoji} Здравейте, {user} Добре дошли в ИнтерЧат! 🎉
+    {emoji} Hey there, {user}! Welcome to InterChat! 🎉
 
-    Много се радваме, че се присъединявате към нашата страхотна общност от сървъри, свързващи се в Дискорд! Преди да започнете да говорите с хора от различни краища на света, желателно е набързо да ви запознаем с нашите правила.
+    We're so excited to have you join our amazing community of servers connecting across Discord! Before you dive into chatting with people from around the world, let's take a quick moment to go over our friendly community guidelines.
 
-    Тези насоки са създадени, за да гарантират, че ИнтерЧат ще остане едно забавно и безопасно пространство за всички, които искат да се сприятелят с други и да почват приятни разговори! ✨
-  alreadyAccepted: "{emoji} Добре дошли отново, {user}! Готови сте да говорите с невероятни общности. Дано ви е приятно да си говорите и да намирате нови приятели! 🌟"
-  continue: Продължете
-  accept: Приеми
-  decline: Откажи
-  agreementNote: Чрез приемането на тези правила, вие се съгласявате да ги следвате по време на използването на InterChat. При нарушаването на следните правила може да се доведе до налагане на ограничения или отстранения.
+    These simple rules help keep InterChat a warm, welcoming, and safe space for everyone to make new friends and share great conversations! ✨
+  alreadyAccepted: "{emoji} Welcome back, {user}! You're all set to explore and chat with amazing communities. Have fun connecting with new friends! 🌟"
+  continue: Continue
+  accept: Accept
+  decline: Decline
+  agreementNote: By accepting these rules, you agree to follow them while using InterChat. Breaking these rules may result in restrictions or bans.
   hubAgreementNote: |
     By accepting these rules, you agree to follow them while chatting in this hub. Breaking these rules may result in removal from the hub.
 
