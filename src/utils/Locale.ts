@@ -24,6 +24,7 @@ import Logger from '#utils/Logger.js';
 const localesMap = new Map();
 
 export const supportedLocales = {
+  ar: { name: 'Arabic', emoji: '🇸🇦' },
   bg: { name: 'Bulgarian', emoji: '🇧🇬' },
   cs: { name: 'Czech', emoji: '🇨🇿' },
   da: { name: 'Danish', emoji: '🇩🇰' },

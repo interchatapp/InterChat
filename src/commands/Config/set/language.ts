@@ -23,7 +23,7 @@ import { fetchUserLocale } from '#src/utils/Utils.js';
 import { type supportedLocaleCodes, supportedLocales, t } from '#utils/Locale.js';
 import { ApplicationCommandOptionType } from 'discord.js';
 
-const currSupportedLangs = ['en', 'hi', 'es', 'pt', 'zh', 'ru', 'et'] as const;
+const currSupportedLangs = ['en', 'hi', 'es', 'pt', 'zh', 'ru', 'et', 'ar', 'bg'] as const;
 
 export default class SetLanguage extends BaseCommand {
   constructor() {
