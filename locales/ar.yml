@@ -2,22 +2,7 @@ rules:
   header: 'InterChat Rules'
   botRulesNote: 'These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:'
   rules: |
-    1. **No Hate Speech or Harassment**
-    -# > **Includes:** Using slurs or hate speech to attack others, [and more]({guidelines_link}).
-    2. **No Illegal Content**
-    -# > **Includes:** Sharing links to illegal content, Encouraging violence, [and more]({guidelines_link}).
-    3. **No Severe NSFW or Gore**
-    -# > **Includes:** Posting gore or extreme gore in InterChat, Posting sexual content in non-NSFW hubs, [and more]({guidelines_link}).
-    4. **No Spamming or Flooding**
-    -# > **Includes:** Mass spamming or bot floods, [and more]({guidelines_link})
-    5. **No Impersonation or Fraud**
-    -# > **Includes:** Impersonating InterChat staff or hub moderators, Running cryptocurrency or NFT scams, [and more]({guidelines_link}).
-    6. **No Exploitation or Abuse**
-    -# > **Includes:** Grooming or predatory behavior towards minors, Sharing, Requesting, Blackmailing or threatening to  Encouraging self-harm, [and more]({guidelines_link}).
-    7. **No Sharing Malicious Software**
-    -# > **Includes:** Sharing malware, viruses, 'free nitro' links, harmful scripts [and more]({guidelines_link}).
-
-    You also agree to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines). Check out the [full list of rules]({guidelines_link}).
+    **ممنوع خطاب الكراهية**
   welcome: |
     {emoji} Hey there, {user}! Welcome to InterChat! 🎉
 
