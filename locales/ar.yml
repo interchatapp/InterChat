@@ -4,20 +4,18 @@ rules:
   rules: |
     **ممنوع خطاب الكراهية**
   welcome: |
-    {emoji} Hey there, {user}! Welcome to InterChat! 🎉
+    {emoji} أهلاً وسهلاً {user}! مرحباً في إنتَر شات! 🎉
 
-    We're so excited to have you join our amazing community of servers connecting across Discord! Before you dive into chatting with people from around the world, let's take a quick moment to go over our friendly community guidelines.
+    نحن متحمسون لانضمامك جدا في انضمامك معنا في مجتمعنا الرائع من السيرفرات المتصلة حول دسكورد! ولكن قبل أن تدخل في دردشات مع ناس من جميع أنحاء العالم، خلينا نأخذ لنا لحظة لمراجعة إرشادات مجتمعنا الودية.
 
-    These simple rules help keep InterChat a warm, welcoming, and safe space for everyone to make new friends and share great conversations! ✨
-  alreadyAccepted: "{emoji} Welcome back, {user}! You're all set to explore and chat with amazing communities. Have fun connecting with new friends! 🌟"
+    تساعد هذه القواعد البسيطة في الحفاظ على إنتَر شات كمساحة دافئة ومرحبة وآمنة للجميع لتكوين صداقات جديدة ومشاركة محادثات رائعة! ✨
+  alreadyAccepted: ""
   continue: Continue
   accept: Accept
   decline: Decline
-  agreementNote: By accepting these rules, you agree to follow them while using InterChat. Breaking these rules may result in restrictions or bans.
+  agreementNote: "مع تقبيلك لهذه القوانين، أنت تقبل متابعتهم أثناء إستخدامك لإنتَر شات.\nقد يؤدي مخالفة هذه القوانين إلى فرض قيود أو حظر."
   hubAgreementNote: |
-    By accepting these rules, you agree to follow them while chatting in this hub. Breaking these rules may result in removal from the hub.
 
-    ⚠️ **You cannot send messages in this hub until you accept these rules.**
   accepted: |
     {emoji} Fantastic! Welcome to the InterChat family! 🎉✨
 
