@@ -170,9 +170,10 @@ export class CallManager extends CallEventHandler implements ICallManager {
         priority: 0,
       };
 
-      // Add to queue and cache webhook simultaneously
-      const queueStatus = await this.queueManager.enqueue(request);
+      // Add to queue
+      await this.queueManager.enqueue(request);
 
+      // cache webhook
       this.cacheManager.cacheWebhook(channel.id, webhook.url).catch((error) => {
         handleError(error, { comment: 'Failed to cache webhook' });
       });
@@ -190,7 +191,7 @@ export class CallManager extends CallEventHandler implements ICallManager {
 
       return {
         success: true,
-        message: `🔍 **Looking for a match...** You're #${queueStatus.position} in queue (${queueStatus.queueLength} total).`,
+        message: '🔍 **Looking for a match...** Hold tight!',
       };
     }
     catch (error) {

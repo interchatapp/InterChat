@@ -162,7 +162,6 @@ export default class HangupCommand extends BaseCommand {
 
   @RegisterInteractionHandler('hangup', 'explore-hubs')
   async handleExploreHubsButton(ctx: ComponentContext) {
-    await ctx.deferUpdate();
     const locale = await ctx.getLocale();
 
     const ui = new UIComponents(ctx.client);
@@ -219,7 +218,7 @@ export default class HangupCommand extends BaseCommand {
       ),
     );
 
-    await ctx.editReply({
+    await ctx.reply({
       components: [container],
       flags: [MessageFlags.IsComponentsV2],
     });

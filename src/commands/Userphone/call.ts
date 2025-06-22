@@ -336,8 +336,6 @@ export default class CallCommand extends BaseCommand {
 
   @RegisterInteractionHandler('call', 'explore-hubs')
   async handleExploreHubsButton(ctx: ComponentContext) {
-    await ctx.deferUpdate();
-
     const locale = await ctx.getLocale();
     const ui = new UIComponents(ctx.client);
     const container = new ContainerBuilder();
@@ -385,7 +383,7 @@ export default class CallCommand extends BaseCommand {
       ),
     );
 
-    await ctx.editReply({
+    await ctx.reply({
       components: [container],
       flags: [MessageFlags.IsComponentsV2],
     });
