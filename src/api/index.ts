@@ -33,7 +33,20 @@ import { findOriginalMessage } from '#src/utils/network/messageUtils.js';
 import { storeReactions, updateReactions } from '#src/utils/reaction/reactions.js';
 import Logger from '#utils/Logger.js';
 
-export const webhookMap = new Collection<string, WebhookClient>();
+export const webhookMap = new Collection<string, { lastUsed: Date, client: WebhookClient }>();
+
+setInterval(() => {
+  webhookMap.forEach((client, url) => {
+    const timeSinceLastUsed = Date.now() - client.lastUsed.getTime();
+    const tenMinutes = 10 * 60 * 1000;
+
+    // Remove the webhook from the cache if it hasn't been used in the last 10 minutes
+    // This will prevent the webhook cache from growing unbounded
+    if (timeSinceLastUsed > tenMinutes) {
+      webhookMap.delete(url);
+    }
+  });
+}, 300000);
 
 export const startApi = (metrics: MainMetricsService, clusterManager?: ClusterManager) => {
   const app = new Hono({});
@@ -167,18 +180,18 @@ export const startApi = (metrics: MainMetricsService, clusterManager?: ClusterMa
       `[webhook] Processing webhook request with ID: ${body.webhookUrl.split('/').at(-2)}...`,
     );
 
-    let client = webhookMap.get(body.webhookUrl);
-    if (!client) {
+    let webhookData = webhookMap.get(body.webhookUrl);
+    if (!webhookData) {
       Logger.debug(
         `[webhook] Creating new WebhookClient ID: ${body.webhookUrl.split('/').at(-2)}...`,
       );
-      client = new WebhookClient({ url: body.webhookUrl });
-      webhookMap.set(body.webhookUrl, client);
+      webhookData = { lastUsed: new Date(), client: new WebhookClient({ url: body.webhookUrl }) };
+      webhookMap.set(body.webhookUrl, webhookData);
     }
 
     try {
       Logger.debug('[webhook] Attempting to send webhook message');
-      const res = await client.send(body.data);
+      const res = await webhookData.client.send(body.data);
       Logger.debug('[webhook] Successfully sent webhook message');
       return c.json({ data: res });
     }
@@ -217,20 +230,20 @@ export const startApi = (metrics: MainMetricsService, clusterManager?: ClusterMa
       `[webhook/message] Processing webhook message request with action: ${body.action}`,
     );
 
-    let client = webhookMap.get(body.webhookUrl);
-    if (!client) {
+    let webhookData = webhookMap.get(body.webhookUrl);
+    if (!webhookData) {
       Logger.debug(
         `[webhook/message] Creating new WebhookClient for URL: ${body.webhookUrl.substring(0, 20)}...`,
       );
-      client = new WebhookClient({ url: body.webhookUrl });
-      webhookMap.set(body.webhookUrl, client);
+      webhookData = { lastUsed: new Date(), client: new WebhookClient({ url: body.webhookUrl }) };
+      webhookMap.set(body.webhookUrl, webhookData);
     }
 
     try {
       if (body.action === 'fetch') {
         // Fetch the message
         Logger.debug(`[webhook/message] Fetching message with ID: ${body.messageId}`);
-        const message = await client
+        const message = await webhookData.client
           .fetchMessage(body.messageId, {
             threadId: body.threadId,
           })
@@ -245,7 +258,7 @@ export const startApi = (metrics: MainMetricsService, clusterManager?: ClusterMa
       if (body.action === 'edit') {
         // Edit the message
         Logger.debug(`[webhook/message] Editing message with ID: ${body.messageId}`);
-        const message = await client
+        const message = await webhookData.client
           .editMessage(body.messageId, {
             ...body.data,
             threadId: body.threadId,
