@@ -98,14 +98,26 @@ network:
   editMessagePrompt: '{emoji}请使用此模式编辑您的消息。'
   editSuccess: '{emoji}{user}发送的消息已在__**{edited}／{total}**__服务器中完成编辑。'
   onboarding:
+    welcome:
+      title: '🎉 Welcome to InterChat!'
+      description: |
+        Welcome to InterChat! Let's get you set up with a personalized experience that matches your interests and helps you find the perfect communities to join.
+
+        This quick setup will help us:
+        - Learn about your interests and preferences
+        - Find the best hubs for you to join
+        - Connect you with like-minded people
+        - Get you started with your first community
+
+        Ready to begin your InterChat journey?
     embed:
       title: '🎉 Welcome to {hubName}!'
       description: |
         Congratulations! You've discovered an amazing, active community hub! 🌟
 
-        We're so excited to have you join the conversation! Before you dive in and start making new friends, let's take a quick peek at our simple guidelines. They're designed to help everyone have the most fun and feel comfortable sharing their thoughts and experiences.
+        Before you dive in and start making new friends, let's take a quick peek at our simple guidelines. They're designed to help everyone have the most fun and feel comfortable sharing their thoughts and experiences.
 
-        Ready to become part of something special? Let's get started! ✨
+        Let's get started!
       footer: InterChat Network | Connecting Communities Worldwide 🌍
     inProgress: '{emoji}{channel}加入中心的流程正在进行中。您启动安装后，请等待安装完成或取消安装。'
 blacklist:
@@ -226,6 +238,8 @@ hub:
       - Use `/connection edit` to switch to a different channel anytime
 
       **💝 Pro tip:** Say hello and introduce yourself - everyone loves meeting new friends! Have fun connecting with the community! 🌟
+    nsfwChannelSfwHub: '{emoji} NSFW channels cannot connect to SFW hubs. {channel} is marked as NSFW, but **{hub}** is a safe-for-work hub. Please use a non-NSFW channel or find an NSFW hub instead.'
+    sfwChannelNsfwHub: '{emoji} SFW channels cannot connect to NSFW hubs. {channel} is not marked as NSFW, but **{hub}** is an adult content hub. Please use an NSFW channel or find a SFW hub instead.'
   servers:
     total: '目前已连接的服务器：{from}-­­­­­­­­­­{to}­／{total}'
     noConnections: '{emoji}尚未有服务器加入此中心。使用“/连接”加入此中心。'
@@ -391,6 +405,23 @@ hub:
       announcementDescription:
         locked: '只有监管员可以发送信息。'
         unlocked: '所有人都可以发送信息。'
+    toggleNsfw:
+      modal:
+        title: 'Toggle NSFW Status'
+        label: 'NSFW Status'
+        description: 'Mark this hub as containing adult content.'
+      selects:
+        label: 'Toggle NSFW Status'
+        description: 'Mark hub as NSFW or SFW content'
+      confirmation: 'Hub content rating is now {status}.'
+      announcementTitle: 'Hub content rating changed to {status}'
+      announcementDescription:
+        nsfw: 'This hub now contains adult content. Only NSFW Discord channels can connect to this hub.'
+        sfw: 'This hub is now safe for work. All channels can connect to this hub.'
+    setNsfw:
+      success: '{emoji} **{hub}** has been successfully marked as **{status}**.'
+      announcement: "{emoji} **Hub Content Rating Changed**\n\nThis hub is now marked as **{status}**.\n\n{description}"
+    nsfwAlreadySet: '{emoji} **{hub}** is already marked as **{status}**.'
     embed:
       visibility: '可见性'
       connections: '连接'
@@ -1362,7 +1393,6 @@ connect:
   errors:
     invalidIds: '{emoji} Invalid hub or channel ID.'
     channelNotFound: '{emoji} Channel not found or not a text channel.'
-  createRedirect: 'This would normally redirect to the `/hub create` command. Since this is a demo, please use that command directly.'
 disconnect:
   description: '👋 Disconnect a channel from a hub'
 #Staff commands
@@ -1405,6 +1435,10 @@ achievements:
   progress: '**Progress:** {unlocked}/{total} achievements unlocked'
   errors:
     userNotFound: 'User not found.'
+achievement:
+  settings:
+    enabled: 'Achievement notifications are now **enabled**. You will receive notifications when you unlock new achievements!'
+    disabled: 'Achievement notifications are now **disabled**. You will no longer receive notifications when you unlock achievements.'
 profile:
   description: "View your profile or someone else's InterChat profile."
   options:
