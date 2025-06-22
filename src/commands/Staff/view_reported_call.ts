@@ -20,11 +20,11 @@ import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import Context from '#src/core/CommandContext/Context.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import {
-  ActiveCallData,
+  ActiveCall,
   CallMessage,
-  CallParticipants,
-  CallService,
-} from '#src/services/CallService.js';
+  CallParticipant,
+} from '#src/types/CallTypes.js';
+import { DistributedCallingLibrary } from '#src/lib/userphone/DistributedCallingLibrary.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import { UIComponents } from '#src/utils/DesignSystem.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
@@ -75,6 +75,13 @@ export default class ViewReportedCallCommand extends BaseCommand {
     });
   }
 
+  /**
+   * Helper method to get the distributed calling library
+   */
+  private getDistributedCallingLibrary(client: Client): DistributedCallingLibrary | null {
+    return client.getDistributedCallingLibrary();
+  }
+
   async execute(ctx: Context) {
     // Verify the user is a staff member
     if (!checkIfStaff(ctx.user.id)) {
@@ -92,8 +99,14 @@ export default class ViewReportedCallCommand extends BaseCommand {
     await ctx.deferReply();
 
     // Get call data
-    const callService = new CallService(ctx.client);
-    const callData = await callService.getEndedCallData(callId);
+    const distributedCallingLibrary = this.getDistributedCallingLibrary(ctx.client);
+    if (!distributedCallingLibrary) {
+      await ctx.editReply({
+        content: `${ctx.getEmoji('x_icon')} Call system is currently unavailable. Please try again later.`,
+      });
+      return;
+    }
+    const callData = await distributedCallingLibrary.getEndedCallData(callId);
 
     if (!callData) {
       await ctx.editReply({
@@ -148,7 +161,7 @@ export default class ViewReportedCallCommand extends BaseCommand {
    */
   public async displayCallReport(
     ctx: Context | ComponentContext,
-    callData: ActiveCallData,
+    callData: ActiveCall,
     reportData: CallReportData,
     messages: CallMessage[],
     page: number = 0,
@@ -175,7 +188,7 @@ export default class ViewReportedCallCommand extends BaseCommand {
         stripIndents`
         **Report Reason:** ${reportData.reason}
         **Reporter:** @${reportData.reporterTag} (${reportData.reporterId})
-        **Call ID:** \`${callData.callId}\`
+        **Call ID:** \`${callData.id}\`
         **Call Duration:** ${this.formatDuration(reportData.callDuration || 0)}
         **Participants:** ${enhancedParticipants}
         `,
@@ -232,7 +245,7 @@ export default class ViewReportedCallCommand extends BaseCommand {
           row.addComponents(
             new ButtonBuilder()
               .setCustomId(
-                new CustomID('view_call:prev', [callData.callId, page.toString()]).toString(),
+                new CustomID('view_call:prev', [callData.id, page.toString()]).toString(),
               )
               .setEmoji(getEmoji('arrow_left', ctx.client))
               .setStyle(ButtonStyle.Secondary),
@@ -253,7 +266,7 @@ export default class ViewReportedCallCommand extends BaseCommand {
           row.addComponents(
             new ButtonBuilder()
               .setCustomId(
-                new CustomID('view_call:next', [callData.callId, page.toString()]).toString(),
+                new CustomID('view_call:next', [callData.id, page.toString()]).toString(),
               )
               .setEmoji(getEmoji('arrow_right', ctx.client))
               .setStyle(ButtonStyle.Secondary),
@@ -267,15 +280,15 @@ export default class ViewReportedCallCommand extends BaseCommand {
     // Add action buttons
     const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
-        .setCustomId(new CustomID('view_call:dismiss', [callData.callId]).toString())
+        .setCustomId(new CustomID('view_call:dismiss', [callData.id]).toString())
         .setLabel('Dismiss Report')
         .setStyle(ButtonStyle.Secondary),
       new ButtonBuilder()
-        .setCustomId(new CustomID('view_call:ban_users', [callData.callId]).toString())
+        .setCustomId(new CustomID('view_call:ban_users', [callData.id]).toString())
         .setLabel('Ban Users')
         .setStyle(ButtonStyle.Danger),
       new ButtonBuilder()
-        .setCustomId(new CustomID('view_call:ban_servers', [callData.callId]).toString())
+        .setCustomId(new CustomID('view_call:ban_servers', [callData.id]).toString())
         .setLabel('Ban Servers')
         .setStyle(ButtonStyle.Primary),
     );
@@ -295,7 +308,7 @@ export default class ViewReportedCallCommand extends BaseCommand {
    */
   private async displayCallReportWithPagination(
     ctx: Context | ComponentContext,
-    callData: ActiveCallData,
+    callData: ActiveCall,
     reportData: CallReportData,
     messages: CallMessage[],
   ): Promise<void> {
@@ -330,23 +343,12 @@ export default class ViewReportedCallCommand extends BaseCommand {
     return `${minutes} min ${remainingSeconds} sec`;
   }
 
-  /**
-   * Format participants information
-   */
-  private formatParticipants(participants: CallParticipants[]): string {
-    return participants
-      .map(
-        (p, index) =>
-          `Server ${index + 1}: ${p.users.size} users from <#${p.channelId}> (${p.guildId})`,
-      )
-      .join('\n');
-  }
 
   /**
    * Format participants information with server names
    */
   private async formatParticipantsWithNames(
-    participants: CallParticipants[],
+    participants: CallParticipant[],
     client: Client,
   ): Promise<string> {
     const formattedParticipants = await Promise.all(
@@ -363,7 +365,7 @@ export default class ViewReportedCallCommand extends BaseCommand {
    * Create a mapping of user IDs to their server information for efficient lookups
    */
   private async createUserServerMap(
-    participants: CallParticipants[],
+    participants: CallParticipant[],
     client: Client,
   ): Promise<Map<string, { name: string; id: string }>> {
     const userServerMap = new Map<string, { name: string; id: string }>();
@@ -396,8 +398,15 @@ export default class ViewReportedCallCommand extends BaseCommand {
     const nextPage = currentPage + 1;
 
     // Get call data
-    const callService = new CallService(ctx.client);
-    const callData = await callService.getEndedCallData(callId);
+    const distributedCallingLibrary = this.getDistributedCallingLibrary(ctx.client);
+    if (!distributedCallingLibrary) {
+      await ctx.editReply({
+        content: `${ctx.getEmoji('x_icon')} Call system is currently unavailable. Please try again later.`,
+        components: [],
+      });
+      return;
+    }
+    const callData = await distributedCallingLibrary.getEndedCallData(callId);
 
     if (!callData) {
       await ctx.editReply({
@@ -434,8 +443,15 @@ export default class ViewReportedCallCommand extends BaseCommand {
     const prevPage = Math.max(0, currentPage - 1);
 
     // Get call data
-    const callService = new CallService(ctx.client);
-    const callData = await callService.getEndedCallData(callId);
+    const distributedCallingLibrary = this.getDistributedCallingLibrary(ctx.client);
+    if (!distributedCallingLibrary) {
+      await ctx.editReply({
+        content: `${ctx.getEmoji('x_icon')} Call system is currently unavailable. Please try again later.`,
+        components: [],
+      });
+      return;
+    }
+    const callData = await distributedCallingLibrary.getEndedCallData(callId);
 
     if (!callData) {
       await ctx.editReply({
@@ -516,8 +532,15 @@ export default class ViewReportedCallCommand extends BaseCommand {
     const [callId] = ctx.customId.args;
 
     // Get call data to find users
-    const callService = new CallService(ctx.client);
-    const callData = await callService.getEndedCallData(callId);
+    const distributedCallingLibrary = this.getDistributedCallingLibrary(ctx.client);
+    if (!distributedCallingLibrary) {
+      await ctx.editReply({
+        content: `${ctx.getEmoji('x_icon')} Call system is currently unavailable. Please try again later.`,
+        components: [],
+      });
+      return;
+    }
+    const callData = await distributedCallingLibrary.getEndedCallData(callId);
 
     if (!callData) {
       await ctx.editReply({
@@ -538,8 +561,15 @@ export default class ViewReportedCallCommand extends BaseCommand {
     const [callId] = ctx.customId.args;
 
     // Get call data to find servers
-    const callService = new CallService(ctx.client);
-    const callData = await callService.getEndedCallData(callId);
+    const distributedCallingLibrary = this.getDistributedCallingLibrary(ctx.client);
+    if (!distributedCallingLibrary) {
+      await ctx.editReply({
+        content: `${ctx.getEmoji('x_icon')} Call system is currently unavailable. Please try again later.`,
+        components: [],
+      });
+      return;
+    }
+    const callData = await distributedCallingLibrary.getEndedCallData(callId);
 
     if (!callData) {
       await ctx.editReply({
@@ -558,7 +588,7 @@ export default class ViewReportedCallCommand extends BaseCommand {
    */
   private async showUserSelectionInterface(
     ctx: ComponentContext,
-    callData: ActiveCallData,
+    callData: ActiveCall,
   ): Promise<void> {
     const ui = new UIComponents(ctx.client);
     const container = new ContainerBuilder();
@@ -601,7 +631,7 @@ export default class ViewReportedCallCommand extends BaseCommand {
 
     // Add user selection menu
     const selectMenu = new StringSelectMenuBuilder()
-      .setCustomId(new CustomID('view_call:user_selected', [callData.callId]).toString())
+      .setCustomId(new CustomID('view_call:user_selected', [callData.id]).toString())
       .setPlaceholder('Select users to ban...')
       .setMinValues(1)
       .setMaxValues(Math.min(userOptions.length, 25)); // Discord limit
@@ -627,11 +657,11 @@ export default class ViewReportedCallCommand extends BaseCommand {
     container.addActionRowComponents((row) => {
       row.addComponents(
         new ButtonBuilder()
-          .setCustomId(new CustomID('view_call:ban_all_users', [callData.callId]).toString())
+          .setCustomId(new CustomID('view_call:ban_all_users', [callData.id]).toString())
           .setLabel('Ban All Users')
           .setStyle(ButtonStyle.Danger),
         new ButtonBuilder()
-          .setCustomId(new CustomID('view_call:back', [callData.callId]).toString())
+          .setCustomId(new CustomID('view_call:back', [callData.id]).toString())
           .setLabel('Back')
           .setStyle(ButtonStyle.Secondary),
       );
@@ -649,7 +679,7 @@ export default class ViewReportedCallCommand extends BaseCommand {
    */
   private async showServerSelectionInterface(
     ctx: ComponentContext,
-    callData: ActiveCallData,
+    callData: ActiveCall,
   ): Promise<void> {
     const ui = new UIComponents(ctx.client);
     const container = new ContainerBuilder();
@@ -690,7 +720,7 @@ export default class ViewReportedCallCommand extends BaseCommand {
 
     // Add server selection menu
     const selectMenu = new StringSelectMenuBuilder()
-      .setCustomId(new CustomID('view_call:server_selected', [callData.callId]).toString())
+      .setCustomId(new CustomID('view_call:server_selected', [callData.id]).toString())
       .setPlaceholder('Select servers to ban...')
       .setMinValues(1)
       .setMaxValues(Math.min(serverOptions.length, 25)); // Discord limit
@@ -713,11 +743,11 @@ export default class ViewReportedCallCommand extends BaseCommand {
     container.addActionRowComponents((row) => {
       row.addComponents(
         new ButtonBuilder()
-          .setCustomId(new CustomID('view_call:ban_all_servers', [callData.callId]).toString())
+          .setCustomId(new CustomID('view_call:ban_all_servers', [callData.id]).toString())
           .setLabel('Ban All Servers')
           .setStyle(ButtonStyle.Danger),
         new ButtonBuilder()
-          .setCustomId(new CustomID('view_call:back', [callData.callId]).toString())
+          .setCustomId(new CustomID('view_call:back', [callData.id]).toString())
           .setLabel('Back')
           .setStyle(ButtonStyle.Secondary),
       );
@@ -797,8 +827,15 @@ export default class ViewReportedCallCommand extends BaseCommand {
     const [callId] = ctx.customId.args;
 
     // Get call data to find all users
-    const callService = new CallService(ctx.client);
-    const callData = await callService.getEndedCallData(callId);
+    const distributedCallingLibrary = this.getDistributedCallingLibrary(ctx.client);
+    if (!distributedCallingLibrary) {
+      await ctx.editReply({
+        content: `${ctx.getEmoji('x_icon')} Call system is currently unavailable. Please try again later.`,
+        components: [],
+      });
+      return;
+    }
+    const callData = await distributedCallingLibrary.getEndedCallData(callId);
 
     if (!callData) {
       await ctx.editReply({
@@ -836,8 +873,15 @@ export default class ViewReportedCallCommand extends BaseCommand {
     const [callId] = ctx.customId.args;
 
     // Get call data to find all servers
-    const callService = new CallService(ctx.client);
-    const callData = await callService.getEndedCallData(callId);
+    const distributedCallingLibrary = this.getDistributedCallingLibrary(ctx.client);
+    if (!distributedCallingLibrary) {
+      await ctx.editReply({
+        content: `${ctx.getEmoji('x_icon')} Call system is currently unavailable. Please try again later.`,
+        components: [],
+      });
+      return;
+    }
+    const callData = await distributedCallingLibrary.getEndedCallData(callId);
 
     if (!callData) {
       await ctx.editReply({
@@ -1019,8 +1063,15 @@ export default class ViewReportedCallCommand extends BaseCommand {
     const [callId] = ctx.customId.args;
 
     // Get call data and report data to redisplay the original report
-    const callService = new CallService(ctx.client);
-    const callData = await callService.getEndedCallData(callId);
+    const distributedCallingLibrary = this.getDistributedCallingLibrary(ctx.client);
+    if (!distributedCallingLibrary) {
+      await ctx.editReply({
+        content: `${ctx.getEmoji('x_icon')} Call system is currently unavailable. Please try again later.`,
+        components: [],
+      });
+      return;
+    }
+    const callData = await distributedCallingLibrary.getEndedCallData(callId);
     const reportData = await this.getReportData(callId);
     const messages = await this.getCallMessages(callId);
 

@@ -25,8 +25,6 @@ import type {
 } from '#src/generated/prisma/client/client.js';
 import getRedis from '#src/utils/Redis.js';
 import { RedisKeys } from '#src/utils/Constants.js';
-// Types imported for future use in migration scripts
-// import type { ActiveCallData, CallData, CallParticipants } from './CallService.js';
 
 /**
  * Service for managing call data in PostgreSQL database.

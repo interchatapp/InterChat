@@ -19,9 +19,8 @@ import BaseCommand from '#src/core/BaseCommand.js';
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import Context from '#src/core/CommandContext/Context.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
-import { CallService } from '#src/services/CallService.js';
-import Constants from '#src/utils/Constants.js';
 import { createCallRatingRow } from '#src/utils/ComponentUtils.js';
+import Constants from '#src/utils/Constants.js';
 import { UIComponents } from '#src/utils/DesignSystem.js';
 
 import { formatUserLeaderboard, getCallLeaderboard } from '#src/utils/Leaderboard.js';
@@ -30,6 +29,7 @@ import { fetchUserLocale } from '#src/utils/Utils.js';
 import { CustomID } from '#utils/CustomID.js';
 
 import {
+  ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   ContainerBuilder,
@@ -47,113 +47,43 @@ export default class CallCommand extends BaseCommand {
       name: 'call',
       description: '📞 [BETA] Start a call with another server',
       aliases: ['c'],
-      examples: [
-        'c!call',
-        'c!c',
-      ],
+      examples: ['i.call', 'i.c'],
       types: { slash: true, prefix: true },
       contexts: { guildOnly: true },
     });
   }
 
   async execute(ctx: Context) {
-    const ui = new UIComponents(ctx.client);
-
-    await ctx.deferReply();
-
-    const callService = new CallService(ctx.client);
-    const result = await callService.initiateCall(
-      ctx.channel as GuildTextBasedChannel,
-      ctx.user.id,
-    );
-
-    // Create a container for the call status
-    const container = new ContainerBuilder();
-    const locale = await ctx.getLocale();
-
-    if (result.success) {
-      // Call was initiated successfully
-      if (result.message.includes('queue')) {
-        // In queue - waiting for match
-        const description = t('calls.waiting.description', locale);
-
-        const headerText = ui.createCompactHeader(
-          t('calls.waiting.title', locale),
-          description,
-          'call_icon',
-        );
-        container.addTextDisplayComponents(headerText);
-
-        // Add cancel button
-        ui.createActionButtons(
-          container,
-          {
-            label: t('calls.buttons.cancelCall', locale),
-            customId: new CustomID().setIdentifier('call', 'cancel').toString(),
-            emoji: 'hangup_icon',
-          },
-          {
-            label: 'View Leaderboard',
-            customId: new CustomID().setIdentifier('call', 'leaderboard').toString(),
-            emoji: 'trophy_icon',
-          },
-        );
-      }
-      else {
-        // Connected immediately - use compact display
-        const description = t('calls.connected.instructions', locale);
-
-        const successText = ui.createCompactHeader(
-          t('calls.connected.title', locale),
-          description,
-          'tick_icon',
-        );
-        container.addTextDisplayComponents(successText);
-
-        // Add buttons
-        ui.createActionButtons(
-          container,
-          {
-            label: t('calls.buttons.endCall', locale),
-            customId: new CustomID().setIdentifier('call', 'hangup').toString(),
-            emoji: 'hangup_icon',
-          },
-          {
-            label: t('calls.buttons.skipServer', locale),
-            customId: new CustomID().setIdentifier('call', 'skip').toString(),
-            emoji: 'skip_icon',
-          },
-        );
-      }
-    }
-    else {
-      // Error occurred
-      const errorText = ui.createCompactHeader(
-        t('calls.failed.title', locale),
-        result.message,
-        'x_icon',
+    const distributedCallingLibrary = ctx.client.getDistributedCallingLibrary();
+    if (!distributedCallingLibrary) {
+      await ctx.reply(
+        `${ctx.getEmoji('x_icon')} Call system is currently unavailable. Please try again later.`,
       );
-      container.addTextDisplayComponents(errorText);
+      return;
     }
 
-    // Add small hub promotion at the bottom
-    container.addSectionComponents((s) =>
-      s
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            '💡 **Tip:** Try InterChat Hubs for a more reliable experience!',
-          ),
-        )
-        .setButtonAccessory(
-          new ButtonBuilder()
-            .setCustomId(new CustomID().setIdentifier('hangup', 'explore-hubs').toString())
-            .setLabel(t('calls.buttons.exploreHubs', locale))
-            .setStyle(ButtonStyle.Primary)
-            .setEmoji(ctx.getEmoji('house_icon')),
-        ),
+    // Parallel execution for performance
+    const [result, locale] = await Promise.all([
+      distributedCallingLibrary.initiateCall(
+        ctx.channel as GuildTextBasedChannel,
+        ctx.user.id,
+      ),
+      ctx.getLocale(),
+    ]);
+
+    // Pre-build UI components for faster response
+    const tipButton = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId(new CustomID().setIdentifier('hangup', 'explore-hubs').toString())
+        .setLabel(t('calls.buttons.exploreHubs', locale))
+        .setStyle(ButtonStyle.Primary)
+        .setEmoji(ctx.getEmoji('house_icon')),
     );
 
-    await ctx.editOrReply({ components: [container] }, ['IsComponentsV2']);
+    await ctx.reply({
+      content: `${result.message}\n**Tip:** Try InterChat Hubs for a more reliable experience!`,
+      components: [tipButton],
+    });
   }
 
   @RegisterInteractionHandler('call', 'cancel')
@@ -162,9 +92,26 @@ export default class CallCommand extends BaseCommand {
 
     if (!ctx.inGuild()) return;
 
-    const locale = await ctx.getLocale();
-    const callService = new CallService(ctx.client);
-    await callService.hangup(ctx.channelId);
+    const distributedCallingLibrary = ctx.client.getDistributedCallingLibrary();
+    if (!distributedCallingLibrary) {
+      // Fast error response without locale lookup
+      const ui = new UIComponents(ctx.client);
+      const container = ui.createCompactErrorMessage(
+        'Call Failed',
+        'Call system is currently unavailable. Please try again later.',
+      );
+      await ctx.editReply({
+        components: [container],
+        flags: [MessageFlags.IsComponentsV2],
+      });
+      return;
+    }
+
+    // Parallel execution for performance
+    const [, locale] = await Promise.all([
+      distributedCallingLibrary.hangupCall(ctx.channelId),
+      ctx.getLocale(),
+    ]);
 
     const ui = new UIComponents(ctx.client);
     const container = ui.createCompactSuccessMessage(
@@ -184,13 +131,28 @@ export default class CallCommand extends BaseCommand {
 
     if (!ctx.inGuild()) return;
 
-    const locale = await fetchUserLocale(ctx.user.id);
-    const callService = new CallService(ctx.client);
-    const result = await callService.hangup(ctx.channelId);
+    const distributedCallingLibrary = ctx.client.getDistributedCallingLibrary();
+    if (!distributedCallingLibrary) {
+      // Fast error response without locale lookup
+      const ui = new UIComponents(ctx.client);
+      const container = ui.createCompactErrorMessage(
+        'Call Failed',
+        'Call system is currently unavailable. Please try again later.',
+      );
+      await ctx.editReply({
+        components: [container],
+        flags: [MessageFlags.IsComponentsV2],
+      });
+      return;
+    }
 
-    // Create combined rating and report UI
-    const ratingRow = createCallRatingRow(result.callId || '', locale);
+    // Parallel execution for performance
+    const [result, locale] = await Promise.all([
+      distributedCallingLibrary.hangupCall(ctx.channelId),
+      fetchUserLocale(ctx.user.id),
+    ]);
 
+    // Pre-build UI components
     const ui = new UIComponents(ctx.client);
     const container = ui.createCompactInfoMessage(
       t('calls.ended.title', locale),
@@ -208,6 +170,9 @@ export default class CallCommand extends BaseCommand {
       ),
     );
 
+    // Create rating row after main UI
+    const ratingRow = createCallRatingRow(result.callId || '', locale);
+
     await ctx.editReply({
       components: [container, ratingRow],
       flags: [MessageFlags.IsComponentsV2],
@@ -220,15 +185,32 @@ export default class CallCommand extends BaseCommand {
 
     if (!ctx.inGuild()) return;
 
-    const locale = await ctx.getLocale();
-    const callService = new CallService(ctx.client);
-    const result = await callService.skip(ctx.channelId, ctx.user.id);
+    const distributedCallingLibrary = ctx.client.getDistributedCallingLibrary();
+    if (!distributedCallingLibrary) {
+      // Fast error response without locale lookup
+      const ui = new UIComponents(ctx.client);
+      const container = ui.createCompactErrorMessage(
+        'Call Failed',
+        'Call system is currently unavailable. Please try again later.',
+      );
+      await ctx.editReply({
+        components: [container],
+        flags: [MessageFlags.IsComponentsV2],
+      });
+      return;
+    }
+
+    // Parallel execution for performance
+    const [result, locale] = await Promise.all([
+      distributedCallingLibrary.skipCall(ctx.channelId, ctx.user.id),
+      ctx.getLocale(),
+    ]);
 
     const ui = new UIComponents(ctx.client);
 
     if (result.success) {
       // Call was skipped successfully
-      if (result.message.includes('queue')) {
+      if (result.message.includes('queue') || result.message.includes('Looking for a Match') || result.message.includes('looking for a new match')) {
         // In queue - waiting for match
         const container = new ContainerBuilder();
 

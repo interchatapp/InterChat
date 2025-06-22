@@ -1,15 +1,10 @@
 import BaseCommand from '#src/core/BaseCommand.js';
 import Context from '#src/core/CommandContext/Context.js';
-import { CallService } from '#src/services/CallService.js';
+
 import { UIComponents } from '#src/utils/DesignSystem.js';
 import { t } from '#src/utils/Locale.js';
 import { CustomID } from '#utils/CustomID.js';
-import {
-  ButtonBuilder,
-  ButtonStyle,
-  ContainerBuilder,
-  MessageFlags,
-} from 'discord.js';
+import { ButtonBuilder, ButtonStyle, ContainerBuilder, MessageFlags } from 'discord.js';
 
 /**
  * Command to skip the current call and find a new match
@@ -21,10 +16,7 @@ export default class SkipCommand extends BaseCommand {
       name: 'skip',
       description: '[BETA] Skip the current call and find a new match',
       aliases: ['s'],
-      examples: [
-        'c!skip',
-        'c!s',
-      ],
+      examples: ['i.skip', 'i.s'],
       types: { slash: true, prefix: true },
       contexts: { guildOnly: true },
     });
@@ -39,7 +31,6 @@ export default class SkipCommand extends BaseCommand {
 
     // Use the context's getLocale method which is optimized
     const locale = await ctx.getLocale();
-    const callService = new CallService(ctx.client);
     const ui = new UIComponents(ctx.client);
 
     // Ensure channelId is not null
@@ -56,12 +47,29 @@ export default class SkipCommand extends BaseCommand {
       return;
     }
 
+    const distributedCallingLibrary = ctx.client.getDistributedCallingLibrary();
+    if (!distributedCallingLibrary) {
+      const container = ui.createCompactErrorMessage(
+        t('skip.errors.error', locale),
+        'Call system is currently unavailable. Please try again later.',
+      );
+      await ctx.editReply({
+        components: [container],
+        flags: [MessageFlags.IsComponentsV2],
+      });
+      return;
+    }
+
     // Pass the user ID to ensure proper matching history is maintained
-    const result = await callService.skip(ctx.channelId, ctx.user.id);
+    const result = await distributedCallingLibrary.skipCall(ctx.channelId, ctx.user.id);
 
     if (result.success) {
       // Call was skipped successfully
-      if (result.message.includes('queue')) {
+      if (
+        result.message.includes('looking for a new match') ||
+        result.message.includes('queue') ||
+        result.message.includes('Looking for a Match')
+      ) {
         // In queue - waiting for match
         const container = new ContainerBuilder();
 
@@ -100,8 +108,8 @@ export default class SkipCommand extends BaseCommand {
 
         container.addTextDisplayComponents(
           ui.createCompactHeader(
-            'New Call Connected!',
-            'You\'ve been connected to a different server • Use `/hangup` to end',
+            t('calls.skip.newConnected.title', locale),
+            t('calls.skip.newConnected.description', locale),
             'tick_icon',
           ),
         );

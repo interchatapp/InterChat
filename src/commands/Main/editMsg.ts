@@ -51,7 +51,6 @@ export default class EditMessage extends BaseCommand {
       description: 'Edit a message you sent using interchat.',
       types: {
         prefix: true,
-        slash: true,
         contextMenu: {
           name: 'Edit Message',
           type: ApplicationCommandType.Message,

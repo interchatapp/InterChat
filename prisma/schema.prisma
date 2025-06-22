@@ -345,7 +345,6 @@ model User {
 
     // Hub recommendation preferences
     interests          String[] // User's interests for hub matching
-    achievementNotifs  Boolean  @default(true)
     preferredLanguages String[] @default([]) // ISO 639-1 language codes
     activityLevel      String? // "low", "medium", "high" - user's preferred activity level
     favoriteHubs       String[] // Hub IDs user has marked as favorites

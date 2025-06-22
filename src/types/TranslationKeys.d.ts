@@ -869,7 +869,6 @@ export type TranslationKeys = {
   'connect.options.invite.description': never;
   'connect.errors.invalidIds': 'emoji';
   'connect.errors.channelNotFound': 'emoji';
-  'connect.createRedirect': never;
   'disconnect.description': never;
   'ban.description': never;
   'ban.options.duration.description': never;
@@ -893,6 +892,8 @@ export type TranslationKeys = {
   'achievements.title': 'username';
   'achievements.progress': 'unlocked' | 'total';
   'achievements.errors.userNotFound': never;
+  'achievement.settings.enabled': never;
+  'achievement.settings.disabled': never;
   'profile.description': never;
   'profile.options.user.description': never;
   'profile.errors.userNotFound': never;

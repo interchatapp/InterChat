@@ -15,9 +15,11 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
-import { ActiveCallData, CallService } from '#src/services/CallService.js';
+import { ActiveCall } from '#src/types/CallTypes.js';
+
 import Constants, { RedisKeys } from '#src/utils/Constants.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import { InfoEmbed } from '#src/utils/EmbedUtils.js';
@@ -29,7 +31,7 @@ import {
   getReportReasons,
   type ReportReason,
 } from '#src/utils/report/ReportReasons.js';
-import { fetchUserLocale } from '#src/utils/Utils.js';
+import { checkIfStaff, fetchUserLocale } from '#src/utils/Utils.js';
 import { supportedLocaleCodes, t } from '#utils/Locale.js';
 import {
   ActionRowBuilder,
@@ -89,8 +91,15 @@ export default class ReportCallHandler {
       return;
     }
 
-    const callService = new CallService(ctx.client);
-    const callData = await callService.getEndedCallData(callId);
+    const distributedCallingLibrary = ctx.client.getDistributedCallingLibrary();
+    if (!distributedCallingLibrary) {
+      await ctx.reply({
+        content: `${getEmoji('x_icon', ctx.client)} Call system is currently unavailable. Please try again later.`,
+        flags: ['Ephemeral'],
+      });
+      return;
+    }
+    const callData = await distributedCallingLibrary.getEndedCallData(callId);
 
     if (!callData) {
       await ctx.reply({
@@ -150,7 +159,6 @@ export default class ReportCallHandler {
     const [callId] = ctx.customId.args;
 
     // Check if user is staff member
-    const { checkIfStaff } = await import('#src/utils/Utils.js');
     if (!checkIfStaff(ctx.user.id)) {
       await ctx.reply({
         content: `${getEmoji('x_icon', ctx.client)} You don't have permission to review call reports.`,
@@ -167,8 +175,14 @@ export default class ReportCallHandler {
     const viewCommand = new ViewReportedCallCommand();
 
     // Get call data
-    const callService = new CallService(ctx.client);
-    const callData = await callService.getEndedCallData(callId);
+    const distributedCallingLibrary = ctx.client.getDistributedCallingLibrary();
+    if (!distributedCallingLibrary) {
+      await ctx.editReply({
+        content: `${getEmoji('x_icon', ctx.client)} Call system is currently unavailable. Please try again later.`,
+      });
+      return;
+    }
+    const callData = await distributedCallingLibrary.getEndedCallData(callId);
 
     if (!callData) {
       await ctx.editReply({
@@ -217,8 +231,12 @@ export default class ReportCallHandler {
 
     try {
       // Get call data to calculate duration
-      const callService = new CallService(ctx.client);
-      const callData = await callService.getEndedCallData(callId);
+      const distributedCallingLibrary = ctx.client.getDistributedCallingLibrary();
+      if (!distributedCallingLibrary) {
+        Logger.error(`DistributedCallingLibrary not available for report: ${callId}`);
+        return false;
+      }
+      const callData = await distributedCallingLibrary.getEndedCallData(callId);
 
       if (!callData) {
         Logger.error(`Failed to get call data for report: ${callId}`);
@@ -335,7 +353,7 @@ export default class ReportCallHandler {
   /**
    * Store call messages for later review
    */
-  private async storeCallMessages(callId: string, callData: ActiveCallData) {
+  private async storeCallMessages(callId: string, callData: ActiveCall) {
     try {
       const redis = getRedis();
       const messagesKey = `${RedisKeys.Call}:messages:${callId}`;

@@ -18,10 +18,10 @@
 import { getRandomBlockedMessageResponse } from '#src/config/contentFilter.js';
 import type { Hub, User } from '#src/generated/prisma/client/client.js';
 import { showRulesScreening } from '#src/interactions/RulesScreening.js';
+import { DistributedCallingLibrary } from '#src/lib/userphone/DistributedCallingLibrary.js';
 import ContentFilterManager from '#src/managers/ContentFilterManager.js';
 import HubManager from '#src/managers/HubManager.js';
 import AchievementService from '#src/services/AchievementService.js';
-import { CallService } from '#src/services/CallService.js';
 import { CallReplyService } from '#src/services/CallReplyService.js';
 import type { ConvertDatesToString } from '#src/types/Utils.d.ts';
 import Constants, { RedisKeys } from '#src/utils/Constants.js';
@@ -73,7 +73,7 @@ export interface HubConnectionData {
  */
 export class MessageProcessor {
   private readonly broadcastService: BroadcastService;
-  private readonly callService: CallService;
+  private readonly client: Client;
   private readonly callReplyService: CallReplyService;
 
   // Redis cache manager
@@ -84,10 +84,18 @@ export class MessageProcessor {
    * @param client Discord client instance
    */
   constructor(client: Client) {
+    this.client = client;
     this.broadcastService = new BroadcastService();
-    this.callService = new CallService(client);
     this.callReplyService = new CallReplyService();
   }
+
+  /**
+   * Get the distributed calling library instance
+   */
+  private getDistributedCallingLibrary(): DistributedCallingLibrary | null {
+    return this.client.getDistributedCallingLibrary();
+  }
+
 
   /**
    * Invalidates the cache for a specific channel
@@ -673,8 +681,15 @@ export class MessageProcessor {
 
       // Get active call data and user data in parallel
       const parallelStartTime = performance.now();
+
+      const distributedCallingLibrary = this.getDistributedCallingLibrary();
+      if (!distributedCallingLibrary) {
+        Logger.debug('DistributedCallingLibrary not available for call message processing');
+        return;
+      }
+
       const [activeCall, userData] = await Promise.all([
-        this.callService.getActiveCallData(message.channelId),
+        distributedCallingLibrary.getActiveCall(message.channelId),
         ensureUserExists(message.author.id, message.author.username, message.author.avatarURL()),
       ]);
       timings.getParallelData = performance.now() - parallelStartTime;
@@ -689,7 +704,7 @@ export class MessageProcessor {
 
       // Track this user as a participant in the call
       const participantStartTime = performance.now();
-      await this.callService.addParticipant(message.channelId, message.author.id);
+      await distributedCallingLibrary.addParticipant(message.channelId, message.author.id);
       timings.addParticipant = performance.now() - participantStartTime;
 
       // Find the other participant to send the message to
@@ -744,7 +759,7 @@ export class MessageProcessor {
 
         // Store the blocked message for moderation purposes
         const blockedUpdateStartTime = performance.now();
-        await this.callService.updateCallParticipant(
+        await distributedCallingLibrary.updateCallMessage(
           message.channelId,
           message.author.id,
           message.author.username,
@@ -792,7 +807,7 @@ export class MessageProcessor {
 
       // Update call participation after successful message send
       const updateStartTime = performance.now();
-      await this.callService.updateCallParticipant(
+      await distributedCallingLibrary.updateCallMessage(
         message.channelId,
         message.author.id,
         message.author.username,

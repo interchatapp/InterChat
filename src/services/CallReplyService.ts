@@ -19,7 +19,7 @@ import Logger from '#src/utils/Logger.js';
 import { type Message } from 'discord.js';
 import { BroadcastService } from './BroadcastService.js';
 import { CallDatabaseService } from './CallDatabaseService.js';
-import type { ActiveCallData, CallParticipants } from './CallService.js';
+import type { ActiveCall, CallParticipant } from '#src/types/CallTypes.js';
 
 /**
  * Service for handling reply messages in calls with enhanced container components
@@ -36,29 +36,29 @@ export class CallReplyService {
    */
   async processCallReply(
     message: Message<true>,
-    activeCall: ActiveCallData,
+    activeCall: ActiveCall,
     referencedMessage?: Message,
   ): Promise<void> {
     try {
       // Find the participant for this channel
       const currentParticipant = activeCall.participants.find(
-        (p) => p.channelId === message.channel.id,
+        (p: CallParticipant) => p.channelId === message.channel.id,
       );
 
       if (!currentParticipant) {
         Logger.warn(
-          `No participant found for channel ${message.channel.id} in call ${activeCall.callId}`,
+          `No participant found for channel ${message.channel.id} in call ${activeCall.id}`,
         );
         return;
       }
 
       // Get other participants to send the reply to
       const otherParticipants = activeCall.participants.filter(
-        (p) => p.channelId !== message.channel.id,
+        (p: CallParticipant) => p.channelId !== message.channel.id,
       );
 
       if (otherParticipants.length === 0) {
-        Logger.debug(`No other participants in call ${activeCall.callId}`);
+        Logger.debug(`No other participants in call ${activeCall.id}`);
         return;
       }
 
@@ -75,7 +75,7 @@ export class CallReplyService {
       // Store the message in the database (only if call exists in DB)
       try {
         await this.callDbService.addMessage(
-          activeCall.callId,
+          activeCall.id,
           message.author.id,
           message.author.username,
           message.content,
@@ -85,11 +85,11 @@ export class CallReplyService {
       catch (error) {
         // If the call doesn't exist in the database, log but don't fail the whole process
         Logger.warn(
-          `Failed to store message in database for call ${activeCall.callId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          `Failed to store message in database for call ${activeCall.id}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         );
       }
 
-      Logger.debug(`Processed reply message in call ${activeCall.callId}`);
+      Logger.debug(`Processed reply message in call ${activeCall.id}`);
     }
     catch (error) {
       Logger.error('Failed to process call reply:', error);
@@ -131,7 +131,7 @@ export class CallReplyService {
    */
   private async sendReplyToParticipant(
     message: Message<true>,
-    participant: CallParticipants,
+    participant: CallParticipant,
     replyContext: {
       hasReply: boolean;
       replyAuthor?: string;

@@ -22,6 +22,8 @@ import EventLoader from '#src/modules/Loaders/EventLoader.js';
 import CooldownService from '#src/services/CooldownService.js';
 import Scheduler from '#src/services/SchedulerService.js';
 import { ShardMetricsService } from '#src/services/ShardMetricsService.js';
+import { DistributedCallingLibrary } from '#src/lib/userphone/DistributedCallingLibrary.js';
+import type { CallingConfig } from '#src/lib/userphone/core/types.js';
 import { loadInteractions } from '#src/utils/CommandUtils.js';
 import { loadCommands } from '#src/utils/Loaders.js';
 import Logger from '#src/utils/Logger.js';
@@ -29,6 +31,8 @@ import type { RemoveMethods } from '#types/CustomClientProps.d.ts';
 import Constants from '#utils/Constants.js';
 import { loadLocales } from '#utils/Locale.js';
 import { resolveEval } from '#utils/Utils.js';
+import getRedis from '#src/utils/Redis.js';
+import db from '#src/utils/Db.js';
 import { ClusterClient, getInfo } from 'discord-hybrid-sharding';
 import {
   Client,
@@ -61,6 +65,7 @@ export default class InterChatClient extends Client {
   });
 
   public readonly shardMetrics: ShardMetricsService;
+  public distributedCallingLibrary: DistributedCallingLibrary | null = null;
 
   constructor() {
     super({
@@ -119,6 +124,9 @@ export default class InterChatClient extends Client {
     // load commands, interactions and event handlers to memory
     this.loadResoruces();
 
+    // Initialize distributed calling library
+    await this.initializeDistributedCallingLibrary();
+
     // Discord.js automatically uses DISCORD_TOKEN env variable
     await this.login();
   }
@@ -137,13 +145,11 @@ export default class InterChatClient extends Client {
   }
 
   /**
-	 * Fetches a guild by its ID from the cache of one of the clusters.
-	 * @param guildId The ID of the guild to fetch.
-	 * @returns The fetched guild **without any methods**, or undefined if the guild is not found.
-	 */
-  async fetchGuild(
-    guildId: Snowflake,
-  ): Promise<RemoveMethods<Guild> | undefined> {
+   * Fetches a guild by its ID from the cache of one of the clusters.
+   * @param guildId The ID of the guild to fetch.
+   * @returns The fetched guild **without any methods**, or undefined if the guild is not found.
+   */
+  async fetchGuild(guildId: Snowflake): Promise<RemoveMethods<Guild> | undefined> {
     const fetch = (await this.cluster.broadcastEval(
       (client, guildID) => client.guilds.cache.get(guildID),
       { guildId, context: guildId },
@@ -154,5 +160,49 @@ export default class InterChatClient extends Client {
 
   getScheduler(): Scheduler {
     return this.scheduler;
+  }
+
+  /**
+   * Initialize the distributed calling library with proper configuration
+   */
+  private async initializeDistributedCallingLibrary(): Promise<void> {
+    try {
+      const config: CallingConfig = {
+        client: this,
+        redis: getRedis(),
+        database: db,
+        performance: {
+          commandResponseTime: 500, // 500ms for faster response times
+          matchingTime: 10000, // 10 seconds
+          queueProcessingRate: 100, // 100 matches/second
+        },
+        cache: {
+          webhookTtl: 24 * 60 * 60 * 1000, // 24 hours
+          callTtl: 60 * 60 * 1000, // 1 hour
+          queueTtl: 30 * 60 * 1000, // 30 minutes
+        },
+        matching: {
+          queueTimeout: 30 * 60 * 1000, // 30 minutes
+          backgroundInterval: 5000, // 5 seconds
+          maxRecentMatches: 10,
+          recentMatchTtl: 60 * 60 * 1000, // 1 hour
+        },
+      };
+
+      this.distributedCallingLibrary = new DistributedCallingLibrary(config, this.cluster);
+      await this.distributedCallingLibrary.initialize();
+
+      Logger.info('DistributedCallingLibrary initialized successfully');
+    }
+    catch (error) {
+      Logger.error('Failed to initialize DistributedCallingLibrary:', error);
+    }
+  }
+
+  /**
+   * Get the distributed calling library instance
+   */
+  getDistributedCallingLibrary(): DistributedCallingLibrary | null {
+    return this.distributedCallingLibrary;
   }
 }

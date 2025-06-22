@@ -19,7 +19,7 @@ import BaseCommand from '#src/core/BaseCommand.js';
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import Context from '#src/core/CommandContext/Context.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
-import { CallService } from '#src/services/CallService.js';
+
 import Constants from '#src/utils/Constants.js';
 import { createCallRatingRow } from '#src/utils/ComponentUtils.js';
 import { UIComponents } from '#src/utils/DesignSystem.js';
@@ -45,10 +45,7 @@ export default class HangupCommand extends BaseCommand {
       name: 'hangup',
       description: '📞 End the current call',
       aliases: ['h'],
-      examples: [
-        'c!hangup',
-        'c!h',
-      ],
+      examples: ['i.hangup', 'i.h'],
       types: { slash: true, prefix: true },
       contexts: { guildOnly: true },
     });
@@ -57,11 +54,26 @@ export default class HangupCommand extends BaseCommand {
   async execute(ctx: Context) {
     if (!ctx.inGuild() || !ctx.channelId) return;
 
-    await ctx.deferReply();
+    const distributedCallingLibrary = ctx.client.getDistributedCallingLibrary();
+    if (!distributedCallingLibrary) {
+      // Fast error response without locale lookup
+      const ui = new UIComponents(ctx.client);
+      const container = ui.createCompactErrorMessage(
+        'Call Failed',
+        'Call system is currently unavailable. Please try again later.',
+      );
+      await ctx.reply({
+        components: [container],
+        flags: [MessageFlags.IsComponentsV2],
+      });
+      return;
+    }
 
-    const locale = await ctx.getLocale();
-    const callService = new CallService(ctx.client);
-    const result = await callService.hangup(ctx.channelId);
+    // Parallel execution for performance
+    const [result, locale] = await Promise.all([
+      distributedCallingLibrary.hangupCall(ctx.channelId),
+      ctx.getLocale(),
+    ]);
 
     const ui = new UIComponents(ctx.client);
 
@@ -69,7 +81,7 @@ export default class HangupCommand extends BaseCommand {
       // Check if this was a queue exit or an active call end
       if (result.message.includes('queue')) {
         // Was in queue, not in active call
-        const container = ui.createSuccessMessage(
+        const container = ui.createCompactSuccessMessage(
           t('calls.cancelled.title', locale),
           t('calls.cancelled.queueExit', locale),
         );
@@ -85,7 +97,7 @@ export default class HangupCommand extends BaseCommand {
           ),
         );
 
-        await ctx.editReply({
+        await ctx.reply({
           components: [container],
           flags: [MessageFlags.IsComponentsV2],
         });
@@ -128,17 +140,10 @@ export default class HangupCommand extends BaseCommand {
           ),
         );
 
-        await ctx.editReply({
+        await ctx.reply({
           components: [container, ratingRow],
           flags: [MessageFlags.IsComponentsV2],
         });
-
-        // Also send a message to the channel to notify everyone
-        if (ctx.channel && 'send' in ctx.channel) {
-          await ctx.channel.send({
-            content: t('hangup.callEnded', locale, { user: ctx.user.toString() }),
-          });
-        }
       }
     }
     else {
@@ -148,7 +153,7 @@ export default class HangupCommand extends BaseCommand {
         result.message,
       );
 
-      await ctx.editReply({
+      await ctx.reply({
         components: [container],
         flags: [MessageFlags.IsComponentsV2],
       });
@@ -246,17 +251,13 @@ export default class HangupCommand extends BaseCommand {
       return;
     }
 
-    // Since we've already checked inGuild(), we know we're in a guild
-    // Now we need to ensure the channel is a text-based channel in a guild
     const channel = ctx.interaction.channel;
 
     // Check if this is a guild channel (has guildId)
     if (!('guildId' in channel)) {
-      const locale = await ctx.getLocale();
+      // Fast error response without locale lookup
       await ctx.reply({
-        content: t('hangup.errors.guildOnly', locale, {
-          emoji: getEmoji('x_icon', ctx.client),
-        }),
+        content: `${getEmoji('x_icon', ctx.client)} This command can only be used in server channels.`,
         flags: ['Ephemeral'],
       });
       return;
@@ -264,87 +265,41 @@ export default class HangupCommand extends BaseCommand {
 
     await ctx.deferUpdate();
 
-    const callService = new CallService(ctx.client);
-    const result = await callService.initiateCall(channel as GuildTextBasedChannel, ctx.user.id);
-
-    const locale = await ctx.getLocale();
-
-    const ui = new UIComponents(ctx.client);
-
-    const container = new ContainerBuilder();
-
-    if (result.success) {
-      // Call was initiated successfully
-      if (result.message.includes('queue')) {
-        // In queue - waiting for match
-        container.addTextDisplayComponents(
-          ui.createCompactHeader(
-            t('calls.waiting.title', locale),
-            t('calls.waiting.description', locale),
-            'call_icon',
-          ),
-        );
-
-        // Add cancel button
-        ui.createActionButtons(container, {
-          label: t('global.buttons.cancelCall', locale),
-          customId: new CustomID().setIdentifier('call', 'cancel').toString(),
-          emoji: 'hangup_icon',
-        });
-
-        await ctx.editReply({
-          components: [container],
-          flags: [MessageFlags.IsComponentsV2],
-        });
-      }
-      else {
-        // Connected immediately
-        container.addTextDisplayComponents(
-          ui.createCompactHeader(
-            t('calls.connected.title', locale),
-            t('calls.connected.instructions', locale),
-            'tick_icon',
-          ),
-        );
-
-        // Add buttons
-        ui.createActionButtons(
-          container,
-          {
-            label: t('calls.buttons.endCall', locale),
-            customId: new CustomID().setIdentifier('call', 'hangup').toString(),
-            emoji: 'hangup_icon',
-          },
-          {
-            label: t('calls.buttons.skipServer', locale),
-            customId: new CustomID().setIdentifier('call', 'skip').toString(),
-            emoji: 'skip_icon',
-          },
-        );
-
-        await ctx.editReply({
-          components: [container],
-          flags: [MessageFlags.IsComponentsV2],
-        });
-      }
-    }
-    else {
-      // Error occurred
-      container.addTextDisplayComponents(
-        ui.createCompactHeader(t('hangup.errors.callFailed', locale), result.message, 'x_icon'),
+    const distributedCallingLibrary = ctx.client.getDistributedCallingLibrary();
+    if (!distributedCallingLibrary) {
+      // Fast error response without locale lookup
+      const ui = new UIComponents(ctx.client);
+      const container = ui.createCompactErrorMessage(
+        'Call Failed',
+        'Call system is currently unavailable. Please try again later.',
       );
-
-      // Add explore hubs button
-      ui.createActionButtons(container, {
-        label: 'Explore Hubs',
-        customId: new CustomID().setIdentifier('hangup', 'explore-hubs').toString(),
-        emoji: 'house_icon',
-      });
-
       await ctx.editReply({
         components: [container],
         flags: [MessageFlags.IsComponentsV2],
       });
+      return;
+    }
+
+    // Parallel execution for performance
+    const [result, locale] = await Promise.all([
+      distributedCallingLibrary.initiateCall(
+        channel as GuildTextBasedChannel,
+        ctx.user.id,
+      ),
+      ctx.getLocale(),
+    ]);
+
+    if (result.success) {
+      // Call was initiated successfully
+      if (result.message.includes('queue')) {
+        await ctx.editReply(t('calls.waiting.description', locale));
+      }
+      else {
+        await ctx.editReply(t('calls.connected.title', locale));
+      }
+    }
+    else {
+      await ctx.editReply(`${t('calls.failed.title', locale)}\n${result.message}`);
     }
   }
 }

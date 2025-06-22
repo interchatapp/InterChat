@@ -23,6 +23,7 @@ import type EventLoader from '#src/modules/Loaders/EventLoader.js';
 import type CooldownService from '#src/services/CooldownService.js';
 import type Scheduler from '#src/services/SchedulerService.js';
 import { ShardMetricsService } from '#src/services/ShardMetricsService.js';
+import type { DistributedCallingLibrary } from '#src/lib/userphone/DistributedCallingLibrary.js';
 import type { ClusterClient } from 'discord-hybrid-sharding';
 import type {
   Collection,
@@ -57,8 +58,10 @@ declare module 'discord.js' {
     readonly antiSpamManager: AntiSpamManager;
 
     readonly shardMetrics: ShardMetricsService;
+    distributedCallingLibrary: DistributedCallingLibrary | null;
 
     fetchGuild(guildId: Snowflake): Promise<RemoveMethods<Guild> | undefined>;
     getScheduler(): Scheduler;
+    getDistributedCallingLibrary(): DistributedCallingLibrary | null;
   }
 }

@@ -325,9 +325,6 @@ const buildActionButtons = (client: Client, reportId: string, messageId: string 
   return { resolveButton, ignoreButton, actionButton };
 };
 
-/**
- * Enhanced report logging with Components v2 UI
- */
 export const sendHubReport = async (
   hubId: string,
   hubName: string,

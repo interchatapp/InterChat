@@ -16,7 +16,8 @@
  */
 
 import BaseEventListener from '#src/core/BaseEventListener.js';
-import { CallService } from '#src/services/CallService.js';
+import { BroadcastService } from '#src/services/BroadcastService.js';
+
 import { RedisKeys } from '#src/utils/Constants.js';
 import getRedis from '#src/utils/Redis.js';
 import Logger from '#utils/Logger.js';
@@ -30,8 +31,11 @@ export default class TypingStart extends BaseEventListener<'typingStart'> {
       // Only handle typing in guild channels
       if (!typing.inGuild() || typing.user.bot || typing.user.system) return;
 
-      const callService = new CallService(typing.client);
-      const activeCall = await callService.getActiveCallData(typing.channel.id);
+      const distributedCallingLibrary = typing.client.getDistributedCallingLibrary();
+      if (!distributedCallingLibrary) {
+        return; // Silently return if calling library is not available
+      }
+      const activeCall = await distributedCallingLibrary.getActiveCall(typing.channel.id);
 
       // Only process typing if this channel is in an active call
       if (!activeCall) return;
@@ -71,8 +75,6 @@ export default class TypingStart extends BaseEventListener<'typingStart'> {
 
         // Fallback to webhook-based typing indicator if direct typing fails
         try {
-          const { BroadcastService } = await import('#src/services/BroadcastService.js');
-
           // Send a more subtle typing indicator message
           await BroadcastService.sendMessage(otherParticipant.webhookUrl, {
             content: `💭 *${typing.user.username} is typing...*`,
@@ -102,7 +104,7 @@ export default class TypingStart extends BaseEventListener<'typingStart'> {
         }
       }
 
-      Logger.debug(`Relayed typing indicator from ${typing.user.username} in call ${activeCall.callId}`);
+      Logger.debug(`Relayed typing indicator from ${typing.user.username} in call ${activeCall.id}`);
     }
     catch (error) {
       Logger.error('Error handling typing start event:', error);

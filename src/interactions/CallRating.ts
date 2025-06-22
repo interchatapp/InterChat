@@ -1,10 +1,12 @@
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
-import { CallService } from '#src/services/CallService.js';
+
 import { ReputationService } from '#src/services/ReputationService.js';
+import { UIComponents } from '#src/utils/DesignSystem.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { t } from '#src/utils/Locale.js';
 import getRedis from '#src/utils/Redis.js';
+import { MessageFlags } from 'discord.js';
 
 export default class CallRatingHandler {
   @RegisterInteractionHandler('rate_call')
@@ -24,8 +26,20 @@ export default class CallRatingHandler {
       return;
     }
 
-    const callService = new CallService(ctx.client);
-    const callData = await callService.getEndedCallData(callId);
+    const distributedCallingLibrary = ctx.client.getDistributedCallingLibrary();
+    if (!distributedCallingLibrary) {
+      const ui = new UIComponents(ctx.client);
+      const container = ui.createCompactErrorMessage(
+        t('calls.failed.title', locale),
+        'Call system is currently unavailable. Please try again later.',
+      );
+      await ctx.editReply({
+        components: [container],
+        flags: [MessageFlags.IsComponentsV2],
+      });
+      return;
+    }
+    const callData = await distributedCallingLibrary.getEndedCallData(callId);
 
     if (!callData) {
       await ctx.reply({
@@ -36,7 +50,7 @@ export default class CallRatingHandler {
     }
 
     // Check if user already rated this call
-    const ratingKey = `call:rating:${callData.callId}:${ctx.user.id}`;
+    const ratingKey = `call:rating:${callData.id}:${ctx.user.id}`;
     const hasRated = await getRedis().get(ratingKey);
 
     if (hasRated) {
@@ -66,7 +80,7 @@ export default class CallRatingHandler {
 
     for (const userId of otherChannelParticipants.users) {
       await reputationService.addRating(userId, ratingValue, {
-        callId: callData.callId,
+        callId: callData.id,
         raterId: ctx.user.id,
       });
     }

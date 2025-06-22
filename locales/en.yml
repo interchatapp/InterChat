@@ -1407,7 +1407,6 @@ connect:
   errors:
     invalidIds: '{emoji} Invalid hub or channel ID.'
     channelNotFound: '{emoji} Channel not found or not a text channel.'
-  createRedirect: 'This would normally redirect to the `/hub create` command. Since this is a demo, please use that command directly.'
 
 disconnect:
   description: '👋 Disconnect a channel from a hub'
@@ -1454,6 +1453,11 @@ achievements:
   progress: '**Progress:** {unlocked}/{total} achievements unlocked'
   errors:
     userNotFound: 'User not found.'
+
+achievement:
+  settings:
+    enabled: 'Achievement notifications are now **enabled**. You will receive notifications when you unlock new achievements!'
+    disabled: 'Achievement notifications are now **disabled**. You will no longer receive notifications when you unlock achievements.'
 
 profile:
   description: "View your profile or someone else's InterChat profile."

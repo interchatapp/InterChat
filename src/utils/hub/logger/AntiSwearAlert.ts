@@ -45,7 +45,6 @@ const boldANSIText = (text: string) => `\u001b[1;2m${text}\u001b[0m`;
 
 /**
  * Log an alert when a prohibited word is detected
- * Enhanced with Components v2 UI and Take Action buttons
  */
 export const logAntiSwearAlert = async (
   message: Message<true>,

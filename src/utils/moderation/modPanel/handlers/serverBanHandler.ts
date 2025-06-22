@@ -16,6 +16,7 @@
  */
 
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
+import ModPanelBanFlowHandler from '#src/interactions/ModPanelBanFlow.js';
 import { type ModAction, replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
 import { getOriginalMessage } from '#src/utils/network/messageUtils.js';
 import { checkIfStaff } from '#src/utils/Utils.js';
@@ -45,7 +46,6 @@ export default class ServerBanHandler implements ModAction {
     }
 
     // Import and use the ban flow handler directly
-    const { default: ModPanelBanFlowHandler } = await import('#src/interactions/ModPanelBanFlow.js');
     const banFlowHandler = new ModPanelBanFlowHandler();
 
     // Call the ban type selection directly

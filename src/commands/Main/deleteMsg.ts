@@ -39,7 +39,6 @@ export default class DeleteMessage extends BaseCommand {
       description: 'Delete a message you sent using interchat.',
       types: {
         prefix: true,
-        slash: true,
         contextMenu: {
           name: 'Delete Message',
           type: ApplicationCommandType.Message,
