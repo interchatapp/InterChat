@@ -1,6 +1,6 @@
 rules:
-  header: 'InterChat Rules'
-  botRulesNote: 'These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:'
+  header: 'قوانين إنتَر شات'
+  botRulesNote: 'هذه القوانين هنا لجعل هذه التجربة ممتعة وآمنة للجميع. اقرأهم وأتبعهم بعناية:'
   rules: |
     **ممنوع خطاب الكراهية**
   welcome: |
@@ -10,33 +10,29 @@ rules:
 
     تساعد هذه القواعد البسيطة في الحفاظ على إنتَر شات كمساحة دافئة ومرحبة وآمنة للجميع لتكوين صداقات جديدة ومشاركة محادثات رائعة! ✨
   alreadyAccepted: ""
-  continue: Continue
-  accept: Accept
-  decline: Decline
+  continue: كمل النص
+  accept: أتقبل
+  decline: أرفض
   agreementNote: "مع تقبيلك لهذه القوانين، أنت تقبل متابعتهم أثناء إستخدامك لإنتَر شات.\nقد يؤدي مخالفة هذه القوانين إلى فرض قيود أو حظر."
   hubAgreementNote: |
 
   accepted: |
-    {emoji} Fantastic! Welcome to the InterChat family! 🎉✨
+    {emoji} ممتاز! مرحباً في عائلة الإنتَر شات! 🎉✨
 
-    You're now part of an incredible community that connects thousands of servers and millions of people worldwide! We're thrilled to have you aboard this amazing journey.
+    أنت الآن جزء من مجتمع رائع يربط آلاف السرفرات وملايين الأشخاص حول العالم! يسعدنا انضمامك إلينا في هذه الرحلة الرائعة.
 
-    ### 🚀 Ready to Start Your Adventure?
-    - **Discover Communities:** Use the [hub directory]({hubs_link}) to explore vibrant, active communities waiting for you
-    - **Jump Into Conversations:** Join discussions that spark your interest, or create your own hub through our [dashboard]({dashboard_link})
-    - **Try Quick Connections:** Use our `/call` command for instant one-on-one server connections - perfect for making new friends!
-    - **Get Personalized Help:** Use `/setup` for a guided tour if you're feeling a bit lost
+    ### 🚀 هل أنت مستعد لبدء مغامرتك؟
+    - **اكتشف المجتمعات:** استخدم [خريطة المجتمعات]({hubs_link}) لاستكشاف مجتمعات نابضة بالحياة ونشطة في انتظارك.
+    - **انضم إلى المحادثات:** انضم إلى المناقشات التي تثير اهتمامك، أو أنشئ مركزك الخاص من خلال [لوحة القيادة]({dashboard_link})
+    - **جرب الاتصالات السريعة:** استخدم أمر `/call` لاتصالات فورية فردية مع سرفرات - مثالي لتكوين صداقات جديدة!
+    - **احصل على مساعدة شخصية:** استخدم `/setup` لجولة إرشادية إذا كنت تشعر بالحيرة.
 
-    ### 💝 We're Here for You!
-    Feeling confused or need a helping hand? Don't worry - we've all been there! Join our friendly [support community]({support_invite}) where real people are excited to help you get started.
+    ### 💝 نحن هنا من أجلك!
+    هل تشعر بالحيرة أو تحتاج إلى مساعدة؟ لا تقلق - لقد مررنا جميعًا بهذه التجربة! انضم إلى [مجتمع الدعم]({support_invite}) الودود، حيث يسعد أعضاء حقيقيون بمساعدتك على البدء.
 
-    **Love what we're doing?** Consider [supporting us]({donateLink}) to help InterChat grow and bring even more amazing features to connect communities worldwide! 🌍
+    **هل أعجبك ما نقدمه؟** فكّر في [دعمنا]({donateLink}) لمساعدة InterChat على النمو وإضافة المزيد من الميزات الرائعة لربط المجتمعات حول العالم! 🌍
   declined: |
-    {emoji} Please take a moment to read and accept the community guidelines.
 
-    These rules aren't optional—they're here to keep InterChat safe and enjoyable for everyone. Send another message or use any InterChat command to get started.
-
-    ⚠️ Important: You won't be able to chat with other servers until you accept the rules. Take your time, but this step is required.
   hubAccepted: |
     {emoji} You have accepted the hub rules.
     You can now start chatting in this hub!
