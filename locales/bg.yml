@@ -1,6 +1,6 @@
 rules:
   header: 'Правилата на InterChat'
-  botRulesNote: 'These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:'
+  botRulesNote: 'Тези правила са установени, за да гарантират безопасно и приятнo преживяване за всички. Прочете следните правила и ги спазвайте внинателно:'
   rules: |
     1. **No Hate Speech or Harassment**
     -# > **Includes:** Using slurs or hate speech to attack others, [and more]({guidelines_link}).
@@ -30,9 +30,9 @@ rules:
   decline: Откажи
   agreementNote: Чрез приемането на тези правила, вие се съгласявате да ги следвате по време на използването на InterChat. При нарушаването на следните правила може да се доведе до налагане на ограничения или отстранения.
   hubAgreementNote: |
-    By accepting these rules, you agree to follow them while chatting in this hub. Breaking these rules may result in removal from the hub.
+    Чрез приемането на тези правила, вие потвърждавате, че ще ги спазвате, докато общувате в този хъб. При неспазването им може да се доведе до отстраняване.
 
-    ⚠️ **You cannot send messages in this hub until you accept these rules.**
+    ⚠️ **Нямате възможност да изпращате съобщения в този хъб, докато не приемате да следвате тези правила.**
   accepted: |
     {emoji} Fantastic! Welcome to the InterChat family! 🎉✨
 
@@ -49,20 +49,21 @@ rules:
 
     **Love what we're doing?** Consider [supporting us]({donateLink}) to help InterChat grow and bring even more amazing features to connect communities worldwide! 🌍
   declined: |
-    {emoji} Please take a moment to read and accept the community guidelines.
+    {emoji} Моля, запознайте се и приемете общностните насоки.
 
-    These rules aren't optional—they're here to keep InterChat safe and enjoyable for everyone. Send another message or use any InterChat command to get started.
+    Спазването на тези правила не е въпрос на избор – те са създадени, за да гарантират сигурността и приятното преживяване за всички в InterChat. Можете да изпратите друго съобщение или да използвате команда на InterChat, за да продължите.
 
-    ⚠️ Important: You won't be able to chat with other servers until you accept the rules. Take your time, but this step is required.
+    ⚠️ Важно: Няма да имате достъп до разговаряне с други сървъри, преди да сте приели правилата. Не бързайте, но тази стъпка е задължителна.
   hubAccepted: |
-    {emoji} You have accepted the hub rules.
-    You can now start chatting in this hub!
+    {emoji} Вие приехте правилата на хъба.
+
+    Сега можете да започнете да пишете в този хъб!
   hubDeclined: |
-    {emoji} You have declined the rules for {hubName}.
-    -# ⚠️ **You won't be able to send messages in this hub until you accept its rules.**
-    -# To try again, send another message in this hub.
-  noHubRules: This hub has not set any specific rules yet. However, the [general InterChat rules]({rules_link}) still apply.
-  hubRules: Hub Rules
+    {emoji} Вие отказахте правилата за {hubName}.
+     -# ⚠️ Няма да можете да изпращате съобщения в този хъб, докато не приемете правилата му.
+     -# За да опитате отново, изпратете друго съобщение в този хъб.
+  noHubRules: На този хъб все още не са зададени специфични правила. Въпреки това, [general InterChat rules] ({rules_link}) си остават задължени да се спазват.
+  hubRules: Правилата на хъба
   viewbotRules: 'View Bot Rules'
 vote:
   description: |
