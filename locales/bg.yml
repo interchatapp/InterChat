@@ -90,7 +90,7 @@ vote:
   embed:
     title: 'Vote for InterChat'
 network:
-  accountTooNew: '{emoji} Hey {user}! Your Discord account is still pretty new, so we need to wait a little bit before you can send messages through InterChat. This helps keep our community safe! Please try again in a little while.'
+  accountTooNew: '{emoji} Здравейте, {user}! Тъй като вашият Discord акаунт е сравнително нов, е необходимо да измине кратък период, преди да можете да изпращате съобщения чрез InterChat. Тази мярка е за сигурността на нашата общност. Моля, опитайте отново по-късно.'
   deleteSuccess: '{emoji} Message by {user} has been deleted from __**{deleted}/{total}**__ servers.'
   editInProgress: '{emoji} Your request has been queued. Messages will be edited shortly...'
   editInProgressError: '{emoji} This message is already being edited by another user.'
