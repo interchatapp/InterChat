@@ -20,7 +20,7 @@ import { CacheManager } from '#src/managers/CacheManager.js';
 import { ConvertDatesToString } from '#src/types/Utils.js';
 import db from '#src/utils/Db.js';
 import Logger from '#src/utils/Logger.js';
-import getRedis from '#src/utils/Redis.js';
+import { getRedis } from '#src/utils/Redis.js';
 import { handleError } from '#src/utils/Utils.js';
 import { getVotingStreak } from '#src/utils/VotingUtils.js';
 import { RedisKeys } from '#utils/Constants.js';

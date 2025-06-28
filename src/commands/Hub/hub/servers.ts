@@ -19,7 +19,7 @@ import HubCommand from '#src/commands/Hub/hub/index.js';
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import type ConnectionManager from '#src/managers/ConnectionManager.js';
-import { Pagination } from '#src/modules/Pagination.js';
+import { PaginationManager } from '#src/utils/ui/PaginationManager.js';
 import { HubService } from '#src/services/HubService.js';
 import Constants from '#utils/Constants.js';
 import { type supportedLocaleCodes, t } from '#utils/Locale.js';
@@ -31,6 +31,8 @@ import {
   EmbedBuilder,
   type Guild,
   type GuildBasedChannel,
+  ContainerBuilder,
+  TextDisplayBuilder,
 } from 'discord.js';
 
 interface ConnectionDisplayData {
@@ -181,39 +183,60 @@ export default class HubServersSubcommand extends BaseCommand {
       return;
     }
 
-    const paginator = new Pagination(client);
-    const itemsPerPage = 5;
-    const totalConnections = connections.length;
+    // Pre-process all connection data for pagination
+    const allConnectionFields = await Promise.all(
+      connections.map(async (connection, index) => {
+        const displayData = await this.fetchConnectionDisplayData(client, connection);
+        const value = t('hub.servers.connectionInfo', locale, {
+          serverId: connection.data.serverId,
+          channelName: `${displayData?.channelName ?? 'Unknown Channel'}`,
+          channelId: connection.channelId,
+          joinedAt: `<t:${Math.round(connection.data.createdAt.getTime() / 1000)}:d>`,
+          invite: connection.data.invite ?? 'Not Set.',
+          connected: connection.connected ? 'Yes' : 'No',
+        });
+        return {
+          name: `${index + 1}. ${displayData?.serverName ?? 'Unknown Server'}`,
+          value,
+        };
+      }),
+    );
 
-    for (let i = 0; i < totalConnections; i += itemsPerPage) {
-      const currentConnections = connections.slice(i, i + itemsPerPage);
-      const startIndex = i + 1;
-      const endIndex = Math.min(i + itemsPerPage, totalConnections);
+    // Use PaginationManager with pre-processed data
+    const paginationManager = new PaginationManager({
+      client: ctx.client,
+      identifier: `hub-servers-${hub.id}`,
+      items: allConnectionFields,
+      itemsPerPage: 5,
+      contentGenerator: (pageIndex, itemsOnPage, totalPages, totalItems) => {
+        const container = new ContainerBuilder();
 
-      const fields = await this.getConnectionFieldsForPagination(
-        currentConnections,
-        client,
-        locale,
-        startIndex,
-      );
+        const startIndex = pageIndex * 5 + 1;
+        const endIndex = Math.min(startIndex + itemsOnPage.length - 1, totalItems);
 
-      paginator.addPage({
-        embeds: [
-          new EmbedBuilder()
-            .setDescription(
-              t('hub.servers.total', locale, {
-                from: `${startIndex}`,
-                to: `${endIndex}`,
-                total: `${totalConnections}`,
-              }),
-            )
-            .setColor(Constants.Colors.primary)
-            .setFields(fields),
-        ],
-      });
-    }
+        // Add header
+        const headerText = new TextDisplayBuilder().setContent(
+          `## Hub Servers\n${t('hub.servers.total', locale, {
+            from: `${startIndex}`,
+            to: `${endIndex}`,
+            total: `${totalItems}`,
+          })}`,
+        );
+        container.addTextDisplayComponents(headerText);
 
-    await paginator.run(ctx.interaction);
+        // Convert fields to text content
+        const connectionsText = itemsOnPage.map((field) =>
+          `**${field.name}**\n${field.value}`,
+        ).join('\n\n');
+
+        const contentText = new TextDisplayBuilder().setContent(connectionsText);
+        container.addTextDisplayComponents(contentText);
+
+        return container;
+      },
+    });
+
+    await paginationManager.start(ctx);
   }
 
   async autocomplete(interaction: AutocompleteInteraction): Promise<void> {

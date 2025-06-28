@@ -15,16 +15,22 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import ConnectionCommand from '#src/commands/Main/connection/index.js';
+import BaseCommand from '#src/core/BaseCommand.js';
+import type Context from '#src/core/CommandContext/Context.js';
 import type { Connection, Hub } from '#src/generated/prisma/client/client.js';
-import { type AutocompleteInteraction, EmbedBuilder, type EmbedField } from 'discord.js';
-import { Pagination } from '#src/modules/Pagination.js';
+import { PaginationManager } from '#src/utils/ui/PaginationManager.js';
+import { fetchUserLocale } from '#src/utils/Utils.js';
 import Constants from '#utils/Constants.js';
 import db from '#utils/Db.js';
 import { t } from '#utils/Locale.js';
-import { fetchUserLocale } from '#src/utils/Utils.js';
-import type Context from '#src/core/CommandContext/Context.js';
-import BaseCommand from '#src/core/BaseCommand.js';
-import ConnectionCommand from '#src/commands/Main/connection/index.js';
+import {
+  type AutocompleteInteraction,
+  ContainerBuilder,
+  EmbedBuilder,
+  type EmbedField,
+  TextDisplayBuilder,
+} from 'discord.js';
 
 export default class ConnectionListSubcommand extends BaseCommand {
   constructor() {
@@ -69,33 +75,39 @@ export default class ConnectionListSubcommand extends BaseCommand {
       return;
     }
 
-    const pages = this.createPaginatedEmbeds(connections, description, emojis);
+    // Use PaginationManager for paginated results
+    const paginationManager = new PaginationManager({
+      client: ctx.client,
+      identifier: `connection-list-${ctx.user.id}`,
+      items: connections,
+      itemsPerPage: 25,
+      contentGenerator: (pageIndex, itemsOnPage) => {
+        const container = new ContainerBuilder();
 
-    new Pagination(ctx.client).addPages(pages).run(ctx.interaction);
+        // Add description header
+        const headerText = new TextDisplayBuilder().setContent(description);
+        container.addTextDisplayComponents(headerText);
+
+        // Create embed with connections for this page
+        const fields = itemsOnPage.map((connection) => this.getField(connection, emojis));
+
+        // Add embed as text content (convert embed to markdown-like format)
+        const connectionsText = fields
+          .map((field) => `**${field.name}**\n${field.value}`)
+          .join('\n\n');
+
+        const contentText = new TextDisplayBuilder().setContent(connectionsText);
+        container.addTextDisplayComponents(contentText);
+
+        return container;
+      },
+    });
+
+    await paginationManager.start(ctx);
   }
 
   async autocomplete(interaction: AutocompleteInteraction) {
     await ConnectionCommand.autocomplete(interaction);
-  }
-
-  private createPaginatedEmbeds(
-    connections: (Connection & { hub: Hub | null })[],
-    description: string,
-    emojis: { connect: string; disconnect: string },
-    fieldsPerPage = 25,
-  ) {
-    const totalPages = Math.ceil(connections.length / fieldsPerPage);
-
-    const pages = Array.from({ length: totalPages }, (_, pageIndex) => {
-      const startIndex = pageIndex * fieldsPerPage;
-      const fields = connections
-        .slice(startIndex, startIndex + fieldsPerPage)
-        .map((connection) => this.getField(connection, emojis));
-
-      return { embeds: [this.getEmbed(fields, description)] };
-    });
-
-    return pages;
   }
 
   private getField(

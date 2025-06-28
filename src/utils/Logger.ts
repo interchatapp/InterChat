@@ -26,5 +26,5 @@ const config: Partial<TurboLoggerConfig> = {
   logDirectory: 'logs',
 };
 
-const turboLogger = new TurboLogger(config);
-export default turboLogger;
+const Logger = new TurboLogger(config);
+export default Logger;

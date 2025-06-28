@@ -16,14 +16,13 @@
  */
 
 import type BaseCommand from '#src/core/BaseCommand.js';
-import type BasePrefixCommand from '#src/core/BasePrefixCommand.js';
 import type { InteractionFunction } from '#src/decorators/RegisterInteractionHandler.js';
+import type { DistributedCallingLibrary } from '#src/lib/userphone/DistributedCallingLibrary.js';
 import type AntiSpamManager from '#src/managers/AntiSpamManager.js';
-import type EventLoader from '#src/modules/Loaders/EventLoader.js';
+import type EventLoader from '#src/utils/Loaders/EventLoader.js';
 import type CooldownService from '#src/services/CooldownService.js';
 import type Scheduler from '#src/services/SchedulerService.js';
 import { ShardMetricsService } from '#src/services/ShardMetricsService.js';
-import type { DistributedCallingLibrary } from '#src/lib/userphone/DistributedCallingLibrary.js';
 import type { ClusterClient } from 'discord-hybrid-sharding';
 import type {
   Collection,
@@ -42,12 +41,12 @@ export type ThreadParentChannel = NewsChannel | TextChannel | ForumChannel | Med
 
 declare module 'discord.js' {
   export interface Client {
+    readonly prefix: string;
     readonly version: string;
     readonly development: boolean;
     readonly description: string;
     readonly commands: Collection<string, BaseCommand>;
     readonly interactions: Collection<string, InteractionFunction>;
-    readonly prefixCommands: Collection<string, BasePrefixCommand>;
 
     readonly eventLoader: EventLoader;
     readonly aliases: Collection<string, string>

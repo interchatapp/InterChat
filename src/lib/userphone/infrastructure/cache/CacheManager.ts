@@ -38,7 +38,7 @@ export class CacheManager implements ICacheManager {
   constructor(redis: Redis, config: CacheConfig) {
     this.redis = redis;
     this.config = config;
-    this.webhookCache = new WebhookCache(redis, config.webhookTtl);
+    this.webhookCache = new WebhookCache(redis, config.webhookTtlSecs);
   }
 
   /**
@@ -61,7 +61,7 @@ export class CacheManager implements ICacheManager {
   async cacheWebhook(channelId: string, webhookUrl: string): Promise<void> {
     try {
       const key = `webhook:cache:${channelId}`;
-      await this.redis.setex(key, this.config.webhookTtl, webhookUrl);
+      await this.redis.setex(key, this.config.webhookTtlSecs, webhookUrl);
     }
     catch (error) {
       Logger.error(`Error caching webhook for channel ${channelId}:`, error);
@@ -110,7 +110,7 @@ export class CacheManager implements ICacheManager {
         pipeline.hset(this.keys.activeCalls, participant.channelId, callData);
       }
 
-      pipeline.expire(this.keys.activeCalls, this.config.callTtl);
+      pipeline.expire(this.keys.activeCalls, this.config.callTtlSecs);
       await pipeline.exec();
     }
     catch (error) {

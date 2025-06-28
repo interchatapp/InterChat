@@ -28,8 +28,11 @@ import db from '#utils/Db.js';
 import { resolveEval } from '#utils/Utils.js';
 import { stripIndents } from 'common-tags';
 import {
+  APIActionRowComponent,
+  APIButtonComponent,
   APIContainerComponent,
   APITextDisplayComponent,
+  ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   type Client,
@@ -375,11 +378,16 @@ export const sendHubReport = async (
     reportId,
     opts.messageId,
   );
-  container.addActionRowComponents((row) =>
-    row.addComponents(resolveButton, ignoreButton, actionButton),
-  );
+  container.addActionRowComponents((row) => row.addComponents(resolveButton, ignoreButton));
 
-  const components = [container.toJSON()] as (APIContainerComponent | APITextDisplayComponent)[];
+  const components = [
+    container.toJSON(),
+    new ActionRowBuilder<ButtonBuilder>().addComponents(actionButton).toJSON(),
+  ] as (
+    | APIContainerComponent
+    | APITextDisplayComponent
+    | APIActionRowComponent<APIButtonComponent>
+  )[];
 
   // Send the log with Components v2
   await sendLog(client.cluster, reportsChannelId, null, {

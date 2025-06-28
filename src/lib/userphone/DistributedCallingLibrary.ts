@@ -422,4 +422,28 @@ export class DistributedCallingLibrary {
       Logger.error('Error reporting distributed status:', error);
     }
   }
+
+  /**
+   * Cleanup resources when the library is being destroyed
+   */
+  async cleanup(): Promise<void> {
+    Logger.info('🧹 Starting DistributedCallingLibrary cleanup...');
+
+    try {
+      // Cleanup cache manager
+      if (this.cacheManager) {
+        await this.cacheManager.cleanup();
+        Logger.debug('✅ Cache manager cleaned up');
+      }
+
+      // Note: Other managers don't have cleanup methods yet, but we can add them later
+      // For now, just log that we're cleaning up the library
+      Logger.debug('✅ Queue manager, state manager, and coordinator cleanup skipped (no cleanup methods)');
+
+      Logger.info('✅ DistributedCallingLibrary cleanup completed');
+    }
+    catch (error) {
+      Logger.error('❌ Error during DistributedCallingLibrary cleanup:', error);
+    }
+  }
 }

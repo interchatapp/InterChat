@@ -18,7 +18,7 @@
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import type { Infraction } from '#src/generated/prisma/client/client.js';
-import { Pagination } from '#src/modules/Pagination.js';
+import { PaginationManager } from '#src/utils/ui/PaginationManager.js';
 import { HubService } from '#src/services/HubService.js';
 import Constants from '#src/utils/Constants.js';
 import { runHubRoleChecksAndReply } from '#src/utils/hub/utils.js';
@@ -93,32 +93,29 @@ export default class BlacklistListSubcommand extends BaseCommand {
       return;
     }
 
-    const options = { LIMIT: 5, iconUrl: hub.data.iconUrl };
     const type = ctx.options.getString('type', true) as 'user' | 'server';
 
-    const paginator = new Pagination(ctx.client);
-    let counter = 0;
-    let currentItems = [];
+    // Prepare data with moderators
+    const enrichedList = await Promise.all(
+      list.map(async (data) => {
+        const moderator = data.moderatorId
+          ? await ctx.client.users.fetch(data.moderatorId).catch(() => null)
+          : null;
+        return { data, moderator };
+      }),
+    );
 
-    for (const data of list) {
-      const moderator = data.moderatorId
-        ? await ctx.client.users.fetch(data.moderatorId).catch(() => null)
-        : null;
+    // Use PaginationManager
+    const paginationManager = new PaginationManager({
+      client: ctx.client,
+      identifier: `blacklist-${hub.id}-${type}`,
+      items: enrichedList,
+      itemsPerPage: 5,
+      contentGenerator: (pageIndex, itemsOnPage) =>
+        this.buildBlacklistContainer(itemsOnPage, type, locale, ctx),
+    });
 
-      currentItems.push({ data, moderator });
-      counter++;
-
-      if (counter >= options.LIMIT || currentItems.length === list.length) {
-        const container = this.buildBlacklistContainer(currentItems, type, locale, ctx);
-
-        paginator.addPage({ components: [container] });
-
-        counter = 0;
-        currentItems = [];
-      }
-    }
-
-    await paginator.run(ctx.interaction, { isComponentsV2: true });
+    await paginationManager.start(ctx);
   }
 
   private buildBlacklistContainer(

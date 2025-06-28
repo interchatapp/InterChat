@@ -17,7 +17,7 @@
 
 import type { ConvertDatesToString } from '#src/types/Utils.d.js';
 import { handleError } from '#src/utils/Utils.js';
-import getRedis from '#utils/Redis.js';
+import { getRedis } from '#utils/Redis.js';
 import type { Redis } from 'ioredis';
 
 export interface CacheConfig {

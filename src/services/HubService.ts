@@ -17,7 +17,7 @@
 
 import { CacheManager } from '#src/managers/CacheManager.js';
 import HubManager from '#src/managers/HubManager.js';
-import { HubSettingsBits } from '#src/modules/BitFields.js';
+import { HubSettingsBits } from '#src/utils/BitFields.js';
 import { deleteConnections } from '#src/utils/ConnectedListUtils.js';
 import Constants, { RedisKeys } from '#src/utils/Constants.js';
 import db from '#src/utils/Db.js';

@@ -17,6 +17,11 @@
 
 import { PrismaClient } from '#src/generated/prisma/client/client.js';
 
-const db = new PrismaClient({ log: [{ emit: 'event', level: 'query' }] });
+const db = new PrismaClient({
+  log: [{ emit: 'event', level: 'query' }],
+});
+
+// Graceful shutdown handler for Prisma
+process.on('beforeExit', () => db.$disconnect());
 
 export default db;

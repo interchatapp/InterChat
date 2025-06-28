@@ -1,5 +1,5 @@
 import BaseCommand from '#src/core/BaseCommand.js';
-import { HelpCommandData, CategoryInfo } from '#src/modules/HelpCommand/DataManager.js';
+import { HelpCommandData, CategoryInfo } from '#src/utils/HelpCommand/DataManager.js';
 import Constants from '#src/utils/Constants.js';
 import { generateUnifiedCommandHelp } from '#src/utils/CommandUtils.js';
 import { CustomID } from '#src/utils/CustomID.js';

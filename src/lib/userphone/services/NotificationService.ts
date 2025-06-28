@@ -15,7 +15,14 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ButtonBuilder, ButtonStyle, ContainerBuilder, MessageFlags, type Client } from 'discord.js';
+import {
+  ButtonBuilder,
+  ButtonStyle,
+  ContainerBuilder,
+  MessageFlags,
+  resolveColor,
+  type Client,
+} from 'discord.js';
 import type { INotificationService } from '../core/interfaces.js';
 import type { ActiveCall } from '../core/types.js';
 import { BroadcastService } from '#src/services/BroadcastService.js';
@@ -62,7 +69,7 @@ export class NotificationService implements INotificationService {
   }
 
   /**
-   * Simplified call match notification - only essential message
+   * Call match notification with ping for original initiator
    */
   async notifyCallMatched(channelId: string, call: ActiveCall): Promise<void> {
     try {
@@ -75,13 +82,22 @@ export class NotificationService implements INotificationService {
         return;
       }
 
+      // Get the original initiator (first user in the participant's users set)
+      const originalInitiator = Array.from(participant.users)[0];
+
+      // Create notification content with ping for the original initiator
+      let notificationContent = '';
+      if (originalInitiator) {
+        notificationContent = `<@${originalInitiator}> `;
+      }
+
       // Simple notification with essential controls only
-      const container = new ContainerBuilder();
+      const container = new ContainerBuilder().setAccentColor(resolveColor('#7CFC00'));
 
       container.addTextDisplayComponents(
         this.ui.createCompactHeader(
           'Call Connected!',
-          'You\'re now connected to another server. Say hello! 👋',
+          "You're now connected to another server. Say hello! 👋",
           'call_icon',
         ),
       );
@@ -102,8 +118,9 @@ export class NotificationService implements INotificationService {
         ),
       );
 
-      await this.sendMessage(participant.webhookUrl, container);
-      Logger.debug(`Call match notification sent to channel ${channelId}`);
+      // Send message with ping content if there's an original initiator
+      await this.sendMessageWithContent(participant.webhookUrl, container, notificationContent);
+      Logger.debug(`Call match notification with ping sent to channel ${channelId}`);
     }
     catch (error) {
       Logger.error(`Error notifying call match for channel ${channelId}:`, error);
@@ -113,15 +130,13 @@ export class NotificationService implements INotificationService {
   /**
    * Send message with UI components via webhook
    */
-  private async sendMessage(
-    webhookUrl: string,
-    container: ContainerBuilder,
-  ): Promise<void> {
+  private async sendMessage(webhookUrl: string, container: ContainerBuilder): Promise<void> {
     try {
       Logger.debug(`Attempting to send message to webhook: ${webhookUrl.substring(0, 50)}...`);
 
       const result = await BroadcastService.sendMessage(webhookUrl, {
-        components: [container], flags: [MessageFlags.IsComponentsV2],
+        components: [container],
+        flags: [MessageFlags.IsComponentsV2],
       });
 
       if (result.error) {
@@ -139,11 +154,45 @@ export class NotificationService implements INotificationService {
   }
 
   /**
-   * Simplified call end notification
+   * Send message with content and UI components via webhook
+   */
+  private async sendMessageWithContent(
+    webhookUrl: string,
+    container: ContainerBuilder,
+    content: string,
+  ): Promise<void> {
+    try {
+      Logger.debug(
+        `Attempting to send message with content to webhook: ${webhookUrl.substring(0, 50)}...`,
+      );
+
+      const result = await BroadcastService.sendMessage(webhookUrl, {
+        content,
+        components: [container],
+        flags: [MessageFlags.IsComponentsV2],
+        allowedMentions: { parse: ['users'] }, // Allow user mentions for ping functionality
+      });
+
+      if (result.error) {
+        Logger.error(`Error sending message with content via webhook: ${result.error}`);
+        Logger.error(`Webhook URL: ${webhookUrl.substring(0, 50)}...`);
+      }
+      else {
+        Logger.debug('Successfully sent message with content via webhook');
+      }
+    }
+    catch (error) {
+      Logger.error('Error sending message with content:', error);
+      Logger.error(`Webhook URL: ${webhookUrl.substring(0, 50)}...`);
+    }
+  }
+
+  /**
+   * Enhanced call end notification with Report button
    */
   async notifyCallEnded(
     channelId: string,
-    _callId: string,
+    callId: string,
     duration?: number,
     messageCount?: number,
   ): Promise<void> {
@@ -171,7 +220,7 @@ export class NotificationService implements INotificationService {
         this.ui.createCompactHeader('Call Ended', description, 'hangup_icon'),
       );
 
-      // Single action button
+      // Action buttons row - New Call and Report
       container.addActionRowComponents((row) =>
         row.addComponents(
           new ButtonBuilder()
@@ -179,11 +228,16 @@ export class NotificationService implements INotificationService {
             .setLabel('New Call')
             .setStyle(ButtonStyle.Primary)
             .setEmoji('📞'),
+          new ButtonBuilder()
+            .setCustomId(new CustomID('report_call', [callId]).toString())
+            .setLabel('Report')
+            .setStyle(ButtonStyle.Secondary)
+            .setEmoji('🚩'),
         ),
       );
 
       await channel.send({ components: [container], flags: [MessageFlags.IsComponentsV2] });
-      Logger.debug(`Call end notification sent to channel ${channelId}`);
+      Logger.debug(`Call end notification with report button sent to channel ${channelId}`);
     }
     catch (error) {
       Logger.error(`Error notifying call end for channel ${channelId}:`, error);
@@ -197,7 +251,6 @@ export class NotificationService implements INotificationService {
     // Removed - redundant with notifyCallMatched
     // This reduces notification spam as requested
   }
-
 
   /**
    * Simplified timeout notification

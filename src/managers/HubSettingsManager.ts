@@ -20,7 +20,7 @@ import {
   HubSettingsBitField,
   HubSettingsBits,
   type HubSettingsString,
-} from '#src/modules/BitFields.js';
+} from '#src/utils/BitFields.js';
 import { HubService } from '#src/services/HubService.js';
 
 import type { BitFieldResolvable } from 'discord.js';

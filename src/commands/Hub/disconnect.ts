@@ -48,7 +48,7 @@ export default class DisconnectCommand extends BaseCommand {
       await ctx.replyEmbed('hub.leave.noHub', { t: { emoji: ctx.getEmoji('x_icon') } });
       return;
     }
-    if (!ctx.guild?.members.cache.get(ctx.user.id)?.permissions.has('ManageChannels')) {
+    if (!ctx.member?.permissions.has('ManageChannels')) {
       await ctx.replyEmbed(
         t('errors.missingPermissions', locale, {
           permissions: 'Manage Channels',

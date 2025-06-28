@@ -21,7 +21,7 @@ import type HubManager from '#src/managers/HubManager.js';
 import type HubSettingsManager from '#src/managers/HubSettingsManager.js';
 import ServerBanManager from '#src/managers/ServerBanManager.js';
 import BanManager from '#src/managers/UserBanManager.js';
-import NSFWDetector from '#src/modules/NSFWDetection.js';
+import NSFWDetector from '#src/utils/NSFWDetection.js';
 import UserDbService from '#src/services/UserDbService.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { sendBlacklistNotif } from '#src/utils/moderation/blacklistUtils.js';
@@ -54,11 +54,6 @@ interface HubCheckFunctionOpts extends CallCheckFunctionOpts {
 
 type CheckFunction = (message: Message<true>, opts: HubCheckFunctionOpts) => Awaitable<CheckResult>;
 
-type CallCheckFunction = (
-  message: Message<true>,
-  opts: CallCheckFunctionOpts,
-) => Awaitable<CheckResult>;
-
 // ordering is important - always check blacklists first (or they can bypass)
 const checks: CheckFunction[] = [
   checkBanAndBlacklist,
@@ -72,14 +67,6 @@ const checks: CheckFunction[] = [
   checkNSFW,
   checkLinks,
   checkStickers,
-];
-
-// Add new array for call-specific checks
-const callChecks: CallCheckFunction[] = [
-  checkSpamForCalls,
-  checkURLsForCalls,
-  checkNSFW,
-  checkGifsForCalls,
 ];
 
 const replyToMsg = async (
@@ -126,34 +113,6 @@ export const runChecks = async (
       return false;
     }
     Logger.debug(`Message ${message.id} passed check: ${check.name} in ${checkDuration}ms`);
-  }
-
-  return true;
-};
-
-export const runCallChecks = async (
-  message: Message<true>,
-  opts: {
-    userData: DbUser;
-    attachmentURL?: string | null;
-  },
-): Promise<boolean> => {
-  for (const check of callChecks) {
-    const checkStartTime = performance.now();
-    const result = await check(message, opts);
-    const checkDuration = performance.now() - checkStartTime;
-
-    if (!result.passed) {
-      // Log failed check with timing information
-      Logger.debug(`Call message ${message.id} failed check: ${check.name} (${checkDuration}ms)`);
-
-      if (result.reason) {
-        await replyToMsg(message, { content: result.reason });
-      }
-
-      return false;
-    }
-    Logger.debug(`Call message ${message.id} passed check: ${check.name} in ${checkDuration}ms`);
   }
 
   return true;
@@ -461,51 +420,5 @@ async function checkStickers(
       };
     }
   }
-  return { passed: true };
-}
-
-// Modified spam check for calls
-async function checkSpamForCalls(message: Message<true>): Promise<CheckResult> {
-  const result = await message.client.antiSpamManager.handleMessage(message);
-
-  if (result) {
-    await message.react(getEmoji('timeout', message.client)).catch(() => null);
-    return { passed: false };
-  }
-
-  return { passed: true };
-}
-
-// New function to check URLs in calls (blocks all except Tenor)
-function checkURLsForCalls(message: Message<true>): CheckResult {
-  // Allow Tenor URLs
-  if (Constants.Regex.TenorLinks.test(message.content)) {
-    return { passed: true };
-  }
-
-  // Block all other URLs
-  if (Constants.Regex.Links.test(message.content)) {
-    return {
-      passed: false,
-      reason:
-        'Links are not allowed during calls for security reasons. Only Tenor GIFs are permitted.',
-    };
-  }
-
-  return { passed: true };
-}
-
-// New function to check GIFs in calls
-function checkGifsForCalls(message: Message<true>): CheckResult {
-  const attachment = message.attachments.first();
-
-  // Block non-Tenor GIFs
-  if (attachment?.contentType?.includes('gif') && !message.content.includes('tenor.com')) {
-    return {
-      passed: false,
-      reason: 'Only Tenor GIFs are allowed during calls. Please use Tenor for sharing GIFs.',
-    };
-  }
-
   return { passed: true };
 }

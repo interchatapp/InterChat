@@ -71,7 +71,7 @@ const actionHandlers: Record<BlockWordAction, ActionHandler> = {
   [BlockWordAction.BLACKLIST]: async (message, _ruleId, hubId, ruleName) => {
     try {
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-      const reason = `Auto-blacklisted for using prohibited words (Rule: ${ruleName})`;
+      const reason = `Auto-blacklisted for using prohibited words (Rule: ${ruleName}).\n**Proof:** ${message.cleanContent}`;
       const target = message.author;
       const mod = message.client.user;
 

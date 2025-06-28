@@ -19,7 +19,7 @@ import BaseCommand from '#src/core/BaseCommand.js';
 import InteractionContext from '#src/core/CommandContext/InteractionContext.js';
 import PrefixContext from '#src/core/CommandContext/PrefixContext.js';
 import type { InteractionFunction } from '#src/decorators/RegisterInteractionHandler.js';
-import { InteractionLoader } from '#src/modules/Loaders/InteractionLoader.js';
+import { InteractionLoader } from '#src/utils/Loaders/InteractionLoader.js';
 import { UIComponents, type EmojiKeys } from '#src/utils/DesignSystem.js';
 import { handleError } from '#src/utils/Utils.js';
 import {
@@ -82,7 +82,11 @@ function parseArgs(input: string): string[] {
 }
 
 export type SubcommandError = {
-  type: 'missing_subcommand' | 'invalid_subcommand' | 'missing_nested_subcommand' | 'invalid_nested_subcommand';
+  type:
+    | 'missing_subcommand'
+    | 'invalid_subcommand'
+    | 'missing_nested_subcommand'
+    | 'invalid_nested_subcommand';
   baseCommand: BaseCommand;
   invalidSubcommand?: string;
   validSubcommands?: string[];
@@ -94,7 +98,7 @@ function extractCommandFromMessage(
   message: Message,
   aliases: Map<string, string>,
 ): { commandName: string; originalCommandName: string; prefixArgs: string[] } | null {
-  const prefixArgs = parseArgs(message.content.slice('c!'.length));
+  const prefixArgs = parseArgs(message.content.slice(message.client.prefix.length));
   const name = prefixArgs.shift()?.toLowerCase();
 
   if (!name) return null;
@@ -134,7 +138,7 @@ function getSubcommandName(
   return interactionOrMessage instanceof Message
     ? prefixArgs.shift()?.toLowerCase()
     : (interactionOrMessage.options.getSubcommandGroup() ??
-       interactionOrMessage.options.getSubcommand());
+        interactionOrMessage.options.getSubcommand());
 }
 
 // Helper function to get nested subcommand name
@@ -354,14 +358,18 @@ function generateMissingNestedSubcommandHelp(
 
   // Add header
   container.addTextDisplayComponents(
-    ui.createHeader(`Command: c!${originalCommandName} ${subcommandGroup}`, baseCommand.description, 'info_icon'),
+    ui.createHeader(
+      `Command: .${originalCommandName} ${subcommandGroup}`,
+      baseCommand.description,
+      'info_icon',
+    ),
   );
 
   ui.addSeparator(container);
 
   // Build help content
   let helpContent = '## Usage\n';
-  helpContent += `\`c!${originalCommandName} ${subcommandGroup} <subcommand>\`\n\n`;
+  helpContent += `\`.${originalCommandName} ${subcommandGroup} <subcommand>\`\n\n`;
 
   // Add subcommands section
   helpContent += `## Available ${subcommandGroup} Subcommands\n`;
@@ -373,7 +381,10 @@ function generateMissingNestedSubcommandHelp(
 
   // Add examples section
   helpContent += '\n## Examples\n';
-  helpContent += validSubcommands.slice(0, 3).map((sub) => `- \`c!${originalCommandName} ${subcommandGroup} ${sub}\``).join('\n');
+  helpContent += validSubcommands
+    .slice(0, 3)
+    .map((sub) => `- \`.${originalCommandName} ${subcommandGroup} ${sub}\``)
+    .join('\n');
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(helpContent));
   return container;
@@ -395,7 +406,11 @@ function generateInvalidNestedSubcommandHelp(
 
   // Add header with error indicator
   container.addTextDisplayComponents(
-    ui.createHeader(`Command: c!${originalCommandName} ${subcommandGroup}`, baseCommand.description, 'x_icon'),
+    ui.createHeader(
+      `Command: i.${originalCommandName} ${subcommandGroup}`,
+      baseCommand.description,
+      'x_icon',
+    ),
   );
 
   ui.addSeparator(container);
@@ -404,7 +419,7 @@ function generateInvalidNestedSubcommandHelp(
   let helpContent = `❌ **Error**: Subcommand '${invalidSubcommand}' not recognized in '${subcommandGroup}'\n\n`;
 
   helpContent += '## Usage\n';
-  helpContent += `\`c!${originalCommandName} ${subcommandGroup} <subcommand>\`\n\n`;
+  helpContent += `\`.${originalCommandName} ${subcommandGroup} <subcommand>\`\n\n`;
 
   // Add valid subcommands section
   helpContent += `## Valid ${subcommandGroup} Subcommands\n`;
@@ -416,7 +431,10 @@ function generateInvalidNestedSubcommandHelp(
 
   // Add examples section
   helpContent += '\n## Examples\n';
-  helpContent += validSubcommands.slice(0, 3).map((sub) => `- \`c!${originalCommandName} ${subcommandGroup} ${sub}\``).join('\n');
+  helpContent += validSubcommands
+    .slice(0, 3)
+    .map((sub) => `- \`.${originalCommandName} ${subcommandGroup} ${sub}\``)
+    .join('\n');
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(helpContent));
   return container;
@@ -451,7 +469,7 @@ function buildUsageSyntax(
   }
   else {
     // Prefix command format
-    const prefix = 'c!';
+    const prefix = '.';
     usageSyntax = `${prefix}${fullDisplayName}`;
   }
 
@@ -530,7 +548,7 @@ function buildAliasesSection(command: BaseCommand, showPrefix: boolean): string 
   }
 
   let content = '\n\n## Aliases\n';
-  const aliasPrefix = showPrefix === false ? '/' : 'c!';
+  const aliasPrefix = showPrefix === false ? '/' : '.';
   content += command.aliases.map((alias) => `• \`${aliasPrefix}${alias}\``).join('\n');
   return content;
 }
@@ -557,15 +575,13 @@ export function generateUnifiedCommandHelp(
 
   // Determine display name and format
   const displayName = options.originalCommandName || command.name;
-  const prefix = options.showPrefix !== false ? 'c!' : '';
+  const prefix = options.showPrefix !== false ? client.prefix : '';
   const fullDisplayName = options.commandNameFull || displayName;
   const headerTitle = `Command: ${prefix}${fullDisplayName}`;
 
   // Add header with appropriate icon
   const iconName = options.icon || (options.errorContext ? 'x_icon' : 'info_icon');
-  container.addTextDisplayComponents(
-    ui.createHeader(headerTitle, command.description, iconName),
-  );
+  container.addTextDisplayComponents(ui.createHeader(headerTitle, command.description, iconName));
 
   ui.addSeparator(container);
 
@@ -714,7 +730,10 @@ async function validatePrefixCommand(
 
 export async function executeCommand(
   interactionOrMessage: Message | ChatInputCommandInteraction | ContextMenuCommandInteraction,
-  { command, ...opts }: {
+  {
+    command,
+    ...opts
+  }: {
     command: BaseCommand | null;
     prefixArgs?: string[];
     commandNameFull?: string | null;

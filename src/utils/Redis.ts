@@ -17,11 +17,25 @@
 
 import { Redis } from 'ioredis';
 
-// when run usin scripts like registerCmds
+const REDIS_CONFIG = {
+  maxRetriesPerRequest: 3,
+  retryDelayOnFailover: 100,
+  lazyConnect: true,
+  keepAlive: 30000,
+  connectTimeout: 10000,
+  family: 4, // IPv4
+  db: 0,
+} as const;
+
+// when run using scripts like registerCmds
 let redisClient: Redis;
 
 export const getRedis = () => {
-  if (!redisClient) redisClient = new Redis(process.env.REDIS_URI as string);
+  if (!process.env.REDIS_URI) {
+    throw new Error('REDIS_URI environment variable is not set');
+  }
+
+  if (!redisClient) redisClient = new Redis(process.env.REDIS_URI, REDIS_CONFIG);
   return redisClient;
 };
 

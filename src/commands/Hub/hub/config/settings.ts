@@ -21,7 +21,7 @@ import type Context from '#src/core/CommandContext/Context.js';
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import HubManager from '#src/managers/HubManager.js';
-import { HubSettingsString } from '#src/modules/BitFields.js';
+import { HubSettingsString } from '#src/utils/BitFields.js';
 import { HubService } from '#src/services/HubService.js';
 import { CustomID } from '#src/utils/CustomID.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';

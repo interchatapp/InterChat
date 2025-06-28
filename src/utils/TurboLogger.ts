@@ -40,11 +40,11 @@ const COLORS = {
 const SYMBOLS = {
   DEBUG: '🔍',
   INFO: '📘',
-  WARN: '⚠️',
+  WARN: '⚠️ ',
   ERROR: '🚨',
   PERFORMANCE: '⚡',
   CACHE: '💾',
-  DATABASE: '🗄️',
+  DATABASE: '🗄️ ',
   NETWORK: '🌐',
   ARROW: '→',
 } as const;
@@ -353,15 +353,6 @@ export class TurboLogger {
     else {
       this.log(LogLevel.ERROR, this.formatObject(message), args);
     }
-  }
-
-  /**
-   * Create child logger with context (Winston compatibility)
-   */
-  child(_meta: Record<string, unknown>): TurboLogger {
-    // For simplicity, just return a new logger with the same config
-    // Child logger functionality can be enhanced later if needed
-    return new TurboLogger(this.config);
   }
 
   /**

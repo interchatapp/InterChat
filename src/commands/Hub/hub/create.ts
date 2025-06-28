@@ -19,7 +19,7 @@ import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
-import { HubValidator } from '#src/modules/HubValidator.js';
+import { HubValidator } from '#src/utils/hub/HubValidator.js';
 import AchievementService from '#src/services/AchievementService.js';
 import { type HubCreationData, HubService } from '#src/services/HubService.js';
 import { CustomID } from '#src/utils/CustomID.js';

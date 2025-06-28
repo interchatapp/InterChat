@@ -16,7 +16,7 @@
  */
 
 import { RedisKeys } from '#utils/Constants.js';
-import getRedis from '#utils/Redis.js';
+import { getRedis } from '#utils/Redis.js';
 
 /** Manage and store individual cooldowns */
 export default class CooldownService {

@@ -18,13 +18,9 @@
 import type { BlockWordAction } from '#src/generated/prisma/client/client.js';
 import db from '#src/utils/Db.js';
 import Logger from '#src/utils/Logger.js';
-import { CacheManager } from '#src/managers/CacheManager.js';
-import { RedisKeys } from '#src/utils/Constants.js';
-import getRedis from '#src/utils/Redis.js';
 
 /**
  * Represents a compiled rule for efficient pattern matching.
- * Uses serializable data structures for Redis storage.
  */
 interface CompiledRule {
   id: string;
@@ -55,13 +51,10 @@ export interface AntiSwearCheckResult {
 
 /**
  * Manages anti-swear functionality with optimized pattern matching.
- * Utilizes a two-tier caching system: an in-memory cache for hot rules
- * and Redis for distributed caching across shards.1
+ * Utilizes an in-memory cache for frequently accessed rules with direct database fallback.
  */
 export default class AntiSwearManager {
   private static instance: AntiSwearManager;
-  private readonly redisCache: CacheManager;
-  private readonly REDIS_CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
   // In-memory cache for frequently accessed rules (with compiled regex)
   private readonly memoryCache = new Map<
@@ -76,11 +69,6 @@ export default class AntiSwearManager {
   private readonly MAX_REGEX_EXECUTION_TIME_MS = 50; // Max time for a single regex match
 
   private constructor() {
-    this.redisCache = new CacheManager(getRedis(), {
-      prefix: RedisKeys.AntiSwear,
-      expirationMs: this.REDIS_CACHE_TTL_MS,
-    });
-
     // Periodically clean up expired entries from the in-memory cache
     setInterval(() => this.cleanupMemoryCache(), 10 * 60 * 1000); // Every 10 minutes
   }
@@ -193,12 +181,12 @@ export default class AntiSwearManager {
   }
 
   /**
-   * Retrieves rules for a hub, utilizing a multi-layer cache (memory -> Redis -> DB).
+   * Retrieves rules for a hub, utilizing memory cache with direct database fallback.
    * @param hubId The ID of the hub.
    * @returns A promise that resolves to an array of compiled rules with regex patterns.
    */
   private async getRulesForHub(hubId: string): Promise<CompiledRuleWithRegex[]> {
-    const cacheKey = `${RedisKeys.HubRules}:${hubId}`;
+    const cacheKey = `hub_rules:${hubId}`;
     const now = Date.now();
 
     // 1. Check in-memory cache
@@ -207,13 +195,11 @@ export default class AntiSwearManager {
       return memoryCached.rules;
     }
 
-    // 2. Check Redis cache (or load from DB if not in Redis)
-    const rulesFromRedis =
-      (await this.redisCache.get<CompiledRule[]>(cacheKey, () => this.loadRulesForHub(hubId))) ||
-      [];
+    // 2. Load from database directly
+    const rulesFromDb = await this.loadRulesForHub(hubId);
 
-    // Compile regex patterns for rules retrieved from Redis/DB
-    const rulesWithRegex = rulesFromRedis.map((rule) => this.compileRuleWithRegex(rule));
+    // Compile regex patterns for rules retrieved from DB
+    const rulesWithRegex = rulesFromDb.map((rule) => this.compileRuleWithRegex(rule));
 
     // Store in memory cache for faster subsequent access
     this.memoryCache.set(cacheKey, { rules: rulesWithRegex, timestamp: now });
@@ -348,22 +334,19 @@ export default class AntiSwearManager {
   }
 
   /**
-   * Invalidates the cache for a specific hub in both memory and Redis.
+   * Invalidates the cache for a specific hub in memory.
    * @param hubId The ID of the hub whose cache should be invalidated.
    */
   public async invalidateCache(hubId: string): Promise<void> {
-    const cacheKey = `${RedisKeys.HubRules}:${hubId}`;
-    await this.redisCache.delete(cacheKey);
+    const cacheKey = `hub_rules:${hubId}`;
     this.memoryCache.delete(cacheKey);
     Logger.debug(`Invalidated anti-swear cache for hub ${hubId}.`);
   }
 
   /**
-   * Invalidates all anti-swear caches (all hubs) in both memory and Redis.
+   * Invalidates all anti-swear caches (all hubs) in memory.
    */
   public async invalidateAllCaches(): Promise<void> {
-    // For Redis, CacheManager's clear method relies on the prefix
-    await this.redisCache.clear();
     this.memoryCache.clear();
     Logger.debug('Invalidated all anti-swear caches.');
   }
