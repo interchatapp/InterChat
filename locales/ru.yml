@@ -1,29 +1,29 @@
 rules:
-  header: 'InterChat Rules'
-  botRulesNote: 'These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:'
+  header: 'Правила InterChat'
+  botRulesNote: 'Эти правила действуют, чтобы сделать использование InterChat безопасным и приятным для каждого. Читайте внимательно и следуйте им:'
   rules: |
-    1. **No Hate Speech or Harassment**
-    -# > **Includes:** Using slurs or hate speech to attack others, [and more]({guidelines_link}).
-    2. **No Illegal Content**
-    -# > **Includes:** Sharing links to illegal content, Encouraging violence, [and more]({guidelines_link}).
-    3. **No Severe NSFW or Gore**
-    -# > **Includes:** Posting gore or extreme gore in InterChat, Posting sexual content in non-NSFW hubs, [and more]({guidelines_link}).
-    4. **No Spamming or Flooding**
-    -# > **Includes:** Mass spamming or bot floods, [and more]({guidelines_link})
-    5. **No Impersonation or Fraud**
-    -# > **Includes:** Impersonating InterChat staff or hub moderators, Running cryptocurrency or NFT scams, [and more]({guidelines_link}).
-    6. **No Exploitation or Abuse**
-    -# > **Includes:** Grooming or predatory behavior towards minors, Sharing, Requesting, Blackmailing or threatening to  Encouraging self-harm, [and more]({guidelines_link}).
-    7. **No Sharing Malicious Software**
-    -# > **Includes:** Sharing malware, viruses, 'free nitro' links, harmful scripts [and more]({guidelines_link}).
+    1. **Без оскорблений и домогательств**
+    -# > **Включает:** Использование оскорблений, ненависть к другим, и [многое другое]({guidelines_link}).
+    2. **Незаконный контент**
+    -# > **Включает:** Распространение ссылок на незаконный контент, Поощрение насилия, [и тд]({guidelines_link}).
+    3. **Без NSFW и расчленёнки**
+    -# > **Включает:** Публикация расчленёнки или подобного контента в InterChat, Размещение сексуального содержания в не-NSFW хабах, [и тд] ({guidelines_link}).
+    4. **Без спама или наводнения**
+    -# > **Включает:** Массовый спам или флуд ботами, [и тд]({guidelines_link})
+    5. **Без мошенничества**
+    -# > **Включает:** Выдача себя за сотрудников InterChat или модераторов хаба, мошенничество с использованием криптовалют или NFT [и тд]({guidelines_link}).
+    6. **Без эксплуатации или злоупотребления**
+    -# > **Включает:** Педофилия по отношению к несовершеннолетним, рассылка, запрос, шантажирование или угрозы нанесения вреда себе, [и тд]({guidelines_link}).
+    7. **Без распространения вредоносного ПО**
+    -# > **Включает:** Передача вредоносного ПО, вирусов, ссылок на "бесплатный нитро", вредоносных скриптов [и тд]({guidelines_link}).
 
-    You also agree to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines). Check out the [full list of rules]({guidelines_link}).
+    Вы также соглашаетесь соблюдать [Условия предоставления услуг Discord](https://discord.com/terms) и [Правила сообщества](https://discord.com/guidelines). Посмотрите [полный список правил]({guidelines_link}).
   welcome: |
-    {emoji} Hey there, {user}! Welcome to InterChat! 🎉
+    {emoji} Здравствуйте, {user}! Добро пожаловать в InterChat! 🎉
 
-    We're so excited to have you join our amazing community of servers connecting across Discord! Before you dive into chatting with people from around the world, let's take a quick moment to go over our friendly community guidelines.
+    Мы очень рады, что вы присоединились к нашему удивительному сообществу серверов, соединяющихся через Discord! Прежде чем вы погрузитесь в беседу с людьми со всего мира, давайте попробуем быстро ознакомиться с нашими рекомендациями о дружелюбном сообществе.
 
-    These simple rules help keep InterChat a warm, welcoming, and safe space for everyone to make new friends and share great conversations! ✨
+    Эти простые правила помогают сохранить InterChat теплым, приветливым и безопасным местом для всех тех, кто получит новых друзей и замечательно пообщается! ✨
   alreadyAccepted: "{emoji} Welcome back, {user}! You're all set to explore and chat with amazing communities. Have fun connecting with new friends! 🌟"
   continue: Продолжить
   accept: Принять
