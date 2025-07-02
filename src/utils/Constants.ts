@@ -28,6 +28,11 @@ export const enum RedisKeys {
   CallTypingRateLimit = 'call:typing_rate_limit', // Rate limiting for typing indicators
   CallQueue = 'call:queue', // Call queue (will be migrated to DB)
   CallActive = 'call:active', // Active calls (will be migrated to DB)
+  // Media sharing Redis keys
+  mediaUsage = 'media:usage', // Media usage tracking per call (legacy, will be replaced)
+  MediaUsageCount = 'media:count', // Media usage count per call: media:count:{callId}:{userId}
+  MediaVoteCooldown = 'media:vote_cooldown', // TopGG vote cooldown: media:vote_cooldown:{userId}
+  MediaSessionReset = 'media:session_reset', // Call session reset tracking: media:session_reset:{callId}
   Achievement = 'achievement', // Base prefix for all achievement-related keys
   LastHubMessageUser = 'lastHubMessageUser',
   ReportReporter = 'report:reporter', // Stores reporter ID for report resolution notifications
@@ -79,14 +84,17 @@ export default {
     '842283470301822986',
     '1289961731115847803',
     '650634957647249408',
+    '1065564110844071996',
   ] as Snowflake[],
   ProjectVersion: packageJson.version ?? 'Unknown',
   SupportServerId: '770256165300338709',
   VoterRoleId: '985153241727770655',
+  DonorRoleId: '1234567890123456789', // TODO: Replace with actual donor role ID
 
   // Regexp
   Regex: {
-    ImageURL: /\bhttps?:\/\/\S+?\.(?:png|jpe?g|gif)(?:\?\S+)?\b/,
+    ImageURL: /\bhttps?:\/\/\S+?\.(?:png|jpe?g|webp|gif)(?:\?\S+)?\b/,
+    MediaURL: /\bhttps?:\/\/\S+?\.(?:|mp4|mov|webm|webp)(?:\?\S+)?\b/,
     /** no animated images */
     StaticImageUrl: /\bhttps?:\/\/\S+?\.(?:png|jpe?g|webp)(?:\?\S+)?\b/,
     /** ignores giphy and tenor */

@@ -15,28 +15,29 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import AnnounceCommand from '#src/commands/Hub/hub/announce.js';
-import HubConfigAntiSwearSubcommand from '#src/commands/Hub/hub/config/anti-swear.js';
-import HubConfigAppealCooldownSubcommand from '#src/commands/Hub/hub/config/appealCooldown.js';
-import HubConfigLoggingSubcommand from '#src/commands/Hub/hub/config/logging.js';
-import HubConfigRulesSubcommand from '#src/commands/Hub/hub/config/rules.js';
-import HubConfigSettingsSubcommand from '#src/commands/Hub/hub/config/settings.js';
-import HubConfigWelcomeSubcommand from '#src/commands/Hub/hub/config/welcome.js';
-import HubCreateSubCommand from '#src/commands/Hub/hub/create.js';
-import HubDeleteSubcommand from '#src/commands/Hub/hub/delete.js';
-import HubEditSubcommand from '#src/commands/Hub/hub/edit.js';
-import HubInfractionsSubcommand from '#src/commands/Hub/hub/infractions.js';
-import HubInviteCreateSubcommand from '#src/commands/Hub/hub/invite/create.js';
-import HubInviteListSubcommand from '#src/commands/Hub/hub/invite/list.js';
-import HubInviteRevokeSubcommand from '#src/commands/Hub/hub/invite/revoke.js';
-import HubModeratorAddSubcommand from '#src/commands/Hub/hub/moderator/add.js';
-import HubModeratorEditSubcommand from '#src/commands/Hub/hub/moderator/edit.js';
-import HubModeratorListSubcommand from '#src/commands/Hub/hub/moderator/list.js';
-import HubModeratorRemoveSubcommand from '#src/commands/Hub/hub/moderator/remove.js';
-import HubServersSubcommand from '#src/commands/Hub/hub/servers.js';
-import HubSetNsfwSubcommand from '#src/commands/Hub/hub/set-nsfw.js';
-import HubTransferSubcommand from '#src/commands/Hub/hub/transfer.js';
-import HubVisibilitySubcommnd from '#src/commands/Hub/hub/visibility.js';
+import AnnounceCommand from './announce.js';
+import HubConfigAntiSwearSubcommand from './config/anti-swear.js';
+import HubConfigAppealCooldownSubcommand from './config/appealCooldown.js';
+import HubConfigLoggingSubcommand from './config/logging.js';
+import HubConfigRulesSubcommand from './config/rules.js';
+import HubConfigSettingsSubcommand from './config/settings.js';
+import HubConfigWelcomeSubcommand from './config/welcome.js';
+import HubCreateSubCommand from './create.js';
+import HubDeleteSubcommand from './delete.js';
+import HubEditSubcommand from './edit.js';
+import HubInfractionsSubcommand from './infractions.js';
+import HubInviteCreateSubcommand from './invite/create.js';
+import HubInviteListSubcommand from './invite/list.js';
+import HubInviteRevokeSubcommand from './invite/revoke.js';
+import HubModeratorAddSubcommand from './moderator/add.js';
+import HubModeratorEditSubcommand from './moderator/edit.js';
+import HubModeratorListSubcommand from './moderator/list.js';
+import HubModeratorRemoveSubcommand from './moderator/remove.js';
+import HubServersSubcommand from './servers.js';
+import HubSetNsfwSubcommand from './set-nsfw.js';
+import HubTransferSubcommand from './transfer.js';
+import HubRenameSubcommand from './rename.js';
+import HubVisibilitySubcommnd from './visibility.js';
 import BaseCommand from '#src/core/BaseCommand.js';
 import HubManager from '#src/managers/HubManager.js';
 import type { HubService } from '#src/services/HubService.js';
@@ -93,6 +94,7 @@ export default class HubCommand extends BaseCommand {
         transfer: new HubTransferSubcommand(),
         visibility: new HubVisibilitySubcommnd(),
         'set-nsfw': new HubSetNsfwSubcommand(),
+        rename: new HubRenameSubcommand(),
       },
     });
   }
