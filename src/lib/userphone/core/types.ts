@@ -17,11 +17,29 @@
 
 import type { ActionRowBuilder, ButtonBuilder, Client } from 'discord.js';
 import type { Redis } from 'ioredis';
-import type { PrismaClient } from '@prisma/client';
+import type {
+  PrismaClient,
+  Call,
+  CallMessage as CallMessageDb,
+  CallParticipant as CallParticipantDb,
+} from '#src/generated/prisma/client/index.js';
 
 // ============================================================================
 // Core Call Types
 // ============================================================================
+export type { CallStatus } from '#src/generated/prisma/client/index.js';
+
+export type CallMessage = Omit<CallMessageDb, 'id' | 'callId'>;
+
+export type CallParticipant = Omit<CallParticipantDb, 'id' | 'callId'> & {
+  users: Set<string>; // Set of user IDs who can see this message
+};
+
+export interface ActiveCall extends Omit<Call, 'updatedAt'> {
+  readonly participants: CallParticipant[];
+  messages: Omit<CallMessageDb, 'id' | 'callId'>[];
+}
+
 
 export interface CallRequest {
   readonly id: string;
@@ -33,34 +51,6 @@ export interface CallRequest {
   readonly priority: number; // For queue ordering
   readonly clusterId?: number; // For distributed systems
 }
-
-export interface CallParticipant {
-  readonly channelId: string;
-  readonly guildId: string;
-  readonly webhookUrl: string;
-  users: Set<string>;
-  messageCount: number;
-  joinedAt: number;
-}
-
-export interface ActiveCall {
-  readonly id: string;
-  readonly participants: CallParticipant[];
-  readonly startTime: number;
-  endTime?: number;
-  messages: CallMessage[];
-  status: CallStatus;
-}
-
-export interface CallMessage {
-  readonly authorId: string;
-  readonly authorUsername: string;
-  readonly content: string;
-  readonly timestamp: number;
-  readonly attachmentUrl?: string;
-}
-
-export type CallStatus = 'QUEUED' | 'ACTIVE' | 'ENDED' | 'CANCELLED';
 
 // ============================================================================
 // Operation Results
@@ -117,15 +107,14 @@ export interface CallingConfig {
 }
 
 export interface CacheConfig {
-  readonly webhookTtl: number; // 24 hours
-  readonly callTtl: number; // 1 hour
-  readonly queueTtl: number; // 30 minutes
+  readonly webhookTtlSecs: number; // 24 hours
+  readonly callTtlSecs: number; // 1 hour
+  readonly queueTtlSecs: number; // 30 minutes
 }
 
 export interface MatchingConfig {
   readonly backgroundInterval: number; // 1000ms
-  readonly maxRecentMatches: number; // 3
-  readonly recentMatchTtl: number; // 24 hours
+  readonly recentMatchTtlSecs: number; // 24 hours
   readonly queueTimeout: number; // 30 minutes
 }
 

@@ -21,6 +21,7 @@ import type { ActiveCall, CallMessage } from '../core/types.js';
 import type { ClusterCoordinator } from './ClusterCoordinator.js';
 import { CallEventHandler } from '../core/events.js';
 import Logger from '#src/utils/Logger.js';
+import { ConvertDatesToString } from '#src/types/Utils.js';
 
 /**
  * Simplified distributed state manager with reduced Redis operations
@@ -298,7 +299,7 @@ export class DistributedStateManager extends CallEventHandler {
         }
 
         // Calculate duration
-        totalDuration += now - call.startTime;
+        totalDuration += now - call.startTime.getTime();
 
         // Simplified cluster distribution - just show current cluster
         clusterDistribution[this.clusterId] = (clusterDistribution[this.clusterId] || 0) + 1;
@@ -336,12 +337,27 @@ export class DistributedStateManager extends CallEventHandler {
   }
 
   private deserializeCall(data: string): ActiveCall {
-    const call = JSON.parse(data) as ActiveCall;
+    let call = JSON.parse(data) as ConvertDatesToString<ActiveCall> | ActiveCall;
 
-    // Convert arrays back to Sets
-    call.participants.forEach((p) => {
-      p.users = new Set(p.users as unknown as string[]);
-    });
+    // Convert timestamps to Date objects
+    call = {
+      ...call,
+      startTime: new Date(call.startTime),
+      endTime: call.endTime ? new Date(call.endTime) : null,
+      createdAt: new Date(call.createdAt),
+      // Convert messages to proper format
+      messages: call.messages.map((m) => ({
+        ...m,
+        timestamp: new Date(m.timestamp),
+      })),
+      // Convert participants
+      participants: call.participants.map((p) => ({
+        ...p,
+        joinedAt: new Date(p.joinedAt),
+        leftAt: p.leftAt ? new Date(p.leftAt) : null,
+        users: new Set(p.users as unknown as string[]), // Convert back to Set
+      })),
+    } satisfies ActiveCall;
 
     return call;
   }
@@ -352,15 +368,15 @@ export class DistributedStateManager extends CallEventHandler {
       await this.database.call.upsert({
         where: { id: call.id },
         update: {
-          status: call.status as never,
-          endTime: call.endTime ? new Date(call.endTime) : null,
+          status: call.status,
+          endTime: call.endTime,
         },
         create: {
           id: call.id,
           initiatorId: call.participants[0]?.users.values().next().value || 'unknown',
-          status: call.status as never,
-          startTime: new Date(call.startTime),
-          endTime: call.endTime ? new Date(call.endTime) : null,
+          status: call.status,
+          startTime: call.startTime,
+          endTime: call.endTime,
         },
       });
     }
@@ -395,24 +411,18 @@ export class DistributedStateManager extends CallEventHandler {
       // Convert database call to ActiveCall format
       const activeCall: ActiveCall = {
         id: dbCall.id,
-        participants: dbCall.participants.map((p) => ({
-          channelId: p.channelId,
-          guildId: p.guildId,
-          webhookUrl: p.webhookUrl,
-          users: new Set(p.users.map((u) => u.userId)),
-          messageCount: p.messageCount,
-          joinedAt: p.joinedAt.getTime(),
-        })),
-        startTime: dbCall.startTime.getTime(),
-        endTime: dbCall.endTime?.getTime(),
-        messages: dbCall.messages.map((m) => ({
-          authorId: m.authorId,
-          authorUsername: m.authorUsername,
-          content: m.content,
-          timestamp: m.timestamp.getTime(),
-          attachmentUrl: m.attachmentUrl || undefined,
-        })),
+        initiatorId: dbCall.initiatorId,
+        createdAt: dbCall.createdAt,
+        startTime: dbCall.startTime,
+        endTime: dbCall.endTime,
         status: dbCall.status as never,
+        messages: dbCall.messages.map((m) => ({ ...m })),
+        participants: dbCall.participants.map((p) => ({
+          ...p,
+          joinedAt: new Date(p.joinedAt),
+          leftAt: p.leftAt ? new Date(p.leftAt) : null,
+          users: new Set(p.users.map((u) => u.userId)),
+        })),
       };
 
       // Cache in Redis for future access
@@ -436,7 +446,7 @@ export class DistributedStateManager extends CallEventHandler {
       const maxCallDuration = 4 * 60 * 60 * 1000; // 4 hours
 
       for (const call of activeCalls) {
-        const callAge = now - call.startTime;
+        const callAge = now - call.startTime.getTime();
         if (callAge > maxCallDuration) {
           Logger.info(
             `Cleaning up expired call ${call.id} (age: ${Math.round(callAge / 60000)} minutes)`,

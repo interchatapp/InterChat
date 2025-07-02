@@ -45,7 +45,6 @@ export class DistributedMatchingEngine extends CallEventHandler implements IMatc
     cacheManager: ICacheManager,
     clusterId: number,
     intervalMs: number = 1000, // 1 second for faster processing
-    _maxRecentMatches: number = 3, // Keep for compatibility
   ) {
     super();
     this.queueManager = queueManager;
@@ -129,9 +128,7 @@ export class DistributedMatchingEngine extends CallEventHandler implements IMatc
           this.queueManager.dequeue(match.id),
         ]);
 
-        Logger.info(
-          `Match found in ${matchTime}ms: ${request.channelId} <-> ${match.channelId}`,
-        );
+        Logger.info(`Match found in ${matchTime}ms: ${request.channelId} <-> ${match.channelId}`);
 
         // Emit match event
         this.emit('call:matched', { call: activeCall, matchTime });
@@ -246,7 +243,9 @@ export class DistributedMatchingEngine extends CallEventHandler implements IMatc
       const processingTime = Date.now() - startTime;
 
       if (matchesFound > 0) {
-        Logger.info(`Queue processing completed: ${matchesFound} matches found in ${processingTime}ms`);
+        Logger.info(
+          `Queue processing completed: ${matchesFound} matches found in ${processingTime}ms`,
+        );
       }
     }
     catch (error) {
@@ -279,10 +278,7 @@ export class DistributedMatchingEngine extends CallEventHandler implements IMatc
   /**
    * Check if two requests are compatible - simplified
    */
-  private async areCompatible(
-    request1: CallRequest,
-    request2: CallRequest,
-  ): Promise<boolean> {
+  private async areCompatible(request1: CallRequest, request2: CallRequest): Promise<boolean> {
     // Rule 1: Different servers
     if (request1.guildId === request2.guildId) {
       return false;
@@ -321,14 +317,14 @@ export class DistributedMatchingEngine extends CallEventHandler implements IMatc
   }
 
   /**
-   * Create active call - simplified
+   * Create active call
    */
   private async createActiveCall(
     request1: CallRequest,
     request2: CallRequest,
   ): Promise<ActiveCall> {
     const callId = this.generateCallId();
-    const startTime = Date.now();
+    const startTime = new Date();
 
     const participants: CallParticipant[] = [
       {
@@ -338,6 +334,7 @@ export class DistributedMatchingEngine extends CallEventHandler implements IMatc
         users: new Set([request1.initiatorId]),
         messageCount: 0,
         joinedAt: startTime,
+        leftAt: null, // Not left yet
       },
       {
         channelId: request2.channelId,
@@ -346,6 +343,7 @@ export class DistributedMatchingEngine extends CallEventHandler implements IMatc
         users: new Set([request2.initiatorId]),
         messageCount: 0,
         joinedAt: startTime,
+        leftAt: null, // Not left yet
       },
     ];
 
@@ -353,6 +351,9 @@ export class DistributedMatchingEngine extends CallEventHandler implements IMatc
       id: callId,
       participants,
       startTime,
+      endTime: null, // Not ended yet
+      initiatorId: request1.initiatorId, // Use first initiator
+      createdAt: startTime,
       messages: [],
       status: 'ACTIVE',
     };
@@ -362,7 +363,6 @@ export class DistributedMatchingEngine extends CallEventHandler implements IMatc
 
     return activeCall;
   }
-
 
   /**
    * Generate unique call ID

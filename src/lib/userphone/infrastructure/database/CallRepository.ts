@@ -35,7 +35,7 @@ export class CallRepository implements ICallRepository {
    * Create new call in database (lean operation)
    */
   async createCall(initiatorId: string): Promise<{ id: string }> {
-    const startTime = Date.now();
+    const startTime = performance.now();
 
     try {
       // Create call without heavy includes - just return the ID
@@ -49,7 +49,7 @@ export class CallRepository implements ICallRepository {
         },
       });
 
-      Logger.debug(`Created call ${call.id} in ${Date.now() - startTime}ms`);
+      Logger.debug(`Created call ${call.id} in ${performance.now() - startTime}ms`);
       return call;
     }
     catch (error) {
@@ -62,7 +62,7 @@ export class CallRepository implements ICallRepository {
    * Update call status efficiently
    */
   async updateCallStatus(callId: string, status: string, endTime?: Date): Promise<void> {
-    const startTime = Date.now();
+    const startTime = performance.now();
 
     try {
       await this.db.call.update({
@@ -73,7 +73,9 @@ export class CallRepository implements ICallRepository {
         },
       });
 
-      Logger.debug(`Updated call ${callId} status to ${status} in ${Date.now() - startTime}ms`);
+      Logger.debug(
+        `Updated call ${callId} status to ${status} in ${performance.now() - startTime}ms`,
+      );
     }
     catch (error) {
       Logger.error(`Failed to update call ${callId} status:`, error);
@@ -90,7 +92,7 @@ export class CallRepository implements ICallRepository {
     guildId: string,
     webhookUrl: string,
   ): Promise<{ id: string }> {
-    const startTime = Date.now();
+    const startTime = performance.now();
 
     try {
       const participant = await this.db.callParticipant.create({
@@ -105,7 +107,9 @@ export class CallRepository implements ICallRepository {
         },
       });
 
-      Logger.debug(`Added participant ${participant.id} to call ${callId} in ${Date.now() - startTime}ms`);
+      Logger.debug(
+        `Added participant ${participant.id} to call ${callId} in ${performance.now() - startTime}ms`,
+      );
       return participant;
     }
     catch (error) {
@@ -118,7 +122,7 @@ export class CallRepository implements ICallRepository {
    * Add user to participant using upsert for efficiency
    */
   async addUserToParticipant(participantId: string, userId: string): Promise<void> {
-    const startTime = Date.now();
+    const startTime = performance.now();
 
     try {
       await this.db.callParticipantUser.upsert({
@@ -137,7 +141,9 @@ export class CallRepository implements ICallRepository {
         },
       });
 
-      Logger.debug(`Added user ${userId} to participant ${participantId} in ${Date.now() - startTime}ms`);
+      Logger.debug(
+        `Added user ${userId} to participant ${participantId} in ${performance.now() - startTime}ms`,
+      );
     }
     catch (error) {
       Logger.error(`Failed to add user ${userId} to participant ${participantId}:`, error);
@@ -149,7 +155,7 @@ export class CallRepository implements ICallRepository {
    * Remove user from participant efficiently
    */
   async removeUserFromParticipant(participantId: string, userId: string): Promise<void> {
-    const startTime = Date.now();
+    const startTime = performance.now();
 
     try {
       await this.db.callParticipantUser.updateMany({
@@ -163,7 +169,9 @@ export class CallRepository implements ICallRepository {
         },
       });
 
-      Logger.debug(`Removed user ${userId} from participant ${participantId} in ${Date.now() - startTime}ms`);
+      Logger.debug(
+        `Removed user ${userId} from participant ${participantId} in ${performance.now() - startTime}ms`,
+      );
     }
     catch (error) {
       Logger.error(`Failed to remove user ${userId} from participant ${participantId}:`, error);
@@ -181,7 +189,7 @@ export class CallRepository implements ICallRepository {
     content: string,
     attachmentUrl?: string,
   ): Promise<void> {
-    const startTime = Date.now();
+    const startTime = performance.now();
 
     try {
       // Skip existence check - let foreign key constraint handle it
@@ -196,7 +204,7 @@ export class CallRepository implements ICallRepository {
         },
       });
 
-      Logger.debug(`Added message to call ${callId} in ${Date.now() - startTime}ms`);
+      Logger.debug(`Added message to call ${callId} in ${performance.now() - startTime}ms`);
     }
     catch (error) {
       // Handle foreign key constraint errors gracefully
@@ -214,7 +222,7 @@ export class CallRepository implements ICallRepository {
    * Get active call by channel (optimized query)
    */
   async getActiveCallByChannel(channelId: string): Promise<ActiveCall | null> {
-    const startTime = Date.now();
+    const startTime = performance.now();
 
     try {
       const call = await this.db.call.findFirst({
@@ -231,6 +239,8 @@ export class CallRepository implements ICallRepository {
           id: true,
           startTime: true,
           endTime: true,
+          initiatorId: true,
+          createdAt: true,
           participants: {
             select: {
               channelId: true,
@@ -258,22 +268,21 @@ export class CallRepository implements ICallRepository {
 
       // Transform to ActiveCall format
       const activeCall: ActiveCall = {
-        id: call.id,
+        ...call,
+        status: 'ACTIVE',
         participants: call.participants.map((p) => ({
           channelId: p.channelId,
           guildId: p.guildId,
           webhookUrl: p.webhookUrl,
           users: new Set(p.users.map((u) => u.userId)),
           messageCount: p.messageCount,
-          joinedAt: p.joinedAt.getTime(),
+          joinedAt: p.joinedAt,
+          leftAt: null, // Active calls won't have leftAt set
         })),
-        startTime: call.startTime.getTime(),
-        endTime: call.endTime?.getTime(),
         messages: [], // Load separately if needed
-        status: 'ACTIVE',
       };
 
-      Logger.debug(`Retrieved active call ${call.id} in ${Date.now() - startTime}ms`);
+      Logger.debug(`Retrieved active call ${call.id} in ${performance.now() - startTime}ms`);
       return activeCall;
     }
     catch (error) {
@@ -286,7 +295,7 @@ export class CallRepository implements ICallRepository {
    * Get call by ID (for ended call data retrieval)
    */
   async getCallById(callId: string): Promise<ActiveCall | null> {
-    const startTime = Date.now();
+    const startTime = performance.now();
 
     try {
       const call = await this.db.call.findUnique({
@@ -296,6 +305,8 @@ export class CallRepository implements ICallRepository {
           startTime: true,
           endTime: true,
           status: true,
+          initiatorId: true,
+          createdAt: true,
           participants: {
             select: {
               channelId: true,
@@ -328,28 +339,16 @@ export class CallRepository implements ICallRepository {
 
       // Transform to ActiveCall format
       const activeCall: ActiveCall = {
-        id: call.id,
+        ...call,
         participants: call.participants.map((p) => ({
-          channelId: p.channelId,
-          guildId: p.guildId,
-          webhookUrl: p.webhookUrl,
+          ...p,
+          joinedAt: p.joinedAt,
+          leftAt: null,
           users: new Set(p.users.map((u) => u.userId)),
-          messageCount: p.messageCount,
-          joinedAt: p.joinedAt.getTime(),
         })),
-        startTime: call.startTime.getTime(),
-        endTime: call.endTime?.getTime(),
-        messages: call.messages.map((m) => ({
-          authorId: m.authorId,
-          authorUsername: m.authorUsername,
-          content: m.content,
-          timestamp: m.timestamp.getTime(),
-          attachmentUrl: m.attachmentUrl || undefined,
-        })),
-        status: call.status,
       };
 
-      Logger.debug(`Retrieved call ${call.id} in ${Date.now() - startTime}ms`);
+      Logger.debug(`Retrieved call ${call.id} in ${performance.now() - startTime}ms`);
       return activeCall;
     }
     catch (error) {
@@ -366,7 +365,7 @@ export class CallRepository implements ICallRepository {
     totalParticipants: number;
     duration: number | null;
   }> {
-    const startTime = Date.now();
+    const startTime = performance.now();
 
     try {
       const call = await this.db.call.findUnique({
@@ -387,9 +386,8 @@ export class CallRepository implements ICallRepository {
         return { totalMessages: 0, totalParticipants: 0, duration: null };
       }
 
-      const duration = call.endTime && call.startTime
-        ? call.endTime.getTime() - call.startTime.getTime()
-        : null;
+      const duration =
+        call.endTime && call.startTime ? call.endTime.getTime() - call.startTime.getTime() : null;
 
       const stats = {
         totalMessages: call._count.messages,
@@ -397,7 +395,7 @@ export class CallRepository implements ICallRepository {
         duration,
       };
 
-      Logger.debug(`Retrieved call stats for ${callId} in ${Date.now() - startTime}ms`);
+      Logger.debug(`Retrieved call stats for ${callId} in ${performance.now() - startTime}ms`);
       return stats;
     }
     catch (error) {
@@ -417,7 +415,7 @@ export class CallRepository implements ICallRepository {
       webhookUrl: string;
     }>,
   ): Promise<void> {
-    const startTime = Date.now();
+    const startTime = performance.now();
 
     try {
       await this.db.callParticipant.createMany({
@@ -425,7 +423,9 @@ export class CallRepository implements ICallRepository {
         skipDuplicates: true,
       });
 
-      Logger.debug(`Batch created ${participants.length} participants in ${Date.now() - startTime}ms`);
+      Logger.debug(
+        `Batch created ${participants.length} participants in ${performance.now() - startTime}ms`,
+      );
     }
     catch (error) {
       Logger.error('Failed to batch create participants:', error);
@@ -437,7 +437,7 @@ export class CallRepository implements ICallRepository {
    * Cleanup old call data efficiently
    */
   async cleanupOldCalls(olderThanHours: number = 48): Promise<number> {
-    const startTime = Date.now();
+    const startTime = performance.now();
 
     try {
       const cutoffDate = new Date(Date.now() - olderThanHours * 60 * 60 * 1000);
@@ -451,7 +451,7 @@ export class CallRepository implements ICallRepository {
         },
       });
 
-      Logger.info(`Cleaned up ${result.count} old calls in ${Date.now() - startTime}ms`);
+      Logger.info(`Cleaned up ${result.count} old calls in ${performance.now() - startTime}ms`);
       return result.count;
     }
     catch (error) {

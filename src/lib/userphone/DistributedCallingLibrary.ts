@@ -95,7 +95,6 @@ export class DistributedCallingLibrary {
       this.cacheManager,
       this.clusterId,
       config.matching.backgroundInterval,
-      config.matching.maxRecentMatches,
     );
 
     this.notificationService = new NotificationService(config.client);
@@ -110,10 +109,6 @@ export class DistributedCallingLibrary {
       config.client, // Pass client for channel access
       this.stateManager, // Pass distributed state manager
     );
-
-    // Event handling removed for performance optimization
-
-    Logger.info(`DistributedCallingLibrary initialized on cluster ${this.clusterId}`);
   }
 
   /**
@@ -187,10 +182,8 @@ export class DistributedCallingLibrary {
     this.ensureInitialized();
 
     try {
-      // Simplified: assume this cluster can handle the guild for faster response
       // Cross-cluster forwarding adds significant latency, so process locally
       const result = await this.callManager.initiateCall(channel, initiatorId);
-
       return result;
     }
     catch (error) {
@@ -209,9 +202,7 @@ export class DistributedCallingLibrary {
     this.ensureInitialized();
 
     try {
-      // Simplified: directly call manager without complex cluster checks
       const result = await this.callManager.hangupCall(channelId);
-
       return result;
     }
     catch (error) {
@@ -232,7 +223,6 @@ export class DistributedCallingLibrary {
     try {
       // Simplified: directly call manager without complex cluster checks
       const result = await this.callManager.skipCall(channelId, userId);
-
       return result;
     }
     catch (error) {
@@ -299,8 +289,8 @@ export class DistributedCallingLibrary {
       authorId: userId,
       authorUsername: username,
       content,
-      timestamp: Date.now(),
-      attachmentUrl,
+      timestamp: new Date(),
+      attachmentUrl: attachmentUrl ?? null,
     };
 
     // Update distributed state
@@ -432,7 +422,7 @@ export class DistributedCallingLibrary {
     try {
       // Cleanup cache manager
       if (this.cacheManager) {
-        await this.cacheManager.cleanup();
+        await this.cacheManager.clearCache();
         Logger.debug('✅ Cache manager cleaned up');
       }
 

@@ -15,20 +15,20 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { GuildTextBasedChannel, Client } from 'discord.js';
+import { DistributedStateManager } from '#src/lib/userphone/distributed/DistributedStateManager.js';
+import { ConvertDatesToString } from '#src/types/Utils.js';
+import Logger from '#src/utils/Logger.js';
+import type { Client, GuildTextBasedChannel } from 'discord.js';
+import { CallEventHandler } from '../core/events.js';
 import type {
-  ICallManager,
-  IQueueManager,
   ICacheManager,
+  ICallManager,
+  ICallMetrics,
   ICallRepository,
   INotificationService,
-  ICallMetrics,
+  IQueueManager,
 } from '../core/interfaces.js';
-import type { CallResult, ActiveCall, CallRequest } from '../core/types.js';
-import { CallEventHandler } from '../core/events.js';
-import { getOrCreateWebhook, handleError } from '#src/utils/Utils.js';
-import Logger from '#src/utils/Logger.js';
-import { DistributedStateManager } from '#src/lib/userphone/distributed/DistributedStateManager.js';
+import type { ActiveCall, CallRequest, CallResult } from '../core/types.js';
 
 /**
  * Main call management service
@@ -122,7 +122,7 @@ export class CallManager extends CallEventHandler implements ICallManager {
    * Initiate a new call request
    */
   async initiateCall(channel: GuildTextBasedChannel, initiatorId: string): Promise<CallResult> {
-    const startTime = Date.now();
+    const startTime = performance.now();
 
     try {
       // Check call status and queue status simultaneously
@@ -146,13 +146,9 @@ export class CallManager extends CallEventHandler implements ICallManager {
       }
 
       // Get or create webhook - this is the main bottleneck
-      const webhook = await getOrCreateWebhook(
-        channel,
-        channel.client.user.displayAvatarURL(),
-        'InterChat Calls',
-      );
+      const webhookUrl = await this.cacheManager.getWebhook(channel);
 
-      if (!webhook) {
+      if (!webhookUrl) {
         return {
           success: false,
           message: '❌ Failed to create webhook for this channel. Please check bot permissions.',
@@ -165,7 +161,7 @@ export class CallManager extends CallEventHandler implements ICallManager {
         channelId: channel.id,
         guildId: channel.guildId,
         initiatorId,
-        webhookUrl: webhook.url,
+        webhookUrl,
         timestamp: Date.now(),
         priority: 0,
       };
@@ -173,21 +169,17 @@ export class CallManager extends CallEventHandler implements ICallManager {
       // Add to queue
       await this.queueManager.enqueue(request);
 
-      // cache webhook
-      this.cacheManager.cacheWebhook(channel.id, webhook.url).catch((error) => {
-        handleError(error, { comment: 'Failed to cache webhook' });
-      });
-
       // Create database record asynchronously (don't wait for it)
-      this.repository.createCall(initiatorId).catch((error) => {
-        Logger.error('Error creating database record for call:', error);
-      });
-
-      const responseTime = Date.now() - startTime;
-
-      Logger.info(
-        `Call initiated for channel ${channel.id} by user ${initiatorId} (${responseTime}ms)`,
-      );
+      this.repository
+        .createCall(initiatorId)
+        .then(() => {
+          Logger.info(
+            `Call initiated for channel ${channel.id} by user ${initiatorId} (${performance.now() - startTime}ms)`,
+          );
+        })
+        .catch((error) => {
+          Logger.error('Error creating database record for call:', error);
+        });
 
       return {
         success: true,
@@ -239,16 +231,11 @@ export class CallManager extends CallEventHandler implements ICallManager {
       }
 
       // Calculate call duration
-      const duration = Date.now() - call.startTime;
+      const duration = Date.now() - call.startTime.getTime();
 
       // Parallel execution - update database and send notifications simultaneously
       const notificationPromises = call.participants.map((participant) =>
-        this.notificationService.notifyCallEnded(
-          participant.channelId,
-          call.id,
-          duration,
-          call.messages.length,
-        ),
+        this.notificationService.notifyCallEnded(participant.channelId, call.id, duration),
       );
 
       // Don't wait for database update - do it asynchronously
@@ -361,7 +348,10 @@ export class CallManager extends CallEventHandler implements ICallManager {
   async getActiveCall(channelId: string): Promise<ActiveCall | null> {
     try {
       // Try cache first (fastest)
-      let call = await this.cacheManager.getActiveCall(channelId);
+      let call = (await this.cacheManager.getActiveCall(channelId)) as
+        | ConvertDatesToString<ActiveCall>
+        | ActiveCall
+        | null;
 
       if (!call && this.stateManager) {
         // Try distributed state manager (medium speed)
@@ -375,10 +365,14 @@ export class CallManager extends CallEventHandler implements ICallManager {
         }
       }
 
-      // Skip database lookup for performance - if not in cache or state manager, assume no call
-      // Database lookup is too slow for command response times
-
-      return call;
+      return call
+        ? ({
+          ...call,
+          createdAt: new Date(call.createdAt),
+          startTime: new Date(call.startTime),
+          endTime: call.endTime ? new Date(call.endTime) : null,
+        } as ActiveCall)
+        : null;
     }
     catch (error) {
       Logger.error(`Error getting active call for channel ${channelId}:`, error);
@@ -482,8 +476,8 @@ export class CallManager extends CallEventHandler implements ICallManager {
         authorId: userId,
         authorUsername: username,
         content,
-        timestamp: Date.now(),
-        attachmentUrl,
+        timestamp: new Date(),
+        attachmentUrl: attachmentUrl ?? null,
       };
 
       // Add message to call

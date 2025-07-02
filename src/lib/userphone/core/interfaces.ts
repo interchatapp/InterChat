@@ -150,7 +150,7 @@ export interface ICacheManager {
   /**
    * Get or create webhook for channel
    */
-  getWebhook(channelId: string): Promise<string | null>;
+  getWebhook(channel: GuildTextBasedChannel): Promise<string | null>;
 
   /**
    * Cache webhook URL for channel
@@ -259,7 +259,6 @@ export interface INotificationService {
     channelId: string,
     callId: string,
     duration?: number,
-    messageCount?: number,
   ): Promise<void>;
 
   /**

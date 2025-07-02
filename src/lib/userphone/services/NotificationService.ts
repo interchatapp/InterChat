@@ -15,22 +15,22 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { BroadcastService } from '#src/services/BroadcastService.js';
+import { CustomID } from '#src/utils/CustomID.js';
+import { UIComponents } from '#src/utils/DesignSystem.js';
+import Logger from '#src/utils/Logger.js';
+import { getRedis } from '#src/utils/Redis.js';
 import {
   ButtonBuilder,
   ButtonStyle,
   ContainerBuilder,
   MessageFlags,
-  resolveColor,
+  TextDisplayBuilder,
   type Client,
 } from 'discord.js';
+import type { Redis } from 'ioredis';
 import type { INotificationService } from '../core/interfaces.js';
 import type { ActiveCall } from '../core/types.js';
-import { BroadcastService } from '#src/services/BroadcastService.js';
-import Logger from '#src/utils/Logger.js';
-import { CustomID } from '#src/utils/CustomID.js';
-import { UIComponents } from '#src/utils/DesignSystem.js';
-import { getRedis } from '#src/utils/Redis.js';
-import type { Redis } from 'ioredis';
 
 /**
  * Simplified notification service for essential call events only
@@ -86,13 +86,10 @@ export class NotificationService implements INotificationService {
       const originalInitiator = Array.from(participant.users)[0];
 
       // Create notification content with ping for the original initiator
-      let notificationContent = '';
-      if (originalInitiator) {
-        notificationContent = `<@${originalInitiator}> `;
-      }
+      const notificationContent = `<@${originalInitiator}>`;
 
       // Simple notification with essential controls only
-      const container = new ContainerBuilder().setAccentColor(resolveColor('#7CFC00'));
+      const container = new ContainerBuilder();
 
       container.addTextDisplayComponents(
         this.ui.createCompactHeader(
@@ -119,7 +116,12 @@ export class NotificationService implements INotificationService {
       );
 
       // Send message with ping content if there's an original initiator
-      await this.sendMessageWithContent(participant.webhookUrl, container, notificationContent);
+      await this.sendMessage(
+        participant.webhookUrl,
+        container,
+        new TextDisplayBuilder().setContent(notificationContent),
+      );
+
       Logger.debug(`Call match notification with ping sent to channel ${channelId}`);
     }
     catch (error) {
@@ -128,47 +130,29 @@ export class NotificationService implements INotificationService {
   }
 
   /**
-   * Send message with UI components via webhook
-   */
-  private async sendMessage(webhookUrl: string, container: ContainerBuilder): Promise<void> {
-    try {
-      Logger.debug(`Attempting to send message to webhook: ${webhookUrl.substring(0, 50)}...`);
-
-      const result = await BroadcastService.sendMessage(webhookUrl, {
-        components: [container],
-        flags: [MessageFlags.IsComponentsV2],
-      });
-
-      if (result.error) {
-        Logger.error(`Error sending message via webhook: ${result.error}`);
-        Logger.error(`Webhook URL: ${webhookUrl.substring(0, 50)}...`);
-      }
-      else {
-        Logger.debug('Successfully sent message via webhook');
-      }
-    }
-    catch (error) {
-      Logger.error('Error sending message:', error);
-      Logger.error(`Webhook URL: ${webhookUrl.substring(0, 50)}...`);
-    }
-  }
-
-  /**
    * Send message with content and UI components via webhook
    */
-  private async sendMessageWithContent(
+  private async sendMessage(
     webhookUrl: string,
     container: ContainerBuilder,
-    content: string,
+    textComponent?: TextDisplayBuilder,
   ): Promise<void> {
     try {
       Logger.debug(
         `Attempting to send message with content to webhook: ${webhookUrl.substring(0, 50)}...`,
       );
 
+      const components = [];
+      if (textComponent) {
+        components.push(textComponent);
+      }
+
+      components.push(container);
+
+      // If a text component is provided, add it to the components array
+
       const result = await BroadcastService.sendMessage(webhookUrl, {
-        content,
-        components: [container],
+        components,
         flags: [MessageFlags.IsComponentsV2],
         allowedMentions: { parse: ['users'] }, // Allow user mentions for ping functionality
       });
@@ -190,12 +174,7 @@ export class NotificationService implements INotificationService {
   /**
    * Enhanced call end notification with Report button
    */
-  async notifyCallEnded(
-    channelId: string,
-    callId: string,
-    duration?: number,
-    messageCount?: number,
-  ): Promise<void> {
+  async notifyCallEnded(channelId: string, callId: string, duration?: number): Promise<void> {
     try {
       if (!(await this.checkRateLimit(channelId))) {
         return;
@@ -210,10 +189,10 @@ export class NotificationService implements INotificationService {
 
       // Simple end message with basic stats
       let description = 'Thanks for using InterChat! 🎉';
-      if (duration && messageCount !== undefined) {
+      if (duration) {
         const durationMinutes = Math.floor(duration / 60000);
         const durationSeconds = Math.floor((duration % 60000) / 1000);
-        description += `\n⏱️ ${durationMinutes}m ${durationSeconds}s • 💬 ${messageCount} messages`;
+        description += `\n⏱️ ${durationMinutes}m ${durationSeconds}s`;
       }
 
       container.addTextDisplayComponents(
