@@ -124,16 +124,16 @@ blacklist:
       label: Причина
       placeholder: Причина за добавяне към черния списък
     duration:
-      label: Duration
-      placeholder: 'Duration of blacklist. Eg: 1d, 1w, 1m, 1y. Leave blank for permanent.'
+      label: Продължителност
+      placeholder: 'Времетраене в черния списък. Пример: 1d, 1w, 1m, 1y. За постоянно остави празно.'
   user:
-    description: 'Mute/Ban a user from your hub.'
+    description: 'Заглушаване/Забрана от вашия канал.'
     options:
       user:
-        description: 'The ID of the user to blacklist (get id using /messageinfo command)'
+        description: 'Идентификационният номер (ID) на потребителя, който ще бъде добавен в черния списък (получава се с командата /messageinfo)'
       hub:
-        description: 'Hub to blacklist from'
-    selectDuration: 'Select blacklist duration for {username}:'
+        description: 'Канал, в чийто черен списък ще бъде добавен'
+    selectDuration: 'Изберете продължителността в черния списък за {username}:'
     cannotBlacklistMod: '{emoji} You cannot blacklist a moderator. Please remove their moderator role first.'
     alreadyBlacklisted: '{emoji} This user is already blacklisted.'
     easterEggs:
