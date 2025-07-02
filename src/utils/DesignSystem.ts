@@ -28,6 +28,14 @@ import {
   TextDisplayBuilder,
 } from 'discord.js';
 
+interface ButtonConfig {
+  label: string;
+  customId?: string;
+  url?: string;
+  emoji?: EmojiKeys | (string & {});
+  style?: ButtonStyle;
+}
+
 /**
  * InterChat Design System
  *
@@ -42,43 +50,112 @@ export class UIComponents {
   }
 
   /**
+   * Safely sets emoji on a button with fallback handling
+   */
+  private _setButtonEmoji(button: ButtonBuilder, emoji: EmojiKeys | (string & {})): void {
+    try {
+      if (typeof emoji === 'string') {
+        if (emoji.length <= 2 || emoji.startsWith('�')) {
+          button.setEmoji({ name: emoji });
+        }
+        else {
+          button.setEmoji(getEmoji(emoji as EmojiKeys, this.client));
+        }
+      }
+      else if (typeof emoji === 'object' && 'name' in emoji) {
+        button.setEmoji(emoji);
+      }
+    }
+    catch {
+      // Fallback to no emoji if not found
+    }
+  }
+
+  /**
+   * Creates a button with the given configuration
+   */
+  private _createButton(config: ButtonConfig): ButtonBuilder {
+    const button = new ButtonBuilder().setLabel(config.label);
+
+    if (config.url) {
+      button.setStyle(ButtonStyle.Link).setURL(config.url);
+    }
+    else if (config.customId) {
+      button.setCustomId(config.customId).setStyle(config.style || ButtonStyle.Primary);
+    }
+    else {
+      throw new Error('Either customId or url must be provided for a button');
+    }
+
+    if (config.emoji) {
+      this._setButtonEmoji(button, config.emoji);
+    }
+
+    return button;
+  }
+
+  /**
+   * Creates a text display with optional emoji prefix
+   */
+  private _createTextDisplay(
+    level: '##' | '###',
+    title: string,
+    description?: string,
+    emojiKey?: EmojiKeys,
+  ): TextDisplayBuilder {
+    const emoji = emojiKey ? `${getEmoji(emojiKey, this.client)} ` : '';
+    const content = `${level} ${emoji}${title}${description ? `\n${description}` : ''}`;
+    return new TextDisplayBuilder().setContent(content);
+  }
+
+  /**
+   * Creates a standard container with header and optional message type
+   */
+  private _createMessageContainer(
+    title: string,
+    description: string,
+    emojiKey: EmojiKeys,
+    compact = false,
+  ): ContainerBuilder {
+    const container = new ContainerBuilder();
+    const header = compact
+      ? this.createCompactHeader(title, description, emojiKey)
+      : this.createHeader(title, description, emojiKey);
+
+    container.addTextDisplayComponents(header);
+    return container;
+  }
+
+  /**
    * Creates a standard header for command responses
    */
   createHeader(title: string, description?: string, emojiKey?: EmojiKeys): TextDisplayBuilder {
-    // Use a safe default emoji if the requested one doesn't exist
-    let emoji = '';
-    if (emojiKey) emoji = `${getEmoji(emojiKey, this.client)} `;
-
-    const content = `## ${emoji}${title}${description ? `\n${description}` : ''}`;
-    return new TextDisplayBuilder().setContent(content);
+    return this._createTextDisplay('##', title, description, emojiKey);
   }
 
   /**
    * Creates a standard section for command responses
    */
   createSection(title: string, content: string, emojiKey?: EmojiKeys): TextDisplayBuilder {
-    // Use a safe default emoji if the requested one doesn't exist
-    let emoji = '';
-    if (emojiKey) {
-      emoji = `${getEmoji(emojiKey, this.client)} `;
-    }
-
-    const text = `## ${emoji}${title}\n${content}`;
-    return new TextDisplayBuilder().setContent(text);
+    return this._createTextDisplay('##', title, content, emojiKey);
   }
 
   /**
    * Creates a standard subsection for command responses
    */
   createSubsection(title: string, content: string, emojiKey?: EmojiKeys): TextDisplayBuilder {
-    // Use a safe default emoji if the requested one doesn't exist
-    let emoji = '';
-    if (emojiKey) {
-      emoji = `${getEmoji(emojiKey, this.client)} `;
-    }
+    return this._createTextDisplay('###', title, content, emojiKey);
+  }
 
-    const text = `### ${emoji}${title}\n${content}`;
-    return new TextDisplayBuilder().setContent(text);
+  /**
+   * Creates a compact header for smaller command responses (uses H3 instead of H2)
+   */
+  createCompactHeader(
+    title: string,
+    description?: string,
+    emojiKey?: EmojiKeys,
+  ): TextDisplayBuilder {
+    return this._createTextDisplay('###', title, description, emojiKey);
   }
 
   /**
@@ -102,24 +179,22 @@ export class UIComponents {
     emojiKey: EmojiKeys = 'alert_icon',
   ): ContainerBuilder {
     const container = new ContainerBuilder();
-
-    // Add header
     container.addTextDisplayComponents(this.createHeader(title, description, emojiKey));
 
-    // Add confirmation buttons
     container.addActionRowComponents((row) => {
-      const confirmButton = new ButtonBuilder()
-        .setCustomId(confirmId)
-        .setLabel('Confirm')
-        .setStyle(ButtonStyle.Success);
+      const confirmButton = this._createButton({
+        label: 'Confirm',
+        customId: confirmId,
+        style: ButtonStyle.Success,
+        emoji: 'tick_icon',
+      });
 
-      const cancelButton = new ButtonBuilder()
-        .setCustomId(cancelId)
-        .setLabel('Cancel')
-        .setStyle(ButtonStyle.Secondary);
-
-      confirmButton.setEmoji(getEmoji('tick_icon', this.client));
-      cancelButton.setEmoji(getEmoji('x_icon', this.client));
+      const cancelButton = this._createButton({
+        label: 'Cancel',
+        customId: cancelId,
+        style: ButtonStyle.Secondary,
+        emoji: 'x_icon',
+      });
 
       return row.addComponents(confirmButton, cancelButton);
     });
@@ -131,93 +206,49 @@ export class UIComponents {
    * Creates a standard error message
    */
   createErrorMessage(title: string, description: string): ContainerBuilder {
-    const container = new ContainerBuilder();
-
-    container.addTextDisplayComponents(this.createHeader(title, description, 'x_icon'));
-
-    return container;
+    return this._createMessageContainer(title, description, 'x_icon');
   }
 
   /**
    * Creates a standard success message
    */
   createSuccessMessage(title: string, description: string): ContainerBuilder {
-    const container = new ContainerBuilder();
-
-    container.addTextDisplayComponents(this.createHeader(title, description, 'tick_icon'));
-
-    return container;
+    return this._createMessageContainer(title, description, 'tick_icon');
   }
 
   /**
    * Creates a standard info message
    */
   createInfoMessage(title: string, description: string): ContainerBuilder {
-    const container = new ContainerBuilder();
-
-    container.addTextDisplayComponents(this.createHeader(title, description, 'info_icon'));
-
-    return container;
+    return this._createMessageContainer(title, description, 'info_icon');
   }
 
   /**
    * Creates a standard warning message
    */
   createWarningMessage(title: string, description: string): ContainerBuilder {
-    const container = new ContainerBuilder();
-
-    container.addTextDisplayComponents(this.createHeader(title, description, 'alert_icon'));
-
-    return container;
-  }
-
-  /**
-   * Creates a compact header for smaller command responses (uses H3 instead of H2)
-   */
-  createCompactHeader(
-    title: string,
-    description?: string,
-    emojiKey?: EmojiKeys,
-  ): TextDisplayBuilder {
-    // Use a safe default emoji if the requested one doesn't exist
-    let emoji = '';
-    if (emojiKey) emoji = `${getEmoji(emojiKey, this.client)} `;
-
-    const content = `### ${emoji}${title}${description ? `\n${description}` : ''}`;
-    return new TextDisplayBuilder().setContent(content);
+    return this._createMessageContainer(title, description, 'alert_icon');
   }
 
   /**
    * Creates a compact success message
    */
   createCompactSuccessMessage(title: string, description: string): ContainerBuilder {
-    const container = new ContainerBuilder();
-
-    container.addTextDisplayComponents(this.createCompactHeader(title, description, 'tick_icon'));
-
-    return container;
+    return this._createMessageContainer(title, description, 'tick_icon', true);
   }
 
   /**
    * Creates a compact info message
    */
   createCompactInfoMessage(title: string, description: string): ContainerBuilder {
-    const container = new ContainerBuilder();
-
-    container.addTextDisplayComponents(this.createCompactHeader(title, description, 'info_icon'));
-
-    return container;
+    return this._createMessageContainer(title, description, 'info_icon', true);
   }
 
   /**
    * Creates a compact error message
    */
   createCompactErrorMessage(title: string, description: string): ContainerBuilder {
-    const container = new ContainerBuilder();
-
-    container.addTextDisplayComponents(this.createCompactHeader(title, description, 'x_icon'));
-
-    return container;
+    return this._createMessageContainer(title, description, 'x_icon', true);
   }
 
   /**
@@ -225,130 +256,52 @@ export class UIComponents {
    */
   createActionButtons(
     container: ContainerBuilder,
-    primaryButton: {
-      label: string;
-      customId?: string;
-      url?: string;
-      emoji?: EmojiKeys | (string & {});
-    },
-    secondaryButton?: {
-      label: string;
-      customId?: string;
-      url?: string;
-      emoji?: EmojiKeys | (string & {});
-    },
-    tertiaryButton?: { label: string; url: string; emoji?: EmojiKeys | (string & {}) },
+    primaryButton: ButtonConfig,
+    secondaryButton?: ButtonConfig,
+    tertiaryButton?: ButtonConfig,
   ): void {
     container.addActionRowComponents((row) => {
-      const buttons: ButtonBuilder[] = [new ButtonBuilder().setLabel(primaryButton.label)];
-      if (primaryButton.url) {
-        buttons[0].setStyle(ButtonStyle.Link).setURL(primaryButton.url);
-      }
-      else if (primaryButton.customId) {
-        buttons[0].setCustomId(primaryButton.customId).setStyle(ButtonStyle.Primary);
-      }
-      else {
-        throw new Error('Either customId or url must be provided for primary button');
-      }
+      const buttons: ButtonBuilder[] = [];
 
-      // Try to set emoji safely
-      if (primaryButton.emoji) {
-        try {
-          if (typeof primaryButton.emoji === 'string') {
-            // If it's a string, check if it's an EmojiKey or a Unicode emoji
-            if (primaryButton.emoji.length <= 2 || primaryButton.emoji.startsWith('�')) {
-              // It's likely a Unicode emoji
-              buttons[0].setEmoji({ name: primaryButton.emoji });
-            }
-            else {
-              // It's likely an EmojiKey
-              buttons[0].setEmoji(getEmoji(primaryButton.emoji as EmojiKeys, this.client));
-            }
-          }
-          else if (typeof primaryButton.emoji === 'object' && 'name' in primaryButton.emoji) {
-            // It's already a Discord.js emoji object
-            buttons[0].setEmoji(primaryButton.emoji);
-          }
-        }
-        catch {
-          // Fallback to no emoji if not found
-        }
-      }
+      // Primary button
+      buttons.push(
+        this._createButton({
+          ...primaryButton,
+          style: primaryButton.style || ButtonStyle.Primary,
+        }),
+      );
 
+      // Secondary button
       if (secondaryButton) {
-        const secBtn = new ButtonBuilder()
-          .setLabel(secondaryButton.label)
-          .setStyle(ButtonStyle.Secondary);
-
-        if (secondaryButton.url) {
-          secBtn.setStyle(ButtonStyle.Link).setURL(secondaryButton.url);
-        }
-        else if (secondaryButton.customId) {
-          secBtn.setCustomId(secondaryButton.customId).setStyle(ButtonStyle.Secondary);
-        }
-        else {
-          throw new Error('Either customId or url must be provided for secondary button');
-        }
-
-        // Try to set emoji safely
-        if (secondaryButton.emoji) {
-          try {
-            if (typeof secondaryButton.emoji === 'string') {
-              // If it's a string, check if it's an EmojiKey or a Unicode emoji
-              if (secondaryButton.emoji.length <= 2 || secondaryButton.emoji.startsWith('�')) {
-                // It's likely a Unicode emoji
-                secBtn.setEmoji({ name: secondaryButton.emoji });
-              }
-              else {
-                // It's likely an EmojiKey
-                secBtn.setEmoji(getEmoji(secondaryButton.emoji as EmojiKeys, this.client));
-              }
-            }
-            else if (
-              typeof secondaryButton.emoji === 'object' &&
-              'name' in secondaryButton.emoji
-            ) {
-              // It's already a Discord.js emoji object
-              secBtn.setEmoji(secondaryButton.emoji);
-            }
-          }
-          catch {
-            // Fallback to no emoji if not found
-          }
-        }
-
-        buttons.push(secBtn);
+        buttons.push(
+          this._createButton({
+            ...secondaryButton,
+            style: secondaryButton.style || ButtonStyle.Secondary,
+          }),
+        );
       }
 
+      // Tertiary button (always Link style)
       if (tertiaryButton) {
-        const tertBtn = new ButtonBuilder()
-          .setStyle(ButtonStyle.Link)
-          .setLabel(tertiaryButton.label)
-          .setURL(tertiaryButton.url);
-
-        // Try to set emoji safely
-        if (tertiaryButton.emoji) {
-          if (typeof tertiaryButton.emoji === 'string') {
-            // If it's a string, check if it's an EmojiKey or a Unicode emoji
-            if (tertiaryButton.emoji.length <= 2 || tertiaryButton.emoji.startsWith('�')) {
-              // It's likely a Unicode emoji
-              tertBtn.setEmoji({ name: tertiaryButton.emoji });
-            }
-            else {
-              // It's likely an EmojiKey
-              tertBtn.setEmoji(getEmoji(tertiaryButton.emoji as EmojiKeys, this.client));
-            }
-          }
-          else if (typeof tertiaryButton.emoji === 'object' && 'name' in tertiaryButton.emoji) {
-            // It's already a Discord.js emoji object
-            tertBtn.setEmoji(tertiaryButton.emoji);
-          }
+        if (!tertiaryButton.url) {
+          throw new Error('Tertiary button must have a URL');
         }
-
-        buttons.push(tertBtn);
+        buttons.push(
+          this._createButton({
+            ...tertiaryButton,
+            style: ButtonStyle.Link,
+          }),
+        );
       }
 
       return row.addComponents(...buttons);
     });
+  }
+
+  /**
+   * Gets the emoji string for a given emoji key.
+   */
+  getEmoji(name: EmojiKeys): string {
+    return getEmoji(name, this.client);
   }
 }

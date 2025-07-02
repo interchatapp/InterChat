@@ -31,7 +31,6 @@ export interface CheckResult {
 interface CallCheckFunctionOpts {
   userData: DbUser;
   attachmentURL?: string | null;
-  callId: string; // Call ID for media usage tracking
 }
 
 type CallCheckFunction = (
@@ -69,7 +68,6 @@ export const runCallChecks = async (
   opts: {
     userData: DbUser;
     attachmentURL?: string | null;
-    callId: string;
   },
 ): Promise<boolean> => {
   for (const check of callChecks) {

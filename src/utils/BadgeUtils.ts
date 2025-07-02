@@ -1,10 +1,10 @@
-import type { Client } from 'discord.js';
+import { User } from '#src/generated/prisma/client/client.js';
+import db from '#src/utils/Db.js';
+import { getRedis } from '#src/utils/Redis.js';
+import Constants, { RedisKeys } from '#utils/Constants.js';
 import { getEmoji } from '#utils/EmojiUtils.js';
 import { checkIfStaff } from '#utils/Utils.js';
-import Constants, { RedisKeys } from '#utils/Constants.js';
-import db from '#src/utils/Db.js';
-import { User } from '#src/generated/prisma/client/client.js';
-import { getRedis } from '#src/utils/Redis.js';
+import type { Client } from 'discord.js';
 
 export interface Badge {
   id: string;
@@ -58,14 +58,40 @@ export function getVoterBadge(client: Client): Badge {
   };
 }
 
-export function getExtraBadges(client: Client, opts: { userData?: User | null }): Badge[] {
+export async function getDonorBadges(user: User, client: Client): Promise<Badge[]> {
+  if (!user.isDonor) return [];
+  return [
+    {
+      id: 'donor',
+      // FIXME: fixme
+      // @ts-expect-error gotta fix
+      emoji: getEmoji('donor_badge', client),
+      name: 'Donor',
+      description: 'Donated to InterChat on Ko-fi',
+    },
+  ];
+}
+
+export async function getExtraBadges(
+  client: Client,
+  opts: { userData?: User | null },
+): Promise<Badge[]> {
   const badges: Badge[] = [];
 
-  if (!opts.userData?.lastVoted) return badges;
+  if (!opts.userData) return badges;
 
-  const timeSinceVote = Date.now() - opts.userData.lastVoted.getTime();
-  if (timeSinceVote < 12 * 60 * 60 * 1000) {
-    badges.push(getVoterBadge(client));
+  // Voter badge
+  if (opts.userData.lastVoted) {
+    const timeSinceVote = Date.now() - opts.userData.lastVoted.getTime();
+    if (timeSinceVote < 12 * 60 * 60 * 1000) {
+      badges.push(getVoterBadge(client));
+    }
+  }
+
+  // Donor badges
+  if (opts.userData.isDonor) {
+    const donorBadges = await getDonorBadges(opts.userData, client);
+    badges.push(...donorBadges);
   }
 
   return badges;
@@ -91,7 +117,7 @@ export async function shouldShowBadgesForMessage(
   const showBadges = await shouldShowBadges(userId, userData);
   if (!showBadges) return false;
 
-  const redis = getRedis();
+  const redis = await getRedis();
   const key = `${RedisKeys.LastHubMessageUser}:${hubId}`;
 
   const lastUserId = await redis.get(key);
@@ -112,7 +138,6 @@ export async function getVisibleBadges(
   const shouldShow = await shouldShowBadgesForMessage(userId, hubId, userData);
   if (!shouldShow) return '';
 
-  return [...getBadges(userId, client), ...getExtraBadges(client, { userData })]
-    .map((badge) => badge.emoji)
-    .join(' ');
+  const extraBadges = await getExtraBadges(client, { userData });
+  return [...getBadges(userId, client), ...extraBadges].map((badge) => badge.emoji).join(' ');
 }

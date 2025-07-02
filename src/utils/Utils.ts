@@ -359,7 +359,7 @@ export const createUnreadDevAlertEmbed = (emoji: string) =>
     .setTitle(`${emoji} You have a new alert!`)
     .setColor(Constants.Colors.invisible)
     .setDescription(
-      'Use </inbox:1342837854933618822> or `c!inbox` to read the latest alert and dismiss this message.',
+      'Use </inbox:1342837854933618822> or `.inbox` to read the latest alert and dismiss this message.',
     );
 // Simple string hashing function
 export const hashString = (str: string): string => {

@@ -17,12 +17,12 @@
 
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import InfractionManager from '#src/managers/InfractionManager.js';
-import { Pagination } from '#src/modules/Pagination.js';
+import { PaginationManager } from '#src/utils/ui/PaginationManager.js';
 import { type ModAction, replyWithUnknownMessage } from '#src/utils/moderation/modPanel/utils.js';
 import { getOriginalMessage } from '#src/utils/network/messageUtils.js';
 import type { supportedLocaleCodes } from '#utils/Locale.js';
 import { buildInfractionListEmbeds } from '#utils/moderation/infractionUtils.js';
-import type { Snowflake } from 'discord.js';
+import { type Snowflake, ContainerBuilder, TextDisplayBuilder, EmbedBuilder, type APIEmbed } from 'discord.js';
 
 export default class ViewInfractionsHandler implements ModAction {
   async handle(
@@ -58,6 +58,77 @@ export default class ViewInfractionsHandler implements ModAction {
       iconURL,
     );
 
-    new Pagination(ctx.client).addPages(embeds).run(ctx.interaction, { deleteOnEnd: true });
+    if (embeds.length === 0) {
+      await ctx.editReply({ content: 'No infractions found for this user.' });
+      return;
+    }
+
+    if (embeds.length === 1) {
+      // Single page, just reply directly
+      await ctx.editReply(embeds[0]);
+      return;
+    }
+
+    // Use PaginationManager for multiple pages
+    const paginationManager = new PaginationManager({
+      client: ctx.client,
+      identifier: `mod-infractions-${originalMsg.authorId}`,
+      items: embeds,
+      itemsPerPage: 1,
+      deleteOnEnd: true,
+      ephemeral: true,
+      contentGenerator: (pageIndex, itemsOnPage) => {
+        const container = new ContainerBuilder();
+        const page = itemsOnPage[0];
+
+        if (page.embeds?.[0]) {
+          const embed = page.embeds[0];
+
+          // Convert embed to text content
+          let content = '';
+
+          // Handle EmbedBuilder vs APIEmbed
+          if (embed instanceof EmbedBuilder) {
+            if (embed.data.title) {
+              content += `## ${embed.data.title}\n\n`;
+            }
+
+            if (embed.data.fields && embed.data.fields.length > 0) {
+              content += embed.data.fields.map((field) =>
+                `**${field.name}**\n${field.value}`,
+              ).join('\n\n');
+            }
+
+            if (embed.data.footer?.text) {
+              content += `\n\n*${embed.data.footer.text}*`;
+            }
+          }
+          else {
+            // Handle APIEmbed
+            const apiEmbed = embed as APIEmbed;
+            if (apiEmbed.title) {
+              content += `## ${apiEmbed.title}\n\n`;
+            }
+
+            if (apiEmbed.fields && apiEmbed.fields.length > 0) {
+              content += apiEmbed.fields.map((field) =>
+                `**${field.name}**\n${field.value}`,
+              ).join('\n\n');
+            }
+
+            if (apiEmbed.footer?.text) {
+              content += `\n\n*${apiEmbed.footer.text}*`;
+            }
+          }
+
+          const textDisplay = new TextDisplayBuilder().setContent(content);
+          container.addTextDisplayComponents(textDisplay);
+        }
+
+        return container;
+      },
+    });
+
+    await paginationManager.start(ctx);
   }
 }

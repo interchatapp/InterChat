@@ -28,11 +28,6 @@ export const enum RedisKeys {
   CallTypingRateLimit = 'call:typing_rate_limit', // Rate limiting for typing indicators
   CallQueue = 'call:queue', // Call queue (will be migrated to DB)
   CallActive = 'call:active', // Active calls (will be migrated to DB)
-  // Media sharing Redis keys
-  mediaUsage = 'media:usage', // Media usage tracking per call (legacy, will be replaced)
-  MediaUsageCount = 'media:count', // Media usage count per call: media:count:{callId}:{userId}
-  MediaVoteCooldown = 'media:vote_cooldown', // TopGG vote cooldown: media:vote_cooldown:{userId}
-  MediaSessionReset = 'media:session_reset', // Call session reset tracking: media:session_reset:{callId}
   Achievement = 'achievement', // Base prefix for all achievement-related keys
   LastHubMessageUser = 'lastHubMessageUser',
   ReportReporter = 'report:reporter', // Stores reporter ID for report resolution notifications
