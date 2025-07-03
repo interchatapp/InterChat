@@ -1,5 +1,5 @@
 rules:
-  header: 'InterChat Rules'
+  header: 'Aturan '
   botRulesNote: 'These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:'
   rules: |
     1. **No Hate Speech or Harassment**
@@ -25,9 +25,9 @@ rules:
 
     These simple rules help keep InterChat a warm, welcoming, and safe space for everyone to make new friends and share great conversations! ✨
   alreadyAccepted: "{emoji} Welcome back, {user}! You're all set to explore and chat with amazing communities. Have fun connecting with new friends! 🌟"
-  continue: Continue
-  accept: Accept
-  decline: Decline
+  continue: Lanjutkan
+  accept: Diterima
+  decline: Ditolak
   agreementNote: By accepting these rules, you agree to follow them while using InterChat. Breaking these rules may result in restrictions or bans.
   hubAgreementNote: |
     By accepting these rules, you agree to follow them while chatting in this hub. Breaking these rules may result in removal from the hub.
@@ -55,15 +55,14 @@ rules:
 
     ⚠️ Important: You won't be able to chat with other servers until you accept the rules. Take your time, but this step is required.
   hubAccepted: |
-    {emoji} You have accepted the hub rules.
-    You can now start chatting in this hub!
+    {emoji} kamu telah menerima peraturan 
   hubDeclined: |
     {emoji} You have declined the rules for {hubName}.
     -# ⚠️ **You won't be able to send messages in this hub until you accept its rules.**
     -# To try again, send another message in this hub.
   noHubRules: This hub has not set any specific rules yet. However, the [general InterChat rules]({rules_link}) still apply.
-  hubRules: Hub Rules
-  viewbotRules: 'View Bot Rules'
+  hubRules: Peraturan pusat
+  viewbotRules: 'Lihat peraturan bot'
 vote:
   description: |
     Help more communities discover InterChat! Your vote on top.gg:
@@ -72,14 +71,14 @@ vote:
     - Supports our independent development
   footer: 'Votes refresh every 12 hours • Thanks for supporting InterChat!'
   button:
-    label: 'Vote on top.gg'
+    label: 'Pilih di top.gg'
   perks:
     moreComingSoon: 'More perks coming soon! Suggest some in the [support server]({support_invite}).'
   fields:
     currentStreak: 'Current Streak:'
     lastVote: 'Last Vote'
     voterPerks: 'Voter Perks'
-    voteNow: '[Vote Now]({vote_url})!'
+    voteNow: '[Pilih Sekarang]({vote_url})!'
     perks:
       messageLength: 'Increased message length (2000 characters)'
       stickers: 'Send stickers in hubs'
