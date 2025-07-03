@@ -1,97 +1,58 @@
 rules:
   header: 'Aturan '
-  botRulesNote: 'These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:'
+  botRulesNote: 'Peraturan ini dibuat untuk menciptakan pengalaman yang aman dan menyenangkan bagi semua orang. Baca dan ikuti dengan saksama'
   rules: |
-    1. **No Hate Speech or Harassment**
-    -# > **Includes:** Using slurs or hate speech to attack others, [and more]({guidelines_link}).
-    2. **No Illegal Content**
-    -# > **Includes:** Sharing links to illegal content, Encouraging violence, [and more]({guidelines_link}).
-    3. **No Severe NSFW or Gore**
-    -# > **Includes:** Posting gore or extreme gore in InterChat, Posting sexual content in non-NSFW hubs, [and more]({guidelines_link}).
-    4. **No Spamming or Flooding**
-    -# > **Includes:** Mass spamming or bot floods, [and more]({guidelines_link})
-    5. **No Impersonation or Fraud**
-    -# > **Includes:** Impersonating InterChat staff or hub moderators, Running cryptocurrency or NFT scams, [and more]({guidelines_link}).
-    6. **No Exploitation or Abuse**
-    -# > **Includes:** Grooming or predatory behavior towards minors, Sharing, Requesting, Blackmailing or threatening to  Encouraging self-harm, [and more]({guidelines_link}).
-    7. **No Sharing Malicious Software**
-    -# > **Includes:** Sharing malware, viruses, 'free nitro' links, harmful scripts [and more]({guidelines_link}).
-
-    You also agree to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines). Check out the [full list of rules]({guidelines_link}).
+    1. **Tidak Ada Ujaran Kebencian atau Pelecehan** -# > **Termasuk:** Menggunakan hinaan atau ujaran kebencian untuk menyerang orang lain, [dan banyak lagi]({guidelines_link}). 2. **Tidak Ada Konten Ilegal** -# > **Termasuk:** Berbagi tautan ke konten ilegal, Mendorong kekerasan, [dan banyak lagi]({guidelines_link}). 3. **Tidak Ada NSFW atau Gore Berat** -# > **Termasuk:** Memposting gore atau gore ekstrem di InterChat, Memposting konten seksual di hub non-NSFW, [dan banyak lagi]({guidelines_link}). 4. **Dilarang Spam atau Flooding** -# > **Termasuk:** Spam massal atau bot flooding, [dan banyak lagi]({guidelines_link}) 5. **Dilarang Peniruan atau Penipuan** -# > **Termasuk:** Meniru staff InterChat atau moderator hub, Menjalankan penipuan mata uang kripto atau NFT, [dan banyak lagi]({guidelines_link}). 6. **Dilarang Eksploitasi atau Penyalahgunaan** -# > **Termasuk:** Perilaku Grooming atau predator terhadap anak di bawah umur, Berbagi, Meminta, Memeras atau mengancam untuk Mendorong tindakan menyakiti diri sendiri, [dan banyak lagi]({guidelines_link}). 7. **Dilarang Berbagi Perangkat Lunak Berbahaya** -# > **Termasuk:** Berbagi malware, virus, tautan 'free nitro', skrip berbahaya [dan banyak lagi]({guidelines_link}). Anda juga setuju untuk mengikuti [Persyaratan Layanan Discord](https://discord.com/terms) dan [Pedoman Komunitas](https://discord.com/guidelines). Lihat [daftar lengkap aturan]({guidelines_link}).
   welcome: |
-    {emoji} Hey there, {user}! Welcome to InterChat! 🎉
+    {emoji} Hello disana, {user}! Selamat datang di interchat! 🎉 
 
-    We're so excited to have you join our amazing community of servers connecting across Discord! Before you dive into chatting with people from around the world, let's take a quick moment to go over our friendly community guidelines.
-
-    These simple rules help keep InterChat a warm, welcoming, and safe space for everyone to make new friends and share great conversations! ✨
-  alreadyAccepted: "{emoji} Welcome back, {user}! You're all set to explore and chat with amazing communities. Have fun connecting with new friends! 🌟"
+    Kami sangat bersemangag 
+  alreadyAccepted: "{emoji} Selamat datang kembali, {user}! Kalian semua diatur untuk menjelajahi dan mengobrol dengan komunitas luar biasa. Selamat bersenang senang dengan teman-teman baru! 🌟"
   continue: Lanjutkan
   accept: Diterima
   decline: Ditolak
-  agreementNote: By accepting these rules, you agree to follow them while using InterChat. Breaking these rules may result in restrictions or bans.
+  agreementNote: Dari menyetujui peraturan ini, anda setuju untuk mematuhi peraturan saat menggunakan InterChat. Pelanggaran dari peraturan ini dapat mengakibatkan pembatasan atau bans
   hubAgreementNote: |
-    By accepting these rules, you agree to follow them while chatting in this hub. Breaking these rules may result in removal from the hub.
-
-    ⚠️ **You cannot send messages in this hub until you accept these rules.**
+    Dengan menyetujui peraturan ini, Anda setuju untuk mematuhi peraturan saat mengobrol di pusat ini. Melanggar peraturan ini dapat mengakibatkan penghapusan dari pusat. ⚠️ **Anda tidak dapat mengirim pesan di pusat ini hingga Anda menyetujui peraturan ini.**
   accepted: |
-    {emoji} Fantastic! Welcome to the InterChat family! 🎉✨
-
-    You're now part of an incredible community that connects thousands of servers and millions of people worldwide! We're thrilled to have you aboard this amazing journey.
-
-    ### 🚀 Ready to Start Your Adventure?
-    - **Discover Communities:** Use the [hub directory]({hubs_link}) to explore vibrant, active communities waiting for you
-    - **Jump Into Conversations:** Join discussions that spark your interest, or create your own hub through our [dashboard]({dashboard_link})
-    - **Try Quick Connections:** Use our `/call` command for instant one-on-one server connections - perfect for making new friends!
-    - **Get Personalized Help:** Use `/setup` for a guided tour if you're feeling a bit lost
-
-    ### 💝 We're Here for You!
-    Feeling confused or need a helping hand? Don't worry - we've all been there! Join our friendly [support community]({support_invite}) where real people are excited to help you get started.
-
-    **Love what we're doing?** Consider [supporting us]({donateLink}) to help InterChat grow and bring even more amazing features to connect communities worldwide! 🌍
+    {emoji} Luar biasa! Selamat datang di keluarga InterChat! 🎉✨ Anda sekarang menjadi bagian dari komunitas luar biasa yang terhubung ribuan server dan jutaan orang di seluruh dunia! Kami senang Anda bergabung dalam perjalanan yang menakjubkan ini. ### 🚀 Siap Memulai Petualangan Anda? - **Temukan Komunitas:** Gunakan [direktori hub]({hubs_link}) untuk menjelajahi komunitas yang aktif dan bersemangat menunggu Anda - **Ikuti Percakapan:** Bergabunglah dalam diskusi yang menarik minat Anda, atau buat hub Anda sendiri melalui [dashboard]({dashboard_link}) kami - **Coba Koneksi Cepat:** Gunakan command `/call` kami untuk koneksi server satu lawan satu secara instan - cocok untuk mendapatkan teman baru! - **Dapatkan Bantuan Pribadi:** Gunakan `/setup` untuk tur berpemandu jika Anda merasa sedikit tersesat ### 💝 Kami Siap Membantu Anda! Merasa bingung atau butuh bantuan? Jangan khawatir - kami semua pernah mengalaminya! Bergabunglah dengan [komunitas dukungan]({support_invite}) kami yang ramah, tempat orang-orang sungguhan bersemangat membantu Anda memulai. **Suka dengan apa yang kami lakukan?** Pertimbangkan untuk [mendukung kami]({donateLink}) guna membantu InterChat berkembang dan menghadirkan lebih banyak fitur menakjubkan untuk menghubungkan komunitas di seluruh dunia! 🌍
   declined: |
-    {emoji} Please take a moment to read and accept the community guidelines.
+    {emoji} Mohon untuk tunggu sejenak untuk membaca dan menerima pedoman komunitas.
 
-    These rules aren't optional—they're here to keep InterChat safe and enjoyable for everyone. Send another message or use any InterChat command to get started.
-
-    ⚠️ Important: You won't be able to chat with other servers until you accept the rules. Take your time, but this step is required.
+    Aturan ini tidak bersifat opsional—aturan ini dibuat untuk menjaga InterChat tetap aman dan menyenangkan bagi semua orang. Kirim pesan lain atau gunakan perintah InterChat apa pun untuk memulai. ⚠️ Penting: Anda tidak akan dapat mengobrol dengan server lain hingga Anda menyetujui aturan. Luangkan waktu Anda, tetapi langkah ini wajib dilakukan.
   hubAccepted: |
     {emoji} kamu telah menerima peraturan 
   hubDeclined: |
-    {emoji} You have declined the rules for {hubName}.
-    -# ⚠️ **You won't be able to send messages in this hub until you accept its rules.**
-    -# To try again, send another message in this hub.
-  noHubRules: This hub has not set any specific rules yet. However, the [general InterChat rules]({rules_link}) still apply.
+    emoji} Anda telah menolak peraturan untuk {hubName}. -# ⚠️ **Anda tidak akan dapat mengirim pesan di hub ini hingga Anda menerima peraturannya.** -# Untuk mencoba lagi, kirim pesan lain di hub ini.
+  noHubRules: Hub ini belum menetapkan aturan khusus apa pun. Namun, [aturan umum InterChat]({rules_link}) masih berlaku.
   hubRules: Peraturan pusat
   viewbotRules: 'Lihat peraturan bot'
 vote:
   description: |
-    Help more communities discover InterChat! Your vote on top.gg:
-    - Helps others find active communities
-    - Unlocks special features for you
-    - Supports our independent development
-  footer: 'Votes refresh every 12 hours • Thanks for supporting InterChat!'
+    Bantu lebih banyak komunitas menemukan InterChat! Suara Anda di top.gg: - Membantu orang lain menemukan komunitas yang aktif - Membuka fitur khusus untuk Anda - Mendukung pengembangan independen kami
+  footer: 'Suara diperbarui setiap 12 jam • Terima kasih telah mendukung InterChat!'
   button:
     label: 'Pilih di top.gg'
   perks:
-    moreComingSoon: 'More perks coming soon! Suggest some in the [support server]({support_invite}).'
+    moreComingSoon: 'Lebih banyak keuntungan akan segera hadir! Sarankan beberapa ide di[server dukungan]({support_invite}).'
   fields:
-    currentStreak: 'Current Streak:'
-    lastVote: 'Last Vote'
-    voterPerks: 'Voter Perks'
+    currentStreak: 'Streak saat ini:'
+    lastVote: 'Pemungutan suara terakhir'
+    voterPerks: 'Untungnya memilih'
     voteNow: '[Pilih Sekarang]({vote_url})!'
     perks:
-      messageLength: 'Increased message length (2000 characters)'
-      stickers: 'Send stickers in hubs'
-      createHubs: 'Create up to 4 hubs'
-      welcomeMessages: 'Custom welcome messages'
-      voterRole: 'Voter role in support server'
-      voterBadge: 'Exclusive voter badge in /profile'
+      messageLength: 'Peningkatan panjang pesan (2000 karakter)'
+      stickers: 'Kirim stickers di pusat'
+      createHubs: 'Buat hingga 4 pusat'
+      welcomeMessages: 'Pesan tanda masuk khusus'
+      voterRole: 'Role pemilih dalam server dukungan'
+      voterBadge: 'Lencana pemilih eksklusif di /profile'
   embed:
-    title: 'Vote for InterChat'
+    title: 'Pilih untuk InterChat'
 network:
-  accountTooNew: '{emoji} Hey {user}! Your Discord account is still pretty new, so we need to wait a little bit before you can send messages through InterChat. This helps keep our community safe! Please try again in a little while.'
-  deleteSuccess: '{emoji} Message by {user} has been deleted from __**{deleted}/{total}**__ servers.'
-  editInProgress: '{emoji} Your request has been queued. Messages will be edited shortly...'
+  accountTooNew: '{emoji} Hai {user}! Akun Discord Anda masih cukup baru, jadi kami perlu menunggu sebentar sebelum Anda dapat mengirim pesan melalui InterChat. Ini membantu menjaga keamanan komunitas kami! Silakan coba lagi beberapa saat lagi.'
+  deleteSuccess: '{emoji} Pesan dari {user} telah dihapus dari server __**{deleted}/{total}**__.'
+  editInProgress: '{emoji} Permintaan Anda telah diantarkan Pesan akan segera diedit...'
   editInProgressError: '{emoji} This message is already being edited by another user.'
   emptyContent: '{emoji} Message content cannot be empty.'
   newMessageContent: 'New Message Content'
@@ -175,9 +136,7 @@ msgInfo:
     notEnabled: '{emoji} Reporting is not enabled for this hub.'
     success: '{emoji} Report submitted successfully. Thank you!'
 invite: |
-  Thank you for choosing to invite InterChat! If you have any questions or need help, we are always here to help you in the support server!
-
-  **[{invite_emoji} `Invite Link`]( {invite} ) [{support_emoji} `Support Server`]( {support} )**
+  {invite}
 connection:
   joinRequestsDisabled: '{emoji} Join requests are disabled for this hub.'
   notFound: '{emoji} Invalid connection. Verify the channel ID or select from displayed options.'
