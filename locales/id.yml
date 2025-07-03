@@ -48,39 +48,27 @@ vote:
       voterRole: 'Role pemilih dalam server dukungan'
       voterBadge: 'Lencana pemilih eksklusif di /profile'
   embed:
-    title: 'Pilih untuk InterChat'
+    title: 'Pilib untuk InterChat'
 network:
   accountTooNew: '{emoji} Hai {user}! Akun Discord Anda masih cukup baru, jadi kami perlu menunggu sebentar sebelum Anda dapat mengirim pesan melalui InterChat. Ini membantu menjaga keamanan komunitas kami! Silakan coba lagi beberapa saat lagi.'
   deleteSuccess: '{emoji} Pesan dari {user} telah dihapus dari server __**{deleted}/{total}**__.'
   editInProgress: '{emoji} Permintaan Anda telah diantarkan Pesan akan segera diedit...'
-  editInProgressError: '{emoji} This message is already being edited by another user.'
-  emptyContent: '{emoji} Message content cannot be empty.'
-  newMessageContent: 'New Message Content'
-  editMessagePrompt: '{emoji} Please use the modal to edit your message.'
+  editInProgressError: '{emoji} Pesan ini sudah diedit oleh pengguna lain.'
+  emptyContent: '{emoji} Konten pesan tidak boleh kosong.'
+  newMessageContent: 'Konten pesan terbaru'
+  editMessagePrompt: '{emoji} Silakan gunakan modal untuk mengedit pesan Anda.'
   editSuccess: '{emoji} Message by {user} has been edited in __**{edited}/{total}**__ servers.'
   onboarding:
     welcome:
-      title: '🎉 Welcome to InterChat!'
+      title: '🎉 Selamat datang ke InterChat!'
       description: |
-        Welcome to InterChat! Let's get you set up with a personalized experience that matches your interests and helps you find the perfect communities to join.
-
-        This quick setup will help us:
-        - Learn about your interests and preferences
-        - Find the best hubs for you to join
-        - Connect you with like-minded people
-        - Get you started with your first community
-
-        Ready to begin your InterChat journey?
+        Selamat datang di InterChat! Mari kita siapkan pengalaman yang dipersonalisasi sesuai minat Anda dan membantu Anda menemukan komunitas yang tepat untuk diikuti. Pengaturan cepat ini akan membantu kami: - Mempelajari minat dan preferensi Anda - Menemukan hub terbaik untuk Anda ikuti - Menghubungkan Anda dengan orang-orang yang memiliki pemikiran yang sama - Memulai komunitas pertama Anda Siap untuk memulai perjalanan InterChat Anda?
     embed:
-      title: '🎉 Welcome to {hubName}!'
+      title: '🎉 Selamat datang ke {hubName}!'
       description: |
-        Congratulations! You've discovered an amazing, active community hub! 🌟
-
-        Before you dive in and start making new friends, let's take a quick peek at our simple guidelines. They're designed to help everyone have the most fun and feel comfortable sharing their thoughts and experiences.
-
-        Let's get started!
-      footer: InterChat Network | Connecting Communities Worldwide 🌍
-    inProgress: '{emoji} {channel} is already in the process of being setup to join a hub. Please wait for the setup to complete or cancel it if you were the one who initiated it.'
+        Selamat! Anda telah menemukan hub komunitas yang luar biasa dan aktif! 🌟 Sebelum Anda terjun dan mulai mencari teman baru, mari kita lihat sekilas panduan sederhana kami. Panduan ini dirancang untuk membantu semua orang bersenang-senang dan merasa nyaman berbagi pemikiran dan pengalaman mereka. Mari kita mulai!
+      footer: Jaringan InterChat | Menghubungkan Komunitas di Seluruh Dunia 🌍
+    inProgress: '{emoji} {channel} sedang dalam proses penyiapan untuk bergabung dengan hub. Harap tunggu hingga penyiapan selesai atau batalkan jika Anda yang memulainya.'
 blacklist:
   description: 'Mute/Ban a user or server from your hub.'
   success: '{emoji} **{name}** has been successfully blacklisted!'
