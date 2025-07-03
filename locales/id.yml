@@ -75,7 +75,7 @@ blacklist:
   removed: '{emoji} **{name}** has been removed from the blacklist!'
   modal:
     reason:
-      label: Reason
+      label: Alasan
       placeholder: Reason for blacklisting
     duration:
       label: Duration
@@ -201,27 +201,27 @@ hub:
     deleted: '{emoji} Anti-Swear rule successfully deleted!'
     notFound: '{emoji} Anti-Swear rule not found.'
     maxRules: '{emoji} You have reached the maximum number of anti-swear rules (2) for this hub. Please delete a rule before adding another one.'
-    configure: 'Configure actions for rule: {rule}'
+    configure: 'Konfigurasikan tindakan untuk   aturan: {rule}'
     actionsUpdated: '{emoji} Updated the actions to be taken by the rule. **New Actions:** {actions}'
-    selectRuleToEdit: Select a rule to edit it's words/actions
+    selectRuleToEdit: Pilih aturan untuk mengedit kata-kata/tindakannya
     listDescription: |
       ### {emoji} Anti-Swear Rules
       This hub has {totalRules}/2 anti-swear rules setup.
-    listFooter: Select a rule using the menu to view it's full details.
+    listFooter: Pilih aturan menggunakan menu untuk melihat detail lengkapnya.
     ruleDescription: |
       ### {emoji} Editing Rule: {ruleName}
       {words}
-    ruleFooter: 'Click the button below to edit the words or rule name!'
-    actionSelectPlaceholder: 'Select the actions this rule should perform.'
+    ruleFooter: 'Klik tombol di bawah ini untuk mengedit kata atau nama aturan!'
+    actionSelectPlaceholder: ' '
     embedFields:
       noActions: '{emoji} **None!** Configure using the menu below.'
-      actionsName: 'Configured Actions:'
+      actionsName: 'Tindakan yang Dikonfigurasi:'
       actionsValue: '{actions}'
     modal:
       addRule: Add Anti-Swear Rule
       editingRule: Editing Anti-Swear Rule
-      ruleNameLabel: Rule Name
-      wordsLabel: 'Words'
+      ruleNameLabel: Nama Aturan
+      wordsLabel: 'Kata-kata'
       wordsPlaceholder: 'Words seperated by comma. (Use * for wildcard). Eg. word1, *word2*, *word3, word4*'
     validating: '{emoji} Validating anti-swear rule...'
     noRules: |
