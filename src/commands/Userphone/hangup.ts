@@ -45,7 +45,7 @@ export default class HangupCommand extends BaseCommand {
       name: 'hangup',
       description: '📞 End the current call',
       aliases: ['h'],
-      examples: ['i.hangup', 'i.h'],
+      examples: ['.hangup', '.h'],
       types: { slash: true, prefix: true },
       contexts: { guildOnly: true },
     });

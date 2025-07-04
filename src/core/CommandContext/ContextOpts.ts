@@ -16,7 +16,6 @@
  */
 
 import type Context from '#src/core/CommandContext/Context.js';
-// eslint-disable-next-line no-duplicate-imports
 import type { ValidContextInteractions } from '#src/core/CommandContext/Context.js';
 import type PrefixContext from '#src/core/CommandContext/PrefixContext.js';
 import { CustomID } from '#src/utils/CustomID.js';

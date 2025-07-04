@@ -47,7 +47,7 @@ export default class CallCommand extends BaseCommand {
       name: 'call',
       description: '📞 [BETA] Start a call with another server',
       aliases: ['c'],
-      examples: ['i.call', 'i.c'],
+      examples: ['.call', '.c'],
       types: { slash: true, prefix: true },
       contexts: { guildOnly: true },
     });

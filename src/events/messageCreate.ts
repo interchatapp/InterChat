@@ -43,7 +43,15 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
   async execute(message: Message) {
     if (!message.inGuild() || !isHumanMessage(message)) return;
 
-    if (message.content.startsWith('c!')) {
+    // FIXME: this is temp, remove on 01/07/2025
+    if (message.content.includes('c!')) {
+      await message.reply(
+        'The `c!` prefix has been changed to `.`. Type `.help` to see all available commands.',
+      );
+      return;
+    }
+
+    if (message.content.startsWith(message.client.prefix)) {
       await this.handlePrefixCommand(message);
       return;
     }
