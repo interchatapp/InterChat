@@ -78,7 +78,7 @@ blacklist:
       label: Alasan
       placeholder: Reason for blacklisting
     duration:
-      label: Duration
+      label: Durasi
       placeholder: 'Duration of blacklist. Eg: 1d, 1w, 1m, 1y. Leave blank for permanent.'
   user:
     description: 'Mute/Ban a user from your hub.'
@@ -116,10 +116,10 @@ blacklist:
       **Expires:** {expires}
 msgInfo:
   buttons:
-    message: Message Info
+    message: Info Pesan
     server: Server Info
-    user: User Info
-    report: Report
+    user: Info Pengguna
+    report: Laporkan
   report:
     notEnabled: '{emoji} Reporting is not enabled for this hub.'
     success: '{emoji} Report submitted successfully. Thank you!'
@@ -134,19 +134,19 @@ connection:
   switchCalled: '{emoji} Channel switch called, use the command again to view new connection.'
   switchSuccess: '{emoji} Channel switched. You are now connected from **{channel}**.'
   inviteRemoved: '{emoji} Server Invite removed for this hub.'
-  setInviteError: '{emoji} Unable to create invite. Please grant me  the `Create Invite` permission for the connected channel.'
+  setInviteError: '{emoji} Tidak dapat membuat undangan. Tolong beri saya izin ''Create Invite'' untuk saluran yang terhubung'
   inviteAdded: '{emoji} Invite Added. Others can now join this server by using `Apps > Message Info/Report` command and `/joinserver` command.'
-  emColorInvalid: '{emoji} Invalid color. Please make sure you have entered a valid hex color code.'
+  emColorInvalid: '{emoji} Warna tidak valid. Pastikan Anda telah memasukkan kode warna hex yang benar.'
   emColorChange: '{emoji} Embed color successfully {action}'
   embed:
-    title: Connection Details
+    title: Rincian Koneksi
     fields:
       hub: Hub
-      channel: Channel
-      invite: Invite
-      connected: Connected
+      channel: Saluran
+      invite: Mengundang
+      connected: Terhubung
       emColor: Embed Color
-      compact: Compact Mode
+      compact: Mode Kompak
     footer: Gunakan menu drop down di bawah ini untuk mengelola koneksi Anda.
   selects:
     placeholder: '🛠 Pilih opsi untuk mengedit koneksi ini'
@@ -168,9 +168,9 @@ hub:
   notFound_mod: '{emoji} Tidak dapat menemukan hub. Pastikan Anda telah memasukkan nama hub yang benar dan Anda adalah pemilik atau moderator hub tersebut.'
   notManager: '{emoji} Anda harus menjadi manajer hub untuk melakukan tindakan ini.'
   notModerator: '{emoji} Anda harus menjadi moderator hub untuk melakukan tindakan ini.'
-  notPrivate: '{emoji} This hub is not private.'
+  notPrivate: '{emoji} Hub ini tidak bersifat pribadi.'
   notOwner: '{emoji} Hanya pemiliknya hub ini bisa melakukan tindakan ini.'
-  alreadyJoined: '{emoji} You have already joined another hub **{hub}** from {channel}! Use `/disconnect` on it and then try again using `/connect`.'
+  alreadyJoined: '{emoji} Anda sudah bergabung dengan hub **{hub}** dari {channel}! Gunakan `/disconnect` di sana kemudian coba lagi menggunakan `/connect`.'
   invalidChannel: '{emoji} Invalid channel. Only text and thread channels are supported!'
   invalidImgurUrl: '{emoji} Invalid image URL for icon or banner. Please make sure you have entered a valid Imgur image URL that is not a gallery or album.'
   join:
@@ -307,29 +307,29 @@ hub:
       notOwner: '{emoji} Only the owner of this hub can remove a manager.'
     update:
       success: "{emoji} **{user}**'s position has been updated to **{position}**."
-      notModerator: '{emoji} **{user}** is not a moderator.'
-      notAllowed: "{emoji} Only hub managers can update a moderator's position."
-      notOwner: "{emoji} Only the owner of this hub can update a manager's position."
+      notModerator: '{emoji} **{user}** bukan moderator.'
+      notAllowed: "{emoji} Hanya manajer hub bisa memperbarui posisi moderator."
+      notOwner: "{emoji} Hanya pemiliknya hub bisa memperbarui posisi manajer."
   manage:
     dashboardTip: "**🛠️ NEW Dashboard:** Improved interface and more features! Try it out at [your hub's dashboard page]({url})."
     enterImgurUrl: Enter a valid Imgur image URL that is not a gallery or album.
     icon:
       changed: Hub icon successfully changed.
       modal:
-        title: Edit Icon
-        label: Icon URL
+        title: Edit Ikon
+        label: URL Ikon
       selects:
-        label: Edit Icon
-        description: Change the icon of this hub.
+        label: Edit Ikon
+        description: Ubah ikonnya hub ini.
     description:
-      changed: Hub description successfully changed.
+      changed: Deskripsi hub berhasil diubah.
       modal:
-        title: Edit Description
-        label: Description
-        placeholder: Enter a description for this hub.
+        title: Edit Deskripsi
+        label: Deskripsi
+        placeholder: Masukkan deskripsi untuh hub ini.
       selects:
-        label: Change Description
-        description: Change the description of this hub.
+        label: Ubah Deskripsi
+        description: Ubah deskripsi hub ini.
     banner:
       changed: Hub banner successfully changed.
       removed: Hub banner successfully removed.
@@ -342,8 +342,8 @@ hub:
     visibility:
       success: '{emoji} Hub visibility successfully changed to **{visibility}**.'
       selects:
-        label: Change Visibility
-        description: Make this hub public or private.
+        label: Ubah Visibilitas
+        description: Buat hub ini umum atau pribadi.
     toggleLock:
       selects:
         label: 'Lock/Unlock Hub'
@@ -351,8 +351,8 @@ hub:
       confirmation: 'Hub chats are now {status}.'
       announcementTitle: 'Hub chats are now {status}.'
       announcementDescription:
-        locked: 'Only moderators can send messages.'
-        unlocked: 'Everyone can send messages.'
+        locked: 'Hanya moderator yang bisa kirim pesan.'
+        unlocked: 'Semua bisa kirim pesan.'
     toggleNsfw:
       modal:
         title: 'Toggle NSFW Status'
@@ -371,23 +371,23 @@ hub:
       announcement: "{emoji} **Hub Content Rating Changed**\n\nThis hub is now marked as **{status}**.\n\n{description}"
     nsfwAlreadySet: '{emoji} **{hub}** is already marked as **{status}**.'
     embed:
-      visibility: 'Visibility'
-      connections: 'Connections'
+      visibility: 'Visibilitas'
+      connections: 'Koneksi'
       chatsLocked: 'Chats Locked'
       blacklists: 'Blacklists'
-      total: 'Total'
-      users: 'Users'
+      total: 'Jumlah'
+      users: 'Pengguna'
       servers: 'Servers'
-      hubStats: 'Hub Stats'
-      moderators: 'Moderators'
-      owner: 'Owner'
+      hubStats: 'Statistik Hub'
+      moderators: 'Moderator'
+      owner: 'Pemilik'
     logs:
-      title: Logs Configuration
+      title: Konfigurasi Log
       reset: '{emoji} Successfully reset the logs configuration for `{type}` logs.'
       roleSuccess: '{emoji} Logs of type `{type}` will now mention {role}!'
       roleRemoved: '{emoji} Logs of type `{type}` will no longer mention a role.'
       channelSuccess: '{emoji} Logs of type `{type}` will be sent to  {channel} from now!'
-      channelSelect: '#️⃣ Select a channel to send the logs'
+      channelSelect: '#️⃣ Pilih saluran untuk mengirim log'
       roleSelect: '🏓 Select the role to mention when a log is triggered.'
       reportChannelFirst: '{emoji} Please set a log channel first.'
       config:
@@ -396,64 +396,64 @@ hub:
           {arrow} Select a log channel and/or role to be pinged from the dropdown below.
           {arrow} You can also disable logging by using the button below.
         fields:
-          channel: Channel
+          channel: Saluran
           role: Role Mention
       reports:
-        label: Reports
+        label: Laporan
         description: Receive reports from users.
       modLogs:
         label: Mod Logs
         description: Log Moderation actions. (eg. blacklist, message deletes, etc.)
       joinLeaves:
-        label: Join/Leave
+        label: Gabung/Tinggalkan
         description: Log when a server joins or leaves this hub.
       appeals:
         label: Appeals
         description: Recieve appeals from blacklisted users/servers.
       networkAlerts:
-        label: Network Alerts
+        label: Peringatan Jaringan
         description: Recieve alerts about automatically blocked messages.
       messageModeration:
-        label: Message Moderation
+        label: Moderasi Pesan
         description: Log message deletions and edits by moderators.
       messageDeletions:
-        label: Message Deletions
+        label: Penghapusan Pesan
         description: Log when messages are deleted from the hub.
       messageEdits:
-        label: Message Edits
+        label: Editan Pesan
         description: Log when messages are edited in the hub.
   transfer:
-    invalidUser: '{emoji} The specified user was not found.'
-    selfTransfer: '{emoji} You cannot transfer ownership to yourself.'
-    botUser: '{emoji} You cannot transfer ownership to a bot.'
-    confirm: 'Are you sure you want to transfer ownership of **{hub}** to {newOwner}? You will be demoted to manager role.'
-    cancelled: '{emoji} Hub transfer has been cancelled.'
-    error: '{emoji} An error occurred while transferring hub ownership.'
-    success: '{emoji} Successfully transferred ownership of **{hub}** to {newOwner}. You have been added as a manager.'
-    timeout: '{emoji} Hub transfer has timed out.'
+    invalidUser: '{emoji} Pengguna yang ditentukan tidak ditemukan.'
+    selfTransfer: '{emoji} Anda tidak bisa memindahkan kepemilikan ke sendiri.'
+    botUser: '{emoji} Anda tidak bisa memindahkan kepemilikan ke bot.'
+    confirm: 'Apakah Anda yakin mau memindahkan kepemilikan **{hub}** ke {newOwner}? Pangkat Anda akan diturunkan ke manajer.'
+    cancelled: '{emoji} Transfer hub telah dibatalkan.'
+    error: '{emoji} Terjadi kesalahan saat memindahkan kepemilikan hub.'
+    success: '{emoji} Berhasil memindahkan kepemilikan **{hub}** ke {newOwner}. Anda telah ditambahkan sebagai manajer.'
+    timeout: '{emoji} Transfer hub telah habis waktunya.'
   rules:
-    noRules: "{emoji} This hub has no rules configured yet. Let's add some!"
-    list: "### {emoji} Hub Rules\n{rules}"
-    maxRulesReached: '{emoji} Maximum number of rules ({max}) reached.'
-    ruleExists: '{emoji} This rule already exists.'
-    selectedRule: 'Selected Rule {number}'
+    noRules: "{emoji} Hub ini belum ada aturan yang dikonfigurasi. Mari tambahkan beberapa!"
+    list: "### {emoji} Aturan Hub\n{rules}"
+    maxRulesReached: '{emoji} Jumlah maksimal aturan ({max}) tercapai.'
+    ruleExists: '{emoji} Aturan ini sudah ada.'
+    selectedRule: 'Terpilih Aturan {number}'
     modal:
       add:
-        title: Add Hub Rule
-        label: Rule Text
-        placeholder: Enter the rule text (max 1000 characters)
+        title: Tambah Aturan Hub
+        label: Teks Aturan
+        placeholder: Masukkan teks aturan (maksimal 1000 karakter)
       edit:
-        title: Edit Hub Rule
-        label: Rule Text
-        placeholder: Enter the new rule text (max 1000 characters)
+        title: Edit Aturan Hub
+        label: Teks Aturan
+        placeholder: Masukkan teks aturan baru (maksimal 1000 karakter)
     select:
-      placeholder: Select a rule to edit or remove
+      placeholder: Pilih aturan untuk diedit atau dihapus
       option:
-        label: Rule {number}
+        label: Aturan {number}
     buttons:
-      add: Add Rule
-      edit: Edit Rule
-      delete: Delete Rule
+      add: Tambah Aturan
+      edit: Edit Aturan
+      delete: Hapus Aturan
       back: Back
     success:
       add: '{emoji} Rule added successfully!'
