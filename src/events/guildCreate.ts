@@ -96,7 +96,7 @@ export default class Ready extends BaseEventListener<'guildCreate'> {
     hubsSection
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          '### 🏠 Setup Cross-Server Chat\nConnect to hubs for persistent cross-server communities!',
+          '### 🏠 Setup Shared Chat\nConnect to hubs for persistent cross-server chatting!',
         ),
       )
       .setButtonAccessory(
@@ -130,7 +130,7 @@ export default class Ready extends BaseEventListener<'guildCreate'> {
     browseSection
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          '### 🔍 Browse Hubs\nDiscover active communities and find the perfect hub for your interests!',
+          '### 🔍 Find Shared Chatrooms\nDiscover active communities and find the perfect hub for your interests!',
         ),
       )
       .setButtonAccessory(
@@ -144,5 +144,4 @@ export default class Ready extends BaseEventListener<'guildCreate'> {
 
     return container;
   }
-
 }

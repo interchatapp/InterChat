@@ -121,6 +121,7 @@ export default class HubConfigSettingsSubcommand extends BaseCommand {
       BlockInvites: 'Block Discord invite links in messages',
       UseNicknames: 'Use server nicknames instead of usernames for messages',
       BlockNSFW: 'Block NSFW images using content detection',
+      AllowVideos: 'Allow users to send videos in the hub',
     };
 
     // Create a section for each setting with a toggle button

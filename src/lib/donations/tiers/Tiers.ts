@@ -22,40 +22,18 @@ import { type Tier } from './TierTypes.js';
  * Defines the different donation tiers and their benefits.
  */
 export const Tiers: Record<DonationTier, Tier> = {
-  [DonationTier.BRONZE]: {
-    id: DonationTier.BRONZE,
-    name: 'Bronze Supporter',
+  [DonationTier.SUPPORTER]: {
+    id: DonationTier.SUPPORTER,
+    name: 'Supporter',
     monthlyPrice: 1.99,
     features: {
       supporter_badge: 'Supporter Badge in profile',
-      early_access: 'Early access to new features',
-      custom_profile_theme: 'Custom Profile Theme',
+      videos_in_calls: 'Send videos (1 per 5 min)',
+      custom_profile_theme: 'Custom Hub Banners',
+      hub_banners: 'Set a custom banner for your hub',
       hub_rename: 'Rename your hub',
-    },
-    duration: 30, // 30 days
-  },
-  [DonationTier.SILVER]: {
-    id: DonationTier.SILVER,
-    name: 'Silver Supporter',
-    monthlyPrice: 4.99,
-    features: {
-      bronze_perks: 'All Bronze perks',
-      priority_support: 'Priority support',
-      custom_profile_background: 'Custom Pro,file Background',
-      hub_customization: 'Custom Hub Customization',
-      exclusive_content: 'Access to exclusive content',
-    },
-    duration: 30, // 30 days
-  },
-  [DonationTier.GOLD]: {
-    id: DonationTier.GOLD,
-    name: 'Gold Supporter',
-    monthlyPrice: 7.99,
-    features: {
-      silver_perks: 'All Silver perks',
-      unlimited_media: 'Unlimited Media Sharing',
-      custom_hub_name: 'Custom Hub Name',
-      supporter_badge: 'Supporter Donor Badge',
+      increased_max_hubs: 'Max hubs 2 -> 5',
+      support_development: 'Support development of InterChat',
     },
     duration: 30, // 30 days
   },

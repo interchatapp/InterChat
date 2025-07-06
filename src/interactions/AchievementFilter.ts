@@ -17,13 +17,10 @@
 
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
-import { Pagination } from '#src/modules/Pagination.js';
+import { PaginationManager } from '#src/utils/ui/PaginationManager.js';
+import { ContainerBuilder, TextDisplayBuilder } from 'discord.js';
 import UserDbService from '#src/services/UserDbService.js';
-import {
-  buildAchievementsComponents,
-  buildAchievementsEmbed,
-  getUserAchievementData,
-} from '#src/utils/AchievementUtils.js';
+import { buildAchievementsEmbed, getUserAchievementData } from '#src/utils/AchievementUtils.js';
 
 /**
  * Handler for achievement filter dropdown interactions
@@ -54,41 +51,84 @@ export default class AchievementFilterHandler {
     // Get achievement data with new filter
     const achievementData = await getUserAchievementData(targetUser.id, newView);
 
-    // Create paginator
-    const paginator = new Pagination(ctx.client);
-
-    // Create pages for pagination
-    const itemsPerPage = 10;
-    const totalAchievements = achievementData.length;
-
     // If no achievements, show a message
-    if (totalAchievements === 0) {
+    if (achievementData.length === 0) {
       const noAchievementsEmbed = await buildAchievementsEmbed(targetUser, [], newView);
 
       await ctx.editReply({ embeds: [noAchievementsEmbed], components: [] });
       return;
     }
 
-    // Create pages
-    for (let i = 0; i < totalAchievements; i += itemsPerPage) {
-      const pageNumber = Math.floor(i / itemsPerPage) + 1;
+    // Use PaginationManager for paginated results
+    const paginationManager = new PaginationManager({
+      client: ctx.client,
+      identifier: `achievements-${targetUser.id}-${newView}`,
+      items: achievementData,
+      itemsPerPage: 10,
+      idleTimeout: 180000, // 3 minutes
+      contentGenerator: (pageIndex, itemsOnPage, totalPages, totalItems) => {
+        const container = new ContainerBuilder();
 
-      const pageEmbed = await buildAchievementsEmbed(
-        targetUser,
-        achievementData,
-        newView,
-        pageNumber,
-      );
+        // Convert embed to text content for the new system
+        const pageNumber = pageIndex + 1;
 
-      // Add filter dropdown for achievements
-      const filterRow = buildAchievementsComponents(totalAchievements, newView, pageNumber);
+        // Create title based on view
+        let title = 'All Achievements';
+        switch (newView) {
+          case 'unlocked':
+            title = 'Unlocked Achievements';
+            break;
+          case 'locked':
+            title = 'Locked Achievements';
+            break;
+          case 'progress':
+            title = 'Achievements In Progress';
+            break;
+        }
 
-      paginator.addPage({ embeds: [pageEmbed], components: filterRow });
-    }
+        // Add header
+        const headerText = new TextDisplayBuilder().setContent(
+          `## ${targetUser.username}'s ${title}\n${
+            totalPages > 1
+              ? `Page ${pageNumber}/${totalPages} • ${totalItems} achievements total`
+              : `${totalItems} achievements total`
+          }`,
+        );
+        container.addTextDisplayComponents(headerText);
 
-    // Run the paginator
-    await paginator.run(ctx.interaction, {
-      idle: 180000, // 3 minutes
+        // Add achievements content
+        const achievementsText = itemsOnPage
+          .map((achievement) => {
+            const progressText = achievement.unlocked
+              ? `✅ Unlocked${achievement.unlockedAt ? ` on ${formatDate(achievement.unlockedAt)}` : ''}`
+              : achievement.progress > 0
+                ? `${achievement.progress}/${achievement.threshold} Progress`
+                : '🔒 Locked';
+
+            return `**${achievement.badgeEmoji} ${achievement.name}**\n${achievement.description}\n\`${progressText}\``;
+          })
+          .join('\n\n');
+
+        const contentText = new TextDisplayBuilder().setContent(achievementsText);
+        container.addTextDisplayComponents(contentText);
+
+        return container;
+      },
     });
+
+    await paginationManager.start(ctx);
   }
+}
+
+/**
+ * Format a date nicely for display
+ * @param date Date to format
+ * @returns Formatted date string
+ */
+function formatDate(date: Date): string {
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
 }

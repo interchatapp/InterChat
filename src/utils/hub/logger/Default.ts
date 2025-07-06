@@ -15,7 +15,7 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import Logger from '#src/utils/Logger.js';
+import { handleError } from '#src/utils/Utils.js';
 import type { ClusterClient } from 'discord-hybrid-sharding';
 import {
   TextDisplayBuilder,
@@ -72,14 +72,12 @@ export const sendLog = async (
           .catch(() => null)) as Channel | null;
 
         if (channel?.isSendable()) {
-          const message = await channel
-            .send({
-              embeds: ctx.embed ? [ctx.embed] : undefined,
-              components: ctx.components,
-              allowedMentions: { roles: ctx.roleMentionIds },
-              flags: ctx.flags,
-            })
-            .catch(() => null);
+          const message = await channel.send({
+            embeds: ctx.embed ? [ctx.embed] : undefined,
+            components: ctx.components,
+            allowedMentions: { roles: ctx.roleMentionIds },
+            flags: ctx.flags,
+          });
 
           if (message) {
             return { id: message.id };
@@ -99,7 +97,7 @@ export const sendLog = async (
       },
     )
     .catch((e) => {
-      Logger.error(e);
+      handleError(e, { comment: 'Error sending log message' });
       return null;
     });
 

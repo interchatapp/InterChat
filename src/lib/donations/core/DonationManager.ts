@@ -17,10 +17,9 @@
 
 import Scheduler from '#src/services/SchedulerService.js';
 import UserDbService from '#src/services/UserDbService.js';
-import Constants from '#utils/Constants.js';
 import db from '#utils/Db.js';
 import Logger from '#utils/Logger.js';
-import { REST, Routes } from 'discord.js';
+import { REST } from 'discord.js';
 
 export class DonationManager {
   private scheduler: Scheduler;
@@ -48,51 +47,24 @@ export class DonationManager {
     });
   }
 
-  async addDonorRole(userId: string): Promise<void> {
-    if (!Constants.DonorRoleId) {
-      Logger.warn('[donation] DONOR_ROLE_ID not configured');
-      return;
-    }
-
-    await this.modifyUserRole('add', { userId, roleId: Constants.DonorRoleId });
-  }
-
-  async removeDonorRole(userId: string): Promise<void> {
-    if (!Constants.DonorRoleId) return;
-    await this.modifyUserRole('remove', { userId, roleId: Constants.DonorRoleId });
-  }
-
-  private async modifyUserRole(
-    type: 'add' | 'remove',
-    { userId, roleId }: { userId: string; roleId: string },
-  ): Promise<void> {
-    try {
-      const userInGuild = (await this.rest
-        .get(Routes.guildMember(Constants.SupportServerId, userId))
-        .catch(() => null)) as { roles: string[] } | null;
-
-      if (type === 'remove' && !userInGuild?.roles.includes(roleId)) return;
-
-      const method = type === 'add' ? 'put' : 'delete';
-      await this.rest[method](Routes.guildMemberRole(Constants.SupportServerId, userId, roleId));
-    }
-    catch (error) {
-      Logger.error(`[donation] Failed to ${type} role ${roleId} for user ${userId}`, error);
-    }
-  }
-
   async getUserTotalDonated(userId: string): Promise<number> {
-    const user = await this.userDbManager.getUser(userId);
-    return user?.totalDonated ?? 0;
+    return await this.userDbManager.getTotalDonated(userId);
   }
 
   async getUserDonationCount(userId: string): Promise<number> {
-    const user = await this.userDbManager.getUser(userId);
-    return user?.donationCount ?? 0;
+    const count = await db.donation.count({
+      where: { discordUserId: userId, processed: true },
+    });
+
+    return count;
   }
 
   async isUserDonor(userId: string): Promise<boolean> {
-    const user = await this.userDbManager.getUser(userId);
-    return user?.isDonor ?? false;
+    const user = await db.user.findUnique({
+      where: { id: userId, donationExpiresAt: { gt: new Date() }, donationTier: { not: null } },
+      select: {},
+    });
+
+    return user !== null;
   }
 }

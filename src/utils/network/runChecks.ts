@@ -21,11 +21,11 @@ import type HubManager from '#src/managers/HubManager.js';
 import type HubSettingsManager from '#src/managers/HubSettingsManager.js';
 import ServerBanManager from '#src/managers/ServerBanManager.js';
 import BanManager from '#src/managers/UserBanManager.js';
-import NSFWDetector from '#src/utils/NSFWDetection.js';
 import UserDbService from '#src/services/UserDbService.js';
 import { getEmoji } from '#src/utils/EmojiUtils.js';
 import { sendBlacklistNotif } from '#src/utils/moderation/blacklistUtils.js';
 import { checkAntiSwear as checkAntiSwearFunction } from '#src/utils/network/antiSwearChecks.js';
+import NSFWDetector from '#src/utils/NSFWDetection.js';
 import Constants, { RedisKeys } from '#utils/Constants.js';
 import { t } from '#utils/Locale.js';
 import Logger from '#utils/Logger.js';
@@ -63,9 +63,9 @@ const checks: CheckFunction[] = [
   checkNewUser,
   checkMessageLength,
   checkInviteLinks,
+  checkLinks, // before checkAttachments to ensure links are processed first
   checkAttachments,
   checkNSFW,
-  checkLinks,
   checkStickers,
 ];
 
@@ -86,6 +86,23 @@ const replyToMsg = async (
   }
 };
 
+const runCheckWithTiming = async (
+  message: Message<true>,
+  check: CheckFunction,
+  opts: HubCheckFunctionOpts,
+): Promise<CheckResult> => {
+  const checkStartTime = performance.now();
+  const result = await check(message, opts);
+  const resultString = result.passed ? 'passed' : 'failed';
+
+  Logger.debug(
+    `
+    Check ${check.name} ${resultString} for message ${message.id} (${(performance.now() - checkStartTime).toFixed(2)}ms).
+    `,
+  );
+  return result;
+};
+
 export const runChecks = async (
   message: Message<true>,
   hub: HubManager,
@@ -99,20 +116,12 @@ export const runChecks = async (
   Logger.debug(`Starting message checks for message ${message.id}`);
 
   for (const check of checks) {
-    const checkStartTime = performance.now();
-    const result = await check(message, { ...opts, hub });
-    const checkDuration = performance.now() - checkStartTime;
+    const result = await runCheckWithTiming(message, check, { ...opts, hub });
 
     if (!result.passed) {
-      // Log failed check with timing information
-      Logger.debug(`Message ${message.id} failed check: ${check.name} (${checkDuration}ms)`);
-
-      if (result.reason) {
-        await replyToMsg(message, { content: result.reason });
-      }
+      if (result.reason) await replyToMsg(message, { content: result.reason });
       return false;
     }
-    Logger.debug(`Message ${message.id} passed check: ${check.name} in ${checkDuration}ms`);
   }
 
   return true;
@@ -156,12 +165,7 @@ async function checkAntiSwear(
   const result = await checkAntiSwearFunction(message, hub.id);
 
   // Store result in Redis cache
-  await redis.set(
-    cacheKey,
-    JSON.stringify(result),
-    'EX',
-    ANTI_SWEAR_CACHE_TTL,
-  );
+  await redis.set(cacheKey, JSON.stringify(result), 'EX', ANTI_SWEAR_CACHE_TTL);
 
   return result;
 }
@@ -211,12 +215,7 @@ async function checkBanAndBlacklist(
   const blacklisted = await blacklistManager.fetchBlacklist(opts.hub.id);
 
   // Store result in Redis cache (using '1' for true and '0' for false to save space)
-  await redis.set(
-    cacheKey,
-    blacklisted ? '1' : '0',
-    'EX',
-    BLACKLIST_CHECK_CACHE_TTL,
-  );
+  await redis.set(cacheKey, blacklisted ? '1' : '0', 'EX', BLACKLIST_CHECK_CACHE_TTL);
 
   if (blacklisted) {
     // If blacklisted, send notification
@@ -242,7 +241,7 @@ async function checkHubLock(
     return {
       passed: false,
       reason:
-        'This hub\'s chat has been locked. Only moderators can send messages. Please check back later as this may be temporary.',
+        "This hub's chat has been locked. Only moderators can send messages. Please check back later as this may be temporary.",
     };
   }
   return { passed: true };
@@ -362,24 +361,68 @@ async function checkInviteLinks(
   return { passed: true };
 }
 
-function checkAttachments(message: Message<true>): CheckResult {
-  const attachment = message.attachments.first();
-  const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+const MAX_ATTACHMENT_SIZE = 8 * 1024 * 1024; // 8MB
+const ALLOWED_IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/jpg', 'image/webp']);
+const ALLOWED_VIDEO_TYPES = new Set(['video/mp4', 'video/webm', 'video/mov']);
 
-  if (attachment?.contentType && !allowedTypes.includes(attachment.contentType)) {
-    return {
-      passed: false,
-      reason: 'Only images and tenor gifs are allowed to be sent within the network.',
-    };
+// Pre-defined error messages to avoid string concatenation
+const ERROR_MESSAGES = {
+  SIZE_LIMIT: 'Please keep your attachments under 8MB.',
+  VIDEO_DISABLED: 'Video attachments are not allowed in this hub because the "Allow Videos" setting is disabled.',
+  INVALID_TYPE: 'Only images, videos (if enabled), and Tenor GIFs are allowed to be sent within this hub.',
+} as const;
+
+async function checkAttachments(
+  message: Message<true>,
+  opts: HubCheckFunctionOpts,
+): Promise<CheckResult> {
+  const attachment = message.attachments.first();
+  const { attachmentURL, settings } = opts;
+
+  // exit if no attachment to check
+  if (!attachment && !attachmentURL) {
+    return { passed: true };
   }
 
-  if (attachment && attachment.size > 1024 * 1024 * 8) {
-    return { passed: false, reason: 'Please keep your attachments under 8MB.' };
+  const allowVideos = settings.has('AllowVideos');
+
+  if (attachment) {
+    // Size check first (fastest check)
+    if (attachment.size > MAX_ATTACHMENT_SIZE) {
+      return { passed: false, reason: ERROR_MESSAGES.SIZE_LIMIT };
+    }
+
+    // Type check only if contentType exists
+    if (attachment.contentType) {
+      const isVideo = ALLOWED_VIDEO_TYPES.has(attachment.contentType);
+
+      // Fast video check
+      if (isVideo && !allowVideos) {
+        return { passed: false, reason: ERROR_MESSAGES.VIDEO_DISABLED };
+      }
+
+      // Only check image types if it's not a video
+      if (!isVideo && !ALLOWED_IMAGE_TYPES.has(attachment.contentType)) {
+        return { passed: false, reason: ERROR_MESSAGES.INVALID_TYPE };
+      }
+    }
+  }
+
+  // Check attachment URL
+  if (attachmentURL) {
+    // Use regex test directly without intermediate variables
+    if (Constants.Regex.VideoURL.test(attachmentURL)) {
+      if (!allowVideos) {
+        return { passed: false, reason: ERROR_MESSAGES.VIDEO_DISABLED };
+      }
+    }
+    else if (!Constants.Regex.ImageURL.test(attachmentURL)) {
+      return { passed: false, reason: ERROR_MESSAGES.INVALID_TYPE };
+    }
   }
 
   return { passed: true };
 }
-
 async function checkNSFW(
   message: Message<true>,
   { attachmentURL }: { attachmentURL?: string | null },

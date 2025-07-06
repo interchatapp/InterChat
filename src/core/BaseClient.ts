@@ -199,7 +199,6 @@ export default class InterChatClient extends Client {
         matching: {
           queueTimeout: 30 * 60 * 1000, // 30 minutes
           backgroundInterval: 5000, // 5 seconds
-          maxRecentMatches: 10,
           recentMatchTtlSecs: 60 * 60, // 1 hour
         },
       };

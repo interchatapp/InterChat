@@ -19,7 +19,7 @@ import { CacheManager } from '#src/managers/CacheManager.js';
 import { DonationManager } from './DonationManager.js';
 import Logger from '#src/utils/Logger.js';
 import { CACHE_CONFIG } from '../utils/constants.js';
-import { Tiers } from '../tiers/index.js';
+import { Tier, Tiers } from '../tiers/index.js';
 import UserDbService from '#src/services/UserDbService.js';
 import { DonationTier } from '#src/generated/prisma/client/index.js';
 
@@ -47,7 +47,6 @@ export class PremiumService {
     const tier = user?.donationTier as DonationTier | null;
 
     if (tier && user?.donationExpiresAt && user.donationExpiresAt < new Date()) {
-      this.donationManager.removeDonorRole(userId).catch(() => null);
       return null;
     }
 
@@ -60,12 +59,12 @@ export class PremiumService {
     if (!tier) return false;
 
     const tierData = Tiers[tier];
-    return tierData.features.includes(feature);
+    return tierData.features[feature] !== undefined;
   }
 
-  async getTierFeatures(userId: string): Promise<string[]> {
+  async getTierFeatures(userId: string): Promise<Tier['features'] | null> {
     const tier = await this.getUserTier(userId);
-    if (!tier) return [];
+    if (!tier) return null;
 
     return Tiers[tier].features;
   }

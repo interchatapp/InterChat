@@ -18,7 +18,6 @@
 import AchievementService from '#src/services/AchievementService.js';
 import Scheduler from '#src/services/SchedulerService.js';
 import UserDbService from '#src/services/UserDbService.js';
-import MediaUsageService from '#src/services/MediaUsageService.js';
 import type { WebhookPayload } from '#types/TopGGPayload.d.ts';
 import Constants from '#utils/Constants.js';
 import db from '#utils/Db.js';
@@ -40,12 +39,12 @@ import {
   userMention,
 } from 'discord.js';
 import ms from 'ms';
+import { Badges } from '#src/generated/prisma/client/index.js';
 
 export class VoteManager {
   private scheduler: Scheduler;
   private readonly userDbManager = new UserDbService();
   private readonly achievementService = new AchievementService();
-  private readonly mediaUsageService = new MediaUsageService();
   private readonly rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN as string);
   private clusterManager: ClusterManager | null = null;
 
@@ -53,7 +52,10 @@ export class VoteManager {
     this.scheduler = scheduler;
     this.scheduler.addRecurringTask('removeVoterRole', 60 * 60 * 1_000, async () => {
       const expiredVotes = await db.user.findMany({
-        where: { lastVoted: { lt: new Date(Date.now() - ms('12h')) } },
+        where: {
+          lastVoted: { lt: new Date(Date.now() - ms('12h')) },
+          badges: { has: Badges.VOTER },
+        },
       });
       for (const vote of expiredVotes) {
         await this.removeVoterRole(vote.id);
@@ -76,6 +78,11 @@ export class VoteManager {
       name,
       lastVoted,
       voteCount: newVoteCount,
+      badges: {
+        set: user?.badges.includes(Badges.VOTER)
+          ? user.badges
+          : [...(user?.badges ?? []), Badges.VOTER],
+      },
     });
 
     // Track vote achievements
@@ -89,9 +96,6 @@ export class VoteManager {
 
     // Update voting leaderboard
     await updateVotingLeaderboard(userId, newVoteCount);
-
-    // Handle media usage refresh for call system
-    await this.mediaUsageService.handleTopggVote(userId);
 
     return updatedUser;
   }
@@ -157,6 +161,17 @@ export class VoteManager {
       userId,
       roleId: Constants.VoterRoleId,
     });
+
+    const user = await this.userDbManager.getUser(userId);
+
+    if (user?.badges.includes(Badges.VOTER)) {
+      await db.user.update({
+        where: { id: userId },
+        data: {
+          badges: { set: user.badges.filter((b) => b !== Badges.VOTER) },
+        },
+      });
+    }
   }
 
   public isValidVotePayload(payload: WebhookPayload) {

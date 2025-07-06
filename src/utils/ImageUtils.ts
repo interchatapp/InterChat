@@ -25,8 +25,7 @@ import { CanvasRenderingContext2D } from 'canvas';
  * @returns The URL of the attachment, or null if no attachment is found.
  */
 export const getAttachmentURL = async (string: string) => {
-  // Image URLs
-  const URLMatch = string.match(Constants.Regex.StaticImageUrl);
+  const URLMatch = string.match(Constants.Regex.VideoURL);
   if (URLMatch) return URLMatch[0];
 
   // Tenor Gifs

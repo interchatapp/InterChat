@@ -115,6 +115,9 @@ export default class BlacklistManager {
                 ? new Date(blacklist.appeal.user.lastHubJoinAt)
                 : null,
               lastMessageAt: new Date(blacklist.appeal.user.lastMessageAt),
+              donationExpiresAt: blacklist.appeal.user.donationExpiresAt
+                ? new Date(blacklist.appeal.user.donationExpiresAt)
+                : null,
             }
             : null,
         }

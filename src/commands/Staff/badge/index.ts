@@ -15,15 +15,21 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import '#src/instrument.js';
-import InterChatClient from '#src/core/BaseClient.js';
-import Logger from '#utils/Logger.js';
-import 'dotenv/config';
+import BaseCommand from '#src/core/BaseCommand.js';
+import AddBadgeCommand from '#src/commands/Staff/badge/add.js';
+import RemoveBadgeCommand from '#src/commands/Staff/badge/remove.js';
 
-const client = new InterChatClient();
-
-client.on('debug', (debug) => Logger.debug(debug));
-client.rest.on('restDebug', (debug) => Logger.debug(debug));
-client.rest.on('rateLimited', (data) => Logger.warn('Rate limited: %O', data));
-
-client.start();
+export default class BadgeCommand extends BaseCommand {
+  constructor() {
+    super({
+      name: 'badge',
+      description: 'Manage user badges.',
+      staffOnly: true,
+      types: { slash: true },
+      subcommands: {
+        add: new AddBadgeCommand(),
+        remove: new RemoveBadgeCommand(),
+      },
+    });
+  }
+}
