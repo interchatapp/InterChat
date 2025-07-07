@@ -102,23 +102,24 @@ network:
     welcome:
       title: '🎉 Welcome to InterChat!'
       description: |
-        Welcome to InterChat! Let's get you set up with a personalized experience that matches your interests and helps you find the perfect communities to join.
+        Bem-vindo ao InterChat! Vamos configurar uma experiência personalizada que corresponda aos seus interesses e ajude você a encontrar as comunidades perfeitas para participar.
 
-        This quick setup will help us:
-        - Learn about your interests and preferences
-        - Find the best hubs for you to join
-        - Connect you with like-minded people
-        - Get you started with your first community
+        Esta configuração rápida nos ajudará a:
+        - Descubra seus interesses e preferências
+        - Encontre os melhores hubs para você participar
+        - Conecte-se com pessoas que pensam como você
+        - Conectar você com pessoas que pensam como você
+        - Começar sua primeira comunidade
 
-        Ready to begin your InterChat journey?
+        Pronto para começar sua jornada no InterChat?
     embed:
       title: '🎉 Bem-vindo ao {hubName}!'
       description: |
-        Congratulations! You've discovered an amazing, active community hub! 🌟
+        Parabéns! Você descobriu um centro comunitário incrível e ativo! 🌟
 
-        Before you dive in and start making new friends, let's take a quick peek at our simple guidelines. They're designed to help everyone have the most fun and feel comfortable sharing their thoughts and experiences.
+        Antes de começar a fazer novos amigos, vamos dar uma olhada rápida em nossas diretrizes simples. Elas foram elaboradas para ajudar todos divirtam-se ao máximo e sintam-se à vontade para compartilhar seus pensamentos e experiências.
 
-        Let's get started!
+        Vamos começar!
       footer: Rede InterChat | Conectando Comunidades Mundialmente 🌍
     inProgress: '{emoji} {channel} já está em processo de configuração para se juntar a um hub. Aguarde a conclusão da configuração ou cancele-a se você foi quem a iniciou.'
 blacklist:
@@ -238,8 +239,8 @@ hub:
       - Use `/connection edit` para trocar para um canal diferente a qualquer momento
 
       **💝 Dica profissional:** Diga olá e se apresente - todos adoram conhecer novos amigos! Divirta-se conectando-se com a comunidade! 🌟
-    nsfwChannelSfwHub: '{emoji} NSFW channels cannot connect to SFW hubs. {channel} is marked as NSFW, but **{hub}** is a safe-for-work hub. Please use a non-NSFW channel or find an NSFW hub instead.'
-    sfwChannelNsfwHub: '{emoji} SFW channels cannot connect to NSFW hubs. {channel} is not marked as NSFW, but **{hub}** is an adult content hub. Please use an NSFW channel or find a SFW hub instead.'
+    nsfwChannelSfwHub: '.{emoji} Canais NSFW não podem se conectar a hubs SFW. {channel} está marcado como NSFW, mas **{hub}** é um hub seguro para o trabalho. Use um canal não NSFW ou encontre um hub NSFW.'
+    sfwChannelNsfwHub: '{emoji} Canais SFW não podem se conectar a hubs NSFW. {channel} não está marcado como NSFW, mas **{hub}** é um hub de conteúdo adulto. Use um canal NSFW ou encontre um hub SFW.'
   servers:
     total: 'Servidores conectados atualmente: {from}-{to} / **{total}**'
     noConnections: '{emoji} Nenhum servidor se juntou a este hub ainda. Use `/connect` para se juntar a este hub.'
@@ -335,7 +336,7 @@ hub:
       noInvites: '**Códigos de convite:**'
       notPrivate: '{emoji} Somente hubs privados podem ter convites. Use `/hub edit` para tornar este hub privado.'
   joined:
-    noJoinedHubs: '{emoji} This server has not joined any hubs yet. Use [hub directory]({hubs_link}) to view a list of hubs.'
+    noJoinedHubs: '{emoji} Este servidor ainda não se juntou a nenhum hub. Use [diretório de hubs]({hubs_link}) para ver uma lista de hubs.'
     joinedHubs: Este servidor faz parte de **{total}** hub(s). Use `/disconnect` para sair de um hub.
   leave:
     noHub: '{emoji} Esse canal é inválido ou não se juntou a nenhum hub.'
@@ -357,7 +358,7 @@ hub:
       notAllowed: "{emoji} Somente os gerentes do hub podem atualizar a posição de um moderador."
       notOwner: "{emoji} Somente o proprietário deste hub pode atualizar a posição de um gerente."
   manage:
-    dashboardTip: "**🛠️ NEW Dashboard:** Improved interface and more features! Try it out at [your hub's dashboard page]({url})."
+    dashboardTip: "**🛠️ NOVO Painel:** Interface aprimorada e mais recursos! Experimente na [página do painel do seu hub]({url})."
     enterImgurUrl: Insira uma URL de imagem Imgur válida que não seja uma galeria ou álbum.
     icon:
       changed: Ícone do Hub alterado com sucesso.
@@ -401,21 +402,21 @@ hub:
         unlocked: 'Todos podem enviar mensagens.'
     toggleNsfw:
       modal:
-        title: 'Toggle NSFW Status'
-        label: 'NSFW Status'
-        description: 'Mark this hub as containing adult content.'
+        title: 'Alternar status NSFW'
+        label: 'Status NSFW'
+        description: 'Marque este hub como contendo conteúdo adulto.'
       selects:
-        label: 'Toggle NSFW Status'
-        description: 'Mark hub as NSFW or SFW content'
-      confirmation: 'Hub content rating is now {status}.'
-      announcementTitle: 'Hub content rating changed to {status}'
+        label: 'Alternar status NSFW'
+        description: 'Marcar o hub como conteúdo NSFW ou SFW'
+      confirmation: 'A classificação de conteúdo do Hub agora é {status}.'
+      announcementTitle: 'A classificação do conteúdo do hub foi alterada para {status}'
       announcementDescription:
-        nsfw: 'This hub now contains adult content. Only NSFW Discord channels can connect to this hub.'
-        sfw: 'This hub is now safe for work. All channels can connect to this hub.'
+        nsfw: 'Este hub agora contém conteúdo adulto. Somente canais NSFW do Discord podem se conectar a este hub.'
+        sfw: 'Este hub agora está seguro para uso. Todos os canais podem se conectar a este hub.'
     setNsfw:
-      success: '{emoji} **{hub}** has been successfully marked as **{status}**.'
-      announcement: "{emoji} **Hub Content Rating Changed**\n\nThis hub is now marked as **{status}**.\n\n{description}"
-    nsfwAlreadySet: '{emoji} **{hub}** is already marked as **{status}**.'
+      success: '{emoji} **{hub}** foi marcado com sucesso como **{status}**.'
+      announcement: "{emoji} **Classificação de conteúdo do hub alterada**\n\nEste hub agora está marcado como **{status}**.\n\n{description}"
+    nsfwAlreadySet: '{emoji} **{hub}** já está marcado como **{status}**.'
     embed:
       visibility: 'Visibilidade'
       connections: 'Conexões'
@@ -460,14 +461,14 @@ hub:
         label: Alertas de rede
         description: Receba alertas sobre mensagens bloqueadas automaticamente.
       messageModeration:
-        label: Message Moderation
-        description: Log message deletions and edits by moderators.
+        label: Moderação de mensagens
+        description: Registre exclusões e edições de mensagens feitas por moderadores.
       messageDeletions:
-        label: Message Deletions
-        description: Log when messages are deleted from the hub.
+        label: Exclusões de mensagens
+        description: Registre quando as mensagens são excluídas do hub.
       messageEdits:
-        label: Message Edits
-        description: Log when messages are edited in the hub.
+        label: Edições de mensagens
+        description: Registre quando as mensagens são editadas no hub.
   transfer:
     invalidUser: '.{emoji} O usuário especificado não foi encontrado.'
     selfTransfer: '{emoji} Você não pode transferir a propriedade para si mesmo.'
@@ -549,14 +550,14 @@ report:
   submitted: '{emoji} Relatório enviado com sucesso. Junte-se ao {support_command} para obter mais detalhes. Obrigado!'
   errors:
     noReasonSelected: '{emoji} No reason selected. Please try again.'
-    hubNotFound: '{emoji} Hub not found. Please try again.'
-  description: 'Report a message'
+    hubNotFound: '{emoji} Hub não encontrado. Tente novamente.'
+  description: 'Denunciar uma mensagem'
   options:
     message:
-      description: 'The message to report'
+      description: 'A mensagem para relatar'
   contextMenu:
-    name: 'Report Message'
-  selectReason: '{emoji} Please select a reason for your report:'
+    name: 'Denunciar mensagem'
+  selectReason: '{emoji} Selecione um motivo para sua denúncia:'
   bug:
     title: Relatório de erro
     affected: Componentes afetados
@@ -568,16 +569,16 @@ errors:
   notYourAction: "{emoji} Desculpe, você não pode executar esta ação. Por favor, execute o comando você mesmo."
   notMessageAuthor: '{emoji} Você não é o autor desta mensagem.'
   commandError: |
-    {emoji} Oops! Something unexpected happened while running this command. Don't worry - this isn't your fault!
+    {emoji} Ops! Algo inesperado aconteceu ao executar este comando. Não se preocupe - a culpa não é sua!
 
-    We've automatically logged this issue and our team will take a look. If this keeps happening, please drop by our friendly [support server]({support_invite}) and let us know about this error ID - we're always happy to help! 🤗
+    Registramos este problema automaticamente e nossa equipe irá verificar. Se isso continuar acontecendo... Por favor, visite nosso simpático [servidor de suporte]({support_invite}) e nos informe sobre o ID do erro. Teremos prazer em ajudar! 🤗
 
-    **Error ID:**
+    **ID do erro:**
     ```{errorId}```
   mustVote: Por favor, [vote](https://top.gg/bot/769921109209907241/vote) para que o InterChat use este comando, seu apoio é muito apreciado!
   inviteLinks: '{emoji} Você não pode enviar links de convite para este hub. Defina um convite em `/connection` em vez disso! Os moderadores do hub podem configurar isso usando `/hub edit settings`'
   invalidLangCode: '{emoji} Código de idioma inválido. Verifique se você inseriu um [código de idioma](https://cloud.google.com/translate/docs/languages) correto.'
-  modalError: '{emoji} There was an error showing the modal. Please try again.'
+  modalError: '{emoji} Ocorreu um erro ao exibir o modal. Tente novamente.'
   unknownServer: '{emoji} Servidor desconhecido. Certifique-se de ter inserido o **ID do servidor** correto.'
   unknownNetworkMessage: '{emoji} Mensagem desconhecida. Se foi enviada no último minuto, aguarde mais alguns segundos e tente novamente.'
   userNotFound: '.{emoji} Usuário não encontrado. Tente inserir o ID dele.'
@@ -595,10 +596,10 @@ errors:
   banned: |
     {emoji} Você foi banido do uso do InterChat por violar nossas [diretrizes](https://interchat.tech/guidelines).
     Se você acha que um recurso é aplicável, crie um tíquete no [servidor de suporte]{support_invite} ).
-  commandLoadingError: 'There was an error loading the command. Please try again later.'
-  errorLoadingHubs: 'Error Loading Hubs'
-  errorShowingHubSelection: 'There was an error showing the hub selection screen. Please try again.'
-  connectNotFound: 'Connect command not found. Please try again.'
+  commandLoadingError: 'Ocorreu um erro ao carregar o comando. Tente novamente mais tarde.'
+  errorLoadingHubs: 'Erro ao carregar hubs'
+  errorShowingHubSelection: 'Ocorreu um erro ao exibir a tela de seleção do hub. Tente novamente.'
+  connectNotFound: 'Comando de conexão não encontrado. Tente novamente.'
 config:
   setInvite:
     success: |
@@ -636,26 +637,26 @@ global:
   cancelled: '{emoji} Cancelled. No changes were made.'
   #Common button labels
   buttons:
-    openInbox: 'Open Inbox'
+    openInbox: 'Abrir caixa de entrada'
     modPanel: 'Mod Panel'
-    joinServer: 'Join Server'
-    disconnect: 'Disconnect'
-    reconnect: 'Reconnect'
-    editRule: 'Edit Rule'
+    joinServer: 'Junte-se ao servidor'
+    disconnect: 'Desconectar'
+    reconnect: 'Reconectar'
+    editRule: 'Editar regra'
     #Setup buttons
-    joinPopularHub: 'Join Popular Hub'
-    createNewHub: 'Create New Hub'
-    finishSetup: 'Finish Setup'
-    findMoreHubs: 'Find More Hubs'
-    supportServer: 'Support Server'
-    viewChannel: 'View Channel'
-    hubDirectory: 'Hub Directory'
-    learnMore: 'Learn More'
-    connectToHub: 'Connect to a Hub'
+    joinPopularHub: 'Junte-se ao Popular Hub'
+    createNewHub: 'Criar novo hub'
+    finishSetup: 'Concluir configuração'
+    findMoreHubs: 'Encontre mais hubs'
+    supportServer: 'Servidor de suporte'
+    viewChannel: 'Ver canal'
+    hubDirectory: 'Diretório do Hub'
+    learnMore: 'Saber mais'
+    connectToHub: 'Cancelar chamada'
     #Common buttons for calls and other features
-    createYourHub: 'Create Your Hub'
+    createYourHub: 'Crie seu hub'
     #Call buttons
-    cancelCall: 'Cancel Call'
+    cancelCall: 'Cancelar chamada'
     newCall: 'New Call'
     #Leaderboard
     userLeaderboard: 'User Leaderboard'
