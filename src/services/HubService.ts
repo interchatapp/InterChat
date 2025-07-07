@@ -66,8 +66,6 @@ export class HubService {
       lastActive: new Date(parsedHub.lastActive),
       createdAt: new Date(parsedHub.createdAt),
       updatedAt: new Date(parsedHub.updatedAt),
-      lastActivityUpdate: new Date(parsedHub.lastActivityUpdate),
-      lastGrowthUpdate: new Date(parsedHub.lastGrowthUpdate),
     };
   }
 
@@ -118,8 +116,6 @@ export class HubService {
       lastActive: new Date(hub.lastActive),
       createdAt: new Date(hub.createdAt),
       updatedAt: new Date(hub.updatedAt),
-      lastActivityUpdate: new Date(hub.lastActivityUpdate),
-      lastGrowthUpdate: new Date(hub.lastGrowthUpdate),
     };
   }
 

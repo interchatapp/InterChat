@@ -15,15 +15,21 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { DonationTier } from '#src/generated/prisma/client/index.js';
+import BaseCommand from '#src/core/BaseCommand.js';
+import AddBadgeCommand from '#src/commands/Staff/badge/add.js';
+import RemoveBadgeCommand from '#src/commands/Staff/badge/remove.js';
 
-/**
- * Defines the structure of a donation tier.
- */
-export interface Tier {
-  id: DonationTier;
-  name: string;
-  monthlyPrice: number;
-  features: { [key: string]: string };
-  duration: number; // in days
+export default class BadgeCommand extends BaseCommand {
+  constructor() {
+    super({
+      name: 'badge',
+      description: 'Manage user badges.',
+      staffOnly: true,
+      types: { slash: true },
+      subcommands: {
+        add: new AddBadgeCommand(),
+        remove: new RemoveBadgeCommand(),
+      },
+    });
+  }
 }

@@ -23,6 +23,8 @@ import { stripIndents } from 'common-tags';
 import {
   ActionRowBuilder,
   type AutocompleteInteraction,
+  ButtonBuilder,
+  ButtonStyle,
   type Client,
   ContainerBuilder,
   MediaGalleryBuilder,
@@ -62,12 +64,6 @@ const enum HubEditAction {
   Banner = 'banner',
 }
 
-const enum HubEditModalSuffix {
-  Description = 'description',
-  Icon = 'icon',
-  Banner = 'banner',
-}
-
 export default class HubEditSubcommand extends BaseCommand {
   constructor() {
     super({
@@ -102,7 +98,7 @@ export default class HubEditSubcommand extends BaseCommand {
    * @param hub The hub to create options for
    * @returns Array of select menu options
    */
-  private createHubActionOptions(hub: HubManager): Array<{
+  private createHubActionOptions(): Array<{
     label: string;
     value: string;
     emoji: string;
@@ -116,32 +112,10 @@ export default class HubEditSubcommand extends BaseCommand {
         description: 'Change the description of your hub',
       },
       {
-        label: 'Change Icon',
+        label: 'Change Icon/Banner',
         value: HubEditAction.Icon,
-        emoji: '🖼️',
-        description: 'Update the icon image for your hub',
-      },
-      {
-        label: 'Update Banner',
-        value: HubEditAction.Banner,
         emoji: '🎨',
-        description: 'Change or remove the banner image',
-      },
-      {
-        label: hub.data.locked ? 'Unlock Hub' : 'Lock Hub',
-        value: HubEditAction.ToggleLock,
-        emoji: hub.data.locked ? '🔓' : '🔒',
-        description: hub.data.locked
-          ? 'Allow members to send messages in this hub'
-          : 'Prevent members from sending messages in this hub',
-      },
-      {
-        label: hub.data.nsfw ? 'Mark as SFW' : 'Mark as NSFW',
-        value: HubEditAction.ToggleNsfw,
-        emoji: hub.data.nsfw ? '🔞' : '🛡️',
-        description: hub.data.nsfw
-          ? 'Mark this hub as safe for work content'
-          : 'Mark this hub as containing adult content',
+        description: 'Update the icon image for your hub',
       },
     ];
   }
@@ -166,20 +140,7 @@ export default class HubEditSubcommand extends BaseCommand {
     const { hub, locale } = await this.ensureModalValidity(ctx);
     if (!hub) return;
 
-    switch (ctx.customId.suffix) {
-      case HubEditModalSuffix.Description:
-        await this.updateHubDescription(ctx, hub.id, locale);
-        break;
-      case HubEditModalSuffix.Icon:
-        await this.updateHubIcon(ctx, hub.id, locale);
-        break;
-      case HubEditModalSuffix.Banner:
-        await this.updateHubBanner(ctx, hub.id, locale);
-        break;
-      default:
-        break;
-    }
-
+    await this.updateHubDescription(ctx, hub.id, locale);
     await this.updateOriginalMessage(ctx, hub.id, locale);
   }
 
@@ -215,9 +176,10 @@ export default class HubEditSubcommand extends BaseCommand {
   ) {
     switch (action) {
       case HubEditAction.Icon:
-      case HubEditAction.Description:
       case HubEditAction.Banner:
-        await this.showEditModal(ctx, hub.id, action, locale);
+        await this.showIconBannerNotice(ctx, hub.id, locale);
+      case HubEditAction.Description:
+        await this.showEditModal(ctx, hub.id, locale);
         break;
       case HubEditAction.ToggleLock:
         await this.toggleHubLock(ctx, hub, locale);
@@ -230,36 +192,48 @@ export default class HubEditSubcommand extends BaseCommand {
     }
   }
 
-  private async showEditModal(
-    ctx: ComponentContext,
-    hubId: string,
-    actionType: Exclude<HubEditAction, HubEditAction.ToggleLock>,
-    locale: supportedLocaleCodes,
-  ) {
+  @RegisterInteractionHandler(HUB_EDIT_IDENTIFIER, HubEditAction.ToggleLock)
+  async handleToggleLockButton(ctx: ComponentContext) {
+    const { hub, locale } = await this.ensureComponentValidity(ctx);
+    if (!hub) return;
+
+    await this.toggleHubLock(ctx, hub, locale);
+  }
+
+  @RegisterInteractionHandler(HUB_EDIT_IDENTIFIER, HubEditAction.ToggleNsfw)
+  async handleToggleNsfwButton(ctx: ComponentContext) {
+    const { hub, locale } = await this.ensureComponentValidity(ctx);
+    if (!hub) return;
+
+    await this.toggleHubNsfw(ctx, hub, locale);
+  }
+
+  private async showEditModal(ctx: ComponentContext, hubId: string, locale: supportedLocaleCodes) {
     const modal = new ModalBuilder()
-      .setCustomId(new CustomID(`${HUB_EDIT_MODAL_IDENTIFIER}:${actionType}`, [hubId]).toString())
-      .setTitle(t(`hub.manage.${actionType}.modal.title`, locale));
+      .setCustomId(new CustomID(`${HUB_EDIT_MODAL_IDENTIFIER}`, [hubId]).toString())
+      .setTitle(t('hub.manage.description.modal.title', locale));
 
     const inputField = new TextInputBuilder()
-      .setLabel(t(`hub.manage.${actionType}.modal.label`, locale))
-      .setStyle(
-        actionType === HubEditAction.Description ? TextInputStyle.Paragraph : TextInputStyle.Short,
-      )
-      .setCustomId(actionType);
-
-    if (actionType === HubEditAction.Description) {
-      inputField.setMaxLength(1024);
-    }
-    else {
-      inputField.setPlaceholder(t('hub.manage.enterImgurUrl', locale));
-    }
-
-    if (actionType === HubEditAction.Banner) {
-      inputField.setRequired(false);
-    }
+      .setLabel(t('hub.manage.description.modal.label', locale))
+      .setStyle(TextInputStyle.Paragraph)
+      .setCustomId('description')
+      .setMaxLength(1024);
 
     modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(inputField));
     await ctx.showModal(modal);
+  }
+
+  private async showIconBannerNotice(
+    ctx: ComponentContext,
+    hubId: string,
+    locale: supportedLocaleCodes,
+  ) {
+    await ctx.reply({
+      content: t('hub.manage.iconBannerNotice', locale, {
+        url: `${Constants.Links.Website}/dashboard/hubs/${hubId}/edit`,
+      }),
+      flags: [MessageFlags.Ephemeral],
+    });
   }
 
   private async toggleHubLock(
@@ -433,116 +407,9 @@ export default class HubEditSubcommand extends BaseCommand {
     });
   }
 
-  private async updateHubIcon(ctx: ComponentContext, hubId: string, locale: supportedLocaleCodes) {
-    const iconUrl = ctx.getModalFieldValue(HubEditAction.Icon);
-
-    if (!iconUrl || !Constants.Regex.ImageURL.test(iconUrl)) {
-      // Create UI components helper
-      const ui = new UIComponents(ctx.client);
-
-      // Create error container
-      const errorContainer = ui.createErrorMessage(
-        'Invalid Image URL',
-        t('hub.invalidImgurUrl', locale, {
-          emoji: getEmoji('x_icon', ctx.client),
-        }),
-      );
-
-      // Add dashboard tip
-      errorContainer.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(this.getDashboardTip(locale, hubId)),
-      );
-
-      await ctx.reply({
-        components: [errorContainer],
-        flags: [MessageFlags.IsComponentsV2],
-      });
-      return;
-    }
-
-    const hub = await this.getHubOrReplyError(ctx, hubId, locale);
-    if (!hub) return;
-
-    // Update the hub icon
-    await hub.update({ iconUrl });
-
-    // Create UI components helper
-    const ui = new UIComponents(ctx.client);
-
-    // Create success container
-    const successContainer = ui.createSuccessMessage(
-      'Icon Updated',
-      t('hub.manage.icon.changed', locale),
-    );
-
-    await ctx.reply({
-      components: [successContainer],
-      flags: [MessageFlags.IsComponentsV2, MessageFlags.Ephemeral],
-    });
-  }
-
   private getDashboardTip(locale: supportedLocaleCodes, hubId: string) {
     return t('hub.manage.dashboardTip', locale, {
       url: `${Constants.Links.Website}/dashboard/hubs/${hubId}/edit`,
-    });
-  }
-
-  private async updateHubBanner(
-    ctx: ComponentContext,
-    hubId: string,
-    locale: supportedLocaleCodes,
-  ) {
-    const hub = await this.getHubOrReplyError(ctx, hubId, locale);
-    if (!hub) return;
-
-    const bannerUrl = ctx.getModalFieldValue(HubEditAction.Banner);
-
-    // Create UI components helper
-    const ui = new UIComponents(ctx.client);
-
-    if (!bannerUrl) {
-      await hub.update({ bannerUrl: null });
-
-      // Create success container for banner removal
-      const successContainer = ui.createSuccessMessage(
-        'Banner Removed',
-        t('hub.manage.banner.removed', locale),
-      );
-
-      await ctx.editReply({
-        components: [successContainer],
-        flags: [MessageFlags.IsComponentsV2],
-      });
-      return;
-    }
-
-    if (!Constants.Regex.ImageURL.test(bannerUrl)) {
-      // Create error container
-      const errorContainer = ui.createErrorMessage(
-        'Invalid Image URL',
-        t('hub.invalidImgurUrl', locale, {
-          emoji: getEmoji('x_icon', ctx.client),
-        }),
-      );
-
-      await ctx.editReply({
-        components: [errorContainer],
-        flags: [MessageFlags.IsComponentsV2],
-      });
-      return;
-    }
-
-    await hub.update({ bannerUrl });
-
-    // Create success container
-    const successContainer = ui.createSuccessMessage(
-      'Banner Updated',
-      t('hub.manage.banner.changed', locale),
-    );
-
-    await ctx.editReply({
-      components: [successContainer],
-      flags: [MessageFlags.IsComponentsV2],
     });
   }
 
@@ -724,7 +591,36 @@ export default class HubEditSubcommand extends BaseCommand {
       ),
     );
 
-    // Add select menu directly to the container
+    // Add toggle buttons for locked and NSFW status
+    container.addActionRowComponents((row) => {
+      const lockButton = new ButtonBuilder()
+        .setCustomId(
+          new CustomID()
+            .setIdentifier(HUB_EDIT_IDENTIFIER, HubEditAction.ToggleLock)
+            .setArgs(userId)
+            .setArgs(hub.id)
+            .toString(),
+        )
+        .setLabel(hub.data.locked ? 'Unlock Hub' : 'Lock Hub')
+        .setStyle(hub.data.locked ? ButtonStyle.Success : ButtonStyle.Danger)
+        .setEmoji(hub.data.locked ? '🔓' : '🔒');
+
+      const nsfwButton = new ButtonBuilder()
+        .setCustomId(
+          new CustomID()
+            .setIdentifier(HUB_EDIT_IDENTIFIER, HubEditAction.ToggleNsfw)
+            .setArgs(userId)
+            .setArgs(hub.id)
+            .toString(),
+        )
+        .setLabel(hub.data.nsfw ? 'Mark as SFW' : 'Mark as NSFW')
+        .setStyle(hub.data.nsfw ? ButtonStyle.Success : ButtonStyle.Danger)
+        .setEmoji(hub.data.nsfw ? '🛡️' : '🔞');
+
+      return row.addComponents(lockButton, nsfwButton);
+    });
+
+    // Add select menu for other actions
     container.addActionRowComponents((row) => {
       const selectMenu = new StringSelectMenuBuilder()
         .setCustomId(
@@ -735,7 +631,7 @@ export default class HubEditSubcommand extends BaseCommand {
             .toString(),
         )
         .setPlaceholder('Select an action to manage your hub')
-        .addOptions(this.createHubActionOptions(hub));
+        .addOptions(this.createHubActionOptions());
 
       return row.addComponents(selectMenu);
     });

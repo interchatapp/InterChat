@@ -158,11 +158,11 @@ function processSubcommands(
   prefixArgs: string[],
   _originalCommandName: string,
 ): {
-    command: BaseCommand | null;
-    secondSubcommandName?: string;
-    thirdSubcommandName?: string;
-    subcommandError?: SubcommandError;
-  } {
+  command: BaseCommand | null;
+  secondSubcommandName?: string;
+  thirdSubcommandName?: string;
+  subcommandError?: SubcommandError;
+} {
   if (!command.subcommands) {
     return { command };
   }
@@ -248,12 +248,12 @@ export function resolveCommand(
     | ContextMenuCommandInteraction
     | Message,
 ): {
-    command: BaseCommand | null;
-    prefixArgs: string[];
-    commandNameFull: string | null;
-    originalCommandName?: string;
-    subcommandError?: SubcommandError;
-  } {
+  command: BaseCommand | null;
+  prefixArgs: string[];
+  commandNameFull: string | null;
+  originalCommandName?: string;
+  subcommandError?: SubcommandError;
+} {
   const client = interactionOrMessage.client;
   const { commands, aliases } = client;
   let commandName: string;

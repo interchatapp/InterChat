@@ -1,7 +1,7 @@
 import { ReputationService } from '#src/services/ReputationService.js';
 import { getUserLeaderboardRank } from '#src/utils/Leaderboard.js';
 import { fetchUserData } from '#src/utils/Utils.js';
-import { formatBadges, getBadges, getExtraBadges } from '#utils/BadgeUtils.js';
+import { formatBadges, getBadges } from '#utils/BadgeUtils.js';
 import Constants from '#utils/Constants.js';
 import db from '#utils/Db.js';
 import { Client, EmbedBuilder, time, User } from 'discord.js';
@@ -10,10 +10,7 @@ export async function buildProfileEmbed(user: User, client: Client) {
   const userData = await fetchUserData(user.id);
   if (!userData) return null;
 
-  const badges = getBadges(user.id, client);
-  const extraBadges = await getExtraBadges(client, { userData });
-  badges.push(...extraBadges);
-
+  const badges = getBadges(userData, client);
   const reputationService = new ReputationService();
   const reputation = await reputationService.getReputation(user.id, userData);
 

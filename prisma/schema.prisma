@@ -49,6 +49,15 @@ enum CallRatingStatus {
     DISLIKE
 }
 
+enum Badges {
+    VOTER // For users who have voted on top.gg
+    SUPPORTER // $1.99/month
+    TRANSLATOR // For users who help translate InterChat
+    DEVELOPER // For users who contribute to the codebase
+    STAFF // For staff members who help manage the platform
+    BETA_TESTER // For users who participated in beta testing
+}
+
 // Models
 model Hub {
     id                  String   @id @default(cuid())
@@ -70,23 +79,12 @@ model Hub {
     nsfw                Boolean  @default(false)
     verified            Boolean  @default(false)
     partnered           Boolean  @default(false)
+    featured            Boolean  @default(false) // For featured hubs section
     language            String?
     region              String?
-    messageCount        Int      @default(0)
 
-    // Enhanced activity tracking fields
-    dailyMessageCount  Int      @default(0)
-    weeklyMessageCount Int      @default(0)
-    activeMemberCount  Int      @default(0) // Users active in last 7 days
-    lastActivityUpdate DateTime @default(now())
-
-    // Enhanced metadata fields
-    category      String? // Primary category for better organization
-    activityLevel HubActivityLevel @default(LOW)
-
-    // Growth tracking
-    memberGrowthRate Float    @default(0.0) // 7-day growth percentage
-    lastGrowthUpdate DateTime @default(now())
+    // activity tracking fields
+    weeklyMessageCount Int @default(0)
 
     // Relations
     rules            String[]
@@ -103,9 +101,15 @@ model Hub {
     invites          HubInvite[]
     messages         Message[]
     reports          Report[]
+    activityLevel    HubActivityLevel     @default(LOW)
     activityMetrics  HubActivityMetrics?
 
     @@index([ownerId])
+    @@index([verified, featured, private])
+    @@index([activityLevel])
+    @@index([language])
+    @@index([nsfw])
+    @@index([weeklyMessageCount])
 }
 
 model Tag {
@@ -163,23 +167,25 @@ model HubModerator {
 }
 
 model Connection {
-    id                   String     @id @default(cuid())
-    channelId            String     @unique
-    parentId             String? // Parent channel ID for threads
-    serverId             String
-    server               ServerData @relation(fields: [serverId], references: [id])
-    hubId                String
-    hub                  Hub        @relation(fields: [hubId], references: [id], onDelete: Cascade)
-    connected            Boolean    @default(true)
-    compact              Boolean    @default(false)
-    invite               String?
-    createdAt            DateTime   @default(now())
-    embedColor           String?
-    webhookURL           String
-    lastActive           DateTime   @default(now())
+    id         String     @id @default(cuid())
+    channelId  String     @unique
+    parentId   String? // Parent channel ID for threads
+    serverId   String
+    server     ServerData @relation(fields: [serverId], references: [id])
+    hubId      String
+    hub        Hub        @relation(fields: [hubId], references: [id], onDelete: Cascade)
+    connected  Boolean    @default(true)
+    compact    Boolean    @default(false)
+    invite     String?
+    createdAt  DateTime   @default(now())
+    embedColor String?
+    webhookURL String
+    lastActive DateTime   @default(now())
 
     @@unique([channelId, serverId])
     @@unique([hubId, serverId])
+    @@index([serverId])
+    @@index([hubId])
     @@index([hubId, channelId])
     @@index([channelId, connected]) // for getHubAndConnections
     @@index([hubId, connected]) // for finding other connections in the same hub
@@ -212,6 +218,10 @@ model Infraction {
     updatedAt DateTime @updatedAt
 
     @@index([status, hubId])
+    @@index([userId])
+    @@index([serverId])
+    @@index([type])
+    @@index([expiresAt])
 }
 
 model Appeal {
@@ -228,6 +238,7 @@ model Appeal {
     @@index([infractionId])
     @@index([userId])
     @@index([status])
+    @@index([createdAt])
 }
 
 model BlockWord {
@@ -318,37 +329,37 @@ model HubRulesAcceptance {
 }
 
 model User {
-    id                String         @id
+    id                String    @id
     name              String?
-    showBadges        Boolean        @default(true)
+    showBadges        Boolean   @default(true)
     image             String?
     locale            String?
-    voteCount         Int            @default(0)
-    reputation        Int            @default(0)
+    voteCount         Int       @default(0)
+    reputation        Int       @default(0)
     lastVoted         DateTime?
     banReason         String?
-    mentionOnReply    Boolean        @default(true)
-    /**
-     * @deprecated Not used anymore
-     */
-    acceptedRules     Boolean        @default(false)
-    messageCount      Int            @default(0)
-    lastMessageAt     DateTime       @default(now())
-    modPositions      HubModerator[]
-    inboxLastReadDate DateTime?      @default(now())
-    createdAt         DateTime       @default(now())
-    updatedAt         DateTime       @updatedAt
+    mentionOnReply    Boolean   @default(true)
+    messageCount      Int       @default(0)
+    lastMessageAt     DateTime  @default(now())
+    inboxLastReadDate DateTime? @default(now())
+    createdAt         DateTime  @default(now())
+    updatedAt         DateTime  @updatedAt
 
-    // empty fields for nextauth to work
+    isStaff Boolean  @default(false) // Whether this user is staff
+    badges  Badges[]
+
+    // nextauth
     email         String?
     emailVerified DateTime?
+    donationEmail String? // Email for donation matching - defaults to OAuth email but can be different
 
     // Hub recommendation preferences
-    interests          String[] // User's interests for hub matching
-    preferredLanguages String[] @default([]) // ISO 639-1 language codes
-    activityLevel      String? // "low", "medium", "high" - user's preferred activity level
-    favoriteHubs       String[] // Hub IDs user has marked as favorites
-    showNsfwHubs       Boolean  @default(false) // Whether user wants to see NSFW hubs in search/discovery
+    preferredLanguages String[]          @default([]) // ISO 639-1 language codes
+    activityLevel      HubActivityLevel? // user's preferred activity level
+    showNsfwHubs       Boolean           @default(false) // Whether user wants to see NSFW hubs in search/discovery
+
+    // Donation
+    donationExpiresAt DateTime? // When the user's donation expires (if applicable)
 
     // Activity tracking for recommendations
     hubJoinCount       Int       @default(0)
@@ -362,6 +373,7 @@ model User {
     issuedInfractions     Infraction[]              @relation("issuedInfractions")
     upvotedHubs           HubUpvote[]
     reputationLog         ReputationLog[]
+    modPositions          HubModerator[]
     reviews               HubReview[]
     blockWordsCreated     BlockWord[]
     antiSwearRulesCreated AntiSwearRule[]
@@ -378,6 +390,82 @@ model User {
     bans                  Ban[] // Bans received by this user
     issuedBans            Ban[]                     @relation("IssuedBans") // Bans issued by this user (if staff)
     issuedServerBans      ServerBan[]               @relation("IssuedServerBans") // Server bans issued by this user (if staff)
+
+    // Ko-fi donation relations
+    donations    Donation[]
+    donationTier      DonationTierDefinition? @relation(fields: [donationTierId], references: [id])
+    donationTierId    String?
+    tagId        String?
+
+    @@index([isStaff])
+    @@index([reputation])
+    @@index([locale])
+    @@index([email])
+    @@index([voteCount])
+    @@index([lastVoted])
+    @@index([createdAt])
+}
+
+model DonationTierDefinition {
+    id          String     @id @default(cuid())
+    name        String     @unique
+    description String
+    price       Float
+    createdAt   DateTime   @default(now())
+    updatedAt   DateTime   @updatedAt
+    donations   Donation[]
+    users       User[]
+}
+
+// Ko-fi donation models
+model Donation {
+    id                String   @id @default(cuid())
+    kofiTransactionId String   @unique // Ko-fi transaction ID
+    messageId         String   @unique // Ko-fi message ID
+    amount            Float // Donation amount
+    currency          String // Currency code (e.g., "USD")
+    fromName          String // Donor name from Ko-fi
+    message           String? // Optional donation message
+    email             String? // Donor email (if provided)
+    isPublic          Boolean  @default(true) // Whether donation is public
+    kofiTimestamp     DateTime // Timestamp from Ko-fi
+    kofiUrl           String? // Ko-fi donation URL
+    discordUserId     String? // Linked Discord user ID (if available)
+    discordUser       User?    @relation(fields: [discordUserId], references: [id])
+    processed         Boolean  @default(false) // Whether premium benefits have been granted
+
+    // Subscription-specific fields
+    donationTierId      String?
+    donationTier        DonationTierDefinition? @relation(fields: [donationTierId], references: [id])
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([kofiTransactionId])
+    @@index([discordUserId])
+    @@index([createdAt])
+}
+
+// Model for storing pending premium claims
+model PendingClaim {
+    id                String    @id @default(cuid())
+    kofiTransactionId String    @unique // Reference to Ko-fi transaction
+    email             String // Email from Ko-fi donation
+    tierName          String? // Ko-fi tier name
+    amount            Float // Donation amount
+    currency          String // Currency code
+    fromName          String // Donor name from Ko-fi
+    expiresAt         DateTime // When this claim expires
+    claimed           Boolean   @default(false)
+    claimedBy         String? // Discord user ID who claimed it
+    claimedAt         DateTime?
+    createdAt         DateTime  @default(now())
+    updatedAt         DateTime  @updatedAt
+
+    @@index([email])
+    @@index([claimed])
+    @@index([expiresAt])
+    @@index([kofiTransactionId])
 }
 
 // Hub activity tracking for recommendations
@@ -627,9 +715,6 @@ model Message {
     referredBy Message[]   @relation("MessageReference")
     referredTo Message?    @relation("MessageReference", fields: [referredMessageId], references: [id])
 
-    @@index([hubId])
-    @@index([channelId])
-    @@index([authorId])
     @@index([createdAt]) // For message cleanup by age
     @@index([referredMessageId])
 }
@@ -667,10 +752,12 @@ model Report {
     updatedAt        DateTime     @updatedAt
 
     @@index([hubId])
-    @@index([reporterId])
-    @@index([reportedUserId])
     @@index([status])
     @@index([createdAt])
+    @@index([reporterId])
+    @@index([messageId])
+    @@index([handledBy])
+    @@index([reportedUserId])
 }
 
 enum ReportStatus {

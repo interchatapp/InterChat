@@ -26,6 +26,4 @@ client.on('debug', (debug) => Logger.debug(debug));
 client.rest.on('restDebug', (debug) => Logger.debug(debug));
 client.rest.on('rateLimited', (data) => Logger.warn('Rate limited: %O', data));
 
-process.on('uncaughtException', Logger.error);
-
 client.start();

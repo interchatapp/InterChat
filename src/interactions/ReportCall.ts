@@ -15,7 +15,6 @@
  * along with InterChat.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 import ComponentContext from '#src/core/CommandContext/ComponentContext.js';
 import { RegisterInteractionHandler } from '#src/decorators/RegisterInteractionHandler.js';
 import { ActiveCall } from '#src/types/CallTypes.js';
@@ -171,7 +170,9 @@ export default class ReportCallHandler {
     await ctx.deferReply({ flags: ['Ephemeral'] });
 
     // Import and use the view_reported_call command logic
-    const { default: ViewReportedCallCommand } = await import('#src/commands/Staff/view_reported_call.js');
+    const { default: ViewReportedCallCommand } = await import(
+      '#src/commands/Staff/view_reported_call.js'
+    );
     const viewCommand = new ViewReportedCallCommand();
 
     // Get call data
@@ -246,7 +247,7 @@ export default class ReportCallHandler {
       // Calculate call duration if timestamps are available
       let callDuration = 0;
       if (callData.startTime && callData.endTime) {
-        callDuration = callData.endTime - callData.startTime;
+        callDuration = callData.endTime.getTime() - callData.startTime.getTime();
       }
 
       // Store report data in Redis
@@ -296,7 +297,11 @@ export default class ReportCallHandler {
             inline: false,
           },
           { name: 'Reporter Channel', value: `<#${ctx.channelId}>`, inline: true },
-          { name: 'Reporter Server', value: `${reporterServerName} (${ctx.guildId || 'Unknown'})`, inline: true },
+          {
+            name: 'Reporter Server',
+            value: `${reporterServerName} (${ctx.guildId || 'Unknown'})`,
+            inline: true,
+          },
           {
             name: 'Call Duration',
             value: callDuration ? this.formatDuration(callDuration) : 'Unknown',
@@ -319,9 +324,7 @@ export default class ReportCallHandler {
       const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(reviewButton);
 
       // Send the report to the reports channel
-      const reportsChannel = await ctx.client.channels
-        .fetch(REPORTS_CHANNEL_ID)
-        .catch(() => null);
+      const reportsChannel = await ctx.client.channels.fetch(REPORTS_CHANNEL_ID).catch(() => null);
 
       if (!reportsChannel || !reportsChannel.isSendable()) {
         Logger.error(

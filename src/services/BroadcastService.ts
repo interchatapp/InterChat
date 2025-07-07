@@ -169,7 +169,9 @@ export class BroadcastService {
     const servername = trimAndCensorBannedWebhookWords(message.guild.name);
 
     // Use the new utility function with hubId
-    const badges = await getVisibleBadges(message.author.id, message.client, hub.id, opts.userData);
+    const badges = opts.userData
+      ? await getVisibleBadges(opts.userData, message.client, hub.id)
+      : null;
     const badgeText = badges ? `-# ${badges}\n` : '';
 
     const messageFormatter = new MessageFormattingService(connection);

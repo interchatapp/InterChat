@@ -1,0 +1,219 @@
+{
+  "title": "InterChat - Alerts & Monitoring",
+  "id": null,
+  "uid": "interchat-alerts",
+  "tags": ["discord", "bot", "interchat", "alerts", "monitoring"],
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 1,
+  "refresh": "1m",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "row",
+      "title": "🚨 Critical Alerts",
+      "collapsed": false,
+      "gridPos": {"x": 0, "y": 0, "w": 24, "h": 1}
+    },
+    {
+      "id": 2,
+      "title": "System Health Status",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "gridPos": {"x": 0, "y": 1, "w": 6, "h": 4},
+      "options": {
+        "reduceOptions": {"values": false, "calcs": ["last"]},
+        "colorMode": "background",
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "red"},
+              {"value": 0.8, "color": "yellow"},
+              {"value": 0.95, "color": "green"}
+            ]
+          },
+          "unit": "percentunit",
+          "mappings": [
+            {"type": "range", "options": {"from": 0.95, "to": 1, "result": {"text": "HEALTHY"}}},
+            {"type": "range", "options": {"from": 0.8, "to": 0.95, "result": {"text": "DEGRADED"}}},
+            {"type": "range", "options": {"from": 0, "to": 0.8, "result": {"text": "CRITICAL"}}}
+          ]
+        }
+      },
+      "targets": [{
+        "expr": "avg(interchat_shards_status)",
+        "legendFormat": "System Health"
+      }]
+    },
+    {
+      "id": 3,
+      "title": "Error Rate Alert",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "gridPos": {"x": 6, "y": 1, "w": 6, "h": 4},
+      "options": {
+        "reduceOptions": {"values": false, "calcs": ["last"]},
+        "colorMode": "background",
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 0.01, "color": "yellow"},
+              {"value": 0.05, "color": "red"}
+            ]
+          },
+          "unit": "percentunit",
+          "mappings": [
+            {"type": "range", "options": {"from": 0, "to": 0.01, "result": {"text": "NORMAL"}}},
+            {"type": "range", "options": {"from": 0.01, "to": 0.05, "result": {"text": "WARNING"}}},
+            {"type": "range", "options": {"from": 0.05, "to": 1, "result": {"text": "CRITICAL"}}}
+          ]
+        }
+      },
+      "targets": [{
+        "expr": "sum(rate(interchat_errors_total[5m])) / sum(rate(interchat_api_requests_total[5m]))",
+        "legendFormat": "Error Rate"
+      }]
+    },
+    {
+      "id": 4,
+      "title": "Response Time Alert",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "gridPos": {"x": 12, "y": 1, "w": 6, "h": 4},
+      "options": {
+        "reduceOptions": {"values": false, "calcs": ["last"]},
+        "colorMode": "background",
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 2, "color": "yellow"},
+              {"value": 5, "color": "red"}
+            ]
+          },
+          "unit": "s",
+          "mappings": [
+            {"type": "range", "options": {"from": 0, "to": 2, "result": {"text": "FAST"}}},
+            {"type": "range", "options": {"from": 2, "to": 5, "result": {"text": "SLOW"}}},
+            {"type": "range", "options": {"from": 5, "to": 100, "result": {"text": "CRITICAL"}}}
+          ]
+        }
+      },
+      "targets": [{
+        "expr": "histogram_quantile(0.95, sum(rate(interchat_response_time_seconds_bucket[5m])) by (le))",
+        "legendFormat": "P95 Response Time"
+      }]
+    },
+    {
+      "id": 5,
+      "title": "Memory Usage Alert",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "gridPos": {"x": 18, "y": 1, "w": 6, "h": 4},
+      "options": {
+        "reduceOptions": {"values": false, "calcs": ["last"]},
+        "colorMode": "background",
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 0.7, "color": "yellow"},
+              {"value": 0.9, "color": "red"}
+            ]
+          },
+          "unit": "percentunit",
+          "mappings": [
+            {"type": "range", "options": {"from": 0, "to": 0.7, "result": {"text": "NORMAL"}}},
+            {"type": "range", "options": {"from": 0.7, "to": 0.9, "result": {"text": "HIGH"}}},
+            {"type": "range", "options": {"from": 0.9, "to": 1, "result": {"text": "CRITICAL"}}}
+          ]
+        }
+      },
+      "targets": [{
+        "expr": "process_resident_memory_bytes / (5 * 1024 * 1024 * 1024)",
+        "legendFormat": "Memory Usage"
+      }]
+    },
+    {
+      "id": 6,
+      "type": "row",
+      "title": "📈 Real-time Monitoring",
+      "collapsed": false,
+      "gridPos": {"x": 0, "y": 5, "w": 24, "h": 1}
+    },
+    {
+      "id": 7,
+      "title": "Live Activity Feed",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "gridPos": {"x": 0, "y": 6, "w": 24, "h": 8},
+      "options": {
+        "legend": {"calcs": ["last"], "displayMode": "table", "placement": "bottom"},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "showPoints": "never"
+          },
+          "color": {"mode": "palette-classic"},
+          "unit": "reqps"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(interchat_messages_total[1m]))",
+          "legendFormat": "Messages/sec"
+        },
+        {
+          "expr": "sum(rate(interchat_command_usage_total[1m]))",
+          "legendFormat": "Commands/sec"
+        },
+        {
+          "expr": "sum(rate(interchat_api_requests_total[1m]))",
+          "legendFormat": "API Requests/sec"
+        },
+        {
+          "expr": "sum(rate(interchat_errors_total[1m]))",
+          "legendFormat": "Errors/sec"
+        }
+      ]
+    }
+  ],
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "liveNow": true,
+  "style": "dark"
+}

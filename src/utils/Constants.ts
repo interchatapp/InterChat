@@ -89,7 +89,7 @@ export default {
   // Regexp
   Regex: {
     ImageURL: /\bhttps?:\/\/\S+?\.(?:png|jpe?g|webp|gif)(?:\?\S+)?\b/,
-    MediaURL: /\bhttps?:\/\/\S+?\.(?:|mp4|mov|webm|webp)(?:\?\S+)?\b/,
+    VideoURL: /\bhttps?:\/\/\S+?\.(?:|mp4|mov|webm|webp)(?:\?\S+)?\b/,
     /** no animated images */
     StaticImageUrl: /\bhttps?:\/\/\S+?\.(?:png|jpe?g|webp)(?:\?\S+)?\b/,
     /** ignores giphy and tenor */

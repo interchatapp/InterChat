@@ -53,9 +53,6 @@ export { PremiumService } from './core/PremiumService.js';
 // Types
 export * from './types/DonationTypes.js';
 
-// Tiers
-export * from './tiers/index.js';
-
 // Utils
 export * from './utils/currency.js';
 export * from './utils/constants.js';

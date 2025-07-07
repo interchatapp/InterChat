@@ -18,6 +18,8 @@
 import BaseCommand from '#src/core/BaseCommand.js';
 import type Context from '#src/core/CommandContext/Context.js';
 import { DonationManager } from '#src/lib/donations/core/DonationManager.js';
+import { PremiumService } from '#src/lib/donations/core/PremiumService.js';
+import { CacheManager } from '#src/managers/CacheManager.js';
 import Constants from '#utils/Constants.js';
 import { stripIndents } from 'common-tags';
 import {
@@ -29,6 +31,7 @@ import {
 
 export default class Donate extends BaseCommand {
   private donationManager = new DonationManager();
+  private premiumService = new PremiumService(this.donationManager, new CacheManager());
 
   constructor() {
     super({
@@ -44,7 +47,8 @@ export default class Donate extends BaseCommand {
     // Get user's donation stats
     const totalDonated = await this.donationManager.getUserTotalDonated(id);
     const donationCount = await this.donationManager.getUserDonationCount(id);
-    const isDonor = await this.donationManager.isUserDonor(id);
+    const tier = await this.premiumService.getUserTier(id);
+    const isDonor = tier !== null;
 
     const donorStatusEmoji = ctx.getEmoji(isDonor ? 'tick_icon' : 'slash');
 

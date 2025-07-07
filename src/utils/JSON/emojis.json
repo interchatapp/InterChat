@@ -531,22 +531,6 @@
     "url": "https://cdn.discordapp.com/emojis/1338726325682311200.png",
     "updatedAt": "2025-02-11T04:20:28.375Z"
   },
-  "staff_badge": {
-    "url": "https://cdn.discordapp.com/emojis/1342718965817802764.png",
-    "updatedAt": "2025-02-22T04:45:47.963Z"
-  },
-  "voter_badge": {
-    "url": "https://cdn.discordapp.com/emojis/1350288336710799452.png",
-    "updatedAt": "2025-03-15T02:03:46.616Z"
-  },
-  "developer_badge": {
-    "url": "https://cdn.discordapp.com/emojis/1350290872369025076.png",
-    "updatedAt": "2025-03-15T02:13:51.164Z"
-  },
-  "translator_badge": {
-    "url": "https://cdn.discordapp.com/emojis/1350399261556215871.png",
-    "updatedAt": "2025-03-15T09:24:33.160Z"
-  },
   "lightbulb_icon": {
     "url": "https://cdn.discordapp.com/emojis/1371384654187331635.png",
     "updatedAt": "2025-05-12T07:13:00.653Z"
@@ -566,5 +550,29 @@
   "calendar_icon": {
     "url": "https://cdn.discordapp.com/emojis/1378379465310343379.png",
     "updatedAt": "2025-05-31T14:27:53.582Z"
+  },
+  "staff_badge": {
+    "url": "https://cdn.discordapp.com/emojis/1342718965817802764.png",
+    "updatedAt": "2025-02-22T04:45:47.963Z"
+  },
+  "voter_badge": {
+    "url": "https://cdn.discordapp.com/emojis/1350288336710799452.png",
+    "updatedAt": "2025-03-15T02:03:46.616Z"
+  },
+  "developer_badge": {
+    "url": "https://cdn.discordapp.com/emojis/1350290872369025076.png",
+    "updatedAt": "2025-03-15T02:13:51.164Z"
+  },
+  "translator_badge": {
+    "url": "https://cdn.discordapp.com/emojis/1350399261556215871.png",
+    "updatedAt": "2025-03-15T09:24:33.160Z"
+  },
+  "beta_tester_badge": {
+    "url": "https://cdn.discordapp.com/emojis/1390238733399494656.png",
+    "updatedAt": "2025-07-03T07:52:23.429Z"
+  },
+  "donator_badge": {
+    "url": "https://cdn.discordapp.com/emojis/1390238736066941029.png",
+    "updatedAt": "2025-07-03T07:52:24.065Z"
   }
 }

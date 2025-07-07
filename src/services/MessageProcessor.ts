@@ -29,7 +29,8 @@ import db from '#src/utils/Db.js';
 import { logBlockedMessage } from '#src/utils/hub/logger/ContentFilter.js';
 import { updateLeaderboards } from '#src/utils/Leaderboard.js';
 import Logger from '#src/utils/Logger.js';
-import { runCallChecks, runChecks } from '#src/utils/network/runChecks.js';
+import { runCallChecks } from '#src/utils/network/callChecks.js';
+import { runChecks } from '#src/utils/network/runChecks.js';
 import { getRedis } from '#src/utils/Redis.js';
 import {
   ensureUserExists,
@@ -96,7 +97,6 @@ export class MessageProcessor {
     return this.client.getDistributedCallingLibrary();
   }
 
-
   /**
    * Invalidates the cache for a specific channel
    * @param channelId The channel ID to invalidate cache for
@@ -145,13 +145,9 @@ export class MessageProcessor {
    * @returns Hub and connection data or null if not found
    */
   static async getHubAndConnections(channelId: string): Promise<HubConnectionData | null> {
-    const startTime = performance.now();
-
     // 1. Try to get connection data
     const connectionCacheKey = `${RedisKeys.Hub}:connection:${channelId}`;
-    const cacheStartTime = performance.now();
     const connectionData = await MessageProcessor.redis.get(connectionCacheKey);
-    const cacheCheckTime = performance.now() - cacheStartTime;
 
     let connection: RequiredConnectionData | null = null;
     let hubId;
@@ -164,7 +160,6 @@ export class MessageProcessor {
           JSON.parse(connectionData) as ConvertDatesToString<RequiredConnectionData>,
         );
         hubId = connection.hubId;
-        Logger.debug(`Connection cache HIT for ${channelId} (${cacheCheckTime}ms)`);
       }
       catch (error) {
         Logger.error(`Error parsing cached connection data for ${channelId}:`, error);
@@ -174,7 +169,6 @@ export class MessageProcessor {
 
     if (!connection) {
       // Connection cache miss - fetch from database
-      Logger.debug(`Connection cache MISS for ${channelId} (${cacheCheckTime}ms)`);
 
       connection = await db.connection.findFirst({
         where: { channelId, connected: true },
@@ -193,25 +187,18 @@ export class MessageProcessor {
       });
 
       if (!connection) {
-        Logger.debug(
-          `Total getHubAndConnections took ${performance.now() - startTime}ms for ${channelId} (no connection found)`,
-        );
         return null;
       }
 
       // Cache the connection data
-      const cacheSaveStartTime = performance.now();
       await MessageProcessor.redis.set(connectionCacheKey, JSON.stringify(connection), 'EX', 300);
-      Logger.debug(`Connection cache save took ${performance.now() - cacheSaveStartTime}ms`);
 
       hubId = connection.hubId;
     }
 
     // 3. Try to get hub data with connections
     const hubCacheKey = `${RedisKeys.Hub}:data:${hubId}`;
-    const hubCacheStartTime = performance.now();
     const hubData = await MessageProcessor.redis.get(hubCacheKey);
-    const hubCacheCheckTime = performance.now() - hubCacheStartTime;
 
     let hub: HubManager | null = null;
     let hubConnections: RequiredConnectionData[] = [];
@@ -232,8 +219,6 @@ export class MessageProcessor {
         hubConnections = parsedHub.connections
           .filter((conn) => conn.channelId !== channelId) // Exclude current connection
           .map(MessageProcessor.convertConnectionDates);
-
-        Logger.debug(`Hub cache HIT for ${hubId} (${hubCacheCheckTime}ms)`);
       }
       catch (error) {
         Logger.error(`Error parsing cached hub data for ${hubId}:`, error);
@@ -243,42 +228,33 @@ export class MessageProcessor {
 
     if (!hub) {
       // Hub cache miss - fetch from database
-      Logger.debug(`Hub cache MISS for ${hubId} (${hubCacheCheckTime}ms)`);
-      const hubDbFetchStartTime = performance.now();
-
-      const dbHubData = await db.hub.findFirst({
-        where: { id: hubId },
-        include: {
-          connections: {
-            where: { connected: true },
-            select: {
-              id: true,
-              channelId: true,
-              connected: true,
-              compact: true,
-              webhookURL: true,
-              parentId: true,
-              hubId: true,
-              embedColor: true,
-              serverId: true,
-              lastActive: true,
-            },
+      const [dbHubData, connections] = await Promise.all([
+        db.hub.findFirst({ where: { id: hubId } }),
+        db.connection.findMany({
+          where: { connected: true, hubId },
+          select: {
+            id: true,
+            channelId: true,
+            connected: true,
+            compact: true,
+            webhookURL: true,
+            parentId: true,
+            hubId: true,
+            embedColor: true,
+            serverId: true,
+            lastActive: true,
           },
-        },
-      });
+        }),
+      ]);
 
       if (!dbHubData) {
-        Logger.debug(
-          `Total getHubAndConnections took ${performance.now() - startTime}ms for ${channelId} (no hub found)`,
-        );
         return null;
       }
 
       hub = new HubManager(dbHubData);
-      hubConnections = dbHubData.connections;
+      hubConnections = connections;
 
       // Cache the hub data
-      const hubCacheSaveStartTime = performance.now();
       await MessageProcessor.redis.set(
         hubCacheKey,
         JSON.stringify({
@@ -288,8 +264,6 @@ export class MessageProcessor {
         'EX',
         300,
       );
-      Logger.debug(`Hub cache save took ${performance.now() - hubCacheSaveStartTime}ms`);
-      Logger.debug(`Hub database fetch took ${performance.now() - hubDbFetchStartTime}ms`);
     }
 
     // 5. Create the final result
@@ -299,9 +273,6 @@ export class MessageProcessor {
       hubConnections: hubConnections.filter((conn) => conn.channelId !== channelId),
     };
 
-    Logger.debug(
-      `Total getHubAndConnections took ${performance.now() - startTime}ms for ${channelId}`,
-    );
     return result;
   }
 
@@ -345,50 +316,34 @@ export class MessageProcessor {
    */
   async processHubMessage(message: Message<true>): Promise<MessageProcessingResult> {
     try {
-      // Start performance tracking
-      const startTime = performance.now();
-      const timings: Record<string, number> = {};
-
-      // Get hub and connection data for this channel
-      const hubStartTime = performance.now();
       const hubAndConnections = await MessageProcessor.getHubAndConnections(message.channelId);
-      timings.getHubAndConnections = performance.now() - hubStartTime;
 
       if (!hubAndConnections) return { handled: false, hub: null };
       const { hub, hubConnections, connection } = hubAndConnections;
 
       // Ensure webhook URL is set (if connected through dashboard it might not be)
       if (connection.webhookURL.length < 1) {
-        const webhookStartTime = performance.now();
         await this.setConnectionWebhookURL(connection, message.channel);
-        timings.setConnectionWebhookURL = performance.now() - webhookStartTime;
       }
 
       // Get user data for rules checking and other operations - this is now cached
-      const userDataStartTime = performance.now();
       const userData = await ensureUserExists(
         message.author.id,
         message.author.username,
         message.author.avatarURL(),
       );
-      timings.fetchUserData = performance.now() - userDataStartTime;
 
       // Check if user has accepted the hub's specific rules
-      const hubRulesStartTime = performance.now();
       const hubRulesAccepted = await this.checkHubRulesAcceptance(message, userData, hub);
-      timings.checkHubRulesAcceptance = performance.now() - hubRulesStartTime;
 
       if (!hubRulesAccepted) {
         return { handled: false, hub: null };
       }
 
       // Resolve any attachments in the message
-      const attachmentStartTime = performance.now();
       const attachmentURL = await this.broadcastService.resolveAttachmentURL(message);
-      timings.resolveAttachmentURL = performance.now() - attachmentStartTime;
 
       // Run all message checks (ban, blacklist, NSFW, anti-swear, etc.)
-      const checksStartTime = performance.now();
       const checksResult = await this.runMessageChecks(
         message,
         hub,
@@ -396,20 +351,13 @@ export class MessageProcessor {
         attachmentURL,
         hubConnections.length,
       );
-      timings.runMessageChecks = performance.now() - checksStartTime;
 
       if (!checksResult) {
-        // Log performance metrics for failed checks
-        const totalTime = performance.now() - startTime;
-        Logger.debug(`Message ${message.id} processing failed at checks stage (${totalTime}ms)`);
-        Logger.debug('Timings: %O', timings);
         return { handled: false, hub: null };
       }
 
       // Indicate typing in the channel to show the message is being processed
       message.channel.sendTyping().catch(() => null);
-
-      const broadcastStartTime = performance.now();
 
       // Check if user seems confused and needs help (before broadcasting)
       await this.checkForConfusedUser(message, hub);
@@ -424,30 +372,21 @@ export class MessageProcessor {
         userData,
       );
 
-      timings.broadcastMessage = performance.now() - broadcastStartTime;
-
       // Update leaderboards and metrics
-      const statsStartTime = performance.now();
       this.updateStatsAfterBroadcast(message, {
         name: hub.data.name,
         id: hub.data.id,
         connections: { count: hubConnections.length },
       });
-      timings.updateStatsAfterBroadcast = performance.now() - statsStartTime;
 
       // Update user info if changed (after successful processing)
-      const updateUserStartTime = performance.now();
       updateUserInfoIfChanged(
         message.author.id,
         message.author.username,
         message.author.avatarURL(),
       ).catch(() => null); // Don't let this fail the whole process
-      timings.updateUserInfo = performance.now() - updateUserStartTime;
 
       // Log performance metrics
-      const totalTime = performance.now() - startTime;
-      Logger.debug(`Message ${message.id} processed successfully in ${totalTime}ms`);
-      Logger.debug(`Timings: ${JSON.stringify(timings)}`);
 
       return { handled: true, hub };
     }
@@ -675,12 +614,7 @@ export class MessageProcessor {
    */
   async processCallMessage(message: Message<true>): Promise<void> {
     try {
-      // Start performance tracking
-      const startTime = performance.now();
-      const timings: Record<string, number> = {};
-
       // Get active call data and user data in parallel
-      const parallelStartTime = performance.now();
 
       const distributedCallingLibrary = this.getDistributedCallingLibrary();
       if (!distributedCallingLibrary) {
@@ -692,7 +626,6 @@ export class MessageProcessor {
         distributedCallingLibrary.getActiveCall(message.channelId),
         ensureUserExists(message.author.id, message.author.username, message.author.avatarURL()),
       ]);
-      timings.getParallelData = performance.now() - parallelStartTime;
 
       // Validate call and user data
       if (!activeCall || !userData) {
@@ -703,9 +636,7 @@ export class MessageProcessor {
       }
 
       // Track this user as a participant in the call
-      const participantStartTime = performance.now();
       await distributedCallingLibrary.addParticipant(message.channelId, message.author.id);
-      timings.addParticipant = performance.now() - participantStartTime;
 
       // Find the other participant to send the message to
       const otherParticipant = activeCall.participants.find(
@@ -719,28 +650,18 @@ export class MessageProcessor {
 
       const attachmentURL = message.attachments.first()?.url;
 
-      // Run call-specific checks (spam, URLs, GIFs, NSFW, etc.)
-      const checksStartTime = performance.now();
+      // Run call-specific checks (spam, URLs, GIFs, NSFW, media limits, etc.)
       const checksPassed = await runCallChecks(message, {
         userData,
         attachmentURL,
       });
-      timings.runCallChecks = performance.now() - checksStartTime;
 
       if (!checksPassed) {
-        // Log performance metrics for failed checks
-        const totalTime = performance.now() - startTime;
-        Logger.debug(
-          `Call message ${message.id} processing failed at checks stage (${totalTime}ms)`,
-        );
-        Logger.debug(`Timings: ${JSON.stringify(timings)}`);
         return;
       }
 
       // Check content filter
-      const contentFilterStartTime = performance.now();
       const contentFilterResult = await ContentFilterManager.getInstance().checkMessage(message);
-      timings.contentFilter = performance.now() - contentFilterStartTime;
 
       if (contentFilterResult.blocked) {
         // Log the blocked message
@@ -758,7 +679,6 @@ export class MessageProcessor {
         });
 
         // Store the blocked message for moderation purposes
-        const blockedUpdateStartTime = performance.now();
         await distributedCallingLibrary.updateCallMessage(
           message.channelId,
           message.author.id,
@@ -766,18 +686,10 @@ export class MessageProcessor {
           `[BLOCKED] ${message.content}`,
           attachmentURL,
         );
-        timings.updateBlockedMessage = performance.now() - blockedUpdateStartTime;
-
-        // Log performance metrics for blocked message
-        const totalTime = performance.now() - startTime;
-        Logger.debug(`Call message ${message.id} blocked by content filter (${totalTime}ms)`);
-        Logger.debug(`Timings: ${JSON.stringify(timings)}`);
-
         return;
       }
 
       // Check if this is a reply message and handle accordingly
-      const replyStartTime = performance.now();
       const referencedMessage = message.reference?.messageId
         ? await message.channel.messages.fetch(message.reference.messageId).catch(() => null)
         : null;
@@ -788,7 +700,6 @@ export class MessageProcessor {
       }
       else {
         // Send regular message with simple content
-        const webhookStartTime = performance.now();
 
         // Include attachment URL in content if present
         const contentWithAttachment = attachmentURL
@@ -801,12 +712,9 @@ export class MessageProcessor {
           avatarURL: message.author.displayAvatarURL(),
           allowedMentions: { parse: [] },
         });
-        timings.sendWebhook = performance.now() - webhookStartTime;
       }
-      timings.replyProcessing = performance.now() - replyStartTime;
 
       // Update call participation after successful message send
-      const updateStartTime = performance.now();
       await distributedCallingLibrary.updateCallMessage(
         message.channelId,
         message.author.id,
@@ -814,21 +722,13 @@ export class MessageProcessor {
         message.content,
         attachmentURL,
       );
-      timings.updateCallParticipant = performance.now() - updateStartTime;
 
       // Update user info if changed (after successful processing)
-      const updateUserStartTime = performance.now();
       updateUserInfoIfChanged(
         message.author.id,
         message.author.username,
         message.author.avatarURL(),
       ).catch(() => null); // Don't let this fail the whole process
-      timings.updateUserInfo = performance.now() - updateUserStartTime;
-
-      // Log performance metrics
-      const totalTime = performance.now() - startTime;
-      Logger.debug(`Call message ${message.id} processed successfully in ${totalTime}ms`);
-      Logger.debug(`Timings: ${JSON.stringify(timings)}`);
     }
     catch (error) {
       handleError(error, { comment: 'Failed to process call message' });

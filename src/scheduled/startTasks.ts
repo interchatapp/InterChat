@@ -23,6 +23,7 @@ import syncBotlistStats from '#src/scheduled/tasks/syncBotlistStats.js';
 import cleanupOldMessages from '#src/scheduled/tasks/cleanupOldMessages.js';
 import cleanupExpiredCalls from '#src/scheduled/tasks/cleanupExpiredCalls.js';
 import expireTemporaryBans from '#src/scheduled/tasks/expireTemporaryBans.js';
+import removeExpiredSupporterBadges from '#src/scheduled/tasks/removeExpiredSupporterBadges.js';
 import Scheduler from '#src/services/SchedulerService.js';
 import Constants from '#src/utils/Constants.js';
 import Logger from '#src/utils/Logger.js';
@@ -55,6 +56,11 @@ export default function startTasks(clusterManager: ClusterManager) {
   // Clean up old messages every 12 hours
   scheduler.addRecurringTask('cleanupOldMessages', 12 * 60 * 60 * 1000, () => {
     cleanupOldMessages().catch(Logger.error);
+  });
+
+  // Remove expired supporter badges every hour
+  scheduler.addRecurringTask('removeExpiredSupporterBadges', 60 * 60 * 1000, () => {
+    removeExpiredSupporterBadges().catch(Logger.error);
   });
 
   // production only tasks

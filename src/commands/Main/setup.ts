@@ -24,7 +24,6 @@ import AchievementService from '#src/services/AchievementService.js';
 import { HubJoinService } from '#src/services/HubJoinService.js';
 import { HubCreationData, HubService } from '#src/services/HubService.js';
 import { fetchCommands } from '#src/utils/CommandUtils.js';
-import { UserProfileService } from '#src/services/UserProfileService.js';
 import Constants from '#src/utils/Constants.js';
 import { createComponentContext } from '#src/utils/ContextUtils.js';
 import { CustomID } from '#src/utils/CustomID.js';
@@ -74,23 +73,13 @@ export default class SetupCommand extends BaseCommand {
   }
 
   private readonly hubService = new HubService();
-  private readonly profileService = new UserProfileService();
 
   async execute(ctx: Context): Promise<void> {
     if (!(await this.validateSetupPrerequisites(ctx))) return;
 
-    // Check if user is new (no profile data) and show simple interest selection
-    const user = await this.profileService.getProfile(ctx.user.id);
-    const isNewUser = !user.interests || user.interests.length === 0;
+    // Use traditional setup flow for existing users
+    await this.startSetupFlow(ctx);
 
-    if (isNewUser) {
-      // Show simple interest selection for new users
-      await this.showInterestSelection(ctx);
-    }
-    else {
-      // Use traditional setup flow for existing users
-      await this.startSetupFlow(ctx);
-    }
   }
 
   private async validateSetupPrerequisites(ctx: Context): Promise<boolean> {
@@ -1198,91 +1187,5 @@ export default class SetupCommand extends BaseCommand {
         })
         .catch(() => null);
     }
-  }
-
-  /**
-   * Show simple interest selection for new users
-   */
-  private async showInterestSelection(ctx: Context): Promise<void> {
-    const ui = new UIComponents(ctx.client);
-    const container = new ContainerBuilder();
-
-    // Add header
-    container.addTextDisplayComponents(
-      ui.createHeader(
-        '🎯 Welcome to InterChat!',
-        "Let's personalize your experience. What are you interested in?",
-        'info_icon',
-      ),
-    );
-
-    // Add separator
-    ui.addSeparator(container, SeparatorSpacingSize.Small);
-
-    // Interest selection
-    const interestOptions = [
-      { label: 'Gaming', value: 'gaming', emoji: '🎮' },
-      { label: 'Technology', value: 'technology', emoji: '💻' },
-      { label: 'Art & Design', value: 'art', emoji: '🎨' },
-      { label: 'Music', value: 'music', emoji: '🎵' },
-      { label: 'Sports', value: 'sports', emoji: '⚽' },
-      { label: 'Education', value: 'education', emoji: '📚' },
-      { label: 'Entertainment', value: 'entertainment', emoji: '🎬' },
-      { label: 'Science', value: 'science', emoji: '🔬' },
-    ];
-
-    container.addActionRowComponents((row) => {
-      const interestSelect = new StringSelectMenuBuilder()
-        .setCustomId(new CustomID('setup_interests').toString())
-        .setPlaceholder('Select your interests (up to 3)')
-        .setMinValues(1)
-        .setMaxValues(3)
-        .addOptions(interestOptions);
-
-      return row.addComponents(interestSelect);
-    });
-
-    // Add skip button
-    container.addActionRowComponents((row) => {
-      const skipButton = new ButtonBuilder()
-        .setCustomId(new CustomID('setup_skip_interests').toString())
-        .setLabel('Skip for now')
-        .setStyle(ButtonStyle.Secondary);
-
-      return row.addComponents(skipButton);
-    });
-
-    await ctx.reply({
-      components: [container],
-      flags: [MessageFlags.IsComponentsV2, 'Ephemeral'],
-    });
-  }
-
-  /**
-   * Handle interest selection
-   */
-  @RegisterInteractionHandler('setup_interests')
-  async handleInterestSelection(ctx: ComponentContext): Promise<void> {
-    if (!ctx.isStringSelectMenu()) return;
-
-    const selectedInterests = ctx.values || [];
-
-    // Update user profile with interests
-    await this.profileService.updateProfile(ctx.user.id, {
-      interests: selectedInterests,
-      favoriteHubs: [],
-    });
-
-    // Continue with normal setup flow
-    await this.startSetupFlow(ctx);
-  }
-
-  /**
-   * Handle skipping interest selection
-   */
-  @RegisterInteractionHandler('setup_skip_interests')
-  async handleSkipInterests(ctx: ComponentContext): Promise<void> {
-    // Continue with normal setup flow without setting interests
-    await this.startSetupFlow(ctx);
   }
 }

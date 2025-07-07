@@ -44,14 +44,15 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
     if (!message.inGuild() || !isHumanMessage(message)) return;
 
     // FIXME: this is temp, remove on 01/07/2025
+    const { prefix } = message.client;
     if (message.content.includes('c!')) {
       await message.reply(
-        'The `c!` prefix has been changed to `.`. Type `.help` to see all available commands.',
+        `The \`c!\` prefix has been changed to \`${prefix}\`. Type \`${prefix}help\` to see all available commands.`,
       );
       return;
     }
 
-    if (message.content.startsWith(message.client.prefix)) {
+    if (message.content.startsWith(prefix)) {
       await this.handlePrefixCommand(message);
       return;
     }
@@ -81,10 +82,9 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
     }
 
     const processor = new MessageProcessor(message.client);
-    Promise.all([
-      this.handleChatMessage(message, processor),
-      processor.processCallMessage(message),
-    ]).catch(handleError);
+
+    this.handleChatMessage(message, processor).catch(handleError);
+    this.handleCallMessage(message, processor).catch(handleError);
   }
 
   private async handlePrefixCommand(message: Message): Promise<void> {
@@ -92,7 +92,7 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
     await ensureUserExists(message.author.id, message.author.username, message.author.avatarURL());
 
     const resolved = resolveCommand(message);
-    // Execute command even if command is null but we have subcommand errors
+
     if (!resolved.command && !resolved.subcommandError) return;
 
     if (resolved.command?.contexts?.guildOnly && !message.inGuild()) {
@@ -121,6 +121,10 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
     }
   }
 
+  private async handleCallMessage(message: Message<true>, processor: MessageProcessor) {
+    await processor.processCallMessage(message);
+  }
+
   /**
    * Check and notify about warnings after successful message broadcast
    */
@@ -144,10 +148,12 @@ export default class MessageCreate extends BaseEventListener<'messageCreate'> {
         value: warnings[0].reason || 'No reason provided',
         inline: true,
       });
+
     await message.author.send({ embeds: [dmEmbed] }).catch(() => null);
 
     // Mark warnings as notified
-    await infractionManager.markInfractionsAsNotified(warnings.map((w) => w.id));
+    const warningIds = warnings.map((w) => w.id);
+    await infractionManager.markInfractionsAsNotified(warningIds);
   }
 
   private async showDevAlertsIfAny(message: Message) {

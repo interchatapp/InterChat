@@ -16,7 +16,7 @@
  */
 
 import { CacheManager } from '#src/managers/CacheManager.js';
-import getRedis from '#src/utils/Redis.js';
+import { getRedis } from '#src/utils/Redis.js';
 import type { ConvertDatesToString } from '#types/Utils.d.ts';
 import { RedisKeys } from '#utils/Constants.js';
 import db from '#utils/Db.js';
@@ -43,6 +43,7 @@ export default class UserDbService {
       createdAt: new Date(user.createdAt),
       emailVerified: user.emailVerified ? new Date(user.emailVerified) : null,
       lastHubJoinAt: user.lastHubJoinAt ? new Date(user.lastHubJoinAt) : null,
+      donationExpiresAt: user.donationExpiresAt ? new Date(user.donationExpiresAt) : null,
     };
     return { ...user, ...dates };
   }
@@ -72,13 +73,33 @@ export default class UserDbService {
     id: Snowflake,
     data: Omit<Prisma.UserUpsertArgs['create'], 'id'>,
   ): Promise<User> {
+    // Handle donation tier separately if present
+    const { donationTierId, ...cleanData } = data as Omit<Prisma.UserUpsertArgs['create'], 'id'> & { donationTierId?: string };
+
+    const upsertData = donationTierId
+      ? {
+        id,
+        ...cleanData,
+        donationTier: { connect: { id: donationTierId } },
+      }
+      : { id, ...cleanData };
+
     const user = await db.user.upsert({
       where: { id },
-      create: { ...data, id },
-      update: data,
+      create: upsertData,
+      update: upsertData,
     });
     await this.cacheUser(user);
     return user;
+  }
+
+  public async getTotalDonated(id: Snowflake): Promise<number> {
+    const { _sum } = await db.donation.aggregate({
+      where: { discordUserId: id, processed: true },
+      _sum: { amount: true },
+    });
+
+    return _sum.amount ?? 0;
   }
 
   public async userVotedToday(id: Snowflake, userData?: User): Promise<boolean> {

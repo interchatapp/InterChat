@@ -20,12 +20,13 @@ import type db from '#src/utils/Db.js';
 import Logger from '#utils/Logger.js';
 import type { Cluster, ClusterManager } from 'discord-hybrid-sharding';
 import type { Hono } from 'hono';
-import { Counter, Gauge, Registry, collectDefaultMetrics } from 'prom-client';
+import { Counter, Gauge, Registry, collectDefaultMetrics, Histogram } from 'prom-client';
 
 export default class MainMetricsService {
   private registry: Registry;
   private clusterManager: ClusterManager;
 
+  // Existing metrics
   public readonly commandCounter: Counter;
   public readonly messageCounter: Counter;
   public readonly guildGauge: Gauge;
@@ -33,6 +34,17 @@ export default class MainMetricsService {
   public readonly shardGauge: Gauge;
   public readonly clusterMemGauge: Gauge;
   public readonly queryCounter: Counter;
+
+  // Business metrics
+  public readonly userEngagementGauge: Gauge;
+  public readonly hubActivityGauge: Gauge;
+  public readonly connectionHealthGauge: Gauge;
+  public readonly errorRateCounter: Counter;
+  public readonly responseTimeHistogram: Histogram<string>;
+  public readonly featureUsageCounter: Counter;
+  public readonly webhookDeliveryCounter: Counter;
+  public readonly redisOperationsCounter: Counter;
+  public readonly apiEndpointCounter: Counter;
 
   constructor(clusterManager: ClusterManager, database: typeof db) {
     this.registry = new Registry();
@@ -87,6 +99,71 @@ export default class MainMetricsService {
       registers: [this.registry],
     });
 
+    // business metrics
+    this.userEngagementGauge = new Gauge({
+      name: 'interchat_user_engagement',
+      help: 'User engagement metrics',
+      labelNames: ['metric_type', 'time_period'],
+      registers: [this.registry],
+    });
+
+    this.hubActivityGauge = new Gauge({
+      name: 'interchat_hub_activity',
+      help: 'Hub activity and health metrics',
+      labelNames: ['hub_id', 'hub_name', 'metric_type'],
+      registers: [this.registry],
+    });
+
+    this.connectionHealthGauge = new Gauge({
+      name: 'interchat_connection_health',
+      help: 'Connection health and status metrics',
+      labelNames: ['server_id', 'hub_id', 'status'],
+      registers: [this.registry],
+    });
+
+    this.errorRateCounter = new Counter({
+      name: 'interchat_errors_total',
+      help: 'Total number of errors by type and severity',
+      labelNames: ['error_type', 'severity', 'component'],
+      registers: [this.registry],
+    });
+
+    this.responseTimeHistogram = new Histogram({
+      name: 'interchat_response_time_seconds',
+      help: 'Response time distribution for various operations',
+      labelNames: ['operation_type', 'status'],
+      buckets: [0.1, 0.5, 1, 2, 5, 10, 30],
+      registers: [this.registry],
+    });
+
+    this.featureUsageCounter = new Counter({
+      name: 'interchat_feature_usage_total',
+      help: 'Feature usage tracking',
+      labelNames: ['feature_name', 'user_type'],
+      registers: [this.registry],
+    });
+
+    this.webhookDeliveryCounter = new Counter({
+      name: 'interchat_webhook_deliveries_total',
+      help: 'Webhook delivery success/failure tracking',
+      labelNames: ['status', 'hub_id'],
+      registers: [this.registry],
+    });
+
+    this.redisOperationsCounter = new Counter({
+      name: 'interchat_redis_operations_total',
+      help: 'Redis operations tracking',
+      labelNames: ['operation_type', 'status'],
+      registers: [this.registry],
+    });
+
+    this.apiEndpointCounter = new Counter({
+      name: 'interchat_api_requests_total',
+      help: 'API endpoint request tracking',
+      labelNames: ['endpoint', 'method', 'status_code'],
+      registers: [this.registry],
+    });
+
     this.setupDatabaseListeners(database);
 
     this.clusterManager = clusterManager;
@@ -132,5 +209,47 @@ export default class MainMetricsService {
       });
     });
     Logger.info('Metrics endpoint added at /metrics');
+  }
+
+  // metric tracking methods
+  public trackUserEngagement(metricType: string, timePeriod: string, value: number): void {
+    this.userEngagementGauge.set({ metric_type: metricType, time_period: timePeriod }, value);
+  }
+
+  public trackHubActivity(hubId: string, hubName: string, metricType: string, value: number): void {
+    this.hubActivityGauge.set({ hub_id: hubId, hub_name: hubName, metric_type: metricType }, value);
+  }
+
+  public trackConnectionHealth(
+    serverId: string,
+    hubId: string,
+    status: string,
+    value: number,
+  ): void {
+    this.connectionHealthGauge.set({ server_id: serverId, hub_id: hubId, status }, value);
+  }
+
+  public trackError(errorType: string, severity: string, component: string): void {
+    this.errorRateCounter.inc({ error_type: errorType, severity, component });
+  }
+
+  public trackResponseTime(operationType: string, status: string, duration: number): void {
+    this.responseTimeHistogram.observe({ operation_type: operationType, status }, duration);
+  }
+
+  public trackFeatureUsage(featureName: string, userType: string): void {
+    this.featureUsageCounter.inc({ feature_name: featureName, user_type: userType });
+  }
+
+  public trackWebhookDelivery(status: string, hubId: string): void {
+    this.webhookDeliveryCounter.inc({ status, hub_id: hubId });
+  }
+
+  public trackRedisOperation(operationType: string, status: string): void {
+    this.redisOperationsCounter.inc({ operation_type: operationType, status });
+  }
+
+  public trackApiRequest(endpoint: string, method: string, statusCode: string): void {
+    this.apiEndpointCounter.inc({ endpoint, method, status_code: statusCode });
   }
 }
