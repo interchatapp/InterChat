@@ -19,9 +19,9 @@ import { CacheManager } from '#src/managers/CacheManager.js';
 import { DonationManager } from './DonationManager.js';
 import Logger from '#src/utils/Logger.js';
 import { CACHE_CONFIG } from '../utils/constants.js';
-import { Tier, Tiers } from '../tiers/index.js';
 import UserDbService from '#src/services/UserDbService.js';
-import { DonationTier } from '#src/generated/prisma/client/index.js';
+import { DonationTierDefinition } from '#src/generated/prisma/client/index.js';
+import db from '#src/utils/Db.js';
 
 /**
  * Service for managing premium features based on donation tiers.
@@ -36,17 +36,20 @@ export class PremiumService {
     this.cacheManager = cacheManager;
   }
 
-  async getUserTier(userId: string): Promise<DonationTier | null> {
+  async getUserTier(userId: string): Promise<DonationTierDefinition | null> {
     const cacheKey = `${CACHE_CONFIG.PREMIUM_STATUS_PREFIX}:${userId}`;
     const cached = await this.cacheManager.get(cacheKey);
     if (cached) {
-      return cached as DonationTier;
+      return cached as DonationTierDefinition;
     }
 
     const user = await this.userDbManager.getUser(userId);
-    const tier = user?.donationTier as DonationTier | null;
+    const tier = user?.donationTierId
+      ? await db.donationTierDefinition.findUnique({ where: { id: user.donationTierId } })
+      : null;
 
     if (tier && user?.donationExpiresAt && user.donationExpiresAt < new Date()) {
+      // TODO: Remove donor role when implemented
       return null;
     }
 
@@ -54,19 +57,28 @@ export class PremiumService {
     return tier;
   }
 
-  async hasFeature(userId: string, feature: string): Promise<boolean> {
+  async hasFeature(userId: string, _feature: string): Promise<boolean> {
     const tier = await this.getUserTier(userId);
-    if (!tier) return false;
-
-    const tierData = Tiers[tier];
-    return tierData.features[feature] !== undefined;
+    // For now, any tier grants basic premium features
+    // TODO: Implement feature mapping in database or configuration
+    return tier !== null;
   }
 
-  async getTierFeatures(userId: string): Promise<Tier['features'] | null> {
+  async getTierFeatures(userId: string): Promise<Record<string, string> | null> {
     const tier = await this.getUserTier(userId);
     if (!tier) return null;
 
-    return Tiers[tier].features;
+    // TODO: Store features in database or configuration
+    // For now, return basic supporter features based on tier name
+    return {
+      supporter_badge: 'Supporter Badge in profile',
+      videos_in_calls: 'Send videos (1 per 5 min)',
+      custom_profile_theme: 'Custom Hub Banners',
+      hub_banners: 'Set a custom banner for your hub',
+      hub_rename: 'Rename your hub',
+      increased_max_hubs: 'Max hubs 2 -> 5',
+      support_development: 'Support development of InterChat',
+    };
   }
 
   async invalidatePremiumCache(userId: string): Promise<void> {

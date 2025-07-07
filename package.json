@@ -10,13 +10,15 @@
     "start:prod": "pm2 start .ecosystem.config.js",
     "dev": "nodemon --exec \"bun run build && bun start\" --ext ts,js,json --ignore build/",
     "build": "tsc --build",
-    "type-check": "tsc --noEmit",
     "locale-types": "bun scripts/genLocaleTypes.js",
     "sync:commands": "bun scripts/syncCommands.js",
     "sync:emojis": "bun scripts/syncEmojis.js",
     "release": "release-it",
     "lint": "eslint --cache --fix ./src",
-    "prepare": "husky"
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write ./src",
+    "prepare": "husky",
+    "db:seed": "bun prisma/seed/seed.ts"
   },
   "sponsor": {
     "url": "https://ko-fi.com/interchat"

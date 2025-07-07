@@ -33,20 +33,23 @@ import { findOriginalMessage } from '#src/utils/network/messageUtils.js';
 import { storeReactions, updateReactions } from '#src/utils/reaction/reactions.js';
 import Logger from '#utils/Logger.js';
 
-export const webhookMap = new Collection<string, { lastUsed: Date, client: WebhookClient }>();
+export const webhookMap = new Collection<string, { lastUsed: Date; client: WebhookClient }>();
 
-setInterval(() => {
-  webhookMap.forEach((client, url) => {
-    const timeSinceLastUsed = Date.now() - client.lastUsed.getTime();
-    const tenMinutes = 10 * 60 * 1000;
+setInterval(
+  () => {
+    webhookMap.forEach((client, url) => {
+      const timeSinceLastUsed = Date.now() - client.lastUsed.getTime();
+      const tenMinutes = 10 * 60 * 1000;
 
-    // Remove the webhook from the cache if it hasn't been used in the last 10 minutes
-    // This will prevent the webhook cache from growing unbounded
-    if (timeSinceLastUsed > tenMinutes) {
-      webhookMap.delete(url);
-    }
-  });
-}, 300000);
+      // Remove the webhook from the cache if it hasn't been used in the last 10 minutes
+      // This will prevent the webhook cache from growing unbounded
+      if (timeSinceLastUsed > tenMinutes) {
+        webhookMap.delete(url);
+      }
+    });
+  },
+  5 * 60 * 1000,
+);
 
 export const startApi = (metrics: MainMetricsService, clusterManager?: ClusterManager) => {
   const app = new Hono({});

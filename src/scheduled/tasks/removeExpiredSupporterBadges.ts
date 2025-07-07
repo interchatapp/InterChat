@@ -22,7 +22,7 @@ export default async function removeExpiredSupporterBadges() {
         badges: {
           set: user.badges.filter((b) => b !== Badges.SUPPORTER),
         },
-        donationTier: null,
+        donationTierId: null,
         donationExpiresAt: null,
       },
     });

@@ -228,33 +228,31 @@ export class MessageProcessor {
 
     if (!hub) {
       // Hub cache miss - fetch from database
-      const dbHubData = await db.hub.findFirst({
-        where: { id: hubId },
-        include: {
-          connections: {
-            where: { connected: true },
-            select: {
-              id: true,
-              channelId: true,
-              connected: true,
-              compact: true,
-              webhookURL: true,
-              parentId: true,
-              hubId: true,
-              embedColor: true,
-              serverId: true,
-              lastActive: true,
-            },
+      const [dbHubData, connections] = await Promise.all([
+        db.hub.findFirst({ where: { id: hubId } }),
+        db.connection.findMany({
+          where: { connected: true, hubId },
+          select: {
+            id: true,
+            channelId: true,
+            connected: true,
+            compact: true,
+            webhookURL: true,
+            parentId: true,
+            hubId: true,
+            embedColor: true,
+            serverId: true,
+            lastActive: true,
           },
-        },
-      });
+        }),
+      ]);
 
       if (!dbHubData) {
         return null;
       }
 
       hub = new HubManager(dbHubData);
-      hubConnections = dbHubData.connections;
+      hubConnections = connections;
 
       // Cache the hub data
       await MessageProcessor.redis.set(

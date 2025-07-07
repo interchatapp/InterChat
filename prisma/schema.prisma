@@ -105,18 +105,23 @@ model Hub {
     activityMetrics  HubActivityMetrics?
 
     @@index([ownerId])
+    @@index([verified, featured, private])
+    @@index([activityLevel])
+    @@index([language])
+    @@index([nsfw])
+    @@index([weeklyMessageCount])
 }
 
 model Tag {
-    id             String   @id @default(cuid())
-    name           String   @unique
-    category       String? // e.g., "Gaming", "Technology", "Art", "Music"
-    description    String?
-    color          String? // Hex color for UI display
-    isOfficial     Boolean  @default(false) // Official InterChat tags vs user-created
-    usageCount     Int      @default(0) // Track popularity for autocomplete
-    createdAt      DateTime @default(now())
-    hubs           Hub[]
+    id          String   @id @default(cuid())
+    name        String   @unique
+    category    String? // e.g., "Gaming", "Technology", "Art", "Music"
+    description String?
+    color       String? // Hex color for UI display
+    isOfficial  Boolean  @default(false) // Official InterChat tags vs user-created
+    usageCount  Int      @default(0) // Track popularity for autocomplete
+    createdAt   DateTime @default(now())
+    hubs        Hub[]
 
     @@index([category])
     @@index([usageCount])
@@ -179,6 +184,8 @@ model Connection {
 
     @@unique([channelId, serverId])
     @@unique([hubId, serverId])
+    @@index([serverId])
+    @@index([hubId])
     @@index([hubId, channelId])
     @@index([channelId, connected]) // for getHubAndConnections
     @@index([hubId, connected]) // for finding other connections in the same hub
@@ -211,6 +218,10 @@ model Infraction {
     updatedAt DateTime @updatedAt
 
     @@index([status, hubId])
+    @@index([userId])
+    @@index([serverId])
+    @@index([type])
+    @@index([expiresAt])
 }
 
 model Appeal {
@@ -227,6 +238,7 @@ model Appeal {
     @@index([infractionId])
     @@index([userId])
     @@index([status])
+    @@index([createdAt])
 }
 
 model BlockWord {
@@ -381,12 +393,28 @@ model User {
 
     // Ko-fi donation relations
     donations    Donation[]
-    donationTier DonationTier?
+    donationTier      DonationTierDefinition? @relation(fields: [donationTierId], references: [id])
+    donationTierId    String?
     tagId        String?
+
+    @@index([isStaff])
+    @@index([reputation])
+    @@index([locale])
+    @@index([email])
+    @@index([voteCount])
+    @@index([lastVoted])
+    @@index([createdAt])
 }
 
-enum DonationTier {
-    SUPPORTER // $1.99/month
+model DonationTierDefinition {
+    id          String     @id @default(cuid())
+    name        String     @unique
+    description String
+    price       Float
+    createdAt   DateTime   @default(now())
+    updatedAt   DateTime   @updatedAt
+    donations   Donation[]
+    users       User[]
 }
 
 // Ko-fi donation models
@@ -407,9 +435,8 @@ model Donation {
     processed         Boolean  @default(false) // Whether premium benefits have been granted
 
     // Subscription-specific fields
-    isSubscription      Boolean @default(false) // Whether this is a subscription payment
-    isFirstSubscription Boolean @default(false) // Whether this is the first subscription payment
-    tierName            String? // Ko-fi tier name (e.g., "Supporter")
+    donationTierId      String?
+    donationTier        DonationTierDefinition? @relation(fields: [donationTierId], references: [id])
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -417,8 +444,6 @@ model Donation {
     @@index([kofiTransactionId])
     @@index([discordUserId])
     @@index([createdAt])
-    @@index([tierName])
-    @@index([isSubscription])
 }
 
 // Model for storing pending premium claims
@@ -690,9 +715,6 @@ model Message {
     referredBy Message[]   @relation("MessageReference")
     referredTo Message?    @relation("MessageReference", fields: [referredMessageId], references: [id])
 
-    @@index([hubId])
-    @@index([channelId])
-    @@index([authorId])
     @@index([createdAt]) // For message cleanup by age
     @@index([referredMessageId])
 }
@@ -730,10 +752,12 @@ model Report {
     updatedAt        DateTime     @updatedAt
 
     @@index([hubId])
-    @@index([reporterId])
-    @@index([reportedUserId])
     @@index([status])
     @@index([createdAt])
+    @@index([reporterId])
+    @@index([messageId])
+    @@index([handledBy])
+    @@index([reportedUserId])
 }
 
 enum ReportStatus {

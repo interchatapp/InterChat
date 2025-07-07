@@ -73,10 +73,21 @@ export default class UserDbService {
     id: Snowflake,
     data: Omit<Prisma.UserUpsertArgs['create'], 'id'>,
   ): Promise<User> {
+    // Handle donation tier separately if present
+    const { donationTierId, ...cleanData } = data as Omit<Prisma.UserUpsertArgs['create'], 'id'> & { donationTierId?: string };
+
+    const upsertData = donationTierId
+      ? {
+        id,
+        ...cleanData,
+        donationTier: { connect: { id: donationTierId } },
+      }
+      : { id, ...cleanData };
+
     const user = await db.user.upsert({
       where: { id },
-      create: { ...data, id },
-      update: data,
+      create: upsertData,
+      update: upsertData,
     });
     await this.cacheUser(user);
     return user;

@@ -32,14 +32,14 @@ export class DonationManager {
     this.scheduler.addRecurringTask('cleanupExpiredDonations', 60 * 60 * 1_000, async () => {
       const expiredUsers = await db.user.findMany({
         where: {
-          donationTier: { not: null },
+          donationTierId: { not: null },
           donationExpiresAt: { lt: new Date() },
         },
       });
 
       for (const user of expiredUsers) {
         await this.userDbManager.updateUser(user.id, {
-          donationTier: null,
+          donationTier: { disconnect: true },
           donationExpiresAt: null,
         });
         Logger.info(`[donation] Expired donation tier for user ${user.id}`);
@@ -59,12 +59,5 @@ export class DonationManager {
     return count;
   }
 
-  async isUserDonor(userId: string): Promise<boolean> {
-    const user = await db.user.findUnique({
-      where: { id: userId, donationExpiresAt: { gt: new Date() }, donationTier: { not: null } },
-      select: {},
-    });
 
-    return user !== null;
-  }
 }
