@@ -96,6 +96,13 @@ vote:
       voterBadge: '/profil​e में विशेष वोटर बैज'
   embed:
     title: 'InterChat के लिए वोट करें'
+premium:
+  featureRequired: |
+    {emoji} **Premium Required**
+
+    This feature is available to Ko-fi Supporters ($1.99/month) along with many more.
+
+    [Become a Supporter]({link}) to unlock this feature and support InterChat development!
 network:
   accountTooNew: '{emoji} अरे हाय {user}! आपका Discord खाता अभी नया है, इसलिए InterChat के माध्यम से संदेश भेजने से पहले आपको थोड़ी देर इंतज़ार करना होगा। यह हमारी समुदाय को सुरक्षित बनाए रखने में मदद करता है! कृपया थोड़ी देर बाद फिर से प्रयास करें।'
   deleteSuccess: '{emoji} {user} द्वारा भेजा गया संदेश __**{deleted}/{total}**__ सर्वरों से हटा दिया गया है।'
@@ -306,7 +313,7 @@ hub:
         label: बैनर URL
         placeholder: एक Imgur तस्वीर का URL दर्ज करें।
     maxHubs: "{emoji} [InterChat के लिए वोट करें]({voteUrl}) ताकि आप और हब बना सकें! आपने अधिकतम हब्स की सीमा ({maxHubs}) तक पहुंच प्राप्त कर ली है।\n"
-    invalidName: '{emoji} अमान्य हब नाम। इसमें `discord`, `clyde` या \`\`\` शामिल नहीं होना चाहिए। कृपया कोई और नाम चुनें।'
+    invalidName: '{emoji} Invalid hub name. It must not contain `discord`, `clyde` or ``` . Please choose another name.'
     nameTaken: '{emoji} यह हब नाम पहले से लिया जा चुका है। कृपया कोई और नाम चुनें।'
     success: |
       ## हब बन गया है! यह डिफ़ॉल्ट रूप से __private__ है।
@@ -332,6 +339,19 @@ hub:
       > हब को पब्लिक करने और दूसरों को बिना इनवाइट के ब्राउज़/जॉइन करने की अनुमति देने के लिए `/hub visibility` का उपयोग करें। (वैकल्पिक)
 
       अगर आपके कोई सवाल हैं या मदद चाहिए, तो बेझिझक [सपोर्ट सर्वर]({support_invite}) में पूछें। विकास लागत में सहायता के लिए [डोनेट करें]({donateLink}) पर विचार करें।
+  rename:
+    invalidName: |
+      ### {emoji} Invalid Hub Name
+      {error}
+    nameTaken: |
+      {emoji} **Name Already Taken**
+
+      A hub with the name "{name}" already exists. Please choose a different name.
+    success: |
+      {tick} **Hub Renamed Successfully**
+
+      **{oldName}** now displays as **{newName}**
+      -# {info} *This custom name appears in hub listings and messages.*'
   delete:
     confirm: क्या आप वाकई **{hub}** को हटाना चाहते हैं? यह कार्रवाई अपरिवर्तनीय है। इस हब से जुड़े सभी सर्वर, इनवाइट्स और संदेश डेटा हटाए जाएंगे।
     ownerOnly: '{emoji} केवल इस हब का ओनर ही इसे हटा सकता है।'
@@ -380,16 +400,8 @@ hub:
       notAllowed: "{emoji} केवल हब मैनेजर ही मॉडरेटर की स्थिति को अपडेट कर सकते हैं।"
       notOwner: "{emoji} केवल हब का ओनर ही मैनेजर की स्थिति को अपडेट कर सकता है।"
   manage:
+    iconBannerNotice: '**🖼️ NEW Set Icon/Banner:** You can now set a custom icon and banner for your hub! Try it out at [on the dashboard]({url}).'
     dashboardTip: "**🛠️ नया डैशबोर्ड:** बेहतर इंटरफेस और अधिक फ़ीचर्स! इसे आज़माएं [अपने हब के डैशबोर्ड पेज]({url}) पर।"
-    enterImgurUrl: एक वैध Imgur इमेज URL दर्ज करें जो गैलरी या एलबम न हो।
-    icon:
-      changed: हब का आइकन सफलतापूर्वक बदला गया।
-      modal:
-        title: आइकन संपादित करें
-        label: आइकन URL
-      selects:
-        label: आइकन संपादित करें
-        description: इस हब का आइकन बदलें।
     description:
       changed: हब का विवरण सफलतापूर्वक बदला गया।
       modal:
@@ -399,15 +411,6 @@ hub:
       selects:
         label: विवरण बदलें
         description: इस हब का विवरण बदलें।
-    banner:
-      changed: हब का बैनर सफलतापूर्वक बदला गया।
-      removed: हब का बैनर सफलतापूर्वक हटाया गया।
-      modal:
-        title: बैनर संपादित करें
-        label: बैनर URL
-      selects:
-        label: बैनर संपादित करें
-        description: इस हब का बैनर बदलें।
     visibility:
       success: '{emoji} हब की विज़िबिलिटी सफलतापूर्वक **{visibility}** में बदल दी गई है।'
       selects:
@@ -437,7 +440,12 @@ hub:
         sfw: 'This hub is now safe for work. All channels can connect to this hub.'
     setNsfw:
       success: '{emoji} **{hub}** has been successfully marked as **{status}**.'
-      announcement: "{emoji} **Hub Content Rating Changed**\n\nThis hub is now marked as **{status}**.\n\n{description}"
+      announcement: |
+        {emoji} **Hub Content Rating Changed**
+
+        This hub is now marked as **{status}**.
+
+        {description}'
     nsfwAlreadySet: '{emoji} **{hub}** is already marked as **{status}**.'
     embed:
       visibility: 'विज़िबिलिटी'
@@ -1015,10 +1023,14 @@ commands:
     nextSteps:
       created:
         title: '✨ Almost Done!'
-        description: "Your Hub \"{hubName}\" is Ready!\nClick Finish Setup to complete the process. After that, follow these steps:"
+        description: |
+          Your Hub "{hubName}" is Ready!
+          Click Finish Setup to complete the process. After that, follow these steps:'
         inviteLink:
           title: '1️⃣ Create an Invite Link'
-          description: "{hubInviteCommand} `hub:{hubName}`\nThis will generate an invite link you can share with other servers"
+          description: |
+            {hubInviteCommand} `hub:{hubName}`
+            This will generate an invite link you can share with other servers
         shareHub:
           title: '2️⃣ Share Your Hub'
           description: |
@@ -1046,10 +1058,12 @@ commands:
             {dot} Vote for InterChat to unlock custom welcome messages and colors
             {dot} You can publish your hub to the [hub directory]({website}/hubs) using {hubVisibilityCommand}
             {dot} Join our [support server]({supportInvite}) for hub management tips!
-        copyCommand: "`/hub invite create hub:{hubName}`\n✨ Command copied! Run this to create an invite link."
+        copyCommand: "/hub invite create hub:{hubName}"
       joined:
         title: '✨ Ready to Join?'
-        description: "Ready to Join \"{hubName}\"?\nClick Finish Setup to join the hub. After joining, you can use these commands:"
+        description: |
+          Ready to Join `{hubName}`?
+          Click Finish Setup to join the hub. After joining, you can use these commands:"
         commands: |
           {connectionEditCommand}
           Customize how you receive/send messages to the hub
@@ -1184,7 +1198,9 @@ hubConfig:
   antiSwear:
     title: 'Anti-Swear Configuration'
     description: 'Configure word filters and auto-moderation for this hub'
-    noRules: "Let's set up some anti-swear rules!\nUse the `Add Rule` button to create one."
+    noRules: |
+      Let's set up some anti-swear rules!
+      Use the `Add Rule` button to create one.
     selectRule: "Select a rule to edit it's words/actions"
     placeholder: 'Select a log type to configure'
     validating: '{emoji} Validating anti-swear rule...'
