@@ -51,11 +51,7 @@ vote:
     title: 'Pilib untuk InterChat'
 premium:
   featureRequired: |
-    {emoji} **Premium Required**
-
-    This feature is available to Ko-fi Supporters ($1.99/month) along with many more.
-
-    [Become a Supporter]({link}) to unlock this feature and support InterChat development!
+    {emoji} **Premium Diperlukan** Fitur ini tersedia untuk Pendukung Ko-fi ($1,99/bulan) dan masih banyak lagi. [Menjadi Pendukung]({link}) untuk membuka fitur ini dan mendukung pengembangan InterChat!
 network:
   accountTooNew: '{emoji} Hai {user}! Akun Discord Anda masih cukup baru, jadi kami perlu menunggu sebentar sebelum Anda dapat mengirim pesan melalui InterChat. Ini membantu menjaga keamanan komunitas kami! Silakan coba lagi beberapa saat lagi.'
   deleteSuccess: '{emoji} Pesan dari {user} telah dihapus dari server __**{deleted}/{total}**__.'
@@ -64,7 +60,7 @@ network:
   emptyContent: '{emoji} Konten pesan tidak boleh kosong.'
   newMessageContent: 'Konten pesan terbaru'
   editMessagePrompt: '{emoji} Silakan gunakan modal untuk mengedit pesan Anda.'
-  editSuccess: '{emoji} Message by {user} has been edited in __**{edited}/{total}**__ servers.'
+  editSuccess: "{emoji} Pesan oleh {user} telah diedit di \n __**{edited}/{total}**__ servers."
   onboarding:
     welcome:
       title: '🎉 Selamat datang ke InterChat!'
@@ -77,18 +73,18 @@ network:
       footer: Jaringan InterChat | Menghubungkan Komunitas di Seluruh Dunia 🌍
     inProgress: '{emoji} {channel} sedang dalam proses penyiapan untuk bergabung dengan hub. Harap tunggu hingga penyiapan selesai atau batalkan jika Anda yang memulainya.'
 blacklist:
-  description: 'Mute/Ban a user or server from your hub.'
-  success: '{emoji} **{name}** has been successfully blacklisted!'
-  removed: '{emoji} **{name}** has been removed from the blacklist!'
+  description: 'Bisukan/Larang pengguna atau server dari hub Anda.'
+  success: '{emoji} **{name}** telah berhasil dimasukkan dalam daftar hitam!'
+  removed: '{emoji} **{name}** telah dihapus dari daftar hitam!'
   modal:
     reason:
       label: Alasan
-      placeholder: Reason for blacklisting
+      placeholder: Alasan untuk dimasukkan ke daftar hitam
     duration:
       label: Durasi
-      placeholder: 'Duration of blacklist. Eg: 1d, 1w, 1m, 1y. Leave blank for permanent.'
+      placeholder: 'Durasi daftar hitam. Contoh: 1h, 1w, 1m, 1y. Kosongkan text untuk permanen.'
   user:
-    description: 'Mute/Ban a user from your hub.'
+    description: 'Bisukan/Larang pengguna dari hub Anda.'
     options:
       user:
         description: 'The ID of the user to blacklist (get id using /messageinfo command)'
