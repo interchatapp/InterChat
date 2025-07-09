@@ -1,54 +1,52 @@
 rules:
-  header: 'InterChat Rules'
-  botRulesNote: 'These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:'
+  header: 'قوانين إنتَر شات'
+  botRulesNote: 'هذه القوانين هنا لجعل هذه التجربة ممتعة وآمنة للجميع. اقرأهم وأتبعهم بعناية:'
   rules: |
     **ممنوع خطاب الكراهية**
   welcome: |
-    {emoji} Hey there, {user}! Welcome to InterChat! 🎉
+    {emoji} أهلاً وسهلاً {user}! مرحباً في إنتَر شات! 🎉
 
-    We're so excited to have you join our amazing community of servers connecting across Discord! Before you dive into chatting with people from around the world, let's take a quick moment to go over our friendly community guidelines.
+    نحن متحمسون لانضمامك جدا في انضمامك معنا في مجتمعنا الرائع من السيرفرات المتصلة حول دسكورد! ولكن قبل أن تدخل في دردشات مع ناس من جميع أنحاء العالم، خلينا نأخذ لنا لحظة لمراجعة إرشادات مجتمعنا الودية.
 
-    These simple rules help keep InterChat a warm, welcoming, and safe space for everyone to make new friends and share great conversations! ✨
-  alreadyAccepted: "{emoji} Welcome back, {user}! You're all set to explore and chat with amazing communities. Have fun connecting with new friends! 🌟"
-  continue: Continue
-  accept: Accept
-  decline: Decline
-  agreementNote: By accepting these rules, you agree to follow them while using InterChat. Breaking these rules may result in restrictions or bans.
+    تساعد هذه القواعد البسيطة في الحفاظ على إنتَر شات كمساحة دافئة ومرحبة وآمنة للجميع لتكوين صداقات جديدة ومشاركة محادثات رائعة! ✨
+  alreadyAccepted: ""
+  continue: كمل النص
+  accept: أتقبل
+  decline: أرفض
+  agreementNote: "مع تقبيلك لهذه القوانين، أنت تقبل متابعتهم أثناء إستخدامك لإنتَر شات.\nقد يؤدي مخالفة هذه القوانين إلى فرض قيود أو حظر."
   hubAgreementNote: |
-    By accepting these rules, you agree to follow them while chatting in this hub. Breaking these rules may result in removal from the hub.
 
-    ⚠️ **You cannot send messages in this hub until you accept these rules.**
   accepted: |
-    {emoji} Fantastic! Welcome to the InterChat family! 🎉✨
+    {emoji} ممتاز! مرحباً في عائلة الإنتَر شات! 🎉✨
 
-    You're now part of an incredible community that connects thousands of servers and millions of people worldwide! We're thrilled to have you aboard this amazing journey.
+    أنت الآن جزء من مجتمع رائع يربط آلاف السرفرات وملايين الأشخاص حول العالم! يسعدنا انضمامك إلينا في هذه الرحلة الرائعة.
 
-    ### 🚀 Ready to Start Your Adventure?
-    - **Discover Communities:** Use the [hub directory]({hubs_link}) to explore vibrant, active communities waiting for you
-    - **Jump Into Conversations:** Join discussions that spark your interest, or create your own hub through our [dashboard]({dashboard_link})
-    - **Try Quick Connections:** Use our `/call` command for instant one-on-one server connections - perfect for making new friends!
-    - **Get Personalized Help:** Use `/setup` for a guided tour if you're feeling a bit lost
+    ### 🚀 هل أنت مستعد لبدء مغامرتك؟
+    - **اكتشف المجتمعات:** استخدم [خريطة المجتمعات]({hubs_link}) لاستكشاف مجتمعات نابضة بالحياة ونشطة في انتظارك.
+    - **انضم إلى المحادثات:** انضم إلى المناقشات التي تثير اهتمامك، أو أنشئ مركزك الخاص من خلال [لوحة القيادة]({dashboard_link})
+    - **جرب الاتصالات السريعة:** استخدم أمر `/call` لاتصالات فورية فردية مع سرفرات - مثالي لتكوين صداقات جديدة!
+    - **احصل على مساعدة شخصية:** استخدم `/setup` لجولة إرشادية إذا كنت تشعر بالحيرة.
 
-    ### 💝 We're Here for You!
-    Feeling confused or need a helping hand? Don't worry - we've all been there! Join our friendly [support community]({support_invite}) where real people are excited to help you get started.
+    ### 💝 نحن هنا من أجلك!
+    هل تشعر بالحيرة أو تحتاج إلى مساعدة؟ لا تقلق - لقد مررنا جميعًا بهذه التجربة! انضم إلى [مجتمع الدعم]({support_invite}) الودود، حيث يسعد أعضاء حقيقيون بمساعدتك على البدء.
 
-    **Love what we're doing?** Consider [supporting us]({donateLink}) to help InterChat grow and bring even more amazing features to connect communities worldwide! 🌍
+    **هل أعجبك ما نقدمه؟** فكّر في [دعمنا]({donateLink}) لمساعدة InterChat على النمو وإضافة المزيد من الميزات الرائعة لربط المجتمعات حول العالم! 🌍
   declined: |
-    {emoji} Please take a moment to read and accept the community guidelines.
+    {emoji} يُرجى قراءة إرشادات المجتمع والموافقة عليها.
 
-    These rules aren't optional—they're here to keep InterChat safe and enjoyable for everyone. Send another message or use any InterChat command to get started.
+    هذه القواعد ليست اختيارية، بل هي هنا لضمان أمان إنتَر شات ومتعة الجميع. أرسل رسالة أخرى أو استخدم أي أمر من أوامر إنتَر شات للبدء.
 
-    ⚠️ Important: You won't be able to chat with other servers until you accept the rules. Take your time, but this step is required.
+    ⚠️ هام: لن تتمكن من الدردشة مع سرفرات أخرى حتى توافق على القواعد. خذ وقتك، فهذه الخطوة ضرورية.
   hubAccepted: |
-    {emoji} You have accepted the hub rules.
-    You can now start chatting in this hub!
+    {emoji} لقد وافقت على قواعد المركز. 
+    يمكنك الآن بدء الدردشة في هذا المركز!
   hubDeclined: |
-    {emoji} You have declined the rules for {hubName}.
-    -# ⚠️ **You won't be able to send messages in this hub until you accept its rules.**
-    -# To try again, send another message in this hub.
-  noHubRules: This hub has not set any specific rules yet. However, the [general InterChat rules]({rules_link}) still apply.
-  hubRules: Hub Rules
-  viewbotRules: 'View Bot Rules'
+    {emoji} لقد رفضتَ قواعد {hubName}.
+    -# ⚠️ **لن تتمكن من إرسال رسائل في هذا المركز حتى تقبل قواعده.**
+    -# للمحاولة مرة أخرى، أرسل رسالة أخرى في هذا المركز.
+  noHubRules: لم يُحدد هذا المركز أي قواعد محددة بعد. مع ذلك، لا تزال قواعد [إنتَر شات]({rules_link}) العامة سارية.
+  hubRules: قوانين المركز
+  viewbotRules: 'رؤية قوانين المركز'
 vote:
   description: |
     Help more communities discover InterChat! Your vote on top.gg:
@@ -74,6 +72,13 @@ vote:
       voterBadge: 'Exclusive voter badge in /profile'
   embed:
     title: 'Vote for InterChat'
+premium:
+  featureRequired: |
+    {emoji} **Premium Required**
+
+    This feature is available to Ko-fi Supporters ($1.99/month) along with many more.
+
+    [Become a Supporter]({link}) to unlock this feature and support InterChat development!
 network:
   accountTooNew: '{emoji} Hey {user}! Your Discord account is still pretty new, so we need to wait a little bit before you can send messages through InterChat. This helps keep our community safe! Please try again in a little while.'
   deleteSuccess: '{emoji} Message by {user} has been deleted from __**{deleted}/{total}**__ servers.'
@@ -282,7 +287,7 @@ hub:
         label: Banner URL
         placeholder: Enter an Imgur image URL.
     maxHubs: '{emoji} [Vote for InterChat]({voteUrl}) to create more hubs! You have reached the maximum number of hubs ({maxHubs}) you can create.'
-    invalidName: '{emoji} Invalid hub name. It must not contain `discord`, `clyde` or \`\`\` . Please choose another name.'
+    invalidName: '{emoji} Invalid hub name. It must not contain `discord`, `clyde` or ``` . Please choose another name.'
     nameTaken: '{emoji} This hub name is already taken. Please choose another name.'
     success: |
       ## Hub Created! It is __private__ by default.
@@ -302,6 +307,19 @@ hub:
       > Use `/hub visibility` to make the hub public and allow others to browse and join it without using invites. (Optional)
 
       If you have any questions or need help, feel free to ask in the [support server]({support_invite}). Consider [donating]({donateLink}) to support the development costs.
+  rename:
+    invalidName: |
+      ### {emoji} Invalid Hub Name
+      {error}
+    nameTaken: |
+      {emoji} **Name Already Taken**
+
+      A hub with the name "{name}" already exists. Please choose a different name.
+    success: |
+      {tick} **Hub Renamed Successfully**
+
+      **{oldName}** now displays as **{newName}**
+      -# {info} *This custom name appears in hub listings and messages.*'
   delete:
     confirm: Are you sure you wish to delete **{hub}**? This action is irreversible. All connected servers, invites and message data will be removed from this hub.
     ownerOnly: '{emoji} Only the owner of this hub can delete it.'
@@ -350,16 +368,8 @@ hub:
       notAllowed: "{emoji} Only hub managers can update a moderator's position."
       notOwner: "{emoji} Only the owner of this hub can update a manager's position."
   manage:
+    iconBannerNotice: '**🖼️ NEW Set Icon/Banner:** You can now set a custom icon and banner for your hub! Try it out at [on the dashboard]({url}).'
     dashboardTip: "**🛠️ NEW Dashboard:** Improved interface and more features! Try it out at [your hub's dashboard page]({url})."
-    enterImgurUrl: Enter a valid Imgur image URL that is not a gallery or album.
-    icon:
-      changed: Hub icon successfully changed.
-      modal:
-        title: Edit Icon
-        label: Icon URL
-      selects:
-        label: Edit Icon
-        description: Change the icon of this hub.
     description:
       changed: Hub description successfully changed.
       modal:
@@ -369,15 +379,6 @@ hub:
       selects:
         label: Change Description
         description: Change the description of this hub.
-    banner:
-      changed: Hub banner successfully changed.
-      removed: Hub banner successfully removed.
-      modal:
-        title: Edit Banner
-        label: Banner URL
-      selects:
-        label: Edit Banner
-        description: Change the banner of this hub.
     visibility:
       success: '{emoji} Hub visibility successfully changed to **{visibility}**.'
       selects:
@@ -407,7 +408,12 @@ hub:
         sfw: 'This hub is now safe for work. All channels can connect to this hub.'
     setNsfw:
       success: '{emoji} **{hub}** has been successfully marked as **{status}**.'
-      announcement: "{emoji} **Hub Content Rating Changed**\n\nThis hub is now marked as **{status}**.\n\n{description}"
+      announcement: |
+        {emoji} **Hub Content Rating Changed**
+
+        This hub is now marked as **{status}**.
+
+        {description}'
     nsfwAlreadySet: '{emoji} **{hub}** is already marked as **{status}**.'
     embed:
       visibility: 'Visibility'
@@ -985,10 +991,14 @@ commands:
     nextSteps:
       created:
         title: '✨ Almost Done!'
-        description: "Your Hub \"{hubName}\" is Ready!\nClick Finish Setup to complete the process. After that, follow these steps:"
+        description: |
+          Your Hub "{hubName}" is Ready!
+          Click Finish Setup to complete the process. After that, follow these steps:'
         inviteLink:
           title: '1️⃣ Create an Invite Link'
-          description: "{hubInviteCommand} `hub:{hubName}`\nThis will generate an invite link you can share with other servers"
+          description: |
+            {hubInviteCommand} `hub:{hubName}`
+            This will generate an invite link you can share with other servers
         shareHub:
           title: '2️⃣ Share Your Hub'
           description: |
@@ -1016,10 +1026,12 @@ commands:
             {dot} Vote for InterChat to unlock custom welcome messages and colors
             {dot} You can publish your hub to the [hub directory]({website}/hubs) using {hubVisibilityCommand}
             {dot} Join our [support server]({supportInvite}) for hub management tips!
-        copyCommand: "`/hub invite create hub:{hubName}`\n✨ Command copied! Run this to create an invite link."
+        copyCommand: "/hub invite create hub:{hubName}"
       joined:
         title: '✨ Ready to Join?'
-        description: "Ready to Join \"{hubName}\"?\nClick Finish Setup to join the hub. After joining, you can use these commands:"
+        description: |
+          Ready to Join `{hubName}`?
+          Click Finish Setup to join the hub. After joining, you can use these commands:"
         commands: |
           {connectionEditCommand}
           Customize how you receive/send messages to the hub
@@ -1154,7 +1166,9 @@ hubConfig:
   antiSwear:
     title: 'Anti-Swear Configuration'
     description: 'Configure word filters and auto-moderation for this hub'
-    noRules: "Let's set up some anti-swear rules!\nUse the `Add Rule` button to create one."
+    noRules: |
+      Let's set up some anti-swear rules!
+      Use the `Add Rule` button to create one.
     selectRule: "Select a rule to edit it's words/actions"
     placeholder: 'Select a log type to configure'
     validating: '{emoji} Validating anti-swear rule...'
