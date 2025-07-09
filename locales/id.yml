@@ -577,110 +577,110 @@ badges:
     description: '🏅 Configure your badge display preferences'
     options:
       show:
-        name: 'show'
-        description: 'Whether to show or hide your badges in messages'
+        name: 'tampilkan '
+        description: 'Apakah akan menampilkan atau menyembunyikan lencana Anda dalam pesan'
   list:
     developer: 'Core developer of InterChat'
     staff: 'InterChat staff member'
-    translator: 'Translator of InterChat'
+    translator: 'Penterjemah InterChat'
     voter: 'Voted for InterChat in the last 12 hours'
 global:
   webhookNoLongerExists: '{emoji} The webhook for this channel no longer exists. To continue using InterChat, please re-create the webhook by using `/connection unpause`.'
-  noReason: No reason provided.
-  noDesc: No Description.
-  version: InterChat v{version}
-  loading: '{emoji} Please wait while I process your request...'
+  noReason: Tidak ada alasan yang diberikan.
+  noDesc: Tidak ada deskripsi. 
+  version: InterChat versi {version}
+  loading: '{emoji} Harap tunggu sementara saya memproses permintaan Anda...'
   reportOptionMoved: '{emoji} This option has moved! To report a message to hub moderators, use the updated `Apps > Message Info/Report` command. For direct reporting to InterChat staff, just hop into the [support server]({support_invite}) and create a ticket with proof.'
-  private: 'Private'
-  public: 'Public'
-  yes: 'Yes'
-  no: 'No'
+  private: 'Pribadi'
+  public: 'Umum'
+  yes: 'Ya'
+  no: 'Tidak'
   cancelled: '{emoji} Cancelled. No changes were made.'
   #Common button labels
   buttons:
-    openInbox: 'Open Inbox'
+    openInbox: 'Buka Kotak Masuk'
     modPanel: 'Mod Panel'
     joinServer: 'Join Server'
-    disconnect: 'Disconnect'
-    reconnect: 'Reconnect'
-    editRule: 'Edit Rule'
+    disconnect: 'Putuskan Sambungan'
+    reconnect: 'Sambungkan Kembali'
+    editRule: 'Edit Aturan'
     #Setup buttons
-    joinPopularHub: 'Join Popular Hub'
-    createNewHub: 'Create New Hub'
-    finishSetup: 'Finish Setup'
-    findMoreHubs: 'Find More Hubs'
-    supportServer: 'Support Server'
-    viewChannel: 'View Channel'
-    hubDirectory: 'Hub Directory'
-    learnMore: 'Learn More'
-    connectToHub: 'Connect to a Hub'
+    joinPopularHub: 'Gabung Dengan Hub Populer'
+    createNewHub: 'Buat Hub Baru'
+    finishSetup: 'Selesaikan Pengaturan'
+    findMoreHubs: 'Cari Lebih Banyak Hub'
+    supportServer: 'Server Dukungan'
+    viewChannel: 'Lihat Saluran'
+    hubDirectory: 'Direktori Hub'
+    learnMore: 'Pelajari Lebih Lanjut'
+    connectToHub: 'Sambung ke Hub'
     #Common buttons for calls and other features
-    createYourHub: 'Create Your Hub'
+    createYourHub: 'Buat Hub Anda'
     #Call buttons
-    cancelCall: 'Cancel Call'
-    newCall: 'New Call'
+    cancelCall: 'Batalkan Panggilan'
+    newCall: 'Panggilan Baru'
     #Leaderboard
     userLeaderboard: 'User Leaderboard'
     serverLeaderboard: 'Server Leaderboard'
   #Common modal titles and labels
   modals:
     editConnection:
-      title: 'Edit Connection'
+      title: 'Edit Sambungan'
       channelName:
-        label: 'Channel Name'
+        label: 'Nama Saluran'
         placeholder: 'Enter a custom name for this channel'
       profanityFilter:
         label: 'Profanity Filter'
       compact:
-        label: 'Compact Mode'
+        label: 'Mode Kompak'
     hubCreation:
-      title: 'Create New Hub'
+      title: 'Buat Hub Baru'
       name:
-        label: 'Hub Name'
+        label: 'Nama Hub'
         placeholder: 'e.g., Gaming Community, Art Gallery'
       description:
         label: 'Description'
-        placeholder: 'What is this hub about?'
+        placeholder: 'Hub ini tentang apa?'
     messageInfo:
-      title: 'Message Information'
+      title: 'Informasi Pesan'
     editRule:
-      title: 'Edit Rule'
+      title: 'Edit Aturan'
       content:
-        label: 'Rule Content'
-        placeholder: 'Enter the rule content...'
+        label: 'Isi Aturan'
+        placeholder: 'Masukkan isinya aturan...'
   #Common messages and responses
   messages:
-    selectChannel: 'Select a channel'
-    selectHub: 'Select a hub'
-    noHubsAvailable: 'No hubs available'
-    hubNotFound: 'Hub not found'
-    channelNotFound: 'Channel not found'
-    connectionNotFound: 'Connection not found'
-    invalidSelection: 'Invalid selection'
-    operationCancelled: 'Operation cancelled'
-    setupComplete: 'Setup complete!'
-    connectionEstablished: 'Connection established'
-    connectionRemoved: 'Connection removed'
-    settingsUpdated: 'Settings updated'
-    ruleAdded: 'Rule added'
-    ruleUpdated: 'Rule updated'
-    ruleDeleted: 'Rule deleted'
+    selectChannel: 'Pilih saluran'
+    selectHub: 'Pilih hub'
+    noHubsAvailable: 'Tidak ada hub yang tersedia'
+    hubNotFound: 'Hub tidak ditemukan'
+    channelNotFound: 'Saluran tidak ditemukan'
+    connectionNotFound: 'Sambungan tidak ditemukan'
+    invalidSelection: 'Piihan tidak valid'
+    operationCancelled: 'Operasi dibatalkan'
+    setupComplete: 'Pengaturan selesai!'
+    connectionEstablished: 'Sambungan didirikan'
+    connectionRemoved: 'Sambungan terhapus'
+    settingsUpdated: 'Pengaturan diperbarui '
+    ruleAdded: 'Aturan ditambahkan'
+    ruleUpdated: 'Aturan diperbarui'
+    ruleDeleted: 'Aturan terhapus'
     #Leaderboard messages
-    noDataAvailable: 'No data available'
-    loadingData: 'Loading data...'
+    noDataAvailable: 'Tidak ada data yang tersedia'
+    loadingData: 'Memuat data...'
     #Connection status
-    connected: 'Connected'
-    disconnected: 'Disconnected'
-    paused: 'Paused'
+    connected: 'Terhubung'
+    disconnected: 'Tidak Terhubung'
+    paused: 'Terjeda'
     #Hub visibility
-    publicHub: 'Public Hub'
-    privateHub: 'Private Hub'
+    publicHub: 'Hub Umum'
+    privateHub: 'Hub Pribadi'
 #Leaderboard
 leaderboard:
   title: 'Global Message Leaderboard'
   description: 'Resets every month. Send a message in any hub to get on it!'
 warn:
-  description: 'Warn a user in your hub'
+  description: 'Memperingatkan pengguna dalam hub Anda'
   options:
     user:
       description: 'The user to warn'
