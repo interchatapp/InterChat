@@ -142,26 +142,26 @@ blacklist:
         description: 'Канал, в чийто черен списък ще бъде добавен'
     selectDuration: 'Изберете продължителността в черния списък за {username}:'
     cannotBlacklistMod: '{emoji} Не можеш да запишеш модератор в черния списък. Моля първо да премахнете ролята им на модератор.'
-    alreadyBlacklisted: '{emoji} This user is already blacklisted.'
+    alreadyBlacklisted: '{emoji} Този потребител вече е в черния списък.'
     easterEggs:
-      blacklistBot: You can't blacklist me wtf.
+      blacklistBot: Не можеш да ме впишеш в черния списък, шматко!
   server:
-    description: 'Mute/Ban a server from your hub.'
+    description: 'Забрани ползването на твоя канал от даден сървър.'
     options:
       server:
-        description: 'The server to blacklist'
+        description: 'Сървър, който да бъде записан в черния списък'
       hub:
-        description: 'Hub to blacklist from'
-    selectDuration: 'Select blacklist duration for {serverName}:'
-    alreadyBlacklisted: '{emoji} This server is already blacklisted.'
-    unknownError: Failed to blacklist **{server}**. Enquire with the developers for more information.
+        description: 'Канал, в чийто черен списък да бъде сложен'
+    selectDuration: 'Определи времето, за което {serverName} да бъде в черния списък.'
+    alreadyBlacklisted: '{emoji} Този сървър е вече в черния списък.'
+    unknownError: Неуспешно добавяне на **{server}** в черния списък. За повече информация се обърнете към разработчиците.
   list:
-    description: 'List all blacklisted users and servers in your hub.'
+    description: 'Избройте всички потребители и сървъри в черния списък във вашия хъб. '
     user: |
-      **UserID:** {id}
-      **Moderator:** {moderator}
-      **Reason:** {reason}
-      **Expires:** {expires}
+      **ID на потребителя:** {id}
+      **Модератор:** {moderator}
+      **Причина:** {reason}
+      **Валидност:** {expires} 
     server: |
       **ServerId:** {id}
       **Moderator:** {moderator}
