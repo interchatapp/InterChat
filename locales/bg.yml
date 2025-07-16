@@ -141,7 +141,7 @@ blacklist:
       hub:
         description: 'Канал, в чийто черен списък ще бъде добавен'
     selectDuration: 'Изберете продължителността в черния списък за {username}:'
-    cannotBlacklistMod: '{emoji} You cannot blacklist a moderator. Please remove their moderator role first.'
+    cannotBlacklistMod: '{emoji} Не можеш да запишеш модератор в черния списък. Моля първо да премахнете ролята им на модератор.'
     alreadyBlacklisted: '{emoji} This user is already blacklisted.'
     easterEggs:
       blacklistBot: You can't blacklist me wtf.
