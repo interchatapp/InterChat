@@ -1,166 +1,167 @@
 rules:
   header: 'Правилата на InterChat'
-  botRulesNote: 'These rules are in place to make a safe and enjoyable experience for everyone. Read and follow them carefully:'
+  botRulesNote: 'Тези правила са установени, за да гарантират безопасно и приятнo преживяване за всички. Прочете следните правила и ги спазвайте внимателно:'
   rules: |
-    1. **No Hate Speech or Harassment**
-    -# > **Includes:** Using slurs or hate speech to attack others, [and more]({guidelines_link}).
-    2. **No Illegal Content**
-    -# > **Includes:** Sharing links to illegal content, Encouraging violence, [and more]({guidelines_link}).
-    3. **No Severe NSFW or Gore**
-    -# > **Includes:** Posting gore or extreme gore in InterChat, Posting sexual content in non-NSFW hubs, [and more]({guidelines_link}).
-    4. **No Spamming or Flooding**
-    -# > **Includes:** Mass spamming or bot floods, [and more]({guidelines_link})
-    5. **No Impersonation or Fraud**
-    -# > **Includes:** Impersonating InterChat staff or hub moderators, Running cryptocurrency or NFT scams, [and more]({guidelines_link}).
-    6. **No Exploitation or Abuse**
-    -# > **Includes:** Grooming or predatory behavior towards minors, Sharing, Requesting, Blackmailing or threatening to  Encouraging self-harm, [and more]({guidelines_link}).
-    7. **No Sharing Malicious Software**
-    -# > **Includes:** Sharing malware, viruses, 'free nitro' links, harmful scripts [and more]({guidelines_link}).
+    1. **Без обидна реч или тормоз**
+    -# > ** Това включва:** Използване на обидна реч и псувни срещу чужди лица и др. ({guidelines_link}).
+    2. **Без незаконно съдържание**
+    -# > ** Това включва:** Споделяне на линкове към незаконно съдържание, насърчаване на насилие и др.({guidelines_link}).
+    3. **Без сериозни неподходящи/небезопасни за рабатота изображения или изображения на кръвопролития**
+    -# > **Това включва:** Публикуване на кръвопролития в InterChat, публикуване на сексуално съдържание в хъбове, които не са маркирани като неподходящи за работа [NSFW] канали и др. ({guidelines_link}). 4. **Без спам** -# >
+    **Това включва:** Масово спамене, затрупване на чата с ботове и др. ({guidelines_link})
+    5. **Без представяне за друг човек или измами**
+    -# > **Това включва:** Представяне за някой от персонала на InterChat или модератори на канала, използване на измами с криптовалута или незаменими токени [NFTs] и др.({guidelines_link}).
+    6. **Без експлоатация или злоупотреба**
+    -# > **Това включва:** Подстрекателство или хищническо поведение спрямо непълнолетни, споделяне, изискане, изнудване или заплахи за насърчаване на самонараняване и др.({guidelines_link}).
+    7. **Без споделяне на зловреден софтуер**
+    -# > **Включва:** Споделяне на зловреден софтуер, вируси, връзки към „безплатно нитро“, вредни скриптове и др.({guidelines_link}).
 
-    You also agree to follow [Discord's Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines). Check out the [full list of rules]({guidelines_link}).
+    Вие също така се съгласявате да спазвате [Условията за ползване на Discord](https://discord.com/terms) и [Правилата на общността](https://discord.com/guidelines). Вижте [пълния списък с правила]({guidelines_link}).
   welcome: |
-    {emoji} Здравейте, {user} Добре дошли в ИнтерЧат! 🎉
+    {emoji} Здравейте, {user} Добре дошли в InterChat! 🎉 Много се радваме, че се присъединявате към нашата страхотна общност от сървъри, свързващи се в Discord! Преди да започнете да говорите с хора от различни краища на света, желателно е набързо да ви запознаем с нашите правила.
 
-    Много се радваме, че се присъединявате към нашата страхотна общност от сървъри, свързващи се в Дискорд! Преди да започнете да говорите с хора от различни краища на света, желателно е набързо да ви запознаем с нашите правила.
-
-    Тези насоки са създадени, за да гарантират, че ИнтерЧат ще остане едно забавно и безопасно пространство за всички, които искат да се сприятелят с други и да почват приятни разговори! ✨
+    Тези насоки са създадени, за да гарантират, че InterChat ще остане едно забавно и безопасно пространство за всички, които искат да се сприятелят с други и да почват приятни разговори! ✨
   alreadyAccepted: "{emoji} Добре дошли отново, {user}! Готови сте да говорите с невероятни общности. Дано ви е приятно да си говорите и да намирате нови приятели! 🌟"
   continue: Продължете
   accept: Приеми
   decline: Откажи
-  agreementNote: Чрез приемането на тези правила, вие се съгласявате да ги следвате по време на използването на InterChat. При нарушаването на следните правила може да се доведе до налагане на ограничения или отстранения.
+  agreementNote: При приемането на тези правила, вие се съгласявате да ги следвате по време на използването на InterChat. При нарушаването на следните правила може да се доведе до налагане на ограничения или отстранения.
   hubAgreementNote: |
-    By accepting these rules, you agree to follow them while chatting in this hub. Breaking these rules may result in removal from the hub.
+    При приемането на тези правила, вие потвърждавате, че ще ги спазвате, докато общувате в този канал. При нарушаването им може да се доведе до вашето отстраняване.
 
-    ⚠️ **You cannot send messages in this hub until you accept these rules.**
+    ⚠️ **Нямате право да изпращате съобщения в този хъб докато не приемате да следвате тези правила.**
   accepted: |
-    {emoji} Fantastic! Welcome to the InterChat family! 🎉✨
+    {emoji} Фантастично! Добре дошли в семейството на InterChat! 🎉✨
 
-    You're now part of an incredible community that connects thousands of servers and millions of people worldwide! We're thrilled to have you aboard this amazing journey.
+    Вече сте част от невероятна общност, която свързва хиляди сървъри и милиони хора по целия свят! Развълнувани сме, че сте на борда на това невероятно пътешествие.
 
-    ### 🚀 Ready to Start Your Adventure?
-    - **Discover Communities:** Use the [hub directory]({hubs_link}) to explore vibrant, active communities waiting for you
-    - **Jump Into Conversations:** Join discussions that spark your interest, or create your own hub through our [dashboard]({dashboard_link})
-    - **Try Quick Connections:** Use our `/call` command for instant one-on-one server connections - perfect for making new friends!
-    - **Get Personalized Help:** Use `/setup` for a guided tour if you're feeling a bit lost
+    ### 🚀 Готови ли сте да започнете своето приключение? - **Открийте нови общности:** Използвайте [указателя за канали]({hubs_link}), за да разгледате оживените, активни общности, които ви очакват!
+    - **Включете се в разговори:** Присъединете се към дискусии, които събуждат интереса ви, или създайте свой собствен център чрез нашето [табло за управление]({dashboard_link}) - **Опитайте бързи връзки:** Използвайте нашата команда `/call` за незабавни индивидуални връзки със различни сървъри - идеално за създаване на нови приятели! - **Получете персонализирана помощ:** Използвайте `/setup` за насоки, ако се чувствате малко объркани.
 
-    ### 💝 We're Here for You!
-    Feeling confused or need a helping hand? Don't worry - we've all been there! Join our friendly [support community]({support_invite}) where real people are excited to help you get started.
+    ### 💝 Тук сме за вас! Чувствате се объркани или имате нужда от помощ? Не се притеснявайте - чувството ни е познато! Присъединете се към нашата приятелска [общност за поддръжка]({support_invite}), където истински хора са развълнувани да ви помогнат да започнете. 
 
-    **Love what we're doing?** Consider [supporting us]({donateLink}) to help InterChat grow and bring even more amazing features to connect communities worldwide! 🌍
+    **Харесва ли ви това, което правим?** Помислете дали да не ни [подкрепите]({donateLink}), за да помогнете на в растежа на InterChat да расте, за да може да предложи още повече невероятни функции за свързване на общности по целия свят! 🌍
   declined: |
-    {emoji} Please take a moment to read and accept the community guidelines.
+    {emoji} Моля, запознайте се и приемете общностните насоки.
 
-    These rules aren't optional—they're here to keep InterChat safe and enjoyable for everyone. Send another message or use any InterChat command to get started.
+    Спазването на тези правила не е въпрос на избор – те са създадени, за да гарантират сигурността и приятното преживяване за всички в InterChat. Можете да изпратите друго съобщение или да използвате команда на InterChat, за да продължите.
 
-    ⚠️ Important: You won't be able to chat with other servers until you accept the rules. Take your time, but this step is required.
+    ⚠️ Важно: Няма да имате достъп до разговаряне с други сървъри, преди да сте приели правилата. Не бързайте, но тази стъпка е задължителна.
   hubAccepted: |
-    {emoji} You have accepted the hub rules.
-    You can now start chatting in this hub!
+    {emoji} Вие приехте правилата на хъба.
+
+    Сега можете да започнете да пишете в този хъб!
   hubDeclined: |
-    {emoji} You have declined the rules for {hubName}.
-    -# ⚠️ **You won't be able to send messages in this hub until you accept its rules.**
-    -# To try again, send another message in this hub.
-  noHubRules: This hub has not set any specific rules yet. However, the [general InterChat rules]({rules_link}) still apply.
-  hubRules: Hub Rules
-  viewbotRules: 'View Bot Rules'
+    {emoji} Вие отказахте правилата за {hubName}.
+     -# ⚠️ Няма да можете да изпращате съобщения в този хъб, докато не приемете правилата му.
+     -# За да опитате отново, изпратете друго съобщение в този канал.
+  noHubRules: На този хъб все още не са зададени специфични правила. Въпреки това, [general InterChat rules] ({rules_link}) си остават задължени да се спазват.
+  hubRules: Правила на канала
+  viewbotRules: 'Вижте правилата на бота'
 vote:
   description: |
-    Help more communities discover InterChat! Your vote on top.gg:
-    - Helps others find active communities
-    - Unlocks special features for you
-    - Supports our independent development
-  footer: 'Votes refresh every 12 hours • Thanks for supporting InterChat!'
+    Помогнете на повече общности да открият InterChat с вашия глас на top.gg:
+    - Помага на другите да намират активни общности
+    - Отключва специални функции за вас
+    - Подкрепя нашето независимо развитие
+  footer: 'Гласовете се обновяват на всеки 12 часа • Благодарим ви, че подкрепяте InterChat!'
   button:
-    label: 'Vote on top.gg'
+    label: 'Гласувайте на top.gg'
   perks:
-    moreComingSoon: 'More perks coming soon! Suggest some in the [support server]({support_invite}).'
+    moreComingSoon: 'Очаквайте още привилегии! Предложете някои на [сървъра за поддръжка]({support_invite}).'
   fields:
-    currentStreak: 'Current Streak:'
-    lastVote: 'Last Vote'
-    voterPerks: 'Voter Perks'
-    voteNow: '[Vote Now]({vote_url})!'
+    currentStreak: 'Текуща серия:'
+    lastVote: 'Последен глас'
+    voterPerks: 'Привилегии за избирателите'
+    voteNow: '[Гласувайте сега]({vote_url})!'
     perks:
-      messageLength: 'Increased message length (2000 characters)'
-      stickers: 'Send stickers in hubs'
-      createHubs: 'Create up to 4 hubs'
-      welcomeMessages: 'Custom welcome messages'
-      voterRole: 'Voter role in support server'
-      voterBadge: 'Exclusive voter badge in /profile'
+      messageLength: 'Увеличена дължина на съобщението (2000 символа)'
+      stickers: 'Изпращане на стикери в каналите'
+      createHubs: 'Създаване на до 4 канала'
+      welcomeMessages: 'Персонализирани приветствени съобщения'
+      voterRole: 'Роля на избирател в сървъра за поддръжка'
+      voterBadge: 'Ексклузивна значка в /profile за избирателите'
   embed:
-    title: 'Vote for InterChat'
+    title: 'Гласувайте за InterChat'
+premium:
+  featureRequired: |
+    {emoji} **Premium Required**
+
+    This feature is available to Ko-fi Supporters ($1.99/month) along with many more.
+
+    [Become a Supporter]({link}) to unlock this feature and support InterChat development!
 network:
-  accountTooNew: '{emoji} Hey {user}! Your Discord account is still pretty new, so we need to wait a little bit before you can send messages through InterChat. This helps keep our community safe! Please try again in a little while.'
-  deleteSuccess: '{emoji} Message by {user} has been deleted from __**{deleted}/{total}**__ servers.'
-  editInProgress: '{emoji} Your request has been queued. Messages will be edited shortly...'
-  editInProgressError: '{emoji} This message is already being edited by another user.'
-  emptyContent: '{emoji} Message content cannot be empty.'
-  newMessageContent: 'New Message Content'
+  accountTooNew: '{emoji} Здравейте, {user}! Тъй като вашият Discord акаунт е сравнително нов, е необходимо да измине кратък период, преди да можете да изпращате съобщения чрез InterChat. Тази мярка е за сигурността на нашата общност. Моля, опитайте отново по-късно.'
+  deleteSuccess: '{emoji} Съобщението от {user} е изтрито в __**{deleted}/{total}**__ сървъра.'
+  editInProgress: '{emoji} Заявката ви е поставена на опашка. Съобщенията ще бъдат редактирани скоро...'
+  editInProgressError: '{emoji} Това съобщение вече се редактира от друг потребител.'
+  emptyContent: '{emoji} Съдържанието на съобщението не може да бъде празно.'
+  newMessageContent: ' '
   editMessagePrompt: '{emoji} Please use the modal to edit your message.'
-  editSuccess: '{emoji} Message by {user} has been edited in __**{edited}/{total}**__ servers.'
+  editSuccess: '{emoji} Съобщението от {user} е редактирано в __**{edited}/{total}**__ сървъра.'
   onboarding:
     welcome:
-      title: '🎉 Welcome to InterChat!'
+      title: '🎉 Добре дошли в InterChat!'
       description: |
-        Welcome to InterChat! Let's get you set up with a personalized experience that matches your interests and helps you find the perfect communities to join.
+        Добре дошли в InterChat! Нека ви осигурим персонализирано изживяване, което отговаря на вашите интереси и ви помага да намерите перфектните общности, към които да се присъедините.
 
-        This quick setup will help us:
-        - Learn about your interests and preferences
-        - Find the best hubs for you to join
-        - Connect you with like-minded people
-        - Get you started with your first community
+        Тази бърза настройка ще ни помогне:
+        - Да разберем вашите интереси и предпочитания
+        - Да намерим най-добрите канали, към които да се присъедините
+        - Да ви свържем с хора със сходни интереси
+        - Да ви помогнем да навлезете в първата си общност 
 
-        Ready to begin your InterChat journey?
+        Готови ли сте да започнете своето InterChat пътешествие?
     embed:
-      title: '🎉 Welcome to {hubName}!'
-      description: |
-        Congratulations! You've discovered an amazing, active community hub! 🌟
+      title: '🎉 Добре дошли в {hubName}!'
+      description: |2
+        Поздравления! Открихте невероятен, активен общностен канал! 🌟 
+         
+        Преди да се потопите и да започнете да създавате нови приятели, нека хвърлим един бърз поглед към нашите прости насоки. Те са предназначени да помогнат на всеки да се забавлява максимално и да се чувства удобно да споделя своите мисли и преживявания.
 
-        Before you dive in and start making new friends, let's take a quick peek at our simple guidelines. They're designed to help everyone have the most fun and feel comfortable sharing their thoughts and experiences.
-
-        Let's get started!
-      footer: InterChat Network | Connecting Communities Worldwide 🌍
-    inProgress: '{emoji} {channel} is already in the process of being setup to join a hub. Please wait for the setup to complete or cancel it if you were the one who initiated it.'
+        Да започваме!
+      footer: Мрежа InterChat | Свързваме общности по целия свят 🌍
+    inProgress: '{emoji} {channel} вече е в процес на установяване за присъединяване към канал. Моля, изчакайте установяването да завърши или го отменете, ако сте го започнали.'
 blacklist:
-  description: 'Mute/Ban a user or server from your hub.'
-  success: '{emoji} **{name}** has been successfully blacklisted!'
-  removed: '{emoji} **{name}** has been removed from the blacklist!'
+  description: 'Заглушаване/забрана на потребител или сървър от вашия канал.'
+  success: '{emoji} **{name}** бе успешно записан в черния списък!'
+  removed: '{emoji} **{name}** бе успешно отписан от черния списък!'
   modal:
     reason:
-      label: Reason
-      placeholder: Reason for blacklisting
+      label: Причина
+      placeholder: Причина за добавяне към черния списък
     duration:
-      label: Duration
-      placeholder: 'Duration of blacklist. Eg: 1d, 1w, 1m, 1y. Leave blank for permanent.'
+      label: Продължителност
+      placeholder: 'Времетраене в черния списък. Пример: 1d, 1w, 1m, 1y. За постоянно остави празно.'
   user:
-    description: 'Mute/Ban a user from your hub.'
+    description: 'Заглушаване/Забрана от вашия канал.'
     options:
       user:
-        description: 'The ID of the user to blacklist (get id using /messageinfo command)'
+        description: 'Идентификационният номер (ID) на потребителя, който ще бъде добавен в черния списък (получава се с командата /messageinfo)'
       hub:
-        description: 'Hub to blacklist from'
-    selectDuration: 'Select blacklist duration for {username}:'
-    cannotBlacklistMod: '{emoji} You cannot blacklist a moderator. Please remove their moderator role first.'
-    alreadyBlacklisted: '{emoji} This user is already blacklisted.'
+        description: 'Канал, в чийто черен списък ще бъде добавен'
+    selectDuration: 'Изберете продължителността в черния списък за {username}:'
+    cannotBlacklistMod: '{emoji} Не можеш да запишеш модератор в черния списък. Моля първо да премахнете ролята им на модератор.'
+    alreadyBlacklisted: '{emoji} Този потребител вече е в черния списък.'
     easterEggs:
-      blacklistBot: You can't blacklist me wtf.
+      blacklistBot: Не можеш да ме впишеш в черния списък, шматко!
   server:
-    description: 'Mute/Ban a server from your hub.'
+    description: 'Забрани ползването на твоя канал от даден сървър.'
     options:
       server:
-        description: 'The server to blacklist'
+        description: 'Сървър, който да бъде записан в черния списък'
       hub:
-        description: 'Hub to blacklist from'
-    selectDuration: 'Select blacklist duration for {serverName}:'
-    alreadyBlacklisted: '{emoji} This server is already blacklisted.'
-    unknownError: Failed to blacklist **{server}**. Enquire with the developers for more information.
+        description: 'Канал, в чийто черен списък да бъде сложен'
+    selectDuration: 'Определи времето, за което {serverName} да бъде в черния списък.'
+    alreadyBlacklisted: '{emoji} Този сървър е вече в черния списък.'
+    unknownError: Неуспешно добавяне на **{server}** в черния списък. За повече информация се обърнете към разработчиците.
   list:
-    description: 'List all blacklisted users and servers in your hub.'
+    description: 'Избройте всички потребители и сървъри в черния списък във вашия хъб. '
     user: |
-      **UserID:** {id}
-      **Moderator:** {moderator}
-      **Reason:** {reason}
-      **Expires:** {expires}
+      **ID на потребителя:** {id}
+      **Модератор:** {moderator}
+      **Причина:** {reason}
+      **Валидност:** {expires} 
     server: |
       **ServerId:** {id}
       **Moderator:** {moderator}
@@ -193,7 +194,7 @@ connection:
   emColorInvalid: '{emoji} Invalid color. Please make sure you have entered a valid hex color code.'
   emColorChange: '{emoji} Embed color successfully {action}'
   embed:
-    title: Connection Details
+    title: "\n"
     fields:
       hub: Hub
       channel: Channel
@@ -297,7 +298,7 @@ hub:
         label: Banner URL
         placeholder: Enter an Imgur image URL.
     maxHubs: '{emoji} [Vote for InterChat]({voteUrl}) to create more hubs! You have reached the maximum number of hubs ({maxHubs}) you can create.'
-    invalidName: '{emoji} Invalid hub name. It must not contain `discord`, `clyde` or \`\`\` . Please choose another name.'
+    invalidName: '{emoji} Invalid hub name. It must not contain `discord`, `clyde` or ``` . Please choose another name.'
     nameTaken: '{emoji} This hub name is already taken. Please choose another name.'
     success: |
       ## Hub Created! It is __private__ by default.
@@ -317,6 +318,19 @@ hub:
       > Use `/hub visibility` to make the hub public and allow others to browse and join it without using invites. (Optional)
 
       If you have any questions or need help, feel free to ask in the [support server]({support_invite}). Consider [donating]({donateLink}) to support the development costs.
+  rename:
+    invalidName: |
+      ### {emoji} Invalid Hub Name
+      {error}
+    nameTaken: |
+      {emoji} **Name Already Taken**
+
+      A hub with the name "{name}" already exists. Please choose a different name.
+    success: |
+      {tick} **Hub Renamed Successfully**
+
+      **{oldName}** now displays as **{newName}**
+      -# {info} *This custom name appears in hub listings and messages.*'
   delete:
     confirm: Are you sure you wish to delete **{hub}**? This action is irreversible. All connected servers, invites and message data will be removed from this hub.
     ownerOnly: '{emoji} Only the owner of this hub can delete it.'
@@ -365,16 +379,8 @@ hub:
       notAllowed: "{emoji} Only hub managers can update a moderator's position."
       notOwner: "{emoji} Only the owner of this hub can update a manager's position."
   manage:
+    iconBannerNotice: '**🖼️ NEW Set Icon/Banner:** You can now set a custom icon and banner for your hub! Try it out at [on the dashboard]({url}).'
     dashboardTip: "**🛠️ NEW Dashboard:** Improved interface and more features! Try it out at [your hub's dashboard page]({url})."
-    enterImgurUrl: Enter a valid Imgur image URL that is not a gallery or album.
-    icon:
-      changed: Hub icon successfully changed.
-      modal:
-        title: Edit Icon
-        label: Icon URL
-      selects:
-        label: Edit Icon
-        description: Change the icon of this hub.
     description:
       changed: Hub description successfully changed.
       modal:
@@ -384,15 +390,6 @@ hub:
       selects:
         label: Change Description
         description: Change the description of this hub.
-    banner:
-      changed: Hub banner successfully changed.
-      removed: Hub banner successfully removed.
-      modal:
-        title: Edit Banner
-        label: Banner URL
-      selects:
-        label: Edit Banner
-        description: Change the banner of this hub.
     visibility:
       success: '{emoji} Hub visibility successfully changed to **{visibility}**.'
       selects:
@@ -422,7 +419,12 @@ hub:
         sfw: 'This hub is now safe for work. All channels can connect to this hub.'
     setNsfw:
       success: '{emoji} **{hub}** has been successfully marked as **{status}**.'
-      announcement: "{emoji} **Hub Content Rating Changed**\n\nThis hub is now marked as **{status}**.\n\n{description}"
+      announcement: |
+        {emoji} **Hub Content Rating Changed**
+
+        This hub is now marked as **{status}**.
+
+        {description}'
     nsfwAlreadySet: '{emoji} **{hub}** is already marked as **{status}**.'
     embed:
       visibility: 'Visibility'
@@ -1000,10 +1002,14 @@ commands:
     nextSteps:
       created:
         title: '✨ Almost Done!'
-        description: "Your Hub \"{hubName}\" is Ready!\nClick Finish Setup to complete the process. After that, follow these steps:"
+        description: |
+          Your Hub "{hubName}" is Ready!
+          Click Finish Setup to complete the process. After that, follow these steps:'
         inviteLink:
           title: '1️⃣ Create an Invite Link'
-          description: "{hubInviteCommand} `hub:{hubName}`\nThis will generate an invite link you can share with other servers"
+          description: |
+            {hubInviteCommand} `hub:{hubName}`
+            This will generate an invite link you can share with other servers
         shareHub:
           title: '2️⃣ Share Your Hub'
           description: |
@@ -1031,10 +1037,12 @@ commands:
             {dot} Vote for InterChat to unlock custom welcome messages and colors
             {dot} You can publish your hub to the [hub directory]({website}/hubs) using {hubVisibilityCommand}
             {dot} Join our [support server]({supportInvite}) for hub management tips!
-        copyCommand: "`/hub invite create hub:{hubName}`\n✨ Command copied! Run this to create an invite link."
+        copyCommand: "/hub invite create hub:{hubName}"
       joined:
         title: '✨ Ready to Join?'
-        description: "Ready to Join \"{hubName}\"?\nClick Finish Setup to join the hub. After joining, you can use these commands:"
+        description: |
+          Ready to Join `{hubName}`?
+          Click Finish Setup to join the hub. After joining, you can use these commands:"
         commands: |
           {connectionEditCommand}
           Customize how you receive/send messages to the hub
@@ -1169,7 +1177,9 @@ hubConfig:
   antiSwear:
     title: 'Anti-Swear Configuration'
     description: 'Configure word filters and auto-moderation for this hub'
-    noRules: "Let's set up some anti-swear rules!\nUse the `Add Rule` button to create one."
+    noRules: |
+      Let's set up some anti-swear rules!
+      Use the `Add Rule` button to create one.
     selectRule: "Select a rule to edit it's words/actions"
     placeholder: 'Select a log type to configure'
     validating: '{emoji} Validating anti-swear rule...'
