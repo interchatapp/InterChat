@@ -117,7 +117,7 @@ blacklist:
   removed: '{emoji} **{name}** has been removed from the blacklist!'
   modal:
     reason:
-      label: Reason
+      label: السبب
       placeholder: Reason for blacklisting
     duration:
       label: Duration
