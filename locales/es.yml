@@ -24,7 +24,7 @@ rules:
     ¡Estamos muy emocionados de que te hayas unido a nuestra increíble comunidad de servidores conectados a través de Discord! Antes de sumergirte en charlar con personas de todo el mundo, déjame que pase un momento para revisar nuestras amables directrices comunitarias.
 
     Estas simples normas ayudan a mantener InterChat como un espacio cálido, acogedor y seguro para que todos puedan hacer novios y compartir conversaciones maravillosas! ✨
-  alreadyAccepted: "{emoji} Welcome back, {user}! You're all set to explore and chat with amazing communities. Have fun connecting with new friends! 🌟"
+  alreadyAccepted: "{emoji} ¡Bienvenido nuevamente, {user}! Usted ya está completamente listo/a para explorar y conversar con increíbles comunidades. ¡Diviértete conectándote con nuevas amistades!"
   continue: Continuar
   accept: Aceptar
   decline: Rechazar
