@@ -35,20 +35,13 @@ rules:
 
     ⚠️ **No puedes enviar mensajes en este centro hasta que aceptes estas reglas.**
   accepted: |
-    {emoji} Fantastic! Welcome to the InterChat family! 🎉✨
+    {emoji} ¡Fantástico! ¡Bienvenido a la familia de InterChat!
 
-    You're now part of an incredible community that connects thousands of servers and millions of people worldwide! We're thrilled to have you aboard this amazing journey.
+    ¡Ahora eres parte de una comunidad increíble que se conecta a miles de servidores y millones de personas mundialmente! Estamos emocionados de tenerte a bordo de este increíble viaje.
 
-    ### 🚀 Ready to Start Your Adventure?
-    - **Discover Communities:** Use the [hub directory]({hubs_link}) to explore vibrant, active communities waiting for you
-    - **Jump Into Conversations:** Join discussions that spark your interest, or create your own hub through our [dashboard]({dashboard_link})
-    - **Try Quick Connections:** Use our `/call` command for instant one-on-one server connections - perfect for making new friends!
-    - **Get Personalized Help:** Use `/setup` for a guided tour if you're feeling a bit lost
-
-    ### 💝 We're Here for You!
-    Feeling confused or need a helping hand? Don't worry - we've all been there! Join our friendly [support community]({support_invite}) where real people are excited to help you get started.
-
-    **Love what we're doing?** Consider [supporting us]({donateLink}) to help InterChat grow and bring even more amazing features to connect communities worldwide! 🌍
+    ###🚀 ¿Listo/a para comenzar tu aventura?
+    -**Descubre Comunidades:** Usa el [directorio central]({hubs_link}) para explorar comunidades vibrantes y activas esperando por ti
+    -**Entra En Las Conversaciones:** Únete a discusiones que chispearon tu interés, o crea tu propio centro a través de nuestro [panel]({dashboard_link})
   declined: |
     {emoji} Please take a moment to read and accept the community guidelines.
 
