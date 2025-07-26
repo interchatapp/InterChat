@@ -727,16 +727,16 @@ leaderboard:
   title: 'Classificação de mensagens globais'
   description: 'Reinicia todo mês. Envie uma mensagem em qualquer hub para acessar!'
 warn:
-  description: 'Warn a user in your hub'
+  description: 'Avisar um usuário no seu hub'
   options:
     user:
-      description: 'The user to warn'
+      description: 'O usuário deve avisar'
     hub:
-      description: 'The hub to warn in'
+      description: 'O centro para alertar em'
     reason:
-      description: 'Reason for the warning'
+      description: 'Motivo do aviso'
   errors:
-    cannotWarnSelf: '{emoji} You cannot warn yourself.'
+    cannotWarnSelf: '{emoji} Você não pode se avisar.'
   modal:
     title: Avisar usuário
     reason:
@@ -758,73 +758,74 @@ warn:
     footer: 'Avisado por: {moderador}'
 calls:
   connected:
-    title: "You're Connected! 🎉"
-    description: "You've been matched with another awesome server! Say hello and start chatting - this is where the magic happens! ✨"
-    instructions: 'Use `/hangup` to end the call • `/skip` to find a different server'
-    serverInfo: '**Connected to:** {serverName} ({memberCount} members)'
-    duration: '**Call Duration:** {duration}'
-    messages: '**Messages Exchanged:** {count}'
+    title: "Você está conectado! 🎉"
+    description: "Você foi pareado com outro servidor incrível! Diga olá e comece a conversar - é aqui que a mágica acontece! ✨"
+    instructions: 'Use `/hangup` para encerrar a chamada • `/skip` para encontrar um servidor diferente'
+    serverInfo: '**Conectado a:** {serverName} ({memberCount} membros)'
+    duration: '**Duração da chamada:** {duration}'
+    messages: '**Mensagens trocadas:** {count}'
   waiting:
-    title: 'Finding Your Perfect Match'
-    description: 'Added to call queue. Waiting for another server to join...'
+    title: 'Encontrando seu par perfeito'
+    description: 'Adicionado à fila de chamadas. Aguardando a entrada de outro servidor...'
   failed:
-    title: 'Call Failed'
-    description: "Check you're not already in a call and try again in a few moments."
+    title: 'Chamada falhou'
+    description: "Verifique se você ainda não está em uma chamada e tente novamente em alguns instantes."
     reasons:
-      alreadyInCall: 'This channel is already in a call!'
-      alreadyInQueue: 'This channel is already in the call queue!'
-      webhookFailed: 'Failed to create webhook. Please try again later.'
-      channelInvalid: 'Cannot skip call - invalid channel'
+      alreadyInCall: 'Este canal já está em uma chamada!'
+      alreadyInQueue: 'Este canal já está na fila de chamadas!'
+      webhookFailed: 'Falha ao criar o webhook. Tente novamente mais tarde.'
+      channelInvalid: 'Não é possível pular a chamada - canal inválido'
   cancelled:
-    title: 'Call Cancelled'
-    description: 'Call queue exited. Use `/call` to start a new call.'
-    queueExit: 'You have been removed from the call queue'
+    title: 'Chamada cancelada'
+    description: 'Fila de chamadas encerrada. Use `/call` para iniciar uma nova chamada.'
+    queueExit: 'Você foi removido da fila de chamadas'
   ended:
-    title: 'Call Ended'
-    description: 'Thanks for chatting! Hope you made some new friends! 🌟'
+    title: 'Chamada encerrada'
+    description: 'Obrigado pelo bate-papo! Espero que tenha feito novos amigos! 🌟'
     stats: |
-      **Call Summary:**
-      • Duration: {duration}
-      • Messages: {messages}
-      • Server: {serverName}
-    ratePrompt: 'How was your call experience?'
+      **Resumo da Chamada:**
+      • Duração: {duration}
+      • Mensagens: {messages}
+      • Servidor: {serverName}
+    ratePrompt: 'Como foi sua experiência com a ligação?'
   skip:
-    title: 'Finding New Call'
-    description: 'Previous call ended • Waiting for another server • Use `/hangup` to cancel'
+    title: 'Encontrando uma nova chamada'
+    description: 'Chamada anterior encerrada • Aguardando outro servidor • Use `/hangup` para cancelar'
     newConnected:
-      title: 'New Call Connected!'
-      description: "You've been connected to a different server • Use `/hangup` to end"
-    error: 'Unable to skip call. Please try again.'
+      title: 'Nova chamada conectada!'
+      description: "Você foi conectado a um servidor diferente • Use `/hangup` para encerrar"
+    error: 'Não é possível ignorar a chamada. Tente novamente.'
   hangup:
-    confirm: 'Are you sure you want to end this call?'
-    success: 'Call ended successfully. Thanks for chatting!'
-    queueOnly: 'Removed from call queue.'
+    confirm: 'Tem certeza de que deseja encerrar esta chamada?'
+    success: 'A chamada foi encerrada com sucesso. Obrigado pelo bate-papo!'
+    queueOnly: 'Removido da fila de chamadas.'
   buttons:
-    endCall: 'End Call'
-    skipServer: 'Skip Server'
-    skipAgain: 'Skip Again'
-    cancelCall: 'Cancel Call'
-    newCall: 'New Call'
-    exploreHubs: 'Explore Hubs'
-    browseAllHubs: 'Browse All Hubs'
-    ratePositive: 'Good Call 👍'
-    rateNegative: 'Poor Call 👎'
-    reportCall: 'Report Call'
+    endCall: 'Encerrar chamada'
+    skipServer: 'Pular servidor'
+    skipAgain: 'Pular novamente'
+    cancelCall: 'Cancelar chamada'
+    newCall: 'Nova Chamada'
+    exploreHubs: 'Explorar Hubs'
+    browseAllHubs: 'Navegar por todos os hubs'
+    ratePositive: 'Boa decisão 👍'
+    rateNegative: 'Chamada ruim 👎'
+    reportCall: 'Relatar chamada'
   hubs:
     promotion:
-      title: '🌟 Discover InterChat Hubs!'
-      description: 'Calls are in beta. For a more reliable experience, try InterChat Hubs - our main feature for connecting servers!'
+      title: 'Descubra os InterChat Hubs!'
+      description: 'As chamadas estão em fase beta. Para uma experiência mais confiável, experimente o InterChat Hubs, nosso principal recurso para conectar servidores!'
     benefits:
-      title: 'Why Choose Hubs?'
-      description: 'Hubs offer a more reliable and feature-rich experience than calls:'
+      title: 'Por que escolher Hubs?'
+      description: 'Os hubs oferecem uma experiência mais confiável e rica em recursos do que as chamadas:'
       list: |
-        • **Persistent Connections** - Messages stay even when you're offline
-        • **Multiple Communities** - Join various themed hubs or create your own
-        • **Advanced Moderation** - Content filtering, anti-spam, and more
-        • **Rich Features** - Custom welcome messages, rules, and settings
-        • **Active Communities** - Thousands of servers already connected
+        **Conexões Persistentes** - As mensagens permanecem mesmo quando você está offline
+        • **Comunidades Múltiplas**
+         - Participe de vários hubs temáticos ou crie o seu próprio
+        • **Moderação Avançada** - Filtragem de conteúdo, antispam, e muito mais
+        • **Recursos avançados** - Mensagens de boas-vindas, regras e configurações personalizadas
+        • **Comunidades ativas** - Milhares de servidores já conectados
     main:
-      title: 'InterChat Hubs'
+      title: 'Centros InterChat'
       description: 'Os hubs são o principal recurso do InterChat, conectando servidores em comunidades de bate-papo persistentes'
   system:
     callStart: |
@@ -837,7 +838,7 @@ calls:
     alreadyRated: '{emoji} Você já avaliou esta chamada.'
     invalidButton: '{emoji} Botão de avaliação inválido. Tente novamente.'
     noCallData: '{emoji} Não foi possível encontrar os dados da chamada. A chamada pode ter terminado há muito tempo.'
-    noParticipants: '{emoji} Unable to find participants from the other channel.'
+    noParticipants: '{emoji} Não é possível encontrar participantes do outro canal.'
   report:
     prompt: '{emoji} Selecione um motivo para sua denúncia:'
     invalidButton: '{emoji} Botão de denúncia inválido. Tente novamente.'
@@ -866,53 +867,53 @@ commands:
          - Painel visual para gerenciar seus hubs, servidores e configurações
     buttons:
       vote: 'Vote no top.gg'
-      invite: 'Invite InterChat'
-      dashboard: 'Visit Dashboard'
-      support: 'Join Support Server'
-      credits: 'View Credits'
+      invite: 'Convidar InterChat'
+      dashboard: 'Visite o painel'
+      support: 'Junte-se ao servidor de suporte'
+      credits: 'Ver créditos'
     credits:
-      title: 'Credits'
-      developers: 'Developers'
-      staff: 'Staff'
-      translators: 'Translators'
-      mentions: 'Special Mentions'
-      mascot: 'Mascot'
-      top_voter: 'Top Voter'
-      footer: 'Version {version}'
+      title: 'Funcionários'
+      developers: 'Desenvolvedores'
+      staff: 'Funcionários'
+      translators: 'Tradutores'
+      mentions: 'Menções Especiais'
+      mascot: 'Mascote'
+      top_voter: 'Melhor Eleitor'
+      footer: 'Versão {versão}'
     sections:
-      invite: 'Invite InterChat to your server'
-      dashboard: 'Visit the InterChat dashboard'
-      support: 'Join our support server'
-      credits: 'View the InterChat credits'
+      invite: 'Convidar o InterChat para o seu servidor'
+      dashboard: 'Visite o painel do InterChat'
+      support: 'Junte-se ao nosso servidor de suporte'
+      credits: 'Veja os créditos do InterChat'
     errors:
-      serverOnly: 'This command can only be used in a server.'
+      serverOnly: 'Este comando só pode ser usado em um servidor.'
   help:
-    description: '📚 Explore InterChat commands with our new help system'
+    description: ' Explore os comandos do InterChat com nosso novo sistema de ajuda'
     options:
       command:
-        description: 'The command to get info about'
+        description: 'O comando para obter informações sobre'
       category:
-        description: 'View commands by category'
+        description: 'Ver comandos por categoria'
     errors:
-      categoryNotFound: '{emoji} Category not found.'
-      commandNotFound: '{emoji} Command `{command}` not found.'
-      showingCategory: '{emoji} An error occurred while showing the category.'
-      showingCommand: '{emoji} An error occurred while showing the command help.'
-      showingMenu: '{emoji} An error occurred while showing the help menu.'
-      showingSearch: '{emoji} An error occurred while showing the search interface.'
+      categoryNotFound: '{emoji} Categoria não encontrada.'
+      commandNotFound: '{emoji} Comando `{command}` não encontrado'
+      showingCategory: '{emoji} Ocorreu um erro ao exibir a categoria'
+      showingCommand: 'emoji} Ocorreu um erro ao mostrar a ajuda do comando.'
+      showingMenu: '{emoji} Ocorreu um erro ao exibir o menu de ajuda.'
+      showingSearch: '{emoji} Ocorreu um erro ao exibir a interface de pesquisa.'
   setup:
-    description: 'Setup InterChat in your server'
+    description: 'Configure o InterChat no seu servidor'
     errors:
-      serverOnly: 'This command can only be used in a server.'
+      serverOnly: 'Este comando só pode ser usado em um servidor.'
       missingPermissions: |
-        I need the following permissions to work properly:
-        - Manage Webhooks
-        - Send Messages
-        - Manage Messages
-        - Embed Links
+        Preciso das seguintes permissões para funcionar corretamente:
+        - Gerenciar Webhooks
+        - Enviar Mensagens
+        - Gerenciar Mensagens
+        - Incorporar Links
 
-        Please give me these permissions and try again!
-        Need help? [Join our support server]({supportInvite})
+        Por favor, conceda-me estas permissões e tente novamente!
+        Precisa de ajuda? [Junte-se ao nosso suporte]
       setupError: 'There was an error starting the setup process. Please try again later.'
       completionError: 'There was an error completing the setup. Please try again or contact support if the issue persists.'
       channelNotSelected: 'No channel was selected. Please try again.'
@@ -955,22 +956,22 @@ commands:
     channelSelection:
       title: '📍 Step 1: Choose Your Perfect Channel'
       description: "Let's pick the channel where all the exciting InterChat conversations will happen! This can be any text channel in your server - maybe create a special one just for this?"
-      placeholder: 'Select a channel'
+      placeholder: 'Selecione um canal'
       tips:
-        title: '💡 Helpful Tips for Success'
+        title: 'Dicas úteis para o sucesso'
         content: |
-          - **Create something special:** Try naming it `#interchat`, `#global-chat`, or `#world-chat`
-          - **Think about visibility:** Make sure members who want to join the fun can see this channel
-          - **Room to grow:** You can always connect more channels to different communities later
-          - **Keep it organized:** A dedicated channel helps keep conversations flowing smoothly
+          - **Crie algo especial:** Tente nomeá-lo como `#interchat`, `#global-chat` ou `#world-chat`
+          - **Pense na visibilidade:** Certifique-se de que os membros que desejam participar da diversão possam ver este canal
+          - **Espaço para crescer:** Você sempre pode conectar mais canais a comunidades diferentes posteriormente
+          - **Mantenha tudo organizado:** Um canal dedicado ajuda a manter as conversas fluindo sem problemas
     hubChoice:
-      title: 'InterChat Setup (2/4)'
-      description: "Great! Messages will appear in {channel}. Now, let's connect to a hub!"
+      title: 'Configuração do InterChat (2/4)'
+      description: "Ótimo! As mensagens aparecerão em {channel}. Agora, vamos nos conectar a um hub!"
       whatIsHub:
-        title: 'What is a Hub?'
-        description: "A hub is InterChat's main feature - a shared chat space where multiple servers can talk together. Hubs are persistent communities that stay connected 24/7, unlike temporary calls."
+        title: 'O que é um Hub?'
+        description: "Um hub é o principal recurso do InterChat — um espaço de bate-papo compartilhado onde vários servidores podem conversar. Hubs são comunidades persistentes que permanecem conectadas 24 horas por dia, 7 dias por semana, ao contrário de chamadas temporárias."
       popularHubs:
-        title: 'Popular Hubs'
+        title: 'Centros populares'
         description: |
           - Join thriving active communities with thousands of users
           - Start chatting immediately with other servers
