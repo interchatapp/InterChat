@@ -91,11 +91,11 @@ vote:
     title: 'Vote no InterChat'
 premium:
   featureRequired: |
-    {emoji} **Premium Required**
+    {emoji} **Premium necessário**
 
-    This feature is available to Ko-fi Supporters ($1.99/month) along with many more.
+    Este recurso está disponível para Apoiadores do Ko-fi (Us$ 1,99/mês), além de muitos outros.
 
-    [Become a Supporter]({link}) to unlock this feature and support InterChat development!
+    [Torne-se um Apoiador]({link}) para desbloquear este recurso e apoiar o desenvolvimento do InterChat!
 network:
   accountTooNew: '{emoji} Olá {user}! Sua conta do Discord ainda é bem nova, então precisamos esperar um pouco antes de você poder enviar mensagens através do InterChat. Isso ajuda a manter nossa comunidade segura! Tente novamente em um pouco.'
   deleteSuccess: '{emoji} A mensagem de {user} foi excluída de __**{deleted}/{total}**__ servidores.'
@@ -107,7 +107,7 @@ network:
   editSuccess: '{emoji} A mensagem de {user} foi editada em __**{edited}/{total}**__ servidores.'
   onboarding:
     welcome:
-      title: '🎉 Welcome to InterChat!'
+      title: 'Bem-vindo ao InterChat!'
       description: |
         Bem-vindo ao InterChat! Vamos configurar uma experiência personalizada que corresponda aos seus interesses e ajude você a encontrar as comunidades perfeitas para participar.
 
@@ -304,7 +304,7 @@ hub:
         label: URL do banner
         placeholder: Insira uma URL de imagem do Imgur.
     maxHubs: '{emoji} [Vote no InterChat]({voteUrl}) para criar mais hubs! Você atingiu o número máximo de hubs ({maxHubs}) que pode criar.'
-    invalidName: '{emoji} Invalid hub name. It must not contain `discord`, `clyde` or ``` . Please choose another name.'
+    invalidName: '{emoji} Nome de hub inválido. Não deve conter `discord`, `clyde` ou ```. Escolha outro nome.'
     nameTaken: '{emoji} Este nome de hub já foi usado. Por favor, escolha outro nome.'
     success: |
       ### Your __private__ hub, **{name}**, has been successfully created.
@@ -321,17 +321,17 @@ hub:
       If you have any questions or need help, feel free to ask in the [support server]({support_invite}). Consider [donating]({donateLink}) to support the development costs.
   rename:
     invalidName: |
-      ### {emoji} Invalid Hub Name
+      ### {emoji} Nome do Hub inválido
       {error}
     nameTaken: |
-      {emoji} **Name Already Taken**
+      {emoji} **Nome já escolhido**
 
-      A hub with the name "{name}" already exists. Please choose a different name.
+      Já existe um hub com o nome "{name}". Escolha um nome diferente.
     success: |
-      {tick} **Hub Renamed Successfully**
+      {tick} **Hub renomeado com sucesso**
 
-      **{oldName}** now displays as **{newName}**
-      -# {info} *This custom name appears in hub listings and messages.*'
+      **{oldName}** agora é exibido como **{newName}**
+      -# {info} *Este nome personalizado aparece nas listas e mensagens do hub.*'
   delete:
     confirm: Tem certeza de que deseja excluir **{hub}**? Esta ação é irreversível. Todos os servidores conectados, convites e dados de mensagens serão removidos deste hub.
     ownerOnly: '{emoji} Somente o proprietário deste hub pode excluí-lo.'
@@ -378,7 +378,7 @@ hub:
       notAllowed: "{emoji} Somente os gerentes do hub podem atualizar a posição de um moderador."
       notOwner: "{emoji} Somente o proprietário deste hub pode atualizar a posição de um gerente."
   manage:
-    iconBannerNotice: '**🖼️ NEW Set Icon/Banner:** You can now set a custom icon and banner for your hub! Try it out at [on the dashboard]({url}).'
+    iconBannerNotice: '**🖼️ NOVO Definir Ícone/Banner:** Agora você pode definir um ícone e um banner personalizados para o seu hub! Experimente em [no painel]({url}).**�.'
     dashboardTip: "**🛠️ NOVO Painel:** Interface aprimorada e mais recursos! Experimente na [página do painel do seu hub]({url})."
     description:
       changed: '{emoji} Somente os gerentes do hub podem atualizar a posição de um moderador.'
@@ -419,9 +419,9 @@ hub:
     setNsfw:
       success: '{emoji} **{hub}** foi marcado com sucesso como **{status}**.'
       announcement: |
-        {emoji} **Hub Content Rating Changed**
+        {emoji} **Classificação de conteúdo do hub alterada**
 
-        This hub is now marked as **{status}**.
+        Este hub agora está marcado como **{status}**.
 
         {description}'
     nsfwAlreadySet: '{emoji} **{hub}** já está marcado como **{status}**.'
@@ -557,7 +557,7 @@ report:
     placeholder: Selecione um motivo para o seu relatório
   submitted: '{emoji} Relatório enviado com sucesso. Junte-se ao {support_command} para obter mais detalhes. Obrigado!'
   errors:
-    noReasonSelected: '{emoji} No reason selected. Please try again.'
+    noReasonSelected: '{emoji} Nenhum motivo selecionado. Tente novamente.'
     hubNotFound: '{emoji} Hub não encontrado. Tente novamente.'
   description: 'Denunciar uma mensagem'
   options:
@@ -665,67 +665,67 @@ global:
     createYourHub: 'Crie seu hub'
     #Call buttons
     cancelCall: 'Cancelar chamada'
-    newCall: 'New Call'
+    newCall: 'Nova Chamada'
     #Leaderboard
-    userLeaderboard: 'User Leaderboard'
-    serverLeaderboard: 'Server Leaderboard'
+    userLeaderboard: 'Classificação do usuário'
+    serverLeaderboard: 'Classificação do servidor'
   #Common modal titles and labels
   modals:
     editConnection:
-      title: 'Edit Connection'
+      title: 'Editar conexão'
       channelName:
-        label: 'Channel Name'
-        placeholder: 'Enter a custom name for this channel'
+        label: 'Nome do canal'
+        placeholder: 'Insira um nome personalizado para este canal'
       profanityFilter:
-        label: 'Profanity Filter'
+        label: 'Filtro de palavrões'
       compact:
-        label: 'Compact Mode'
+        label: 'Modo compacto'
     hubCreation:
-      title: 'Create New Hub'
+      title: 'Criar novo hub'
       name:
-        label: 'Hub Name'
-        placeholder: 'e.g., Gaming Community, Art Gallery'
+        label: 'Nome do Hub'
+        placeholder: 'por exemplo, comunidade de jogos, galeria de arte'
       description:
-        label: 'Description'
-        placeholder: 'What is this hub about?'
+        label: 'Descrição'
+        placeholder: 'Sobre o que é esse hub?'
     messageInfo:
-      title: 'Message Information'
+      title: 'Informações da mensagem'
     editRule:
-      title: 'Edit Rule'
+      title: 'Editar regra'
       content:
-        label: 'Rule Content'
-        placeholder: 'Enter the rule content...'
+        label: 'Conteúdo da regra'
+        placeholder: 'Insira o conteúdo da regra...'
   #Common messages and responses
   messages:
-    selectChannel: 'Select a channel'
-    selectHub: 'Select a hub'
-    noHubsAvailable: 'No hubs available'
-    hubNotFound: 'Hub not found'
-    channelNotFound: 'Channel not found'
-    connectionNotFound: 'Connection not found'
-    invalidSelection: 'Invalid selection'
-    operationCancelled: 'Operation cancelled'
-    setupComplete: 'Setup complete!'
-    connectionEstablished: 'Connection established'
-    connectionRemoved: 'Connection removed'
-    settingsUpdated: 'Settings updated'
-    ruleAdded: 'Rule added'
-    ruleUpdated: 'Rule updated'
+    selectChannel: 'Selecione um canal'
+    selectHub: 'Selecione um hub'
+    noHubsAvailable: 'Nenhum hub disponível'
+    hubNotFound: 'Hub não encontrado'
+    channelNotFound: 'Canal não encontrado'
+    connectionNotFound: 'Conexão não encontrada'
+    invalidSelection: 'Seleção inválida'
+    operationCancelled: 'Operação cancelada'
+    setupComplete: 'Configuração concluída!'
+    connectionEstablished: 'Conexão estabelecida'
+    connectionRemoved: 'Conexão removida'
+    settingsUpdated: 'Configurações atualizadas'
+    ruleAdded: 'Regra adicionada'
+    ruleUpdated: 'Regra atualizada'
     ruleDeleted: 'Rule deleted'
     #Leaderboard messages
-    noDataAvailable: 'No data available'
-    loadingData: 'Loading data...'
+    noDataAvailable: 'Nenhum dado disponível'
+    loadingData: 'Carregando dados...'
     #Connection status
-    connected: 'Connected'
-    disconnected: 'Disconnected'
-    paused: 'Paused'
+    connected: 'Conectado'
+    disconnected: 'Desconectado'
+    paused: 'Pausado'
     #Hub visibility
-    publicHub: 'Public Hub'
-    privateHub: 'Private Hub'
+    publicHub: 'Centro Público'
+    privateHub: 'Hub Privado'
 #Leaderboard
 leaderboard:
-  title: 'Global Message Leaderboard'
-  description: 'Resets every month. Send a message in any hub to get on it!'
+  title: 'Classificação de mensagens globais'
+  description: 'Reinicia todo mês. Envie uma mensagem em qualquer hub para acessar!'
 warn:
   description: 'Warn a user in your hub'
   options:
@@ -825,47 +825,47 @@ calls:
         • **Active Communities** - Thousands of servers already connected
     main:
       title: 'InterChat Hubs'
-      description: 'Hubs are the main feature of InterChat, connecting servers in persistent chat communities'
+      description: 'Os hubs são o principal recurso do InterChat, conectando servidores em comunidades de bate-papo persistentes'
   system:
     callStart: |
-      {emoji} **Your Call is Connected!** Say hello! 🎉
-      > - Say hello and start chatting with the other server!
-      > - Use `/hangup` when you're ready to end the call
-      > - Remember to keep things friendly and follow our [community guidelines]({guidelines})
+      {emoji} **Sua ligação foi conectada!** Diga olá! 🎉
+      > - Diga olá e comece a conversar com o outro servidor!
+      > - Use `/hangup` quando estiver pronto para encerrar a ligação
+      > - Lembre-se de manter um clima amigável e amigável. e siga nossas [diretrizes da comunidade]({guidelines})
   rating:
-    success: 'Thanks for rating! Your **{type}** feedback has been recorded for {count} participant{plural}.'
-    alreadyRated: '{emoji} You have already rated this call.'
-    invalidButton: '{emoji} Invalid rating button. Please try again.'
-    noCallData: '{emoji} Unable to find call data. The call might have ended too long ago.'
+    success: 'Obrigado pela avaliação! Seu feedback **{type}** foi registrado para {count} participante{plural}.'
+    alreadyRated: '{emoji} Você já avaliou esta chamada.'
+    invalidButton: '{emoji} Botão de avaliação inválido. Tente novamente.'
+    noCallData: '{emoji} Não foi possível encontrar os dados da chamada. A chamada pode ter terminado há muito tempo.'
     noParticipants: '{emoji} Unable to find participants from the other channel.'
   report:
-    prompt: '{emoji} Please select a reason for your report:'
-    invalidButton: '{emoji} Invalid report button. Please try again.'
+    prompt: '{emoji} Selecione um motivo para sua denúncia:'
+    invalidButton: '{emoji} Botão de denúncia inválido. Tente novamente.'
   leaderboard:
-    title: 'Global Calls Leaderboard'
-    description: 'Shows data from this month'
-    noData: 'No data available.'
-    userTab: 'User Leaderboard'
-    serverTab: 'Server Leaderboard'
+    title: 'Classificação de chamadas globais'
+    description: 'Mostra dados deste mês'
+    noData: 'Não há dados disponíveis.'
+    userTab: 'Classificação do usuário'
+    serverTab: 'Classificação do servidor'
   errors:
-    guildOnly: 'This command can only be used in a server text channel.'
+    guildOnly: 'Este comando só pode ser usado em um canal de texto do servidor.'
 #Command descriptions and help text
 commands:
   about:
-    title: 'About InterChat'
-    description: 'Learn more about InterChat'
-    description_text: 'InterChat connects Discord communities through active cross-server discussions. Messages flow naturally between servers in real-time, helping you build engaged topic-focused communities.'
-    support_text: 'Need help? Join our support server for assistance!'
+    title: 'Sobre o InterChat'
+    description: 'Saiba mais sobre o InterChat'
+    description_text: 'O InterChat conecta comunidades do Discord por meio de discussões ativas entre servidores. As mensagens fluem naturalmente entre os servidores em tempo real, ajudando você a construir comunidades engajadas e focadas em tópicos específicos.'
+    support_text: 'Precisa de ajuda? Junte-se ao nosso servidor de suporte para obter assistência!'
     features:
-      title: 'Features'
+      title: 'Características'
       list: |
-        - Connect with other servers for active cross-server discussions
-        - Messages flow naturally between servers in real-time
-        - Build engaged topic-focused communities
-        - Moderation tools to keep discussions healthy
-        - Visual dashboard to manage your hubs, servers, and settings
+        - Conecte-se com outros servidores para discussões ativas entre servidores
+        - As mensagens fluem naturalmente entre os servidores em tempo real
+        - Crie comunidades engajadas e focadas em tópicos
+        - Ferramentas de moderação para manter as discussões saudável
+         - Painel visual para gerenciar seus hubs, servidores e configurações
     buttons:
-      vote: 'Vote on top.gg'
+      vote: 'Vote no top.gg'
       invite: 'Invite InterChat'
       dashboard: 'Visit Dashboard'
       support: 'Join Support Server'
