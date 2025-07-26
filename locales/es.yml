@@ -24,7 +24,7 @@ rules:
     ¡Estamos muy emocionados de que te hayas unido a nuestra increíble comunidad de servidores conectados a través de Discord! Antes de sumergirte en charlar con personas de todo el mundo, déjame que pase un momento para revisar nuestras amables directrices comunitarias.
 
     Estas simples normas ayudan a mantener InterChat como un espacio cálido, acogedor y seguro para que todos puedan hacer novios y compartir conversaciones maravillosas! ✨
-  alreadyAccepted: "{emoji} Welcome back, {user}! You're all set to explore and chat with amazing communities. Have fun connecting with new friends! 🌟"
+  alreadyAccepted: "{emoji} ¡Bienvenido nuevamente, {user}! Usted ya está completamente listo/a para explorar y conversar con increíbles comunidades. ¡Diviértete conectándote con nuevas amistades!"
   continue: Continuar
   accept: Aceptar
   decline: Rechazar
@@ -35,20 +35,13 @@ rules:
 
     ⚠️ **No puedes enviar mensajes en este centro hasta que aceptes estas reglas.**
   accepted: |
-    {emoji} Fantastic! Welcome to the InterChat family! 🎉✨
+    {emoji} ¡Fantástico! ¡Bienvenido a la familia de InterChat!
 
-    You're now part of an incredible community that connects thousands of servers and millions of people worldwide! We're thrilled to have you aboard this amazing journey.
+    ¡Ahora eres parte de una comunidad increíble que se conecta a miles de servidores y millones de personas mundialmente! Estamos emocionados de tenerte a bordo de este increíble viaje.
 
-    ### 🚀 Ready to Start Your Adventure?
-    - **Discover Communities:** Use the [hub directory]({hubs_link}) to explore vibrant, active communities waiting for you
-    - **Jump Into Conversations:** Join discussions that spark your interest, or create your own hub through our [dashboard]({dashboard_link})
-    - **Try Quick Connections:** Use our `/call` command for instant one-on-one server connections - perfect for making new friends!
-    - **Get Personalized Help:** Use `/setup` for a guided tour if you're feeling a bit lost
-
-    ### 💝 We're Here for You!
-    Feeling confused or need a helping hand? Don't worry - we've all been there! Join our friendly [support community]({support_invite}) where real people are excited to help you get started.
-
-    **Love what we're doing?** Consider [supporting us]({donateLink}) to help InterChat grow and bring even more amazing features to connect communities worldwide! 🌍
+    ###🚀 ¿Listo/a para comenzar tu aventura?
+    -**Descubre Comunidades:** Usa el [directorio central]({hubs_link}) para explorar comunidades vibrantes y activas esperando por ti
+    -**Entra En Las Conversaciones:** Únete a discusiones que chispearon tu interés, o crea tu propio centro a través de nuestro [panel]({dashboard_link})
   declined: |
     {emoji} Please take a moment to read and accept the community guidelines.
 
@@ -90,6 +83,13 @@ vote:
       voterBadge: 'Exclusive voter badge in /profile'
   embed:
     title: 'Vote for InterChat'
+premium:
+  featureRequired: |
+    {emoji} **Premium Required**
+
+    This feature is available to Ko-fi Supporters ($1.99/month) along with many more.
+
+    [Become a Supporter]({link}) to unlock this feature and support InterChat development!
 network:
   accountTooNew: '{emoji} Hey {user}! Your Discord account is still pretty new, so we need to wait a little bit before you can send messages through InterChat. This helps keep our community safe! Please try again in a little while.'
   deleteSuccess: '{emoji} El mensaje de {user} se ha eliminado de __**{deleted} de {total}**__ servidores.'
@@ -297,7 +297,7 @@ hub:
         label: URL de banner
         placeholder: Ingrese una URL de imagen Imgur.
     maxHubs: '{emoji} [Vota por InterChat]({voteUrl}) para crear más hubs. Has alcanzado el número máximo de hubs ({maxHubs}) que puedes crear.'
-    invalidName: '{emoji} Nombre de la concentración no válida. No debe contener `discord`,`clyde` o `/`. Elija otro nombre.'
+    invalidName: '{emoji} Invalid hub name. It must not contain `discord`, `clyde` or ``` . Please choose another name.'
     nameTaken: '{emoji} Este nombre del centro ya está tomado. Elija otro nombre.'
     success: |
       ## ¡Centro creado! Está __private__ por defecto.
@@ -317,6 +317,19 @@ hub:
       > Usa `/hub visibility` para hacer el hub público y permitir que otros lo exploren y se unan sin necesidad de una invitación. (Opcional)
 
       Si tienes preguntas o necesitas ayuda, no dudes en preguntar en el [servidor de soporte]({support_invite}). Considera [donar]({donateLink}) para ayudar a cubrir los costos de desarrollo.
+  rename:
+    invalidName: |
+      ### {emoji} Invalid Hub Name
+      {error}
+    nameTaken: |
+      {emoji} **Name Already Taken**
+
+      A hub with the name "{name}" already exists. Please choose a different name.
+    success: |
+      {tick} **Hub Renamed Successfully**
+
+      **{oldName}** now displays as **{newName}**
+      -# {info} *This custom name appears in hub listings and messages.*'
   delete:
     confirm: '¿Estás seguro de que desea eliminar **{hub}**? Esta acción es irreversible. Todos los servidores conectados, invitaciones y datos de mensajes se eliminarán de este centro.'
     ownerOnly: '{emoji} Solo el propietario de este centro puede eliminarlo.'
@@ -365,16 +378,8 @@ hub:
       notAllowed: "{emoji} Solo los administradores de centros pueden actualizar la posición de un moderador."
       notOwner: "{emoji} Solo el propietario de este centro puede actualizar la posición de un administrador."
   manage:
+    iconBannerNotice: '**🖼️ NEW Set Icon/Banner:** You can now set a custom icon and banner for your hub! Try it out at [on the dashboard]({url}).'
     dashboardTip: "**🛠️ NUEVO Dashboard:** ¡Interfaz mejorada y más funciones! Pruébalo en la [página de Dashboard de tu centro]({url})."
-    enterImgurUrl: Ingrese una URL de imagen de Imgur válida que no sea una galería o álbum.
-    icon:
-      changed: El icono del centro cambió con éxito.
-      modal:
-        title: Editar Icono
-        label: URL de icono
-      selects:
-        label: Editar Icono
-        description: Cambie el icono de este centro.
     description:
       changed: La descripción del concentrador cambió con éxito.
       modal:
@@ -384,15 +389,6 @@ hub:
       selects:
         label: Cambiar Descripción
         description: Cambie la descripción de este centro.
-    banner:
-      changed: El banner del hub se cambió con éxito.
-      removed: Banner de concentrador eliminado con éxito.
-      modal:
-        title: Editar Banner
-        label: URL de banner
-      selects:
-        label: Editar Banner
-        description: Cambia la pancarta de este centro.
     visibility:
       success: '{emoji} La visibilidad del centro cambió correctamente a **{visibility}**.'
       selects:
@@ -422,7 +418,12 @@ hub:
         sfw: 'This hub is now safe for work. All channels can connect to this hub.'
     setNsfw:
       success: '{emoji} **{hub}** has been successfully marked as **{status}**.'
-      announcement: "{emoji} **Hub Content Rating Changed**\n\nThis hub is now marked as **{status}**.\n\n{description}"
+      announcement: |
+        {emoji} **Hub Content Rating Changed**
+
+        This hub is now marked as **{status}**.
+
+        {description}'
     nsfwAlreadySet: '{emoji} **{hub}** is already marked as **{status}**.'
     embed:
       visibility: 'Visibilidad'
@@ -1000,10 +1001,14 @@ commands:
     nextSteps:
       created:
         title: '✨ Almost Done!'
-        description: "Your Hub \"{hubName}\" is Ready!\nClick Finish Setup to complete the process. After that, follow these steps:"
+        description: |
+          Your Hub "{hubName}" is Ready!
+          Click Finish Setup to complete the process. After that, follow these steps:'
         inviteLink:
           title: '1️⃣ Create an Invite Link'
-          description: "{hubInviteCommand} `hub:{hubName}`\nThis will generate an invite link you can share with other servers"
+          description: |
+            {hubInviteCommand} `hub:{hubName}`
+            This will generate an invite link you can share with other servers
         shareHub:
           title: '2️⃣ Share Your Hub'
           description: |
@@ -1031,10 +1036,12 @@ commands:
             {dot} Vote for InterChat to unlock custom welcome messages and colors
             {dot} You can publish your hub to the [hub directory]({website}/hubs) using {hubVisibilityCommand}
             {dot} Join our [support server]({supportInvite}) for hub management tips!
-        copyCommand: "`/hub invite create hub:{hubName}`\n✨ Command copied! Run this to create an invite link."
+        copyCommand: "/hub invite create hub:{hubName}"
       joined:
         title: '✨ Ready to Join?'
-        description: "Ready to Join \"{hubName}\"?\nClick Finish Setup to join the hub. After joining, you can use these commands:"
+        description: |
+          Ready to Join `{hubName}`?
+          Click Finish Setup to join the hub. After joining, you can use these commands:"
         commands: |
           {connectionEditCommand}
           Customize how you receive/send messages to the hub
@@ -1169,7 +1176,9 @@ hubConfig:
   antiSwear:
     title: 'Anti-Swear Configuration'
     description: 'Configure word filters and auto-moderation for this hub'
-    noRules: "Let's set up some anti-swear rules!\nUse the `Add Rule` button to create one."
+    noRules: |
+      Let's set up some anti-swear rules!
+      Use the `Add Rule` button to create one.
     selectRule: "Select a rule to edit it's words/actions"
     placeholder: 'Select a log type to configure'
     validating: '{emoji} Validating anti-swear rule...'
