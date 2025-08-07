@@ -15,6 +15,10 @@
   <a href="https://ko-fi.com/V7V017M8GW"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support us on Ko-fi" height="30"></a>
 </div>
 
+> [!WARNING]
+> # Archival Notice
+> This repository is no longer maintained. The updated and rewritten version is in [interchatapp/InterChat.py](https://github.comm/interchatapp/InterChat.py). Rewritten to be all in Python.
+
 ## 📋 About InterChat
 
 InterChat is a powerful Discord bot that breaks down the walls between communities by enabling real-time cross-server communication. Whether you're looking to build topic-focused communities, connect with like-minded servers, or simply expand your server's reach, InterChat provides the tools to make it happen.
