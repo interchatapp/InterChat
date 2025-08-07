@@ -17,7 +17,7 @@
 
 > [!WARNING]
 > # Archival Notice
-> This repository is no longer maintained. The updated and rewritten version is in [interchatapp/InterChat.py](https://github.comm/interchatapp/InterChat.py). Rewritten to be all in Python.
+> This repository is no longer maintained. The updated and rewritten version is in [interchatapp/InterChat.py](https://github.com/interchatapp/InterChat.py). Rewritten to be all in Python.
 
 ## 📋 About InterChat
 
